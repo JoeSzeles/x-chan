@@ -12,6 +12,7 @@ export default defineConfig({
 			protocol: 'ws',
 		},
 		cors: true,
+		allowedHosts: ['*.replit.dev'],
 		headers: {
 			'Access-Control-Allow-Origin': '*',
 			'Content-Security-Policy': "default-src * 'self' data: 'unsafe-inline' 'unsafe-eval' blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; style-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; font-src * 'self' data:; connect-src *;",
