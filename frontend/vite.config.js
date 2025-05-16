@@ -7,9 +7,14 @@ export default defineConfig({
 	plugins: [react()],
 	server: {
 		port: 3000,
-		host: true,
+		host: '0.0.0.0',
 		strictPort: true,
-		allowedHosts: ["fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev"],
+		cors: true,
+		hmr: {
+			host: '0.0.0.0',
+			port: 3000,
+			protocol: 'ws'
+		},
 		proxy: {
 			"/api": {
 				target: process.env.VITE_API_URL || "http://localhost:5000",
