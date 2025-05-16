@@ -1,0 +1,10 @@
+version: 2
+region: ap
+tunnels:
+  frontend:
+    addr: 3000
+    proto: http
+    subdomain: tradehub
+  backend:
+    addr: 5000
+    proto: http 

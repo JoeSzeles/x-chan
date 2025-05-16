@@ -1,0 +1,408 @@
+FORM COMPONENT SYSTEM
+====================
+
+1. EXISTING FORM COMPONENTS
+--------------------------
+1.1 CreatePost Form
+    Frontend:
+    - Component: CreatePost.jsx
+    - State:
+        * text (string)
+        * img (File/null)
+        * isUploading (boolean)
+    - Features:
+        * Text input with character limit
+        * Image upload with preview
+        * Image removal
+        * Loading states
+        * Error handling
+    - API Endpoint: POST /api/posts
+    - Success Action: Add post to feed
+    - Error Handling: Toast error message
+
+    Backend:
+    - Route: /api/posts
+    - Controller: createPost
+    - Model Updates:
+        * Create new Post document
+        * Update User's posts array
+    - File Handling:
+        * Image upload to public/uploads
+        * Image compression
+        * File type validation
+
+1.2 EditProfile Form
+    Frontend:
+    - Component: EditProfile.jsx
+    - State:
+        * fullName (string)
+        * username (string)
+        * email (string)
+        * bio (string)
+        * profilePicture (File/null)
+        * coverPicture (File/null)
+        * isUpdating (boolean)
+    - Features:
+        * Form validation
+        * Image upload with preview
+        * Username availability check
+        * Loading states
+        * Error handling
+    - API Endpoint: PUT /api/users/profile
+    - Success Action: Update profile data
+    - Error Handling: Toast error message
+
+    Backend:
+    - Route: /api/users/profile
+    - Controller: updateProfile
+    - Model Updates:
+        * Update User document
+        * Update profile pictures
+    - File Handling:
+        * Image upload to public/uploads
+        * Image compression
+        * File type validation
+
+2. TEMPLATE FOR NEW FORM COMPONENTS
+---------------------------------
+2.1 Frontend Implementation Template
+    ```javascript
+    // 1. Create new form component
+    import { useState } from "react";
+    import { useMutation } from "@tanstack/react-query";
+    import { toast } from "react-hot-toast";
+    import LoadingSpinner from "./LoadingSpinner";
+
+    const NewForm = () => {
+        // 2. Define form state
+        const [formData, setFormData] = useState({
+            field1: "",
+            field2: "",
+            file: null,
+        });
+        const [isUploading, setIsUploading] = useState(false);
+        const [preview, setPreview] = useState(null);
+
+        // 3. Handle form input changes
+        const handleInputChange = (e) => {
+            const { name, value } = e.target;
+            setFormData({ ...formData, [name]: value });
+        };
+
+        // 4. Handle file upload
+        const handleFileChange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                setFormData({ ...formData, file });
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPreview(reader.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        // 5. Add mutation
+        const { mutate: submitForm, isPending } = useMutation({
+            mutationFn: async () => {
+                try {
+                    const formDataToSend = new FormData();
+                    Object.keys(formData).forEach((key) => {
+                        formDataToSend.append(key, formData[key]);
+                    });
+
+                    const res = await fetch("/api/endpoint", {
+                        method: "POST",
+                        body: formDataToSend,
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    return data;
+                } catch (error) {
+                    throw new Error(error);
+                }
+            },
+            onSuccess: (data) => {
+                toast.success("Form submitted successfully");
+                // Handle success (e.g., redirect, update state)
+            },
+            onError: (error) => {
+                toast.error(error.message);
+            },
+        });
+
+        // 6. Handle form submission
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            submitForm();
+        };
+
+        return (
+            <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Text Input */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        Field 1
+                    </label>
+                    <input
+                        type="text"
+                        name="field1"
+                        value={formData.field1}
+                        onChange={handleInputChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    />
+                </div>
+
+                {/* File Input */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                        File Upload
+                    </label>
+                    <input
+                        type="file"
+                        onChange={handleFileChange}
+                        className="mt-1 block w-full"
+                    />
+                    {preview && (
+                        <img
+                            src={preview}
+                            alt="Preview"
+                            className="mt-2 h-32 w-32 object-cover"
+                        />
+                    )}
+                </div>
+
+                {/* Submit Button */}
+                <button
+                    type="submit"
+                    disabled={isPending}
+                    className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                    {isPending ? <LoadingSpinner size="sm" /> : "Submit"}
+                </button>
+            </form>
+        );
+    };
+
+    export default NewForm;
+    ```
+
+2.2 Backend Implementation Template
+    ```javascript
+    // 1. Add route
+    router.post("/endpoint", protectRoute, upload.single("file"), controllerFunction);
+
+    // 2. Add controller
+    export const controllerFunction = async (req, res, next) => {
+        try {
+            const { field1, field2 } = req.body;
+            const file = req.file;
+
+            // Validate input
+            if (!field1) {
+                return next(errorHandler(400, "Field 1 is required"));
+            }
+
+            // Process file if needed
+            let fileUrl = null;
+            if (file) {
+                fileUrl = `/uploads/${file.filename}`;
+            }
+
+            // Create/Update document
+            const result = await processFormData({
+                field1,
+                field2,
+                file: fileUrl,
+                userId: req.user._id,
+            });
+
+            res.status(200).json({
+                message: "Form submitted successfully",
+                data: result,
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    // 3. Add model updates if needed
+    // Update relevant models in the processFormData function
+    ```
+
+3. FORM COMPONENT CONSIDERATIONS
+------------------------------
+3.1 State Management
+    - Form state
+    - Loading states
+    - Error states
+    - Preview states
+    - Validation states
+
+3.2 User Experience
+    - Form validation
+    - Loading indicators
+    - Success/Error feedback
+    - File upload progress
+    - Responsive design
+
+3.3 Data Handling
+    - Form data validation
+    - File upload handling
+    - Data transformation
+    - Error handling
+    - Data persistence
+
+3.4 Security
+    - Input sanitization
+    - File type validation
+    - File size limits
+    - Authentication checks
+    - Authorization checks
+
+4. EXAMPLE: ADDING A NEW "CREATE POLL" FORM
+-----------------------------------------
+4.1 Frontend Implementation
+    ```javascript
+    const CreatePoll = () => {
+        const [formData, setFormData] = useState({
+            question: "",
+            options: ["", ""],
+            duration: 24, // hours
+        });
+
+        const handleOptionChange = (index, value) => {
+            const newOptions = [...formData.options];
+            newOptions[index] = value;
+            setFormData({ ...formData, options: newOptions });
+        };
+
+        const addOption = () => {
+            setFormData({
+                ...formData,
+                options: [...formData.options, ""],
+            });
+        };
+
+        const { mutate: createPoll, isPending } = useMutation({
+            mutationFn: async () => {
+                const res = await fetch("/api/polls", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            onSuccess: () => {
+                toast.success("Poll created successfully");
+                // Handle success
+            },
+        });
+
+        return (
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                createPoll();
+            }}>
+                <input
+                    type="text"
+                    value={formData.question}
+                    onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+                    placeholder="Enter your question"
+                />
+                {formData.options.map((option, index) => (
+                    <input
+                        key={index}
+                        type="text"
+                        value={option}
+                        onChange={(e) => handleOptionChange(index, e.target.value)}
+                        placeholder={`Option ${index + 1}`}
+                    />
+                ))}
+                <button type="button" onClick={addOption}>
+                    Add Option
+                </button>
+                <button type="submit" disabled={isPending}>
+                    {isPending ? <LoadingSpinner /> : "Create Poll"}
+                </button>
+            </form>
+        );
+    };
+    ```
+
+4.2 Backend Implementation
+    ```javascript
+    // In poll.routes.js
+    router.post("/", protectRoute, createPoll);
+
+    // In poll.controller.js
+    export const createPoll = async (req, res, next) => {
+        try {
+            const { question, options, duration } = req.body;
+            const userId = req.user._id;
+
+            // Validate input
+            if (!question || options.length < 2) {
+                return next(errorHandler(400, "Invalid poll data"));
+            }
+
+            // Create poll
+            const poll = await Poll.create({
+                question,
+                options: options.map(option => ({
+                    text: option,
+                    votes: 0
+                })),
+                duration,
+                createdBy: userId,
+                expiresAt: new Date(Date.now() + duration * 60 * 60 * 1000)
+            });
+
+            res.status(201).json(poll);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+4.3 Model Updates
+    ```javascript
+    // In poll.model.js
+    const pollSchema = new mongoose.Schema({
+        question: {
+            type: String,
+            required: true,
+        },
+        options: [{
+            text: {
+                type: String,
+                required: true,
+            },
+            votes: {
+                type: Number,
+                default: 0,
+            },
+        }],
+        duration: {
+            type: Number,
+            required: true,
+        },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        expiresAt: {
+            type: Date,
+            required: true,
+        },
+        voters: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        }],
+    });
+    

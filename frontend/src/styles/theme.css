@@ -1,0 +1,176 @@
+:root {
+  /* Color Palette */
+  --color-primary: #1da1f2;
+  --color-primary-dark: #1a8cd8;
+  --color-primary-light: #1da1f2;
+  
+  --color-secondary-green: #28a745;
+  --color-secondary-red: #dc3545;
+  --color-secondary-yellow: #ffc107;
+  --color-secondary-gray: #6c757d;
+  
+  --color-bg-main: #121212;
+  --color-bg-card: #1e1e1e;
+  --color-bg-dark: #15202b;
+  --color-bg-light: #f8f9fa;
+  
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8899a6;
+  --color-text-light: #ffffff;
+  --color-text-link: #1da1f2;
+  --color-text-error: #dc3545;
+  
+  --color-border-default: #38444d;
+  --color-border-focus: #1da1f2;
+  --color-border-error: #dc3545;
+
+  /* Input Colors */
+  --color-input-bg: #1e1e1e;
+  --color-input-text: #ffffff;
+  --color-input-border: #38444d;
+  --color-input-placeholder: #8899a6;
+
+  /* Typography */
+  --font-primary: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-secondary: Arial, sans-serif;
+  
+  --font-size-h1: 2.5rem;
+  --font-size-h2: 2rem;
+  --font-size-h3: 1.75rem;
+  --font-size-h4: 1.5rem;
+  --font-size-h5: 1.25rem;
+  --font-size-h6: 1rem;
+  
+  --font-size-body: 1rem;
+  --font-size-small: 0.875rem;
+  --font-size-xs: 0.75rem;
+  
+  --line-height-heading: 1.2;
+  --line-height-body: 1.5;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+
+  /* Component Styles */
+  --border-radius: 0.5rem;
+  --border-radius-sm: 0.25rem;
+  --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+  
+  /* Transitions */
+  --transition-duration: 0.3s;
+  --transition-timing: ease-in-out;
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+  --color-bg-main: #121212;
+  --color-bg-card: #1e1e1e;
+  --color-bg-dark: #15202b;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8899a6;
+  --color-border-default: #38444d;
+  --color-primary: #1da1f2;
+  --color-secondary-gray: #8899a6;
+  
+  /* Dark Mode Input Colors */
+  --color-input-bg: #1e1e1e;
+  --color-input-text: #ffffff;
+  --color-input-border: #38444d;
+  --color-input-placeholder: #8899a6;
+  
+  /* Dark Mode Shadows */
+  --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+}
+
+/* Input Styles */
+input, textarea, select {
+  background-color: var(--color-input-bg);
+  color: var(--color-input-text);
+  border-color: var(--color-input-border);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-input-placeholder);
+}
+
+/* Button Styles */
+button {
+  background-color: var(--color-primary);
+  color: var(--color-text-light);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: background-color var(--transition-duration) var(--transition-timing);
+}
+
+button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Card Styles */
+.card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: var(--spacing-md);
+}
+
+/* Right Sidebar Styles */
+.right-sidebar {
+  background-color: var(--color-bg-dark);
+  border-left: 1px solid var(--color-border-default);
+}
+
+/* Left Sidebar Styles */
+.left-sidebar {
+  background-color: var(--color-bg-main);
+}
+
+.left-sidebar button {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-duration) var(--transition-timing);
+}
+
+.left-sidebar button:hover {
+  background-color: #1a8cd8;
+  color: var(--color-text-light);
+}
+
+/* Navigation Button Styles */
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-text-primary);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-duration) var(--transition-timing);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-button:hover {
+  background-color: #1a8cd8;
+  color: var(--color-text-light);
+}
+
+.nav-button.active {
+  background-color: #1a8cd8;
+  color: var(--color-text-light);
+}
+
+.nav-button svg {
+  width: 1.5rem;
+  height: 1.5rem;
+} 

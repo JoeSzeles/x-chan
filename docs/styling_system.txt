@@ -1,0 +1,247 @@
+STYLING SYSTEM GUIDE
+===================
+
+1. STYLING ARCHITECTURE
+----------------------
+1.1 Global Styles
+    ```
+    src/
+    ├── styles/
+    │   ├── globals.css        # Global styles and variables
+    │   ├── theme.css         # Theme configuration
+    │   ├── animations.css    # Animation keyframes
+    │   └── responsive.css    # Responsive design rules
+    ```
+
+1.2 Component Styles
+    ```
+    src/
+    ├── components/
+    │   ├── ComponentName/
+    │   │   ├── ComponentName.jsx
+    │   │   └── ComponentName.module.css
+    ```
+
+2. CSS VARIABLES
+--------------
+2.1 Color System
+    ```css
+    :root {
+        /* Primary Colors */
+        --primary-color: #1DA1F2;
+        --primary-dark: #1a8cd8;
+        --primary-light: #e8f5fe;
+        
+        /* Background Colors */
+        --bg-primary: #ffffff;
+        --bg-secondary: #f7f9f9;
+        --bg-tertiary: #eff3f4;
+        
+        /* Text Colors */
+        --text-primary: #0f1419;
+        --text-secondary: #536471;
+        --text-tertiary: #8b98a5;
+        
+        /* Border Colors */
+        --border-color: #eff3f4;
+        --border-hover: #dbe7f2;
+    }
+    ```
+
+2.2 Typography
+    ```css
+    :root {
+        /* Font Families */
+        --font-primary: 'Inter', sans-serif;
+        --font-secondary: 'Roboto', sans-serif;
+        
+        /* Font Sizes */
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --text-base: 1rem;
+        --text-lg: 1.125rem;
+        --text-xl: 1.25rem;
+        --text-2xl: 1.5rem;
+        
+        /* Font Weights */
+        --font-light: 300;
+        --font-normal: 400;
+        --font-medium: 500;
+        --font-semibold: 600;
+        --font-bold: 700;
+    }
+    ```
+
+2.3 Spacing
+    ```css
+    :root {
+        /* Spacing Scale */
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+    }
+    ```
+
+3. COMPONENT STYLING
+------------------
+3.1 Post Components
+    ```css
+    /* PostCard.module.css */
+    .postCard {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: var(--space-4);
+        margin-bottom: var(--space-4);
+    }
+    
+    .postHeader {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+    }
+    
+    .postContent {
+        margin: var(--space-4) 0;
+        font-size: var(--text-base);
+        color: var(--text-primary);
+    }
+    ```
+
+3.2 User Components
+    ```css
+    /* UserProfile.module.css */
+    .profileHeader {
+        background: var(--bg-secondary);
+        padding: var(--space-6);
+        border-radius: 16px;
+    }
+    
+    .profileStats {
+        display: flex;
+        gap: var(--space-6);
+        margin-top: var(--space-4);
+    }
+    ```
+
+4. RESPONSIVE DESIGN
+------------------
+4.1 Breakpoints
+    ```css
+    /* responsive.css */
+    @media (max-width: 640px) {
+        :root {
+            --text-base: 0.875rem;
+            --space-4: 0.75rem;
+        }
+    }
+    
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .container {
+            max-width: 768px;
+        }
+    }
+    
+    @media (min-width: 1025px) {
+        .container {
+            max-width: 1024px;
+        }
+    }
+    ```
+
+5. ANIMATIONS
+-----------
+5.1 Common Animations
+    ```css
+    /* animations.css */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    ```
+
+6. THEME SYSTEM
+-------------
+6.1 Light Theme
+    ```css
+    /* theme.css */
+    [data-theme="light"] {
+        --bg-primary: #ffffff;
+        --text-primary: #0f1419;
+        --border-color: #eff3f4;
+    }
+    ```
+
+6.2 Dark Theme
+    ```css
+    [data-theme="dark"] {
+        --bg-primary: #15202b;
+        --text-primary: #ffffff;
+        --border-color: #38444d;
+    }
+    ```
+
+7. STYLING UPDATES
+----------------
+7.1 How to Update Styles
+    ```cursor
+    // 1. Check existing styles
+    codebase_search("component styling", ["styles/", "components/*/module.css"])
+    
+    // 2. Update CSS variables
+    edit_file("styles/globals.css", "Updating color variables", `
+    :root {
+        // ... existing code ...
+        --primary-color: #NEW_COLOR;
+        // ... existing code ...
+    }
+    `)
+    
+    // 3. Update component styles
+    edit_file("components/ComponentName/ComponentName.module.css", "Updating component styles", `
+    .component {
+        // ... existing code ...
+        background: var(--bg-primary);
+        // ... existing code ...
+    }
+    `)
+    ```
+
+8. BEST PRACTICES
+---------------
+8.1 CSS Guidelines
+    - Use CSS variables for consistency
+    - Follow BEM naming convention
+    - Use CSS modules for component styles
+    - Keep styles modular and reusable
+
+8.2 Performance
+    - Minimize CSS file size
+    - Use efficient selectors
+    - Avoid !important
+    - Optimize animations
+
+9. STYLE MAINTENANCE
+------------------
+9.1 Regular Tasks
+    - Review and update CSS variables
+    - Check for unused styles
+    - Update responsive breakpoints
+    - Verify theme consistency
+
+9.2 Documentation
+    - Keep style guide updated
+    - Document new components
+    - Maintain theme documentation
+    - Update animation library 

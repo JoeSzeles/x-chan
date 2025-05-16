@@ -1,0 +1,170 @@
+PROJECT DOCUMENTATION INDEX & RULES
+=================================
+
+1. DOCUMENTATION STRUCTURE
+------------------------
+1.1 Core Systems
+    - application_map.txt: Overall application architecture and flow
+    - main_pages_system.txt: Main page layouts and routing
+    - common_components_system.txt: Reusable UI components
+    - form_component_system.txt: Form handling and validation
+
+1.2 User Systems
+    - user_interaction_system.txt: User-to-user interactions
+    - user_content_system.txt: User-generated content management
+    - profile_page_system.txt: User profile structure and features
+    - notification_system.txt: Notification handling and delivery
+
+1.3 Content Systems
+    - post_system.txt: Post creation and management
+    - post_card_button_system.txt: Post interaction components
+    - media_storage_system.txt: Media handling and storage
+    - social_features_system.txt: Social interaction features
+
+1.4 Utility Systems
+    - counter_system.txt: Counting and statistics features
+
+2. DEVELOPMENT RULES
+------------------
+2.1 Documentation First
+    - Always read relevant documentation before implementing new features
+    - Update documentation when making significant changes
+    - Follow established patterns and structures
+
+2.2 Component Creation
+    - Check common_components_system.txt before creating new components
+    - Follow established naming conventions
+    - Use existing component patterns when possible
+    - Document new components in appropriate files
+
+2.3 User Interaction
+    - Follow user_interaction_system.txt for all user interactions
+    - Implement proper error handling and feedback
+    - Maintain consistent UI/UX patterns
+    - Consider accessibility requirements
+
+2.4 Content Management
+    - Follow post_system.txt for content creation
+    - Use established media storage patterns
+    - Implement proper content validation
+    - Consider content moderation requirements
+
+2.5 Data Management
+    - Follow established data models
+    - Use proper indexing and optimization
+    - Implement proper data validation
+    - Consider data privacy and security
+
+3. ADDITIONAL DOCUMENTATION NEEDED
+-------------------------------
+3.1 Authentication System
+    - User authentication flow
+    - Session management
+    - Security measures
+    - Password policies
+
+3.2 API Documentation
+    - Endpoint specifications
+    - Request/response formats
+    - Error handling
+    - Rate limiting
+
+3.3 Testing Guidelines
+    - Unit testing requirements
+    - Integration testing procedures
+    - Testing tools and frameworks
+    - Test coverage requirements
+
+3.4 Deployment Process
+    - Deployment steps
+    - Environment configuration
+    - Backup procedures
+    - Monitoring setup
+
+4. CONSISTENCY CHECKLIST
+----------------------
+4.1 Before Implementation
+    - [ ] Read relevant documentation
+    - [ ] Check for existing similar features
+    - [ ] Plan component structure
+    - [ ] Consider edge cases
+
+4.2 During Implementation
+    - [ ] Follow naming conventions
+    - [ ] Use established patterns
+    - [ ] Implement proper error handling
+    - [ ] Add necessary documentation
+
+4.3 After Implementation
+    - [ ] Update relevant documentation
+    - [ ] Test against existing features
+    - [ ] Verify consistency
+    - [ ] Document any deviations
+
+5. DOCUMENTATION MAINTENANCE
+-------------------------
+5.1 Regular Updates
+    - Review documentation monthly
+    - Update outdated information
+    - Add new patterns and components
+    - Remove deprecated features
+
+5.2 Version Control
+    - Track documentation changes
+    - Maintain version history
+    - Link documentation to code versions
+    - Document breaking changes
+
+5.3 Review Process
+    - Peer review documentation changes
+    - Verify accuracy and completeness
+    - Check for consistency
+    - Update related documentation
+
+6. PROJECT STRUCTURE RULES
+------------------------
+6.1 File Organization
+    - Follow established folder structure
+    - Use consistent naming conventions
+    - Group related files together
+    - Maintain clear separation of concerns
+
+6.2 Code Style
+    - Follow established coding standards
+    - Use consistent formatting
+    - Document complex logic
+    - Maintain readability
+
+6.3 Component Hierarchy
+    - Follow established component patterns
+    - Maintain proper component relationships
+    - Use appropriate state management
+    - Consider reusability
+
+7. SECURITY GUIDELINES
+--------------------
+7.1 Data Protection
+    - Follow data protection laws
+    - Implement proper encryption
+    - Secure sensitive information
+    - Regular security audits
+
+7.2 Access Control
+    - Implement proper authentication
+    - Use role-based access control
+    - Secure API endpoints
+    - Monitor access patterns
+
+8. PERFORMANCE GUIDELINES
+-----------------------
+8.1 Optimization
+    - Follow performance best practices
+    - Implement proper caching
+    - Optimize database queries
+    - Monitor performance metrics
+
+8.2 Scalability
+    - Design for scalability
+    - Use proper indexing
+    - Implement load balancing
+    - Monitor resource usage 

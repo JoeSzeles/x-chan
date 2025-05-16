@@ -1,0 +1,312 @@
+USER CONTENT SYSTEM
+=================
+
+1. CONTENT DIFFERENTIATION
+------------------------
+1.1 Content Types
+    - Own Content (Current User)
+        * Editable posts
+        * Private content
+        * Drafts
+        * Saved items
+    - Other Users' Content
+        * Public posts
+        * Shared content
+        * Interactions
+    - Protected Content
+        * Private accounts
+        * Blocked users
+        * Restricted content
+
+1.2 Content Access Control
+    ```javascript
+    // content.access.js
+    export const checkContentAccess = async (userId, contentId, type) => {
+        const content = await getContentById(contentId, type);
+        
+        // Check if content exists
+        if (!content) {
+            throw new Error("Content not found");
+        }
+
+        // Check if user is blocked
+        if (await isUserBlocked(content.user, userId)) {
+            throw new Error("Access denied");
+        }
+
+        // Check content visibility
+        switch (content.visibility) {
+            case "public":
+                return true;
+            case "private":
+                return content.user.toString() === userId;
+            case "followers":
+                return await isFollowing(userId, content.user);
+            default:
+                return false;
+        }
+    };
+    ```
+
+2. USER-SPECIFIC DATA HANDLING
+---------------------------
+2.1 Data Fetching
+    ```javascript
+    // user.data.js
+    export const fetchUserContent = async (username, currentUser, type) => {
+        const user = await User.findOne({ username });
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        // Check if viewing own profile
+        const isOwnProfile = currentUser && user._id.toString() === currentUser._id;
+
+        // Get content based on type and access
+        switch (type) {
+            case "posts":
+                return await getPosts(user._id, isOwnProfile);
+            case "likes":
+                return await getLikes(user._id, isOwnProfile);
+            case "media":
+                return await getMedia(user._id, isOwnProfile);
+            case "replies":
+                return await getReplies(user._id, isOwnProfile);
+            default:
+                return [];
+        }
+    };
+
+    const getPosts = async (userId, isOwnProfile) => {
+        const query = { user: userId };
+        
+        // Add visibility filter if not own profile
+        if (!isOwnProfile) {
+            query.visibility = { $in: ["public", "followers"] };
+        }
+
+        return await Post.find(query)
+            .sort({ createdAt: -1 })
+            .populate("user", "username profilePicture");
+    };
+    ```
+
+2.2 Content Filtering
+    ```javascript
+    // content.filter.js
+    export const filterUserContent = (content, currentUser, options = {}) => {
+        return content.map(item => {
+            // Add interaction status
+            const interactions = {
+                isLiked: currentUser ? item.likes.includes(currentUser._id) : false,
+                isReposted: currentUser ? item.reposts.includes(currentUser._id) : false,
+                isBookmarked: currentUser ? item.bookmarks.includes(currentUser._id) : false,
+            };
+
+            // Add edit permissions
+            const canEdit = currentUser && item.user._id.toString() === currentUser._id;
+
+            // Add visibility status
+            const isVisible = checkVisibility(item, currentUser);
+
+            return {
+                ...item.toObject(),
+                ...interactions,
+                canEdit,
+                isVisible,
+            };
+        });
+    };
+    ```
+
+3. FRONTEND IMPLEMENTATION
+------------------------
+3.1 Content Display Logic
+    ```javascript
+    // UserContent.jsx
+    const UserContent = ({ content, currentUser, type }) => {
+        const filteredContent = useMemo(() => {
+            return content.filter(item => {
+                // Show all content for own profile
+                if (item.user._id === currentUser?._id) {
+                    return true;
+                }
+
+                // Filter based on visibility
+                switch (item.visibility) {
+                    case "public":
+                        return true;
+                    case "private":
+                        return false;
+                    case "followers":
+                        return item.user.followers.includes(currentUser?._id);
+                    default:
+                        return false;
+                }
+            });
+        }, [content, currentUser]);
+
+        return (
+            <div className="content-container">
+                {filteredContent.map(item => (
+                    <ContentItem
+                        key={item._id}
+                        data={item}
+                        currentUser={currentUser}
+                        type={type}
+                    />
+                ))}
+            </div>
+        );
+    };
+    ```
+
+3.2 Content Item Component
+    ```javascript
+    // ContentItem.jsx
+    const ContentItem = ({ data, currentUser, type }) => {
+        const isOwnContent = currentUser && data.user._id === currentUser._id;
+
+        return (
+            <div className={`content-item ${isOwnContent ? "own-content" : ""}`}>
+                {/* Content Header */}
+                <div className="content-header">
+                    <UserAvatar user={data.user} />
+                    <div className="content-info">
+                        <UserName user={data.user} />
+                        <ContentMeta data={data} />
+                    </div>
+                    {isOwnContent && (
+                        <ContentActions
+                            contentId={data._id}
+                            type={type}
+                        />
+                    )}
+                </div>
+
+                {/* Content Body */}
+                <div className="content-body">
+                    <ContentText text={data.content} />
+                    {data.media && <ContentMedia media={data.media} />}
+                </div>
+
+                {/* Content Footer */}
+                <div className="content-footer">
+                    <InteractionButtons
+                        content={data}
+                        currentUser={currentUser}
+                    />
+                </div>
+            </div>
+        );
+    };
+    ```
+
+4. BACKEND IMPLEMENTATION
+------------------------
+4.1 Content Controller
+    ```javascript
+    // content.controller.js
+    export const getUserContent = async (req, res, next) => {
+        try {
+            const { username } = req.params;
+            const { type } = req.query;
+            const currentUser = req.user;
+
+            // Get target user
+            const user = await User.findOne({ username });
+            if (!user) {
+                return next(errorHandler(404, "User not found"));
+            }
+
+            // Check if user is blocked
+            if (await isUserBlocked(user._id, currentUser?._id)) {
+                return next(errorHandler(403, "Access denied"));
+            }
+
+            // Get content based on type
+            const content = await fetchUserContent(user._id, currentUser?._id, type);
+
+            // Filter content based on visibility and permissions
+            const filteredContent = filterUserContent(content, currentUser?._id);
+
+            res.status(200).json(filteredContent);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+4.2 Content Model
+    ```javascript
+    // content.model.js
+    const contentSchema = new mongoose.Schema({
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        content: {
+            type: String,
+            required: true,
+        },
+        media: [{
+            type: String,
+            url: String,
+            alt: String,
+        }],
+        visibility: {
+            type: String,
+            enum: ["public", "private", "followers"],
+            default: "public",
+        },
+        interactions: {
+            likes: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            }],
+            reposts: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            }],
+            bookmarks: [{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            }],
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    contentSchema.index({ user: 1, createdAt: -1 });
+    contentSchema.index({ visibility: 1, createdAt: -1 });
+    ```
+
+5. CONSIDERATIONS
+---------------
+5.1 Performance
+    - Efficient querying
+    - Proper indexing
+    - Caching strategy
+    - Pagination
+
+5.2 Security
+    - Access control
+    - Data validation
+    - Rate limiting
+    - Privacy settings
+
+5.3 User Experience
+    - Loading states
+    - Error handling
+    - Empty states
+    - Real-time updates
+
+5.4 Data Consistency
+    - Atomic operations
+    - Transaction support
+    - Error recovery
+    - Data validation 

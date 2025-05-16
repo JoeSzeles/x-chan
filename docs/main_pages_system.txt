@@ -1,0 +1,397 @@
+MAIN PAGES SYSTEM
+================
+
+1. EXISTING MAIN PAGES
+---------------------
+1.1 Home Page (/)
+    Frontend:
+    - Component: Home.jsx
+    - Features:
+        * Feed of posts
+        * Create post form
+        * Post interactions (like, comment, repost)
+        * Infinite scroll
+        * Loading states
+    - State Management:
+        * Posts data
+        * Loading states
+        * Pagination
+    - API Endpoints:
+        * GET /api/posts/feed
+        * POST /api/posts
+        * POST /api/posts/like/:id
+        * POST /api/posts/comment/:id
+        * POST /api/posts/repost/:id
+
+    Backend:
+    - Routes: /api/posts/*
+    - Controllers: postController
+    - Models: Post, User
+    - Features:
+        * Feed generation
+        * Post creation
+        * Interaction handling
+        * Pagination
+
+1.2 Profile Page (/profile/:username)
+    Frontend:
+    - Component: Profile.jsx
+    - Features:
+        * User info display
+        * Profile/cover picture
+        * User posts
+        * Follow/unfollow
+        * Edit profile
+    - State Management:
+        * User data
+        * Posts data
+        * Follow status
+    - API Endpoints:
+        * GET /api/users/profile/:username
+        * GET /api/posts/user/:username
+        * POST /api/users/follow/:id
+        * PUT /api/users/profile
+
+    Backend:
+    - Routes: /api/users/*
+    - Controllers: userController
+    - Models: User, Post
+    - Features:
+        * Profile data retrieval
+        * Follow system
+        * Profile updates
+
+2. TEMPLATE FOR NEW MAIN PAGES
+----------------------------
+2.1 Frontend Implementation Template
+    ```javascript
+    // 1. Create new page component
+    import { useState, useEffect } from "react";
+    import { useQuery, useMutation } from "@tanstack/react-query";
+    import { useParams, useNavigate } from "react-router-dom";
+    import { toast } from "react-hot-toast";
+    import LoadingSpinner from "../components/LoadingSpinner";
+    import ErrorMessage from "../components/ErrorMessage";
+
+    const NewPage = () => {
+        // 2. Define page state
+        const [pageData, setPageData] = useState({
+            // Initial state
+        });
+        const [isLoading, setIsLoading] = useState(true);
+        const [error, setError] = useState(null);
+
+        // 3. Fetch data
+        const { data, isLoading: isFetching } = useQuery({
+            queryKey: ["pageData"],
+            queryFn: async () => {
+                const res = await fetch("/api/endpoint");
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+        });
+
+        // 4. Add mutations if needed
+        const { mutate: performAction, isPending } = useMutation({
+            mutationFn: async (actionData) => {
+                const res = await fetch("/api/endpoint", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(actionData),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            onSuccess: () => {
+                toast.success("Action completed successfully");
+                // Handle success
+            },
+            onError: (error) => {
+                toast.error(error.message);
+            },
+        });
+
+        // 5. Handle page actions
+        const handleAction = (actionData) => {
+            performAction(actionData);
+        };
+
+        if (isLoading) return <LoadingSpinner />;
+        if (error) return <ErrorMessage message={error.message} />;
+
+        return (
+            <div className="container mx-auto px-4 py-8">
+                {/* Page Header */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold">Page Title</h1>
+                    <p className="text-gray-600">Page description</p>
+                </div>
+
+                {/* Main Content */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* Content items */}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-8 flex justify-end space-x-4">
+                    <button
+                        onClick={() => handleAction()}
+                        disabled={isPending}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500"
+                    >
+                        {isPending ? <LoadingSpinner size="sm" /> : "Action"}
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    export default NewPage;
+    ```
+
+2.2 Backend Implementation Template
+    ```javascript
+    // 1. Create new route file
+    import express from "express";
+    import { protectRoute } from "../middleware/auth.js";
+    import {
+        getPageData,
+        performAction,
+    } from "../controllers/pageController.js";
+
+    const router = express.Router();
+
+    // 2. Define routes
+    router.get("/", protectRoute, getPageData);
+    router.post("/action", protectRoute, performAction);
+
+    export default router;
+
+    // 3. Create controller
+    export const getPageData = async (req, res, next) => {
+        try {
+            const userId = req.user._id;
+            
+            // Fetch page data
+            const pageData = await fetchPageData(userId);
+
+            res.status(200).json(pageData);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    export const performAction = async (req, res, next) => {
+        try {
+            const { actionData } = req.body;
+            const userId = req.user._id;
+
+            // Validate input
+            if (!actionData) {
+                return next(errorHandler(400, "Action data is required"));
+            }
+
+            // Perform action
+            const result = await processAction(userId, actionData);
+
+            res.status(200).json({
+                message: "Action completed successfully",
+                data: result,
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+2.3 Model Updates Template
+    ```javascript
+    // Create new model if needed
+    import mongoose from "mongoose";
+
+    const pageSchema = new mongoose.Schema({
+        // Define schema fields
+        field1: {
+            type: String,
+            required: true,
+        },
+        field2: {
+            type: Number,
+            required: true,
+        },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        // Add timestamps
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+        updatedAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes if needed
+    pageSchema.index({ field1: 1 });
+    pageSchema.index({ createdBy: 1 });
+
+    // Add methods if needed
+    pageSchema.methods.someMethod = function() {
+        // Method implementation
+    };
+
+    export const Page = mongoose.model("Page", pageSchema);
+    ```
+
+3. PAGE COMPONENT CONSIDERATIONS
+------------------------------
+3.1 State Management
+    - Page data state
+    - Loading states
+    - Error states
+    - User interaction states
+    - Cache management
+
+3.2 User Experience
+    - Loading indicators
+    - Error handling
+    - Success feedback
+    - Responsive design
+    - Navigation
+
+3.3 Data Handling
+    - Data fetching
+    - Data transformation
+    - Error handling
+    - Cache invalidation
+    - Real-time updates
+
+3.4 Security
+    - Authentication
+    - Authorization
+    - Input validation
+    - Data sanitization
+    - Rate limiting
+
+4. EXAMPLE: ADDING A NEW "EXPLORE" PAGE
+-------------------------------------
+4.1 Frontend Implementation
+    ```javascript
+    const Explore = () => {
+        const [searchQuery, setSearchQuery] = useState("");
+        const [selectedCategory, setSelectedCategory] = useState("all");
+
+        const { data: exploreData, isLoading } = useQuery({
+            queryKey: ["explore", searchQuery, selectedCategory],
+            queryFn: async () => {
+                const res = await fetch(
+                    `/api/explore?q=${searchQuery}&category=${selectedCategory}`
+                );
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+        });
+
+        return (
+            <div className="container mx-auto px-4 py-8">
+                {/* Search and Filter */}
+                <div className="mb-8">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        className="w-full p-2 border rounded-md"
+                    />
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="mt-4 p-2 border rounded-md"
+                    >
+                        <option value="all">All Categories</option>
+                        <option value="trending">Trending</option>
+                        <option value="news">News</option>
+                        <option value="sports">Sports</option>
+                    </select>
+                </div>
+
+                {/* Content Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {exploreData?.items.map((item) => (
+                        <ExploreCard key={item._id} item={item} />
+                    ))}
+                </div>
+            </div>
+        );
+    };
+    ```
+
+4.2 Backend Implementation
+    ```javascript
+    // In explore.routes.js
+    router.get("/", protectRoute, getExploreData);
+
+    // In explore.controller.js
+    export const getExploreData = async (req, res, next) => {
+        try {
+            const { q: searchQuery, category } = req.query;
+            const userId = req.user._id;
+
+            // Fetch explore data based on query and category
+            const exploreData = await fetchExploreData({
+                searchQuery,
+                category,
+                userId,
+            });
+
+            res.status(200).json(exploreData);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+4.3 Model Updates
+    ```javascript
+    // In explore.model.js
+    const exploreItemSchema = new mongoose.Schema({
+        title: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        category: {
+            type: String,
+            required: true,
+            enum: ["trending", "news", "sports"],
+        },
+        imageUrl: String,
+        sourceUrl: String,
+        popularity: {
+            type: Number,
+            default: 0,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes for search and filtering
+    exploreItemSchema.index({ title: "text", description: "text" });
+    exploreItemSchema.index({ category: 1, popularity: -1 });
+
+    export const ExploreItem = mongoose.model("ExploreItem", exploreItemSchema);
+    ``` 

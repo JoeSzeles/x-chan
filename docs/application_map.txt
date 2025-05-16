@@ -1,0 +1,258 @@
+TWITTER CLONE APPLICATION MAP
+============================
+
+1. MAIN PAGES
+-------------
+1.1 Home Page (/)
+    - Feed of posts from followed users
+    - Create new post
+    - View all posts
+    - Like/Unlike posts
+    - Comment on posts
+    - Repost posts
+    - Bookmark posts
+
+1.2 Profile Page (/profile/:username)
+    - User information display
+    - Profile picture
+    - Cover image
+    - Bio
+    - Follow/Unfollow button
+    - User's posts
+    - User's liked posts
+    - User's bookmarked posts
+    - Edit profile button (for own profile)
+
+1.3 Explore Page (/explore)
+    - Discover new users
+    - Trending posts
+    - Search functionality
+
+1.4 Notifications Page (/notifications)
+    - Like notifications
+    - Comment notifications
+    - Follow notifications
+    - Repost notifications
+
+1.5 Bookmarks Page (/bookmarks)
+    - List of bookmarked posts
+    - Remove bookmarks
+
+1.6 Settings Page (/settings)
+    - Account settings
+    - Privacy settings
+    - Notification settings
+    - Theme settings
+
+2. COMPONENTS
+------------
+2.1 Common Components
+    - Post.jsx
+        * Post content display
+        * Like button
+        * Comment button
+        * Repost button
+        * Bookmark button
+        * Delete button (for own posts)
+        * Comments section
+        * Comment input form
+
+    - LoadingSpinner.jsx
+        * Loading animation
+        * Different sizes (sm, md, lg)
+
+    - Sidebar.jsx
+        * Navigation links
+        * User profile summary
+        * Logout button
+
+    - RightSidebar.jsx
+        * Search bar
+        * Trending topics
+        * Suggested users
+
+2.2 Form Components
+    - CreatePost.jsx
+        * Text input
+        * Image upload
+        * Post button
+
+    - EditProfile.jsx
+        * Profile picture upload
+        * Cover image upload
+        * Bio input
+        * Save changes button
+
+3. FUNCTIONALITY
+---------------
+3.1 Authentication
+    - Login
+    - Register
+    - Logout
+    - Password reset
+
+3.2 Post Operations
+    - Create post
+    - Delete post
+    - Like/Unlike post
+    - Comment on post
+    - Repost post
+    - Bookmark post
+
+3.3 User Operations
+    - Follow/Unfollow
+    - Edit profile
+    - Change password
+    - Update profile picture
+    - Update cover image
+
+3.4 Social Features
+    - View user profiles
+    - View followers/following
+    - Search users
+    - View notifications
+    - View bookmarks
+
+4. BUTTONS & INTERACTIONS
+------------------------
+4.1 Post Card Buttons
+    - Like button (heart icon)
+    - Comment button (comment icon)
+    - Repost button (repost icon)
+    - Bookmark button (bookmark icon)
+    - Delete button (trash icon, owner only)
+
+4.2 Navigation Buttons
+    - Home button
+    - Explore button
+    - Notifications button
+    - Bookmarks button
+    - Profile button
+    - Settings button
+    - Logout button
+
+4.3 Profile Buttons
+    - Follow/Unfollow button
+    - Edit profile button
+    - View followers button
+    - View following button
+
+4.4 Form Buttons
+    - Post button
+    - Save changes button
+    - Cancel button
+    - Upload button
+
+5. DATA STRUCTURES
+-----------------
+5.1 User Model
+    - Username
+    - Full name
+    - Email
+    - Password
+    - Profile picture
+    - Cover image
+    - Bio
+    - Followers
+    - Following
+    - Liked posts
+    - Bookmarked posts
+
+5.2 Post Model
+    - Content
+    - Image
+    - User reference
+    - Likes
+    - Comments
+    - Reposts
+    - Bookmarks
+    - Timestamps
+
+5.3 Comment Model
+    - Text
+    - User reference
+    - Post reference
+    - Timestamps
+
+6. API ENDPOINTS
+---------------
+6.1 Auth Routes
+    - POST /api/auth/register
+    - POST /api/auth/login
+    - POST /api/auth/logout
+    - POST /api/auth/forgot-password
+
+6.2 User Routes
+    - GET /api/users/profile/:username
+    - PUT /api/users/profile
+    - GET /api/users/followers
+    - GET /api/users/following
+    - POST /api/users/follow/:id
+    - POST /api/users/unfollow/:id
+
+6.3 Post Routes
+    - POST /api/posts
+    - DELETE /api/posts/:id
+    - POST /api/posts/like/:id
+    - POST /api/posts/comment/:id
+    - POST /api/posts/repost/:id
+    - GET /api/posts/feed
+    - GET /api/posts/user/:username
+
+6.4 Bookmark Routes
+    - POST /api/bookmarks/:postId
+    - GET /api/bookmarks
+    - DELETE /api/bookmarks/:postId
+
+6.5 Notification Routes
+    - GET /api/notifications
+    - PUT /api/notifications/:id
+    - DELETE /api/notifications/:id
+
+7. STATE MANAGEMENT
+------------------
+7.1 Global State
+    - Authentication state
+    - User data
+    - Theme preferences
+    - Notification count
+
+7.2 Local State
+    - Post form state
+    - Comment form state
+    - Profile edit state
+    - Modal states
+    - Loading states
+
+8. UTILITIES
+-----------
+8.1 Date Formatting
+    - Relative time (e.g., "2 hours ago")
+    - Full date display
+
+8.2 Image Handling
+    - Image upload
+    - Image compression
+    - Image preview
+
+8.3 Error Handling
+    - Form validation
+    - API error handling
+    - User feedback
+
+9. STYLING
+----------
+9.1 Theme
+    - Light mode
+    - Dark mode
+    - Custom colors
+
+9.2 Responsive Design
+    - Mobile layout
+    - Tablet layout
+    - Desktop layout
+
+9.3 Animations
+    - Loading spinners
+    - Button hover effects
+    - Transition effects 

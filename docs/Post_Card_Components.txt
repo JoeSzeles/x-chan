@@ -1,0 +1,80 @@
+Let me analyze the post card design from the `Post.jsx` component:
+
+
+Read file: frontend/src/components/common/Post.jsx
+Let me explain the post card design structure:
+
+1. **Main Container**
+   - Uses a flex layout with `flex gap-2 items-start p-4 border-b border-gray-700`
+   - Has a bottom border to separate posts
+   - Padding of 4 units on all sides
+   - 2 units gap between elements
+
+2. **Profile Section (Left Side)**
+   - Contains the user's profile picture
+   - Circular design with `w-12 h-12` (48x48 pixels)
+   - Light grey border (`border-2 border-gray-300`)
+   - Image is contained with `object-cover`
+   - Links to the user's profile
+
+3. **Content Section (Right Side)**
+   - Uses `flex flex-col flex-1` to take remaining space
+   - Contains three main parts:
+
+   a. **Header Section**
+      - User's full name (bold)
+      - Username with @ symbol
+      - Post date
+      - Delete button (only visible to post owner)
+      - All elements are links to the user's profile
+
+   b. **Post Content**
+      - Text content
+      - Optional image with:
+        - Height of 80 units
+        - Rounded corners
+        - Border
+        - Object-contain to maintain aspect ratio
+        - Fallback to placeholder if image fails
+
+   c. **Action Bar**
+      - Split into two sections:
+        - Left side (2/3 width):
+          - Comments button with count
+          - Repost button with count
+          - Like button with count
+        - Right side (1/3 width):
+          - Star rating component
+          - Bookmark button
+          - Share button
+
+4. **Comments Section**
+   - Toggleable with `showComments` state
+   - Shows when comment button is clicked
+   - Contains:
+     - List of comments
+     - Comment input form
+     - Each comment has:
+       - Commenter's profile picture
+       - Name and username
+       - Comment text
+       - Timestamp
+
+5. **Interactive Features**
+   - All buttons have hover effects
+   - Color changes on interaction
+   - Loading states for actions
+   - Error handling with toast notifications
+   - Optimistic updates for likes and bookmarks
+
+6. **Responsive Design**
+   - Uses Tailwind's responsive classes
+   - Maintains readability at different screen sizes
+   - Proper spacing and alignment
+
+7. **State Management**
+   - Uses React Query for data fetching and caching
+   - Local state for comments and UI interactions
+   - Optimistic updates for better UX
+
+This design follows modern social media patterns with a clean, organized layout that prioritizes content while providing easy access to all interactive features.

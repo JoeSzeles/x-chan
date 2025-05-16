@@ -1,0 +1,297 @@
+POST CARD BUTTON SYSTEM
+======================
+
+1. EXISTING BUTTONS STRUCTURE
+----------------------------
+1.1 Like Button
+    Frontend:
+    - Component: Post.jsx
+    - State: isLiked (boolean)
+    - Icon: FaRegHeart (unliked), FaHeart (liked)
+    - Color: slate-500 (unliked), pink-500 (liked)
+    - Mutation: likePost
+    - API Endpoint: POST /api/posts/like/:id
+    - Success Action: Update post.likes array
+    - Error Handling: Toast error message
+
+    Backend:
+    - Route: /api/posts/like/:id
+    - Controller: likeUnlikePost
+    - Model Updates:
+        * Post: Update likes array
+        * User: Update likedPosts array
+    - Notification: Create like notification
+
+1.2 Comment Button
+    Frontend:
+    - Component: Post.jsx
+    - State: showComments (boolean), comment (string)
+    - Icon: FaRegComment
+    - Color: slate-500 (default), sky-400 (hover)
+    - Mutation: commentPost
+    - API Endpoint: POST /api/posts/comment/:id
+    - Success Action: Update post.comments array
+    - Error Handling: Toast error message
+
+    Backend:
+    - Route: /api/posts/comment/:id
+    - Controller: commentOnPost
+    - Model Updates:
+        * Post: Add to comments array
+    - Notification: Create comment notification
+
+1.3 Repost Button
+    Frontend:
+    - Component: Post.jsx
+    - State: isReposted (boolean)
+    - Icon: BiRepost
+    - Color: slate-500 (unreposted), green-500 (reposted)
+    - Mutation: repost
+    - API Endpoint: POST /api/posts/repost/:id
+    - Success Action: Update post.reposts array
+    - Error Handling: Toast error message
+
+    Backend:
+    - Route: /api/posts/repost/:id
+    - Controller: repostPost
+    - Model Updates:
+        * Post: Update reposts array
+        * Create new repost post
+    - Notification: Create repost notification
+
+1.4 Bookmark Button
+    Frontend:
+    - Component: Post.jsx
+    - State: isBookmarked (boolean)
+    - Icon: FaRegBookmark
+    - Color: slate-500 (unbookmarked), blue-500 (bookmarked)
+    - Mutation: toggleBookmark
+    - API Endpoint: POST /api/bookmarks/:postId
+    - Success Action: Update post.bookmarkedBy array
+    - Error Handling: Toast error message
+
+    Backend:
+    - Route: /api/bookmarks/:postId
+    - Controller: toggleBookmark
+    - Model Updates:
+        * Post: Update bookmarkedBy array
+        * User: Update bookmarks array
+
+1.5 Delete Button
+    Frontend:
+    - Component: Post.jsx
+    - State: isDeleting (boolean)
+    - Icon: FaTrash
+    - Color: slate-500 (default), red-500 (hover)
+    - Mutation: deletePost
+    - API Endpoint: DELETE /api/posts/:id
+    - Success Action: Remove post from feed
+    - Error Handling: Toast error message
+
+    Backend:
+    - Route: /api/posts/:id
+    - Controller: deletePost
+    - Model Updates:
+        * Post: Delete post document
+        * Cleanup: Remove references from other collections
+
+2. TEMPLATE FOR ADDING NEW BUTTONS
+---------------------------------
+2.1 Frontend Implementation Template
+    ```javascript
+    // 1. Add state
+    const [isButtonActive, setIsButtonActive] = useState(false);
+    const [isButtonLoading, setIsButtonLoading] = useState(false);
+
+    // 2. Add mutation
+    const { mutate: buttonAction, isPending: isButtonLoading } = useMutation({
+        mutationFn: async () => {
+            try {
+                const res = await fetch(`/api/endpoint/${post._id}`, {
+                    method: "POST/DELETE",
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            } catch (error) {
+                throw new Error(error);
+            }
+        },
+        onSuccess: (data) => {
+            // Update UI state
+            setIsButtonActive(data.isActive);
+            // Update cache if needed
+            queryClient.setQueryData(["posts"], (oldData) => {
+                return oldData.map((p) => {
+                    if (p._id === post._id) {
+                        return { ...p, buttonData: data.updatedData };
+                    }
+                    return p;
+                });
+            });
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+
+    // 3. Add button component
+    <div className='flex gap-1 items-center group cursor-pointer' onClick={handleButtonAction}>
+        {isButtonLoading && <LoadingSpinner size='sm' />}
+        {!isButtonActive && !isButtonLoading && (
+            <Icon className='w-4 h-4 text-slate-500 group-hover:text-color-500' />
+        )}
+        {isButtonActive && !isButtonLoading && (
+            <Icon className='w-4 h-4 text-color-500' />
+        )}
+        <span className={`text-sm group-hover:text-color-500 ${isButtonActive ? "text-color-500" : "text-slate-500"}`}>
+            {count}
+        </span>
+    </div>
+    ```
+
+2.2 Backend Implementation Template
+    ```javascript
+    // 1. Add route
+    router.post("/endpoint/:id", protectRoute, controllerFunction);
+
+    // 2. Add controller
+    export const controllerFunction = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const userId = req.user._id;
+
+            // Validate and process request
+            const result = await processButtonAction(id, userId);
+
+            // Return response
+            res.status(200).json({
+                message: "Action completed successfully",
+                isActive: result.isActive,
+                updatedData: result.data
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    // 3. Add model updates if needed
+    // Update relevant models in the processButtonAction function
+    ```
+
+2.3 Required Files for New Button
+    - Frontend:
+        * Update Post.jsx component
+        * Add new icon import if needed
+        * Update types if using TypeScript
+
+    - Backend:
+        * Add new route in appropriate route file
+        * Add new controller function
+        * Update models if needed
+        * Add new API endpoint documentation
+
+3. CONSIDERATIONS FOR NEW BUTTONS
+--------------------------------
+3.1 State Management
+    - Local state for button status
+    - Global state updates if needed
+    - Cache invalidation strategy
+
+3.2 User Experience
+    - Loading states
+    - Error handling
+    - Success feedback
+    - Animation effects
+
+3.3 Data Consistency
+    - Atomic operations
+    - Transaction handling
+    - Data validation
+    - Error recovery
+
+3.4 Performance
+    - Optimistic updates
+    - Debounced actions
+    - Batch updates
+    - Cache management
+
+4. EXAMPLE: ADDING A NEW "SAVE" BUTTON
+-------------------------------------
+4.1 Frontend Changes
+    ```javascript
+    // In Post.jsx
+    const [isSaved, setIsSaved] = useState(false);
+    
+    const { mutate: savePost, isPending: isSaving } = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`/api/posts/save/${post._id}`, {
+                method: "POST",
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: (data) => {
+            setIsSaved(data.isSaved);
+            queryClient.setQueryData(["posts"], (oldData) => {
+                return oldData.map((p) => {
+                    if (p._id === post._id) {
+                        return { ...p, savedBy: data.savedBy };
+                    }
+                    return p;
+                });
+            });
+        },
+    });
+    ```
+
+4.2 Backend Changes
+    ```javascript
+    // In post.routes.js
+    router.post("/save/:id", protectRoute, savePost);
+
+    // In post.controller.js
+    export const savePost = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const userId = req.user._id;
+
+            const post = await Post.findById(id);
+            if (!post) return next(errorHandler(404, "Post not found"));
+
+            const isSaved = post.savedBy.includes(userId);
+            
+            if (isSaved) {
+                await Post.findByIdAndUpdate(id, {
+                    $pull: { savedBy: userId }
+                });
+            } else {
+                await Post.findByIdAndUpdate(id, {
+                    $push: { savedBy: userId }
+                });
+            }
+
+            res.status(200).json({
+                isSaved: !isSaved,
+                savedBy: isSaved 
+                    ? post.savedBy.filter(id => id.toString() !== userId.toString())
+                    : [...post.savedBy, userId]
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+4.3 Model Updates
+    ```javascript
+    // In post.model.js
+    const postSchema = new mongoose.Schema({
+        // ... existing fields ...
+        savedBy: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User"
+        }]
+    });
+    ``` 

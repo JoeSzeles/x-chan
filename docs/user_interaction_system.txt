@@ -1,0 +1,384 @@
+USER INTERACTION SYSTEM
+=====================
+
+1. USER GROUPING AND LISTS
+------------------------
+1.1 List Model
+    ```javascript
+    // list.model.js
+    const listSchema = new mongoose.Schema({
+        name: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        description: {
+            type: String,
+            trim: true,
+        },
+        owner: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        members: [{
+            user: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+            addedAt: {
+                type: Date,
+                default: Date.now,
+            },
+        }],
+        isPrivate: {
+            type: Boolean,
+            default: false,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    listSchema.index({ owner: 1, createdAt: -1 });
+    listSchema.index({ "members.user": 1 });
+    ```
+
+1.2 List Management
+    ```javascript
+    // list.controller.js
+    export const createList = async (req, res, next) => {
+        try {
+            const { name, description, isPrivate } = req.body;
+            const owner = req.user._id;
+
+            const list = await List.create({
+                name,
+                description,
+                owner,
+                isPrivate,
+            });
+
+            res.status(201).json(list);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    export const addToList = async (req, res, next) => {
+        try {
+            const { listId } = req.params;
+            const { userId } = req.body;
+            const owner = req.user._id;
+
+            const list = await List.findOne({ _id: listId, owner });
+            if (!list) {
+                return next(errorHandler(404, "List not found"));
+            }
+
+            // Check if user is already in list
+            if (list.members.some(member => member.user.toString() === userId)) {
+                return next(errorHandler(400, "User already in list"));
+            }
+
+            list.members.push({ user: userId });
+            await list.save();
+
+            res.status(200).json(list);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+2. USER SEARCH
+------------
+2.1 Search Implementation
+    ```javascript
+    // search.controller.js
+    export const searchUsers = async (req, res, next) => {
+        try {
+            const { query, page = 1, limit = 20 } = req.query;
+            const currentUser = req.user._id;
+
+            // Build search query
+            const searchQuery = {
+                $or: [
+                    { username: { $regex: query, $options: "i" } },
+                    { name: { $regex: query, $options: "i" } },
+                    { bio: { $regex: query, $options: "i" } },
+                ],
+                _id: { $ne: currentUser }, // Exclude current user
+            };
+
+            // Add privacy filters
+            if (!req.user) {
+                searchQuery.isPrivate = false;
+            }
+
+            const users = await User.find(searchQuery)
+                .select("username name profilePicture bio followersCount followingCount")
+                .skip((page - 1) * limit)
+                .limit(limit);
+
+            res.status(200).json(users);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+3. USER RELATIONSHIPS
+-------------------
+3.1 Relationship Model
+    ```javascript
+    // relationship.model.js
+    const relationshipSchema = new mongoose.Schema({
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        target: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        type: {
+            type: String,
+            enum: ["follow", "block", "mute"],
+            required: true,
+        },
+        settings: {
+            // Mute settings
+            hidePosts: { type: Boolean, default: false },
+            hideStories: { type: Boolean, default: false },
+            hideNotifications: { type: Boolean, default: false },
+            // Block settings
+            preventMessages: { type: Boolean, default: true },
+            preventMentions: { type: Boolean, default: true },
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    relationshipSchema.index({ user: 1, target: 1, type: 1 }, { unique: true });
+    ```
+
+3.2 Relationship Management
+    ```javascript
+    // relationship.controller.js
+    export const updateRelationship = async (req, res, next) => {
+        try {
+            const { targetId } = req.params;
+            const { type, settings } = req.body;
+            const user = req.user._id;
+
+            // Check if target exists
+            const target = await User.findById(targetId);
+            if (!target) {
+                return next(errorHandler(404, "User not found"));
+            }
+
+            // Update or create relationship
+            const relationship = await Relationship.findOneAndUpdate(
+                { user, target: targetId, type },
+                { settings },
+                { upsert: true, new: true }
+            );
+
+            // Update user counts if following
+            if (type === "follow") {
+                await User.findByIdAndUpdate(user, { $inc: { followingCount: 1 } });
+                await User.findByIdAndUpdate(targetId, { $inc: { followersCount: 1 } });
+            }
+
+            res.status(200).json(relationship);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+4. USER REPORTING
+---------------
+4.1 Report Model
+    ```javascript
+    // report.model.js
+    const reportSchema = new mongoose.Schema({
+        reporter: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        reported: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        type: {
+            type: String,
+            enum: ["spam", "harassment", "hate_speech", "violence", "other"],
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        evidence: [{
+            type: String,
+            url: String,
+        }],
+        status: {
+            type: String,
+            enum: ["pending", "reviewing", "resolved", "dismissed"],
+            default: "pending",
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    reportSchema.index({ reporter: 1, createdAt: -1 });
+    reportSchema.index({ reported: 1, status: 1 });
+    ```
+
+4.2 Report Management
+    ```javascript
+    // report.controller.js
+    export const createReport = async (req, res, next) => {
+        try {
+            const { reportedId, type, description, evidence } = req.body;
+            const reporter = req.user._id;
+
+            const report = await Report.create({
+                reporter,
+                reported: reportedId,
+                type,
+                description,
+                evidence,
+            });
+
+            // Notify moderators
+            await notifyModerators(report);
+
+            res.status(201).json(report);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+5. USER MESSAGING
+---------------
+5.1 Message Model
+    ```javascript
+    // message.model.js
+    const messageSchema = new mongoose.Schema({
+        sender: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        recipient: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        content: {
+            type: String,
+            required: true,
+        },
+        media: [{
+            type: String,
+            url: String,
+            alt: String,
+        }],
+        read: {
+            type: Boolean,
+            default: false,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    messageSchema.index({ sender: 1, recipient: 1, createdAt: -1 });
+    messageSchema.index({ read: 1, createdAt: -1 });
+    ```
+
+5.2 Message Management
+    ```javascript
+    // message.controller.js
+    export const sendMessage = async (req, res, next) => {
+        try {
+            const { recipientId, content, media } = req.body;
+            const sender = req.user._id;
+
+            // Check if recipient exists
+            const recipient = await User.findById(recipientId);
+            if (!recipient) {
+                return next(errorHandler(404, "User not found"));
+            }
+
+            // Check if blocked
+            const isBlocked = await Relationship.exists({
+                user: recipientId,
+                target: sender,
+                type: "block",
+            });
+            if (isBlocked) {
+                return next(errorHandler(403, "Cannot send message to this user"));
+            }
+
+            const message = await Message.create({
+                sender,
+                recipient: recipientId,
+                content,
+                media,
+            });
+
+            // Emit real-time update
+            io.to(recipientId).emit("new_message", message);
+
+            res.status(201).json(message);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+6. CONSIDERATIONS
+---------------
+6.1 Performance
+    - Efficient indexing
+    - Caching strategies
+    - Pagination
+    - Real-time updates
+
+6.2 Security
+    - Privacy controls
+    - Content moderation
+    - Rate limiting
+    - Data validation
+
+6.3 User Experience
+    - Real-time notifications
+    - Loading states
+    - Error handling
+    - Empty states
+
+6.4 Data Consistency
+    - Atomic operations
+    - Transaction support
+    - Error recovery
+    - Data validation 

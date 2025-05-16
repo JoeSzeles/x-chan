@@ -1,0 +1,157 @@
+AI DOCUMENTATION RULES
+====================
+
+1. DOCUMENTATION ACCESS RULES
+--------------------------
+1.1 Before Implementation
+    - Always check project_documentation_index.txt first
+    - Identify all relevant documentation files for the task
+    - Read documentation in the following order:
+        1. application_map.txt (for overall context)
+        2. Relevant system documentation
+        3. Component documentation
+        4. Utility documentation
+
+1.2 During Implementation
+    - Keep documentation open and reference it frequently
+    - Follow established patterns from documentation
+    - Document any deviations from established patterns
+    - Update documentation if new patterns are created
+
+1.3 After Implementation
+    - Verify implementation against documentation
+    - Update documentation if changes were made
+    - Document any new patterns or components
+    - Check for consistency with other systems
+
+2. DOCUMENTATION SEARCH RULES
+--------------------------
+2.1 Search Strategy
+    - Use semantic search for finding relevant documentation
+    - Search across all documentation files
+    - Consider related systems and components
+    - Look for similar patterns in other parts of the system
+
+2.2 Context Awareness
+    - Consider the broader system context
+    - Look for dependencies between systems
+    - Check for related components
+    - Consider user interaction patterns
+
+3. DOCUMENTATION UPDATE RULES
+--------------------------
+3.1 When to Update
+    - When creating new components
+    - When modifying existing patterns
+    - When adding new features
+    - When fixing bugs that affect patterns
+
+3.2 How to Update
+    - Maintain consistent formatting
+    - Use clear and concise language
+    - Include code examples where relevant
+    - Document edge cases and limitations
+
+4. IMPLEMENTATION RULES
+--------------------
+4.1 Component Creation
+    - Follow patterns from common_components_system.txt
+    - Use established naming conventions
+    - Maintain consistent structure
+    - Document new components
+
+4.2 System Integration
+    - Check for dependencies in application_map.txt
+    - Follow established integration patterns
+    - Consider performance implications
+    - Document integration points
+
+5. CONSISTENCY RULES
+------------------
+5.1 Pattern Consistency
+    - Follow established patterns
+    - Maintain consistent naming
+    - Use consistent structure
+    - Follow established conventions
+
+5.2 Code Style
+    - Follow established coding standards
+    - Use consistent formatting
+    - Document complex logic
+    - Maintain readability
+
+6. ERROR HANDLING RULES
+--------------------
+6.1 Documentation Errors
+    - Report missing documentation
+    - Suggest documentation improvements
+    - Update outdated documentation
+    - Document error handling patterns
+
+6.2 Implementation Errors
+    - Follow error handling patterns
+    - Document error cases
+    - Consider edge cases
+    - Update documentation with error handling
+
+7. SECURITY RULES
+---------------
+7.1 Data Protection
+    - Follow security guidelines
+    - Implement proper validation
+    - Consider data privacy
+    - Document security measures
+
+7.2 Access Control
+    - Follow access control patterns
+    - Implement proper authentication
+    - Consider authorization
+    - Document access patterns
+
+8. PERFORMANCE RULES
+------------------
+8.1 Optimization
+    - Follow performance guidelines
+    - Consider resource usage
+    - Implement proper caching
+    - Document performance considerations
+
+8.2 Scalability
+    - Design for scalability
+    - Consider load patterns
+    - Implement proper indexing
+    - Document scalability considerations
+
+9. AI-SPECIFIC RULES
+------------------
+9.1 Documentation Understanding
+    - Parse documentation structure
+    - Understand relationships between systems
+    - Identify patterns and conventions
+    - Consider context and dependencies
+
+9.2 Implementation Guidance
+    - Provide clear implementation steps
+    - Suggest best practices
+    - Consider edge cases
+    - Document new patterns
+
+9.3 Error Prevention
+    - Check for documentation completeness
+    - Verify pattern consistency
+    - Consider potential issues
+    - Suggest improvements
+
+10. DOCUMENTATION MAINTENANCE
+--------------------------
+10.1 Regular Review
+    - Check documentation completeness
+    - Verify pattern consistency
+    - Update outdated information
+    - Suggest improvements
+
+10.2 Version Control
+    - Track documentation changes
+    - Maintain version history
+    - Document breaking changes
+    - Update related documentation 

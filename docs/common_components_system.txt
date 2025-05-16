@@ -1,0 +1,374 @@
+COMMON COMPONENTS SYSTEM
+=======================
+
+1. EXISTING COMMON COMPONENTS
+---------------------------
+1.1 LoadingSpinner
+    - Location: components/LoadingSpinner.jsx
+    - Props:
+        * size: "sm" | "md" | "lg"
+        * color: string (default: "indigo-600")
+    - Features:
+        * Responsive sizing
+        * Customizable colors
+        * Smooth animation
+    - Usage:
+        ```javascript
+        <LoadingSpinner size="sm" color="blue-500" />
+        ```
+
+1.2 ErrorMessage
+    - Location: components/ErrorMessage.jsx
+    - Props:
+        * message: string
+        * onRetry: function (optional)
+    - Features:
+        * Error message display
+        * Retry button
+        * Error icon
+    - Usage:
+        ```javascript
+        <ErrorMessage 
+            message="Failed to load data" 
+            onRetry={handleRetry} 
+        />
+        ```
+
+1.3 PostCard
+    - Location: components/PostCard.jsx
+    - Props:
+        * post: object
+        * onLike: function
+        * onComment: function
+        * onRepost: function
+    - Features:
+        * Post content display
+        * Interaction buttons
+        * User info
+        * Timestamp
+    - Usage:
+        ```javascript
+        <PostCard 
+            post={postData} 
+            onLike={handleLike}
+            onComment={handleComment}
+            onRepost={handleRepost}
+        />
+        ```
+
+2. TEMPLATE FOR NEW COMMON COMPONENTS
+----------------------------------
+2.1 Component Structure Template
+    ```javascript
+    // 1. Create new component file
+    import PropTypes from "prop-types";
+    import { useState, useEffect } from "react";
+    import { motion } from "framer-motion";
+
+    const NewComponent = ({
+        // 2. Define props
+        prop1,
+        prop2,
+        onAction,
+        className = "",
+        ...props
+    }) => {
+        // 3. Define component state
+        const [state, setState] = useState(initialState);
+        const [isLoading, setIsLoading] = useState(false);
+
+        // 4. Define handlers
+        const handleAction = async () => {
+            setIsLoading(true);
+            try {
+                await onAction();
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        // 5. Define effects if needed
+        useEffect(() => {
+            // Effect logic
+        }, [dependencies]);
+
+        return (
+            <motion.div
+                className={`component-base ${className}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                {...props}
+            >
+                {/* Component content */}
+                {isLoading ? (
+                    <LoadingSpinner size="sm" />
+                ) : (
+                    <button
+                        onClick={handleAction}
+                        className="action-button"
+                        disabled={isLoading}
+                    >
+                        Action
+                    </button>
+                )}
+            </motion.div>
+        );
+    };
+
+    // 6. Define prop types
+    NewComponent.propTypes = {
+        prop1: PropTypes.string.isRequired,
+        prop2: PropTypes.number,
+        onAction: PropTypes.func.isRequired,
+        className: PropTypes.string,
+    };
+
+    // 7. Define default props
+    NewComponent.defaultProps = {
+        prop2: 0,
+        className: "",
+    };
+
+    export default NewComponent;
+    ```
+
+2.2 Styling Template
+    ```css
+    /* Component styles */
+    .component-base {
+        @apply relative;
+    }
+
+    .action-button {
+        @apply px-4 py-2 bg-indigo-600 text-white rounded-md 
+               hover:bg-indigo-500 focus:outline-none focus:ring-2 
+               focus:ring-indigo-500 focus:ring-offset-2 
+               disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    /* Animation variants */
+    const variants = {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -20 },
+    };
+    ```
+
+2.3 Testing Template
+    ```javascript
+    import { render, screen, fireEvent } from "@testing-library/react";
+    import NewComponent from "./NewComponent";
+
+    describe("NewComponent", () => {
+        const mockProps = {
+            prop1: "test",
+            prop2: 123,
+            onAction: jest.fn(),
+        };
+
+        it("renders correctly", () => {
+            render(<NewComponent {...mockProps} />);
+            expect(screen.getByText("Action")).toBeInTheDocument();
+        });
+
+        it("handles action correctly", async () => {
+            render(<NewComponent {...mockProps} />);
+            fireEvent.click(screen.getByText("Action"));
+            expect(mockProps.onAction).toHaveBeenCalled();
+        });
+
+        it("shows loading state", () => {
+            render(<NewComponent {...mockProps} isLoading={true} />);
+            expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+        });
+    });
+    ```
+
+3. COMPONENT CONSIDERATIONS
+-------------------------
+3.1 Reusability
+    - Generic props
+    - Flexible styling
+    - Configurable behavior
+    - Clear documentation
+
+3.2 Performance
+    - Memoization
+    - Lazy loading
+    - Optimized renders
+    - Bundle size
+
+3.3 Accessibility
+    - ARIA labels
+    - Keyboard navigation
+    - Screen reader support
+    - Color contrast
+
+3.4 Responsiveness
+    - Mobile-first design
+    - Breakpoint handling
+    - Fluid layouts
+    - Touch targets
+
+4. EXAMPLE: ADDING A NEW "USER CARD" COMPONENT
+--------------------------------------------
+4.1 Component Implementation
+    ```javascript
+    import PropTypes from "prop-types";
+    import { useState } from "react";
+    import { motion } from "framer-motion";
+    import { FaUser, FaEllipsisH } from "react-icons/fa";
+
+    const UserCard = ({
+        user,
+        onFollow,
+        onMessage,
+        showActions = true,
+        className = "",
+    }) => {
+        const [isFollowing, setIsFollowing] = useState(user.isFollowing);
+        const [isLoading, setIsLoading] = useState(false);
+
+        const handleFollow = async () => {
+            setIsLoading(true);
+            try {
+                await onFollow(user._id);
+                setIsFollowing(!isFollowing);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        return (
+            <motion.div
+                className={`bg-white rounded-lg shadow p-4 ${className}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
+                <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                        {user.profilePicture ? (
+                            <img
+                                src={user.profilePicture}
+                                alt={user.username}
+                                className="w-full h-full rounded-full object-cover"
+                            />
+                        ) : (
+                            <FaUser className="text-gray-400 text-xl" />
+                        )}
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="font-semibold">{user.fullName}</h3>
+                        <p className="text-gray-500">@{user.username}</p>
+                    </div>
+                    {showActions && (
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={handleFollow}
+                                disabled={isLoading}
+                                className={`px-3 py-1 rounded-full text-sm ${
+                                    isFollowing
+                                        ? "bg-gray-200 text-gray-700"
+                                        : "bg-indigo-600 text-white"
+                                }`}
+                            >
+                                {isLoading ? (
+                                    <LoadingSpinner size="sm" />
+                                ) : isFollowing ? (
+                                    "Following"
+                                ) : (
+                                    "Follow"
+                                )}
+                            </button>
+                            <button
+                                onClick={() => onMessage(user._id)}
+                                className="p-2 rounded-full hover:bg-gray-100"
+                            >
+                                <FaEllipsisH />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </motion.div>
+        );
+    };
+
+    UserCard.propTypes = {
+        user: PropTypes.shape({
+            _id: PropTypes.string.isRequired,
+            username: PropTypes.string.isRequired,
+            fullName: PropTypes.string.isRequired,
+            profilePicture: PropTypes.string,
+            isFollowing: PropTypes.bool,
+        }).isRequired,
+        onFollow: PropTypes.func.isRequired,
+        onMessage: PropTypes.func.isRequired,
+        showActions: PropTypes.bool,
+        className: PropTypes.string,
+    };
+
+    export default UserCard;
+    ```
+
+4.2 Usage Example
+    ```javascript
+    const UserList = () => {
+        const { data: users, isLoading } = useQuery({
+            queryKey: ["users"],
+            queryFn: fetchUsers,
+        });
+
+        const handleFollow = async (userId) => {
+            await followUser(userId);
+        };
+
+        const handleMessage = (userId) => {
+            navigate(`/messages/${userId}`);
+        };
+
+        if (isLoading) return <LoadingSpinner />;
+
+        return (
+            <div className="space-y-4">
+                {users.map((user) => (
+                    <UserCard
+                        key={user._id}
+                        user={user}
+                        onFollow={handleFollow}
+                        onMessage={handleMessage}
+                    />
+                ))}
+            </div>
+        );
+    };
+    ```
+
+4.3 Styling
+    ```css
+    /* UserCard styles */
+    .user-card {
+        @apply bg-white rounded-lg shadow p-4;
+    }
+
+    .user-avatar {
+        @apply w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center;
+    }
+
+    .follow-button {
+        @apply px-3 py-1 rounded-full text-sm transition-colors duration-200;
+    }
+
+    .follow-button--following {
+        @apply bg-gray-200 text-gray-700;
+    }
+
+    .follow-button--not-following {
+        @apply bg-indigo-600 text-white hover:bg-indigo-500;
+    }
+    ``` 

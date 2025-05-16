@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Thread connector styles */
+.thread-connector {
+  background: linear-gradient(to bottom, transparent, #4b5563 20%, #4b5563 80%, transparent);
+  opacity: 0.7;
+}
+
+.thread-connector-down {
+  background: linear-gradient(to bottom, #4b5563, transparent);
+  opacity: 0.7;
+}
+
+.thread-avatar-container {
+  position: relative;
+  z-index: 5;
+}
+
+.threaded-comment:hover .thread-connector,
+.threaded-comment:hover .thread-connector-down {
+  background-color: #3b82f6;
+  opacity: 0.8;
+}
+
+/* Comment thread view */
+.comment-thread .breadcrumbs button {
+  transition: all 0.2s ease;
+}
+
+.threaded-comments .threaded-comment:last-child .thread-connector {
+  background: linear-gradient(to bottom, #4b5563 20%, transparent);
+}
+
+/* Avatar highlight on thread hover */
+.threaded-comment:hover .avatar .border-gray-700 {
+  border-color: #3b82f6;
+  transition: border-color 0.2s ease;
+}
+
+@keyframes highlight-post {
+    0% {
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+    50% {
+        background-color: rgba(59, 130, 246, 0.2);
+    }
+    100% {
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+}
+
+.highlight-post {
+    animation: highlight-post 2s ease-in-out;
+}

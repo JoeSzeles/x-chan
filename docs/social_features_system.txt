@@ -1,0 +1,397 @@
+SOCIAL FEATURES SYSTEM
+=====================
+
+1. EXISTING SOCIAL FEATURES
+-------------------------
+1.1 Post Interactions
+    Frontend:
+    - Components: PostCard.jsx
+    - Features:
+        * Like/Unlike posts
+        * Comment on posts
+        * Repost posts
+        * Bookmark posts
+    - State Management:
+        * Interaction counts
+        * User interaction status
+        * Real-time updates
+    - API Endpoints:
+        * POST /api/posts/like/:id
+        * POST /api/posts/comment/:id
+        * POST /api/posts/repost/:id
+        * POST /api/bookmarks/:id
+
+    Backend:
+    - Models: Post, User
+    - Features:
+        * Interaction tracking
+        * Notification generation
+        * Feed updates
+        * Data consistency
+
+1.2 Follow System
+    Frontend:
+    - Components: UserCard.jsx, Profile.jsx
+    - Features:
+        * Follow/Unfollow users
+        * Follower/Following lists
+        * Follow suggestions
+    - State Management:
+        * Follow status
+        * Follower counts
+        * List management
+    - API Endpoints:
+        * POST /api/users/follow/:id
+        * GET /api/users/followers/:id
+        * GET /api/users/following/:id
+
+    Backend:
+    - Models: User
+    - Features:
+        * Relationship tracking
+        * Feed updates
+        * Notification system
+
+2. TEMPLATE FOR NEW SOCIAL FEATURES
+--------------------------------
+2.1 Frontend Implementation Template
+    ```javascript
+    // 1. Create feature component
+    import { useState } from "react";
+    import { useMutation, useQueryClient } from "@tanstack/react-query";
+    import { toast } from "react-hot-toast";
+    import { motion } from "framer-motion";
+
+    const NewFeature = ({ targetId, currentUser }) => {
+        const [isActive, setIsActive] = useState(false);
+        const [isLoading, setIsLoading] = useState(false);
+        const queryClient = useQueryClient();
+
+        // 2. Add mutation
+        const { mutate: performAction } = useMutation({
+            mutationFn: async () => {
+                const res = await fetch(`/api/feature/${targetId}`, {
+                    method: "POST",
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            onSuccess: (data) => {
+                setIsActive(data.isActive);
+                // Update relevant queries
+                queryClient.invalidateQueries(["relevantData"]);
+                toast.success(data.message);
+            },
+            onError: (error) => {
+                toast.error(error.message);
+            },
+        });
+
+        // 3. Handle feature action
+        const handleAction = () => {
+            performAction();
+        };
+
+        return (
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleAction}
+                disabled={isLoading}
+                className={`feature-button ${isActive ? "active" : ""}`}
+            >
+                {isLoading ? (
+                    <LoadingSpinner size="sm" />
+                ) : (
+                    <FeatureIcon isActive={isActive} />
+                )}
+                <span className="count">{count}</span>
+            </motion.button>
+        );
+    };
+    ```
+
+2.2 Backend Implementation Template
+    ```javascript
+    // 1. Create route
+    router.post("/feature/:id", protectRoute, featureAction);
+
+    // 2. Create controller
+    export const featureAction = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const userId = req.user._id;
+
+            // Validate input
+            const target = await TargetModel.findById(id);
+            if (!target) {
+                return next(errorHandler(404, "Target not found"));
+            }
+
+            // Check if action already exists
+            const existingAction = await FeatureModel.findOne({
+                user: userId,
+                target: id,
+            });
+
+            let result;
+            if (existingAction) {
+                // Remove action
+                await existingAction.remove();
+                result = { isActive: false };
+            } else {
+                // Create new action
+                const newAction = await FeatureModel.create({
+                    user: userId,
+                    target: id,
+                });
+                result = { isActive: true };
+            }
+
+            // Update counts
+            await updateFeatureCounts(id);
+
+            // Create notification if needed
+            if (result.isActive) {
+                await createNotification({
+                    type: "FEATURE_ACTION",
+                    sender: userId,
+                    receiver: target.user,
+                    target: id,
+                });
+            }
+
+            res.status(200).json(result);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+2.3 Model Updates Template
+    ```javascript
+    // 1. Create feature model
+    const featureSchema = new mongoose.Schema({
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        target: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "TargetModel",
+            required: true,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // 2. Add indexes
+    featureSchema.index({ user: 1, target: 1 }, { unique: true });
+    featureSchema.index({ target: 1, createdAt: -1 });
+
+    // 3. Add methods
+    featureSchema.statics.getFeatureCount = async function(targetId) {
+        return this.countDocuments({ target: targetId });
+    };
+
+    export const Feature = mongoose.model("Feature", featureSchema);
+    ```
+
+3. SOCIAL FEATURE CONSIDERATIONS
+------------------------------
+3.1 User Experience
+    - Real-time updates
+    - Loading states
+    - Error handling
+    - Success feedback
+    - Animation effects
+
+3.2 Data Management
+    - Atomic operations
+    - Data consistency
+    - Cache invalidation
+    - Batch updates
+    - Index optimization
+
+3.3 Performance
+    - Query optimization
+    - Pagination
+    - Lazy loading
+    - Caching strategy
+    - Rate limiting
+
+3.4 Security
+    - Authentication
+    - Authorization
+    - Input validation
+    - Data sanitization
+    - Abuse prevention
+
+4. EXAMPLE: ADDING A NEW "REACT" FEATURE
+-------------------------------------
+4.1 Frontend Implementation
+    ```javascript
+    const ReactButton = ({ postId, currentUser }) => {
+        const [selectedReaction, setSelectedReaction] = useState(null);
+        const [showPicker, setShowPicker] = useState(false);
+        const queryClient = useQueryClient();
+
+        const { mutate: addReaction } = useMutation({
+            mutationFn: async (reaction) => {
+                const res = await fetch(`/api/posts/${postId}/react`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ reaction }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            onSuccess: (data) => {
+                setSelectedReaction(data.reaction);
+                queryClient.invalidateQueries(["post", postId]);
+                toast.success("Reaction added!");
+            },
+        });
+
+        return (
+            <div className="relative">
+                <button
+                    onClick={() => setShowPicker(!showPicker)}
+                    className="flex items-center space-x-1 p-2 hover:bg-gray-100 rounded-full"
+                >
+                    {selectedReaction ? (
+                        <span className="text-2xl">{selectedReaction}</span>
+                    ) : (
+                        <FaRegSmile className="text-gray-500" />
+                    )}
+                </button>
+
+                {showPicker && (
+                    <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg p-2">
+                        <div className="grid grid-cols-6 gap-2">
+                            {["😀", "❤️", "😂", "😮", "😢", "😡"].map((emoji) => (
+                                <button
+                                    key={emoji}
+                                    onClick={() => {
+                                        addReaction(emoji);
+                                        setShowPicker(false);
+                                    }}
+                                    className="text-2xl hover:scale-110 transition-transform"
+                                >
+                                    {emoji}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+    ```
+
+4.2 Backend Implementation
+    ```javascript
+    // In post.routes.js
+    router.post("/:id/react", protectRoute, addReaction);
+
+    // In post.controller.js
+    export const addReaction = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const { reaction } = req.body;
+            const userId = req.user._id;
+
+            // Validate reaction
+            const validReactions = ["😀", "❤️", "😂", "😮", "😢", "😡"];
+            if (!validReactions.includes(reaction)) {
+                return next(errorHandler(400, "Invalid reaction"));
+            }
+
+            // Update or create reaction
+            const existingReaction = await Reaction.findOne({
+                user: userId,
+                post: id,
+            });
+
+            if (existingReaction) {
+                existingReaction.reaction = reaction;
+                await existingReaction.save();
+            } else {
+                await Reaction.create({
+                    user: userId,
+                    post: id,
+                    reaction,
+                });
+            }
+
+            // Update post reaction counts
+            await updateReactionCounts(id);
+
+            // Create notification
+            const post = await Post.findById(id);
+            if (post.user.toString() !== userId.toString()) {
+                await createNotification({
+                    type: "REACTION",
+                    sender: userId,
+                    receiver: post.user,
+                    post: id,
+                    reaction,
+                });
+            }
+
+            res.status(200).json({
+                reaction,
+                message: "Reaction added successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+4.3 Model Updates
+    ```javascript
+    // In reaction.model.js
+    const reactionSchema = new mongoose.Schema({
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        post: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post",
+            required: true,
+        },
+        reaction: {
+            type: String,
+            required: true,
+            enum: ["😀", "❤️", "😂", "😮", "😢", "😡"],
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    reactionSchema.index({ user: 1, post: 1 }, { unique: true });
+    reactionSchema.index({ post: 1, createdAt: -1 });
+
+    // Add methods
+    reactionSchema.statics.getReactionCounts = async function(postId) {
+        return this.aggregate([
+            { $match: { post: postId } },
+            { $group: { _id: "$reaction", count: { $sum: 1 } } },
+        ]);
+    };
+
+    export const Reaction = mongoose.model("Reaction", reactionSchema);
+    ``` 

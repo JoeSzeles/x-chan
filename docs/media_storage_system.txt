@@ -1,0 +1,285 @@
+MEDIA STORAGE SYSTEM
+===================
+
+1. FOLDER STRUCTURE
+-----------------
+```
+public/
+├── media/
+│   ├── users/
+│   │   ├── {userId}/
+│   │   │   ├── profile/
+│   │   │   │   ├── avatar/
+│   │   │   │   │   ├── original/
+│   │   │   │   │   └── thumbnails/
+│   │   │   │   └── cover/
+│   │   │   │       ├── original/
+│   │   │   │       └── thumbnails/
+│   │   │   ├── posts/
+│   │   │   │   ├── {postId}/
+│   │   │   │   │   ├── images/
+│   │   │   │   │   │   ├── original/
+│   │   │   │   │   │   └── thumbnails/
+│   │   │   │   │   ├── videos/
+│   │   │   │   │   │   ├── original/
+│   │   │   │   │   │   └── thumbnails/
+│   │   │   │   │   └── documents/
+│   │   │   │   └── temp/
+│   │   │   └── messages/
+│   │   │       ├── images/
+│   │   │       │   ├── original/
+│   │   │       │   └── thumbnails/
+│   │   │       └── videos/
+│   │   │           ├── original/
+│   │   │           └── thumbnails/
+│   │   └── temp/
+│   └── shared/
+│       ├── emojis/
+│       └── stickers/
+```
+
+2. MEDIA MODEL
+------------
+```javascript
+// models/media.model.js
+const mediaSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
+    type: {
+        type: String,
+        enum: ["image", "video", "document"],
+        required: true,
+    },
+    category: {
+        type: String,
+        enum: ["profile", "post", "message"],
+        required: true,
+    },
+    path: {
+        original: String,
+        thumbnail: String,
+    },
+    metadata: {
+        filename: String,
+        mimeType: String,
+        size: Number,
+        width: Number,
+        height: Number,
+        duration: Number, // for videos
+    },
+    isPublic: {
+        type: Boolean,
+        default: true,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
+// Add indexes
+mediaSchema.index({ user: 1, category: 1 });
+mediaSchema.index({ path: 1 });
+```
+
+3. MEDIA SERVICE
+--------------
+```javascript
+// services/media.service.js
+class MediaService {
+    constructor() {
+        this.basePath = path.join(process.cwd(), 'public', 'media');
+        this.config = {
+            image: {
+                maxSize: 5 * 1024 * 1024, // 5MB
+                allowedTypes: ['image/jpeg', 'image/png', 'image/gif'],
+                thumbnailSize: { width: 300, height: 300 },
+            },
+            video: {
+                maxSize: 50 * 1024 * 1024, // 50MB
+                allowedTypes: ['video/mp4', 'video/webm'],
+                thumbnailSize: { width: 640, height: 360 },
+            },
+            document: {
+                maxSize: 10 * 1024 * 1024, // 10MB
+                allowedTypes: ['application/pdf', 'application/msword'],
+            },
+        };
+    }
+
+    async uploadFile(userId, file, category, type) {
+        // Validate file
+        this.validateFile(file, type);
+
+        // Generate paths
+        const paths = this.generatePaths(userId, file, category, type);
+
+        // Create directories if they don't exist
+        await this.ensureDirectories(paths);
+
+        // Save file
+        await this.saveFile(file, paths.original);
+
+        // Generate thumbnail if needed
+        if (type !== 'document') {
+            await this.generateThumbnail(paths.original, paths.thumbnail);
+        }
+
+        // Create media record
+        const media = await Media.create({
+            user: userId,
+            type,
+            category,
+            path: paths,
+            metadata: {
+                filename: file.originalname,
+                mimeType: file.mimetype,
+                size: file.size,
+                ...(await this.getMediaMetadata(paths.original, type)),
+            },
+        });
+
+        return media;
+    }
+
+    // Helper methods
+    validateFile(file, type) {
+        const config = this.config[type];
+        if (file.size > config.maxSize) {
+            throw new Error(`File size exceeds maximum allowed size of ${config.maxSize / 1024 / 1024}MB`);
+        }
+        if (!config.allowedTypes.includes(file.mimetype)) {
+            throw new Error(`File type ${file.mimetype} not allowed`);
+        }
+    }
+
+    generatePaths(userId, file, category, type) {
+        const timestamp = Date.now();
+        const filename = `${timestamp}-${file.originalname}`;
+        const basePath = path.join('users', userId.toString());
+
+        let paths = {
+            original: path.join(basePath, category, type, 'original', filename),
+            thumbnail: path.join(basePath, category, type, 'thumbnails', filename),
+        };
+
+        if (category === 'post') {
+            const postId = file.postId;
+            paths.original = path.join(basePath, 'posts', postId, type, 'original', filename);
+            paths.thumbnail = path.join(basePath, 'posts', postId, type, 'thumbnails', filename);
+        }
+
+        return paths;
+    }
+}
+```
+
+4. CLOUDINARY INTEGRATION
+-----------------------
+```javascript
+// services/cloudinary.service.js
+class CloudinaryService {
+    constructor() {
+        this.cloudinary = require('cloudinary').v2;
+        this.cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+    }
+
+    async uploadFile(file, options = {}) {
+        const result = await this.cloudinary.uploader.upload(file.path, {
+            folder: options.folder,
+            resource_type: options.resourceType,
+            transformation: options.transformation,
+        });
+
+        return {
+            url: result.secure_url,
+            public_id: result.public_id,
+            format: result.format,
+            width: result.width,
+            height: result.height,
+        };
+    }
+
+    async deleteFile(publicId) {
+        await this.cloudinary.uploader.destroy(publicId);
+    }
+}
+```
+
+5. MEDIA CONTROLLER
+-----------------
+```javascript
+// controllers/media.controller.js
+export const uploadMedia = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { category, type } = req.body;
+        const file = req.file;
+
+        const mediaService = new MediaService();
+        const media = await mediaService.uploadFile(userId, file, category, type);
+
+        res.status(201).json(media);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteMedia = async (req, res, next) => {
+    try {
+        const { mediaId } = req.params;
+        const userId = req.user._id;
+
+        const media = await Media.findOne({ _id: mediaId, user: userId });
+        if (!media) {
+            return next(errorHandler(404, "Media not found"));
+        }
+
+        // Delete file from storage
+        await fs.unlink(path.join(process.cwd(), 'public', media.path.original));
+        if (media.path.thumbnail) {
+            await fs.unlink(path.join(process.cwd(), 'public', media.path.thumbnail));
+        }
+
+        // Delete media record
+        await Media.findByIdAndDelete(mediaId);
+
+        res.status(200).json({ message: "Media deleted successfully" });
+    } catch (error) {
+        next(error);
+    }
+};
+```
+
+6. CONSIDERATIONS
+---------------
+6.1 Security
+    - File type validation
+    - Size limits
+    - Access control
+    - Secure file names
+
+6.2 Performance
+    - Image optimization
+    - Thumbnail generation
+    - Caching strategies
+    - CDN integration
+
+6.3 Scalability
+    - Cloud storage ready
+    - Multiple storage providers
+    - Backup strategies
+    - Cleanup procedures
+
+6.4 User Experience
+    - Progress tracking
+    - Error handling
+    - Preview generation
+    - Loading states 

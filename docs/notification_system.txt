@@ -1,0 +1,452 @@
+NOTIFICATION SYSTEM
+=================
+
+1. EXISTING NOTIFICATION TYPES
+---------------------------
+1.1 Interaction Notifications
+    - Like notifications
+    - Comment notifications
+    - Repost notifications
+    - Follow notifications
+    - Mention notifications
+
+1.2 System Notifications
+    - Account updates
+    - Security alerts
+    - System messages
+
+2. NOTIFICATION IMPLEMENTATION
+---------------------------
+2.1 Notification Model
+    ```javascript
+    // notification.model.js
+    const notificationSchema = new mongoose.Schema({
+        recipient: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        sender: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        type: {
+            type: String,
+            required: true,
+            enum: [
+                "like",
+                "comment",
+                "repost",
+                "follow",
+                "mention",
+                "system"
+            ],
+        },
+        content: {
+            type: String,
+            required: true,
+        },
+        target: {
+            type: mongoose.Schema.Types.ObjectId,
+            refPath: "targetModel",
+        },
+        targetModel: {
+            type: String,
+            enum: ["Post", "Comment", "User"],
+        },
+        read: {
+            type: Boolean,
+            default: false,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    notificationSchema.index({ recipient: 1, createdAt: -1 });
+    notificationSchema.index({ recipient: 1, read: 1 });
+    notificationSchema.index({ sender: 1, type: 1 });
+
+    // Add methods
+    notificationSchema.statics.createNotification = async function(data) {
+        const notification = await this.create({
+            recipient: data.recipient,
+            sender: data.sender,
+            type: data.type,
+            content: data.content,
+            target: data.target,
+            targetModel: data.targetModel,
+        });
+
+        // Emit real-time notification
+        io.to(`user:${data.recipient}`).emit('newNotification', notification);
+
+        return notification;
+    };
+
+    export const Notification = mongoose.model("Notification", notificationSchema);
+    ```
+
+2.2 Notification Service
+    ```javascript
+    // notification.service.js
+    export const createInteractionNotification = async (interaction) => {
+        const { type, sender, target, targetModel } = interaction;
+        
+        // Get recipient based on interaction type
+        let recipient;
+        switch (type) {
+            case "like":
+            case "comment":
+            case "repost":
+                const post = await Post.findById(target);
+                recipient = post.user;
+                break;
+            case "follow":
+                recipient = target;
+                break;
+            case "mention":
+                recipient = target;
+                break;
+        }
+
+        // Create notification content
+        const content = generateNotificationContent(type, sender, target);
+
+        // Create notification
+        await Notification.createNotification({
+            recipient,
+            sender,
+            type,
+            content,
+            target,
+            targetModel,
+        });
+    };
+
+    const generateNotificationContent = (type, sender, target) => {
+        const user = await User.findById(sender);
+        switch (type) {
+            case "like":
+                return `${user.username} liked your post`;
+            case "comment":
+                return `${user.username} commented on your post`;
+            case "repost":
+                return `${user.username} reposted your post`;
+            case "follow":
+                return `${user.username} started following you`;
+            case "mention":
+                return `${user.username} mentioned you in a post`;
+        }
+    };
+    ```
+
+2.3 Notification Controller
+    ```javascript
+    // notification.controller.js
+    export const getNotifications = async (req, res, next) => {
+        try {
+            const userId = req.user._id;
+            const { page = 1, limit = 20 } = req.query;
+
+            const notifications = await Notification.find({ recipient: userId })
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .populate("sender", "username profilePicture")
+                .populate("target");
+
+            const total = await Notification.countDocuments({ recipient: userId });
+
+            res.status(200).json({
+                notifications,
+                total,
+                page,
+                pages: Math.ceil(total / limit),
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    export const markAsRead = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const userId = req.user._id;
+
+            const notification = await Notification.findOneAndUpdate(
+                { _id: id, recipient: userId },
+                { read: true },
+                { new: true }
+            );
+
+            if (!notification) {
+                return next(errorHandler(404, "Notification not found"));
+            }
+
+            res.status(200).json(notification);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    export const markAllAsRead = async (req, res, next) => {
+        try {
+            const userId = req.user._id;
+
+            await Notification.updateMany(
+                { recipient: userId, read: false },
+                { read: true }
+            );
+
+            res.status(200).json({ message: "All notifications marked as read" });
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+3. INTEGRATING WITH USER INTERACTIONS
+----------------------------------
+3.1 Like Interaction
+    ```javascript
+    // In like.controller.js
+    export const toggleLike = async (req, res, next) => {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        try {
+            const { id } = req.params;
+            const userId = req.user._id;
+
+            const existingLike = await Like.findOne({
+                user: userId,
+                post: id,
+            });
+
+            let result;
+            if (existingLike) {
+                await existingLike.remove({ session });
+                await Counter.updateCount(id, "likes", false);
+                result = { isLiked: false };
+            } else {
+                await Like.create([{
+                    user: userId,
+                    post: id,
+                }], { session });
+                await Counter.updateCount(id, "likes", true);
+                result = { isLiked: true };
+
+                // Create notification
+                await createInteractionNotification({
+                    type: "like",
+                    sender: userId,
+                    target: id,
+                    targetModel: "Post",
+                });
+            }
+
+            await session.commitTransaction();
+            res.status(200).json(result);
+        } catch (error) {
+            await session.abortTransaction();
+            next(error);
+        } finally {
+            session.endSession();
+        }
+    };
+    ```
+
+3.2 Comment Interaction
+    ```javascript
+    // In comment.controller.js
+    export const createComment = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const { content } = req.body;
+            const userId = req.user._id;
+
+            const comment = await Comment.create({
+                user: userId,
+                post: id,
+                content,
+            });
+
+            // Create notification
+            await createInteractionNotification({
+                type: "comment",
+                sender: userId,
+                target: id,
+                targetModel: "Post",
+            });
+
+            res.status(201).json(comment);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+4. FRONTEND IMPLEMENTATION
+------------------------
+4.1 Notification Component
+    ```javascript
+    // Notification.jsx
+    import { useState, useEffect } from "react";
+    import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+    import { motion, AnimatePresence } from "framer-motion";
+
+    const Notification = () => {
+        const [isOpen, setIsOpen] = useState(false);
+        const queryClient = useQueryClient();
+
+        // Fetch notifications
+        const { data: notifications, isLoading } = useQuery({
+            queryKey: ["notifications"],
+            queryFn: async () => {
+                const res = await fetch("/api/notifications");
+                const data = await res.json();
+                return data;
+            },
+        });
+
+        // Mark as read mutation
+        const { mutate: markAsRead } = useMutation({
+            mutationFn: async (id) => {
+                const res = await fetch(`/api/notifications/${id}/read`, {
+                    method: "PATCH",
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries(["notifications"]);
+            },
+        });
+
+        // Socket.io for real-time updates
+        useEffect(() => {
+            const socket = io();
+
+            socket.on("newNotification", (notification) => {
+                queryClient.setQueryData(["notifications"], (old) => ({
+                    ...old,
+                    notifications: [notification, ...old.notifications],
+                }));
+            });
+
+            return () => socket.disconnect();
+        }, []);
+
+        return (
+            <div className="relative">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="notification-button"
+                >
+                    <BellIcon />
+                    {notifications?.unreadCount > 0 && (
+                        <span className="notification-badge">
+                            {notifications.unreadCount}
+                        </span>
+                    )}
+                </button>
+
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="notification-dropdown"
+                        >
+                            {isLoading ? (
+                                <LoadingSpinner />
+                            ) : (
+                                <div className="notification-list">
+                                    {notifications?.notifications.map((notification) => (
+                                        <div
+                                            key={notification._id}
+                                            className={`notification-item ${
+                                                !notification.read ? "unread" : ""
+                                            }`}
+                                            onClick={() => markAsRead(notification._id)}
+                                        >
+                                            <img
+                                                src={notification.sender.profilePicture}
+                                                alt={notification.sender.username}
+                                            />
+                                            <div className="notification-content">
+                                                <p>{notification.content}</p>
+                                                <span className="time">
+                                                    {formatTimeAgo(notification.createdAt)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    };
+    ```
+
+5. ADDING NEW NOTIFICATION TYPES
+-----------------------------
+5.1 Template for New Notification Type
+    ```javascript
+    // 1. Add to notification model enum
+    type: {
+        type: String,
+        required: true,
+        enum: [
+            // ... existing types
+            "newType",
+        ],
+    },
+
+    // 2. Add to notification service
+    case "newType":
+        return `${user.username} performed new action`;
+
+    // 3. Add to interaction controller
+    await createInteractionNotification({
+        type: "newType",
+        sender: userId,
+        target: targetId,
+        targetModel: "TargetModel",
+    });
+    ```
+
+6. NOTIFICATION CONSIDERATIONS
+---------------------------
+6.1 Performance
+    - Index optimization
+    - Pagination
+    - Caching strategy
+    - Batch updates
+
+6.2 User Experience
+    - Real-time updates
+    - Unread counts
+    - Notification grouping
+    - Clear all option
+
+6.3 Security
+    - Authorization checks
+    - Rate limiting
+    - Input validation
+    - Privacy settings
+
+6.4 Scalability
+    - Sharding strategy
+    - Load balancing
+    - Queue system
+    - Monitoring 

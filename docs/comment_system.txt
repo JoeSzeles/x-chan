@@ -1,0 +1,397 @@
+COMMENT SYSTEM GUIDE
+===================
+
+1. FILE STRUCTURE
+----------------
+```
+src/
+├── components/
+│   ├── Comment/
+│   │   ├── CommentCard.jsx
+│   │   ├── CommentCard.module.css
+│   │   ├── CommentForm.jsx
+│   │   ├── CommentForm.module.css
+│   │   ├── CommentList.jsx
+│   │   └── CommentList.module.css
+├── controllers/
+│   └── commentController.js
+├── models/
+│   └── Comment.js
+├── routes/
+│   └── commentRoutes.js
+└── services/
+    └── commentService.js
+```
+
+2. DATABASE SCHEMA
+----------------
+```javascript
+// models/Comment.js
+const commentSchema = new mongoose.Schema({
+    content: {
+        type: String,
+        required: true,
+        maxlength: 280
+    },
+    postId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post',
+        required: true
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    parentComment: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment',
+        default: null
+    },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    replies: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }],
+    media: [{
+        type: String,
+        url: String
+    }],
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+```
+
+3. API ROUTES
+------------
+```javascript
+// routes/commentRoutes.js
+const router = express.Router();
+
+// Create comment
+router.post('/posts/:postId/comments', auth, commentController.createComment);
+
+// Get comments for a post
+router.get('/posts/:postId/comments', commentController.getComments);
+
+// Get single comment
+router.get('/comments/:commentId', commentController.getComment);
+
+// Update comment
+router.put('/comments/:commentId', auth, commentController.updateComment);
+
+// Delete comment
+router.delete('/comments/:commentId', auth, commentController.deleteComment);
+
+// Like/Unlike comment
+router.post('/comments/:commentId/like', auth, commentController.toggleLike);
+
+// Reply to comment
+router.post('/comments/:commentId/reply', auth, commentController.createReply);
+```
+
+4. CONTROLLER FUNCTIONS
+---------------------
+```javascript
+// controllers/commentController.js
+
+// Create a new comment
+const createComment = async (req, res) => {
+    try {
+        const { content, media } = req.body;
+        const comment = await commentService.createComment({
+            content,
+            postId: req.params.postId,
+            author: req.user._id,
+            media
+        });
+        res.status(201).json(comment);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Get comments for a post
+const getComments = async (req, res) => {
+    try {
+        const comments = await commentService.getCommentsByPost(req.params.postId);
+        res.json(comments);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Update a comment
+const updateComment = async (req, res) => {
+    try {
+        const comment = await commentService.updateComment(
+            req.params.commentId,
+            req.body,
+            req.user._id
+        );
+        res.json(comment);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Delete a comment
+const deleteComment = async (req, res) => {
+    try {
+        await commentService.deleteComment(req.params.commentId, req.user._id);
+        res.status(204).send();
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+```
+
+5. SERVICE FUNCTIONS
+------------------
+```javascript
+// services/commentService.js
+
+// Create comment
+const createComment = async ({ content, postId, author, media, parentComment }) => {
+    const comment = new Comment({
+        content,
+        postId,
+        author,
+        media,
+        parentComment
+    });
+    
+    await comment.save();
+    
+    // Update post's comment count
+    await Post.findByIdAndUpdate(postId, {
+        $inc: { commentCount: 1 }
+    });
+    
+    return comment;
+};
+
+// Get comments for a post
+const getCommentsByPost = async (postId) => {
+    return await Comment.find({ postId })
+        .populate('author', 'username profilePicture')
+        .populate('likes', 'username')
+        .sort({ createdAt: -1 });
+};
+
+// Update comment
+const updateComment = async (commentId, updates, userId) => {
+    const comment = await Comment.findOne({
+        _id: commentId,
+        author: userId
+    });
+    
+    if (!comment) {
+        throw new Error('Comment not found or unauthorized');
+    }
+    
+    Object.assign(comment, updates);
+    comment.updatedAt = new Date();
+    await comment.save();
+    
+    return comment;
+};
+```
+
+6. REACT COMPONENTS
+-----------------
+```jsx
+// components/Comment/CommentForm.jsx
+const CommentForm = ({ postId, parentComment, onComment }) => {
+    const [content, setContent] = useState('');
+    const [media, setMedia] = useState([]);
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await api.post(`/posts/${postId}/comments`, {
+                content,
+                media,
+                parentComment
+            });
+            onComment(response.data);
+            setContent('');
+            setMedia([]);
+        } catch (error) {
+            console.error('Error creating comment:', error);
+        }
+    };
+    
+    return (
+        <form onSubmit={handleSubmit} className={styles.form}>
+            <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write a comment..."
+                maxLength={280}
+            />
+            <MediaUploader onMediaSelect={setMedia} />
+            <button type="submit" disabled={!content.trim()}>
+                Comment
+            </button>
+        </form>
+    );
+};
+
+// components/Comment/CommentList.jsx
+const CommentList = ({ postId }) => {
+    const [comments, setComments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    useEffect(() => {
+        const fetchComments = async () => {
+            try {
+                const response = await api.get(`/posts/${postId}/comments`);
+                setComments(response.data);
+            } catch (error) {
+                console.error('Error fetching comments:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchComments();
+    }, [postId]);
+    
+    return (
+        <div className={styles.commentList}>
+            {loading ? (
+                <LoadingSpinner />
+            ) : (
+                comments.map(comment => (
+                    <CommentCard
+                        key={comment._id}
+                        comment={comment}
+                        onUpdate={setComments}
+                    />
+                ))
+            )}
+        </div>
+    );
+};
+```
+
+7. SOCKET.IO EVENTS
+-----------------
+```javascript
+// Socket events for real-time comments
+socket.on('newComment', (comment) => {
+    // Add new comment to the list
+    setComments(prev => [comment, ...prev]);
+});
+
+socket.on('commentUpdated', (updatedComment) => {
+    // Update existing comment
+    setComments(prev => prev.map(comment => 
+        comment._id === updatedComment._id ? updatedComment : comment
+    ));
+});
+
+socket.on('commentDeleted', (commentId) => {
+    // Remove deleted comment
+    setComments(prev => prev.filter(comment => comment._id !== commentId));
+});
+```
+
+8. STYLING
+---------
+```css
+/* CommentCard.module.css */
+.commentCard {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.commentHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.commentContent {
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    margin-bottom: var(--space-3);
+}
+
+.commentActions {
+    display: flex;
+    gap: var(--space-4);
+    color: var(--text-secondary);
+}
+```
+
+9. ERROR HANDLING
+---------------
+```javascript
+// Error handling middleware
+const handleCommentError = (error, req, res, next) => {
+    if (error.name === 'ValidationError') {
+        return res.status(400).json({
+            error: 'Validation Error',
+            details: error.errors
+        });
+    }
+    
+    if (error.name === 'UnauthorizedError') {
+        return res.status(403).json({
+            error: 'Unauthorized',
+            message: 'You do not have permission to perform this action'
+        });
+    }
+    
+    res.status(500).json({
+        error: 'Server Error',
+        message: error.message
+    });
+};
+```
+
+10. TESTING
+----------
+```javascript
+// Test cases for comment system
+describe('Comment System', () => {
+    test('should create a new comment', async () => {
+        const comment = await createComment({
+            content: 'Test comment',
+            postId: 'testPostId',
+            author: 'testUserId'
+        });
+        expect(comment.content).toBe('Test comment');
+    });
+    
+    test('should update a comment', async () => {
+        const updatedComment = await updateComment(
+            'testCommentId',
+            { content: 'Updated comment' },
+            'testUserId'
+        );
+        expect(updatedComment.content).toBe('Updated comment');
+    });
+    
+    test('should delete a comment', async () => {
+        await deleteComment('testCommentId', 'testUserId');
+        const comment = await Comment.findById('testCommentId');
+        expect(comment).toBeNull();
+    });
+});
+``` 

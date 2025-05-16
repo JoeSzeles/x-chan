@@ -1,0 +1,84 @@
+MongoDB Backup and Restore Procedures
+====================================
+
+Prerequisites
+------------
+1. MongoDB Database Tools must be installed:
+   - Download from: https://www.mongodb.com/try/download/database-tools
+   - Choose Windows MSI installer
+   - Run the installer
+   - Default installation path: C:\Program Files\MongoDB\Tools\100\bin\
+
+2. MongoDB server must be running locally
+   - Default connection: mongodb://localhost:27017/twitter-clone
+
+Backup Procedure
+--------------
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Run the backup script:
+   ```bash
+   node scripts/backupDB.js
+   ```
+
+3. The script will:
+   - Create a timestamped backup folder in backend/backups/
+   - Backup all collections (users, posts, comments, notifications)
+   - Save the backup in BSON format
+   - Display backup progress and completion status
+
+4. Backup location:
+   - All backups are stored in: backend/backups/
+   - Each backup is in a folder named: backup-[timestamp]
+   - Example: backup-2025-05-02T05-09-16-922Z
+
+Restore Procedure
+---------------
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Run the restore script:
+   ```bash
+   node scripts/restoreDB.js
+   ```
+
+3. The script will:
+   - Find the most recent backup in the backups directory
+   - Drop existing collections (--drop flag)
+   - Restore all collections from the backup
+   - Display restore progress and completion status
+
+Important Notes
+-------------
+1. Always verify the backup was successful before deleting any data
+2. Keep backups in a safe location
+3. Consider setting up automated backups
+4. The backup directory is not tracked in git (should be in .gitignore)
+5. For production environments, consider using MongoDB Atlas which provides automated backups
+
+Troubleshooting
+-------------
+If you encounter errors:
+
+1. "mongodump is not recognized":
+   - Verify MongoDB Database Tools is installed
+   - Check if the installation path matches the path in the scripts
+   - Default path: C:\Program Files\MongoDB\Tools\100\bin\
+
+2. Connection errors:
+   - Verify MongoDB server is running
+   - Check the connection string in the scripts
+   - Ensure you have proper permissions
+
+3. Permission errors:
+   - Run the scripts with administrator privileges
+   - Check folder permissions in the backup directory
+
+For additional help or questions, refer to:
+- MongoDB Documentation: https://docs.mongodb.com/database-tools/
+- MongoDB Backup and Restore: https://docs.mongodb.com/manual/core/backup-restore/ 

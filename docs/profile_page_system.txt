@@ -1,0 +1,328 @@
+PROFILE PAGE SYSTEM
+=================
+
+1. CURRENT IMPLEMENTATION
+-----------------------
+1.1 Profile Page Structure
+    - Header Section
+        * Profile picture
+        * Cover image
+        * User info (name, username, bio)
+        * Follow/Unfollow button
+        * Edit profile button (for own profile)
+    - Stats Section
+        * Posts count
+        * Followers count
+        * Following count
+    - Tabs Section
+        * Posts tab
+        * Likes tab
+
+1.2 Current Tab Implementation
+    ```javascript
+    // Profile.jsx
+    const Profile = ({ username }) => {
+        const [activeTab, setActiveTab] = useState("posts");
+        const queryClient = useQueryClient();
+
+        // Fetch user data
+        const { data: user, isLoading } = useQuery({
+            queryKey: ["user", username],
+            queryFn: async () => {
+                const res = await fetch(`/api/users/${username}`);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+        });
+
+        // Fetch tab content
+        const { data: tabContent } = useQuery({
+            queryKey: ["profileTab", username, activeTab],
+            queryFn: async () => {
+                const res = await fetch(`/api/users/${username}/${activeTab}`);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            enabled: !!user,
+        });
+
+        return (
+            <div className="profile-container">
+                {/* Header Section */}
+                <div className="profile-header">
+                    <CoverImage src={user?.coverImage} />
+                    <ProfilePicture src={user?.profilePicture} />
+                    <UserInfo user={user} />
+                    <FollowButton user={user} />
+                </div>
+
+                {/* Stats Section */}
+                <div className="profile-stats">
+                    <StatItem label="Posts" value={user?.postsCount} />
+                    <StatItem label="Followers" value={user?.followersCount} />
+                    <StatItem label="Following" value={user?.followingCount} />
+                </div>
+
+                {/* Tabs Section */}
+                <div className="profile-tabs">
+                    <TabButton
+                        active={activeTab === "posts"}
+                        onClick={() => setActiveTab("posts")}
+                    >
+                        Posts
+                    </TabButton>
+                    <TabButton
+                        active={activeTab === "likes"}
+                        onClick={() => setActiveTab("likes")}
+                    >
+                        Likes
+                    </TabButton>
+                </div>
+
+                {/* Tab Content */}
+                <div className="tab-content">
+                    {isLoading ? (
+                        <LoadingSpinner />
+                    ) : (
+                        <TabContent type={activeTab} data={tabContent} />
+                    )}
+                </div>
+            </div>
+        );
+    };
+    ```
+
+2. TAB SYSTEM IMPLEMENTATION
+-------------------------
+2.1 Tab Component
+    ```javascript
+    // TabButton.jsx
+    const TabButton = ({ active, onClick, children }) => {
+        return (
+            <motion.button
+                className={`tab-button ${active ? "active" : ""}`}
+                onClick={onClick}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+            >
+                {children}
+                {active && (
+                    <motion.div
+                        className="tab-indicator"
+                        layoutId="tabIndicator"
+                        initial={false}
+                    />
+                )}
+            </motion.button>
+        );
+    };
+    ```
+
+2.2 Tab Content Component
+    ```javascript
+    // TabContent.jsx
+    const TabContent = ({ type, data }) => {
+        switch (type) {
+            case "posts":
+                return <PostList posts={data} />;
+            case "likes":
+                return <PostList posts={data} />;
+            case "media":
+                return <MediaGrid media={data} />;
+            case "replies":
+                return <ReplyList replies={data} />;
+            default:
+                return null;
+        }
+    };
+    ```
+
+3. ADDING NEW TABS
+----------------
+3.1 Backend Implementation
+    ```javascript
+    // user.routes.js
+    router.get("/:username/posts", getUserPosts);
+    router.get("/:username/likes", getUserLikes);
+    router.get("/:username/media", getUserMedia);
+    router.get("/:username/replies", getUserReplies);
+
+    // user.controller.js
+    export const getUserMedia = async (req, res, next) => {
+        try {
+            const { username } = req.params;
+            const { page = 1, limit = 20 } = req.query;
+
+            const user = await User.findOne({ username });
+            if (!user) {
+                return next(errorHandler(404, "User not found"));
+            }
+
+            const media = await Post.find({
+                user: user._id,
+                media: { $exists: true, $ne: [] },
+            })
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .populate("user", "username profilePicture");
+
+            res.status(200).json(media);
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    export const getUserReplies = async (req, res, next) => {
+        try {
+            const { username } = req.params;
+            const { page = 1, limit = 20 } = req.query;
+
+            const user = await User.findOne({ username });
+            if (!user) {
+                return next(errorHandler(404, "User not found"));
+            }
+
+            const replies = await Comment.find({
+                user: user._id,
+                post: { $exists: true },
+            })
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .populate("user", "username profilePicture")
+                .populate("post");
+
+            res.status(200).json(replies);
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+3.2 Frontend Implementation
+    ```javascript
+    // Profile.jsx
+    const Profile = ({ username }) => {
+        const [activeTab, setActiveTab] = useState("posts");
+        
+        // Add new tab buttons
+        const tabs = [
+            { id: "posts", label: "Posts" },
+            { id: "likes", label: "Likes" },
+            { id: "media", label: "Media" },
+            { id: "replies", label: "Replies" },
+        ];
+
+        return (
+            <div className="profile-container">
+                {/* ... existing header and stats sections ... */}
+
+                {/* Updated Tabs Section */}
+                <div className="profile-tabs">
+                    {tabs.map((tab) => (
+                        <TabButton
+                            key={tab.id}
+                            active={activeTab === tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                        >
+                            {tab.label}
+                        </TabButton>
+                    ))}
+                </div>
+
+                {/* Tab Content */}
+                <div className="tab-content">
+                    {isLoading ? (
+                        <LoadingSpinner />
+                    ) : (
+                        <TabContent type={activeTab} data={tabContent} />
+                    )}
+                </div>
+            </div>
+        );
+    };
+    ```
+
+4. TAB CONTENT COMPONENTS
+----------------------
+4.1 Media Grid Component
+    ```javascript
+    // MediaGrid.jsx
+    const MediaGrid = ({ media }) => {
+        return (
+            <div className="media-grid">
+                {media.map((post) => (
+                    <div key={post._id} className="media-item">
+                        {post.media.map((item) => (
+                            <img
+                                key={item._id}
+                                src={item.url}
+                                alt={item.alt}
+                                className="media-image"
+                            />
+                        ))}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+    ```
+
+4.2 Reply List Component
+    ```javascript
+    // ReplyList.jsx
+    const ReplyList = ({ replies }) => {
+        return (
+            <div className="reply-list">
+                {replies.map((reply) => (
+                    <div key={reply._id} className="reply-item">
+                        <div className="reply-header">
+                            <img
+                                src={reply.user.profilePicture}
+                                alt={reply.user.username}
+                            />
+                            <span>{reply.user.username}</span>
+                        </div>
+                        <div className="reply-content">
+                            <p>{reply.content}</p>
+                        </div>
+                        <div className="reply-post">
+                            <Link to={`/post/${reply.post._id}`}>
+                                View original post
+                            </Link>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+    ```
+
+5. CONSIDERATIONS
+---------------
+5.1 Performance
+    - Lazy loading of tab content
+    - Pagination implementation
+    - Caching strategy
+    - Optimistic updates
+
+5.2 User Experience
+    - Smooth tab transitions
+    - Loading states
+    - Error handling
+    - Empty states
+
+5.3 Data Management
+    - State persistence
+    - Cache invalidation
+    - Real-time updates
+    - Data consistency
+
+5.4 Accessibility
+    - Keyboard navigation
+    - ARIA labels
+    - Focus management
+    - Screen reader support 

@@ -1,0 +1,185 @@
+PROJECT RULES
+============
+
+1. DOCUMENTATION WORKFLOW
+------------------------
+1.1 New Feature Development
+    ```cursor
+    // 1. Check documentation index
+    read_file("docs/project_documentation_index.txt", true, 1, 1)
+    
+    // 2. Search for related documentation
+    codebase_search("feature name implementation", ["docs/"])
+    
+    // 3. Read relevant system documentation
+    read_file("docs/related_system.txt", false, 1, 250)
+    ```
+
+1.2 Documentation Updates
+    - Update documentation before implementing changes
+    - Document new patterns immediately
+    - Keep documentation in sync with code
+    - Review documentation monthly
+
+2. CODE ORGANIZATION
+------------------
+2.1 File Structure
+    ```
+    src/
+    ├── components/
+    │   ├── Common/         # Reusable components
+    │   ├── Post/          # Post-related components
+    │   ├── User/          # User-related components
+    │   └── Layout/        # Layout components
+    ├── services/
+    │   ├── api/          # API services
+    │   ├── auth/         # Authentication services
+    │   └── storage/      # Storage services
+    ├── models/           # Database models
+    ├── controllers/      # Route controllers
+    ├── utils/           # Utility functions
+    └── docs/            # Documentation
+    ```
+
+2.2 Naming Conventions
+    - Components: PascalCase (e.g., PostCard.jsx)
+    - Services: camelCase (e.g., postService.js)
+    - Models: PascalCase (e.g., PostModel.js)
+    - Controllers: camelCase (e.g., postController.js)
+    - Utils: camelCase (e.g., formatDate.js)
+
+3. IMPLEMENTATION RULES
+---------------------
+3.1 Component Creation
+    ```cursor
+    // 1. Check common components
+    codebase_search("similar component implementation", ["components/Common/"])
+    
+    // 2. Verify naming convention
+    grep_search("export const.*Component", "*.jsx")
+    
+    // 3. Check documentation
+    read_file("docs/common_components_system.txt", false, 1, 250)
+    ```
+
+3.2 Service Implementation
+    ```cursor
+    // 1. Check existing services
+    codebase_search("service implementation pattern", ["services/"])
+    
+    // 2. Verify error handling
+    grep_search("try.*catch", "services/*.js")
+    
+    // 3. Check documentation
+    read_file("docs/service_system.txt", false, 1, 250)
+    ```
+
+4. TESTING REQUIREMENTS
+---------------------
+4.1 Unit Tests
+    - Test all new components
+    - Test service functions
+    - Test utility functions
+    - Maintain 80% coverage
+
+4.2 Integration Tests
+    - Test component interactions
+    - Test API endpoints
+    - Test data flow
+    - Test error scenarios
+
+5. CODE REVIEW PROCESS
+--------------------
+5.1 Documentation Check
+    - Verify documentation exists
+    - Check documentation accuracy
+    - Review documentation updates
+    - Ensure consistency
+
+5.2 Code Quality
+    - Follow naming conventions
+    - Check error handling
+    - Verify performance
+    - Review security
+
+6. DEPLOYMENT RULES
+-----------------
+6.1 Pre-deployment
+    ```cursor
+    // 1. Check documentation
+    read_file("docs/deployment_process.txt", true, 1, 1)
+    
+    // 2. Verify changes
+    codebase_search("recent changes", ["src/"])
+    
+    // 3. Check tests
+    grep_search("test\(", "*.test.js")
+    ```
+
+6.2 Post-deployment
+    - Update documentation
+    - Verify functionality
+    - Monitor performance
+    - Check logs
+
+7. SECURITY RULES
+---------------
+7.1 Data Protection
+    - Encrypt sensitive data
+    - Validate all inputs
+    - Sanitize outputs
+    - Follow security guidelines
+
+7.2 Access Control
+    - Implement proper authentication
+    - Use role-based access
+    - Secure API endpoints
+    - Monitor access patterns
+
+8. PERFORMANCE RULES
+------------------
+8.1 Optimization
+    - Optimize database queries
+    - Implement proper caching
+    - Minimize network requests
+    - Optimize assets
+
+8.2 Monitoring
+    - Track performance metrics
+    - Monitor error rates
+    - Check resource usage
+    - Analyze user behavior
+
+9. MAINTENANCE RULES
+------------------
+9.1 Regular Updates
+    - Update dependencies
+    - Review documentation
+    - Check for deprecated code
+    - Optimize performance
+
+9.2 Cleanup
+    - Remove unused code
+    - Clean up documentation
+    - Archive old versions
+    - Update dependencies
+
+10. EMERGENCY PROCEDURES
+----------------------
+10.1 Bug Fixes
+    ```cursor
+    // 1. Check documentation
+    read_file("docs/error_handling.txt", false, 1, 250)
+    
+    // 2. Search for similar issues
+    codebase_search("similar bug fix", ["src/"])
+    
+    // 3. Check error patterns
+    grep_search("error.*handling", "*.js")
+    ```
+
+10.2 Rollback Procedures
+    - Document rollback steps
+    - Test rollback procedures
+    - Maintain backup systems
+    - Monitor system health 

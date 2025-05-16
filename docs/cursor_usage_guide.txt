@@ -1,0 +1,177 @@
+CURSOR DOCUMENTATION USAGE GUIDE
+=============================
+
+1. SEARCHING DOCUMENTATION
+------------------------
+1.1 Using Cursor's Search
+    ```cursor
+    // Use semantic search to find relevant documentation
+    codebase_search("post card system implementation")
+    
+    // Search specific directories
+    codebase_search("media storage implementation", ["docs/"])
+    
+    // Find related components
+    codebase_search("user interaction patterns", ["docs/user_interaction_system.txt"])
+    ```
+
+1.2 Reading Documentation
+    ```cursor
+    // Read specific documentation files
+    read_file("docs/post_system.txt", false, 1, 250)
+    
+    // Read entire documentation
+    read_file("docs/application_map.txt", true, 1, 1)
+    ```
+
+2. IMPLEMENTATION WORKFLOW
+------------------------
+2.1 Before Starting
+    ```cursor
+    // Check documentation index
+    read_file("docs/project_documentation_index.txt", true, 1, 1)
+    
+    // Read relevant system documentation
+    read_file("docs/post_system.txt", false, 1, 250)
+    read_file("docs/common_components_system.txt", false, 1, 250)
+    ```
+
+2.2 During Implementation
+    ```cursor
+    // Search for similar implementations
+    codebase_search("post card component", ["components/Post/"])
+    
+    // Check existing patterns
+    grep_search("className=\"post-card\"", "*.jsx")
+    ```
+
+3. DOCUMENTATION UPDATES
+----------------------
+3.1 Updating Documentation
+    ```cursor
+    // Edit documentation files
+    edit_file("docs/post_system.txt", "Adding new post type documentation", `
+    // ... existing code ...
+    NEW_POST_TYPE_DOCUMENTATION
+    // ... existing code ...
+    `)
+    ```
+
+3.2 Creating New Documentation
+    ```cursor
+    // Create new documentation file
+    edit_file("docs/new_system.txt", "Creating new system documentation", `
+    NEW_SYSTEM_DOCUMENTATION
+    `)
+    ```
+
+4. CODE IMPLEMENTATION
+--------------------
+4.1 Creating Components
+    ```cursor
+    // Search for component patterns
+    codebase_search("base component implementation", ["components/"])
+    
+    // Check naming conventions
+    grep_search("export const.*Component", "*.jsx")
+    ```
+
+4.2 System Integration
+    ```cursor
+    // Check dependencies
+    codebase_search("post system integration", ["services/", "controllers/"])
+    
+    // Verify patterns
+    grep_search("import.*Post", "*.js")
+    ```
+
+5. ERROR HANDLING
+---------------
+5.1 Checking Documentation
+    ```cursor
+    // Search for error handling patterns
+    codebase_search("error handling implementation", ["docs/"])
+    
+    // Check existing error cases
+    grep_search("try.*catch", "*.js")
+    ```
+
+5.2 Updating Error Documentation
+    ```cursor
+    // Add error handling documentation
+    edit_file("docs/error_handling.txt", "Adding new error cases", `
+    // ... existing code ...
+    NEW_ERROR_CASES
+    // ... existing code ...
+    `)
+    ```
+
+6. BEST PRACTICES
+---------------
+6.1 Documentation First
+    - Always search documentation before implementation
+    - Use semantic search for finding relevant information
+    - Read entire documentation files when needed
+    - Check for related systems and components
+
+6.2 Implementation
+    - Search for existing patterns
+    - Check naming conventions
+    - Verify component structure
+    - Follow established patterns
+
+6.3 Updates
+    - Update documentation when making changes
+    - Document new patterns
+    - Maintain consistency
+    - Check related documentation
+
+7. CURSOR COMMANDS
+----------------
+7.1 Documentation Commands
+    ```cursor
+    // List documentation files
+    list_dir("docs/")
+    
+    // Search documentation
+    codebase_search("search term", ["docs/"])
+    
+    // Read documentation
+    read_file("docs/file.txt", false, start_line, end_line)
+    ```
+
+7.2 Implementation Commands
+    ```cursor
+    // Search codebase
+    codebase_search("search term", ["components/", "services/"])
+    
+    // Edit files
+    edit_file("path/to/file", "description", "code changes")
+    
+    // Check patterns
+    grep_search("pattern", "*.js")
+    ```
+
+8. WORKFLOW EXAMPLE
+-----------------
+8.1 Creating New Feature
+    ```cursor
+    // 1. Check documentation index
+    read_file("docs/project_documentation_index.txt", true, 1, 1)
+    
+    // 2. Read relevant documentation
+    read_file("docs/post_system.txt", false, 1, 250)
+    
+    // 3. Search for similar implementations
+    codebase_search("post component implementation", ["components/Post/"])
+    
+    // 4. Create new component
+    edit_file("components/Post/NewPost.jsx", "Creating new post component", `
+    // ... component code ...
+    `)
+    
+    // 5. Update documentation
+    edit_file("docs/post_system.txt", "Adding new post type", `
+    // ... documentation update ...
+    `)
+    ``` 

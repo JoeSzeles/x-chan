@@ -1,0 +1,282 @@
+POST CARD SYSTEM
+===============
+
+1. BASE POST STRUCTURE
+--------------------
+1.1 Post Model
+    ```javascript
+    // post.model.js
+    const postSchema = new mongoose.Schema({
+        author: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        type: {
+            type: String,
+            enum: ["standard", "service", "portfolio", "availability", "credentials"],
+            required: true,
+        },
+        content: {
+            text: String,
+            media: [{
+                type: String,
+                url: String,
+                alt: String,
+                order: Number,
+            }],
+        },
+        metadata: {
+            likes: { type: Number, default: 0 },
+            comments: { type: Number, default: 0 },
+            shares: { type: Number, default: 0 },
+            views: { type: Number, default: 0 },
+        },
+        visibility: {
+            type: String,
+            enum: ["public", "followers", "private"],
+            default: "public",
+        },
+        tags: [String],
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+        updatedAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    postSchema.index({ author: 1, createdAt: -1 });
+    postSchema.index({ type: 1, createdAt: -1 });
+    postSchema.index({ tags: 1 });
+    ```
+
+1.2 Base Post Component
+    ```javascript
+    // components/Post/BasePost.jsx
+    const BasePost = ({ post, children }) => {
+        return (
+            <div className="post-card">
+                {/* Post Header */}
+                <div className="post-header">
+                    <UserAvatar user={post.author} />
+                    <div className="post-meta">
+                        <UserName user={post.author} />
+                        <PostTimestamp date={post.createdAt} />
+                    </div>
+                    <PostActions post={post} />
+                </div>
+
+                {/* Post Content */}
+                <div className="post-content">
+                    {children}
+                </div>
+
+                {/* Post Footer */}
+                <div className="post-footer">
+                    <PostInteractions post={post} />
+                    <PostStats post={post} />
+                </div>
+            </div>
+        );
+    };
+    ```
+
+2. POST TYPES
+-----------
+2.1 Standard Post
+    ```javascript
+    // components/Post/StandardPost.jsx
+    const StandardPost = ({ post }) => {
+        return (
+            <BasePost post={post}>
+                <div className="standard-content">
+                    <PostText text={post.content.text} />
+                    <PostMedia media={post.content.media} />
+                </div>
+            </BasePost>
+        );
+    };
+    ```
+
+2.2 Service Post
+    ```javascript
+    // components/Post/ServicePost.jsx
+    const ServicePost = ({ post }) => {
+        return (
+            <BasePost post={post}>
+                <div className="service-content">
+                    <ServiceTitle title={post.content.title} />
+                    <ServiceDescription description={post.content.description} />
+                    <ServicePricing pricing={post.content.pricing} />
+                    <ServiceAvailability availability={post.content.availability} />
+                    <ServiceMedia media={post.content.media} />
+                </div>
+            </BasePost>
+        );
+    };
+    ```
+
+2.3 Portfolio Post
+    ```javascript
+    // components/Post/PortfolioPost.jsx
+    const PortfolioPost = ({ post }) => {
+        return (
+            <BasePost post={post}>
+                <div className="portfolio-content">
+                    <PortfolioProject project={post.content.project} />
+                    <PortfolioSkills skills={post.content.skills} />
+                    <PortfolioMedia media={post.content.media} />
+                    <PortfolioLinks links={post.content.links} />
+                </div>
+            </BasePost>
+        );
+    };
+    ```
+
+3. POST EDITORS
+-------------
+3.1 Base Editor
+    ```javascript
+    // components/Editor/BaseEditor.jsx
+    const BaseEditor = ({ post, onSave }) => {
+        return (
+            <div className="post-editor">
+                <EditorHeader post={post} />
+                <EditorContent post={post} onChange={onSave} />
+                <EditorFooter post={post} onSave={onSave} />
+            </div>
+        );
+    };
+    ```
+
+3.2 Type-Specific Editors
+    ```javascript
+    // components/Editor/ServiceEditor.jsx
+    const ServiceEditor = ({ post, onSave }) => {
+        return (
+            <BaseEditor post={post} onSave={onSave}>
+                <ServiceForm
+                    title={post.content.title}
+                    description={post.content.description}
+                    pricing={post.content.pricing}
+                    availability={post.content.availability}
+                    onChange={onSave}
+                />
+            </BaseEditor>
+        );
+    };
+    ```
+
+4. POST FACTORY
+-------------
+4.1 Post Component Factory
+    ```javascript
+    // components/Post/PostFactory.jsx
+    const PostFactory = ({ post }) => {
+        const components = {
+            standard: StandardPost,
+            service: ServicePost,
+            portfolio: PortfolioPost,
+            availability: AvailabilityPost,
+            credentials: CredentialsPost,
+        };
+
+        const PostComponent = components[post.type] || StandardPost;
+        return <PostComponent post={post} />;
+    };
+    ```
+
+4.2 Editor Factory
+    ```javascript
+    // components/Editor/EditorFactory.jsx
+    const EditorFactory = ({ post, onSave }) => {
+        const editors = {
+            standard: StandardEditor,
+            service: ServiceEditor,
+            portfolio: PortfolioEditor,
+            availability: AvailabilityEditor,
+            credentials: CredentialsEditor,
+        };
+
+        const EditorComponent = editors[post.type] || StandardEditor;
+        return <EditorComponent post={post} onSave={onSave} />;
+    };
+    ```
+
+5. POST STYLES
+------------
+5.1 Base Styles
+    ```css
+    /* styles/post/base.css */
+    .post-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        margin-bottom: var(--spacing-md);
+        overflow: hidden;
+    }
+
+    .post-header {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-sm);
+    }
+
+    .post-content {
+        padding: var(--spacing-sm);
+    }
+
+    .post-footer {
+        padding: var(--spacing-sm);
+        border-top: 1px solid var(--border-color);
+    }
+    ```
+
+5.2 Type-Specific Styles
+    ```css
+    /* styles/post/service.css */
+    .service-content {
+        display: grid;
+        gap: var(--spacing-sm);
+    }
+
+    .service-pricing {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .service-availability {
+        display: flex;
+        gap: var(--spacing-xs);
+    }
+    ```
+
+6. CONSIDERATIONS
+---------------
+6.1 Performance
+    - Lazy loading of post components
+    - Virtual scrolling for post lists
+    - Image optimization
+    - Caching strategies
+
+6.2 User Experience
+    - Responsive design
+    - Loading states
+    - Error handling
+    - Accessibility
+
+6.3 Data Management
+    - Efficient data fetching
+    - Real-time updates
+    - State management
+    - Data validation
+
+6.4 Extensibility
+    - Easy addition of new post types
+    - Customizable components
+    - Theme support
+    - Plugin system 

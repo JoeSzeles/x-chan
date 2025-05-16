@@ -1,0 +1,396 @@
+COUNTER SYSTEM
+=============
+
+1. EXISTING COUNTERS
+------------------
+1.1 Likes Counter
+    Frontend:
+    - Components: PostCard.jsx
+    - Features:
+        * Real-time counter updates
+        * Optimistic updates
+        * Loading states
+        * Error handling
+    - State Management:
+        * Local counter state
+        * Server-synced count
+        * Loading state
+    - API Endpoints:
+        * GET /api/posts/:id/likes/count
+        * POST /api/posts/:id/like
+        * DELETE /api/posts/:id/like
+
+    Backend:
+    - Models: Post, Like
+    - Features:
+        * Counter caching
+        * Atomic updates
+        * Real-time updates
+        * Data consistency
+
+2. COUNTER IMPLEMENTATION TEMPLATE
+-------------------------------
+2.1 Frontend Counter Component
+    ```javascript
+    import { useState, useEffect } from "react";
+    import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+    import { motion } from "framer-motion";
+
+    const Counter = ({ targetId, type }) => {
+        const [localCount, setLocalCount] = useState(0);
+        const queryClient = useQueryClient();
+
+        // 1. Fetch current count
+        const { data: serverCount, isLoading } = useQuery({
+            queryKey: [`${type}Count`, targetId],
+            queryFn: async () => {
+                const res = await fetch(`/api/${type}s/${targetId}/count`);
+                const data = await res.json();
+                return data.count;
+            },
+        });
+
+        // 2. Update local count when server count changes
+        useEffect(() => {
+            if (serverCount !== undefined) {
+                setLocalCount(serverCount);
+            }
+        }, [serverCount]);
+
+        // 3. Mutation for incrementing/decrementing
+        const { mutate: updateCount } = useMutation({
+            mutationFn: async (increment) => {
+                const res = await fetch(`/api/${type}s/${targetId}/${increment ? 'increment' : 'decrement'}`, {
+                    method: 'POST',
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            onMutate: (increment) => {
+                // Optimistic update
+                setLocalCount(prev => increment ? prev + 1 : prev - 1);
+            },
+            onError: () => {
+                // Revert on error
+                setLocalCount(serverCount);
+            },
+            onSettled: () => {
+                // Refetch to ensure consistency
+                queryClient.invalidateQueries([`${type}Count`, targetId]);
+            },
+        });
+
+        return (
+            <motion.div
+                className="counter-container"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+            >
+                {isLoading ? (
+                    <LoadingSpinner size="sm" />
+                ) : (
+                    <span className="counter">{localCount}</span>
+                )}
+            </motion.div>
+        );
+    };
+    ```
+
+2.2 Backend Counter Implementation
+    ```javascript
+    // 1. Counter Model
+    const counterSchema = new mongoose.Schema({
+        target: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "TargetModel",
+            required: true,
+        },
+        type: {
+            type: String,
+            required: true,
+            enum: ["like", "comment", "repost", "view"],
+        },
+        count: {
+            type: Number,
+            default: 0,
+        },
+        lastUpdated: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // 2. Add indexes
+    counterSchema.index({ target: 1, type: 1 }, { unique: true });
+    counterSchema.index({ type: 1, count: -1 });
+
+    // 3. Add methods
+    counterSchema.statics.increment = async function(targetId, type) {
+        return this.findOneAndUpdate(
+            { target: targetId, type },
+            { $inc: { count: 1 }, lastUpdated: Date.now() },
+            { new: true, upsert: true }
+        );
+    };
+
+    counterSchema.statics.decrement = async function(targetId, type) {
+        return this.findOneAndUpdate(
+            { target: targetId, type },
+            { $inc: { count: -1 }, lastUpdated: Date.now() },
+            { new: true }
+        );
+    };
+
+    // 4. Controller functions
+    export const getCount = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const { type } = req.query;
+
+            const counter = await Counter.findOne({ target: id, type });
+            res.status(200).json({ count: counter?.count || 0 });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    export const incrementCount = async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            const { type } = req.body;
+
+            const counter = await Counter.increment(id, type);
+            
+            // Emit real-time update
+            io.to(`counter:${id}`).emit('counterUpdate', {
+                type,
+                count: counter.count
+            });
+
+            res.status(200).json({ count: counter.count });
+        } catch (error) {
+            next(error);
+        }
+    };
+    ```
+
+3. COUNTER CONSIDERATIONS
+-----------------------
+3.1 Performance
+    - Caching strategy
+    - Batch updates
+    - Index optimization
+    - Query optimization
+
+3.2 Data Consistency
+    - Atomic operations
+    - Transaction support
+    - Error handling
+    - Recovery mechanisms
+
+3.3 Real-time Updates
+    - WebSocket integration
+    - Event emission
+    - Client synchronization
+    - Fallback mechanisms
+
+3.4 Scalability
+    - Sharding strategy
+    - Load balancing
+    - Rate limiting
+    - Monitoring
+
+4. EXAMPLE: IMPLEMENTING LIKES COUNTER
+-----------------------------------
+4.1 Frontend Implementation
+    ```javascript
+    const LikeCounter = ({ postId }) => {
+        const [localCount, setLocalCount] = useState(0);
+        const [isLiked, setIsLiked] = useState(false);
+        const queryClient = useQueryClient();
+
+        // Fetch current like count and status
+        const { data: likeData, isLoading } = useQuery({
+            queryKey: ['likeCount', postId],
+            queryFn: async () => {
+                const [countRes, statusRes] = await Promise.all([
+                    fetch(`/api/posts/${postId}/likes/count`),
+                    fetch(`/api/posts/${postId}/like/status`)
+                ]);
+                const [countData, statusData] = await Promise.all([
+                    countRes.json(),
+                    statusRes.json()
+                ]);
+                return {
+                    count: countData.count,
+                    isLiked: statusData.isLiked
+                };
+            }
+        });
+
+        // Update local state
+        useEffect(() => {
+            if (likeData) {
+                setLocalCount(likeData.count);
+                setIsLiked(likeData.isLiked);
+            }
+        }, [likeData]);
+
+        // Like/Unlike mutation
+        const { mutate: toggleLike } = useMutation({
+            mutationFn: async () => {
+                const res = await fetch(`/api/posts/${postId}/like`, {
+                    method: isLiked ? 'DELETE' : 'POST'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                return data;
+            },
+            onMutate: () => {
+                // Optimistic update
+                setLocalCount(prev => isLiked ? prev - 1 : prev + 1);
+                setIsLiked(prev => !prev);
+            },
+            onError: () => {
+                // Revert on error
+                setLocalCount(likeData.count);
+                setIsLiked(likeData.isLiked);
+            },
+            onSettled: () => {
+                queryClient.invalidateQueries(['likeCount', postId]);
+            }
+        });
+
+        return (
+            <div className="flex items-center space-x-1">
+                <button
+                    onClick={() => toggleLike()}
+                    className={`like-button ${isLiked ? 'liked' : ''}`}
+                    disabled={isLoading}
+                >
+                    <HeartIcon filled={isLiked} />
+                </button>
+                <span className="text-sm text-gray-500">
+                    {isLoading ? <LoadingSpinner size="sm" /> : localCount}
+                </span>
+            </div>
+        );
+    };
+    ```
+
+4.2 Backend Implementation
+    ```javascript
+    // In like.model.js
+    const likeSchema = new mongoose.Schema({
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        post: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post",
+            required: true,
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    likeSchema.index({ user: 1, post: 1 }, { unique: true });
+    likeSchema.index({ post: 1, createdAt: -1 });
+
+    // Add methods
+    likeSchema.statics.getLikeCount = async function(postId) {
+        return this.countDocuments({ post: postId });
+    };
+
+    // In counter.model.js
+    const counterSchema = new mongoose.Schema({
+        post: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post",
+            required: true,
+        },
+        type: {
+            type: String,
+            required: true,
+            enum: ["likes", "comments", "reposts", "views"],
+        },
+        count: {
+            type: Number,
+            default: 0,
+        },
+        lastUpdated: {
+            type: Date,
+            default: Date.now,
+        },
+    });
+
+    // Add indexes
+    counterSchema.index({ post: 1, type: 1 }, { unique: true });
+    counterSchema.index({ type: 1, count: -1 });
+
+    // Add methods
+    counterSchema.statics.updateCount = async function(postId, type, increment) {
+        return this.findOneAndUpdate(
+            { post: postId, type },
+            { 
+                $inc: { count: increment ? 1 : -1 },
+                lastUpdated: Date.now()
+            },
+            { new: true, upsert: true }
+        );
+    };
+
+    // In like.controller.js
+    export const toggleLike = async (req, res, next) => {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        try {
+            const { id } = req.params;
+            const userId = req.user._id;
+
+            // Check if like exists
+            const existingLike = await Like.findOne({
+                user: userId,
+                post: id,
+            });
+
+            let result;
+            if (existingLike) {
+                // Remove like
+                await existingLike.remove({ session });
+                await Counter.updateCount(id, "likes", false);
+                result = { isLiked: false };
+            } else {
+                // Add like
+                await Like.create([{
+                    user: userId,
+                    post: id,
+                }], { session });
+                await Counter.updateCount(id, "likes", true);
+                result = { isLiked: true };
+            }
+
+            await session.commitTransaction();
+
+            // Emit real-time update
+            io.to(`post:${id}`).emit('likeUpdate', {
+                count: await Counter.findOne({ post: id, type: "likes" }).count,
+                isLiked: result.isLiked
+            });
+
+            res.status(200).json(result);
+        } catch (error) {
+            await session.abortTransaction();
+            next(error);
+        } finally {
+            session.endSession();
+        }
+    };
+    
