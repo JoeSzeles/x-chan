@@ -11,14 +11,12 @@ export default defineConfig({
 		strictPort: true,
 		cors: true,
 		hmr: {
-			port: 3000,
-			host: '0.0.0.0',
-			protocol: 'ws',
-			clientPort: 443
+			clientPort: 443,
+			host: '0.0.0.0'
 		},
-		allowedHosts: ['.replit.dev', '.worf.replit.dev'],
 		headers: {
-			'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+			'Access-Control-Allow-Origin': '*',
+			'Content-Security-Policy': "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'"
 		},
 		proxy: {
 			"/api": {
