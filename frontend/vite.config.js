@@ -6,11 +6,13 @@ import path from 'path';
 export default defineConfig({
 	plugins: [react()],
 	server: {
-		host: true,
-		allowedHosts: ['.replit.dev'],
 		port: 3000,
 		host: '0.0.0.0',
-		strictPort: true,
+		hmr: {
+			host: '0.0.0.0',
+			protocol: 'ws',
+			clientPort: 443
+		},
 		cors: true,
 		hmr: {
 			host: '0.0.0.0',
