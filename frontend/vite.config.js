@@ -13,8 +13,10 @@ export default defineConfig({
 		hmr: {
 			port: 3000,
 			host: '0.0.0.0',
-			protocol: 'ws'
+			protocol: 'ws',
+			clientPort: 443
 		},
+		allowedHosts: ['.replit.dev', '.worf.replit.dev'],
 		headers: {
 			'Content-Security-Policy': "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
 		},
