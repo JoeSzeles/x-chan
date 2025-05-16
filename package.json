@@ -32,6 +32,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^7.0.3",
 		"multer": "^1.4.5-lts.1",
+		"nodemon": "^3.1.10",
 		"postcss": "^8.5.3",
 		"tailwindcss": "^4.1.7",
 		"uuid": "^11.1.0"
