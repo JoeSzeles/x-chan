@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [react()],
 	server: {
@@ -14,17 +13,9 @@ export default defineConfig({
 			clientPort: 443
 		},
 		cors: true,
-		hmr: {
-			host: '0.0.0.0',
-			port: 5173,
-			protocol: 'ws'
-		},
 		headers: {
 			'Access-Control-Allow-Origin': '*',
 			'Content-Security-Policy': "default-src * 'self' data: 'unsafe-inline' 'unsafe-eval' blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; style-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; font-src * 'self' data:; connect-src *;",
-			'Cross-Origin-Embedder-Policy': 'require-corp',
-			'Cross-Origin-Opener-Policy': 'same-origin',
-			'Cross-Origin-Resource-Policy': 'cross-origin'
 		},
 		proxy: {
 			"/api": {
@@ -58,71 +49,6 @@ export default defineConfig({
 					});
 				},
 			},
-			"/googleads": {
-				target: "https://googleads.g.doubleclick.net",
-				changeOrigin: true,
-				secure: true,
-				rewrite: (path) => path.replace(/^\/googleads/, ''),
-				configure: (proxy, _options) => {
-					proxy.on('proxyRes', (proxyRes, req, _res) => {
-						proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-						proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
-						proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
-					});
-				}
-			},
-			"/socket.io": {
-				target: process.env.VITE_API_URL || "http://localhost:5000",
-				changeOrigin: true,
-				secure: false,
-				ws: true,
-				configure: (proxy, _options) => {
-					proxy.on('error', (err, _req, _res) => {
-						console.error('WebSocket proxy error:', err);
-					});
-					proxy.on('upgrade', (req, socket, head) => {
-						console.log('WebSocket upgrade request:', req.url);
-					});
-				}
-			},
-			"/i.4cdn.org": {
-				target: "https://i.4cdn.org",
-				changeOrigin: true,
-				secure: true,
-				rewrite: (path) => path.replace(/^\/i.4cdn.org/, ''),
-				configure: (proxy, _options) => {
-					proxy.on('proxyRes', (proxyRes, req, _res) => {
-						proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-						proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
-						proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
-						proxyRes.headers['Cross-Origin-Resource-Policy'] = 'cross-origin';
-					});
-				}
-			},
-			"/cdn": {
-				target: "https://i.4cdn.org",
-				changeOrigin: true,
-				secure: true,
-				rewrite: (path) => path.replace(/^\/cdn/, ''),
-				configure: (proxy, _options) => {
-					proxy.on('proxyRes', (proxyRes, req, _res) => {
-						proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-						proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS';
-						proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
-						proxyRes.headers['Cross-Origin-Resource-Policy'] = 'cross-origin';
-					});
-				}
-			}
-		},
-		headers: {
-			'Access-Control-Allow-Origin': '*',
-			'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-			'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization, Cookie',
-			'Access-Control-Allow-Credentials': 'true'
-		},
-		hmr: {
-			overlay: true,
-			clientPort: 3000
 		},
 		fs: {
 			strict: true,
