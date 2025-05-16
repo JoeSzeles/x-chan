@@ -65,6 +65,11 @@ const allowedOrigins = [
     'https://i.4cdn.org'
 ];
 
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss://*.replit.dev https://*.launchdarkly.com https://*.stripe.network");
+    next();
+});
+
 app.use(cors({
     origin: function(origin, callback) {
         if (!origin) return callback(null, true);
@@ -77,8 +82,9 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'ngrok-skip-browser-warning', 'Origin', 'Accept', 'X-Requested-With', 'Cross-Origin-Resource-Policy'],
-    exposedHeaders: ['Set-Cookie', 'Access-Control-Allow-Origin', 'Cross-Origin-Resource-Policy']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'ngrok-skip-browser-warning', 'Origin', 'Accept', 'X-Requested-With', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Origin'],
+    exposedHeaders: ['Set-Cookie', 'Access-Control-Allow-Origin', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers'],
+    credentials: true
 }));
 
 // Update body-parser limits
