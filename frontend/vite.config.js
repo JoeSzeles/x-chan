@@ -9,6 +9,7 @@ export default defineConfig({
 		port: 3000,
 		host: true,
 		strictPort: true,
+		allowedHosts: ["fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev"],
 		proxy: {
 			"/api": {
 				target: process.env.VITE_API_URL || "http://localhost:5000",
