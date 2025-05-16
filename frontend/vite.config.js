@@ -12,10 +12,10 @@ export default defineConfig({
 			host: '*.replit.dev'
 		},
 		cors: true,
-		allowedHosts: ['*.replit.dev', '*.worf.replit.dev'],
+		allowedHosts: ['*.replit.dev', '*.worf.replit.dev', 'fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev'],
 		headers: {
 			'Access-Control-Allow-Origin': '*',
-			'Content-Security-Policy': "default-src * 'self' data: 'unsafe-inline' 'unsafe-eval' blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; style-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; font-src * 'self' data:; connect-src *;",
+			'Content-Security-Policy': "default-src * 'self' data: 'unsafe-inline' 'unsafe-eval' blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' blob: data: https://m.stripe.network; style-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; font-src * 'self' data:; connect-src *;",
 		},
 		proxy: {
 			"/api": {
