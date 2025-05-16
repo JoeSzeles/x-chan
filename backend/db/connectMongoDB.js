@@ -6,14 +6,16 @@ const connectMongoDB = async () => {
       ? process.env.MONGODB_URI 
       : `mongodb://${encodeURIComponent(process.env.MONGODB_URI)}`;
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 75000,
-      connectTimeoutMS: 50000,
+      serverSelectionTimeoutMS: 60000,
+      socketTimeoutMS: 90000,
+      connectTimeoutMS: 60000,
       keepAlive: true,
       retryWrites: true,
       w: 'majority',
       retryReads: true,
-      maxPoolSize: 10
+      maxPoolSize: 10,
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     });
     console.log("Connected to MongoDB");
   } catch (error) {

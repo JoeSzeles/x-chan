@@ -66,8 +66,10 @@ const allowedOrigins = [
 ];
 
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com; style-src 'self' 'unsafe-inline' https://*.replit.dev; img-src 'self' data: blob: https: *; connect-src 'self' ws: wss: http: https: wss://*.replit.dev https://*.launchdarkly.com https://*.stripe.network https://replit.com");
+    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://events.launchdarkly.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://m.stripe.network; style-src 'self' 'unsafe-inline' https://*.replit.dev; img-src 'self' data: blob: https: *; connect-src 'self' ws: wss: http: https: wss://*.replit.dev https://*.launchdarkly.com https://*.stripe.network https://replit.com https://events.launchdarkly.com");
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
 
