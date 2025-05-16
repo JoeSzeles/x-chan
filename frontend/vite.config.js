@@ -8,11 +8,11 @@ export default defineConfig({
 		port: 3000,
 		host: '0.0.0.0',
 		hmr: {
-			host: '0.0.0.0',
+			host: 'localhost',
 			protocol: 'ws',
-			clientPort: 443
 		},
 		cors: true,
+		allowedHosts: ['*.replit.dev', '*.worf.replit.dev'],
 		headers: {
 			'Access-Control-Allow-Origin': '*',
 			'Content-Security-Policy': "default-src * 'self' data: 'unsafe-inline' 'unsafe-eval' blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; style-src * 'self' 'unsafe-inline'; img-src * 'self' data: blob:; font-src * 'self' data:; connect-src *;",
