@@ -6,10 +6,10 @@ export default defineConfig({
 	plugins: [react()],
 	server: {
 		port: 3000,
-		host: '0.0.0.0',
+		host: true,
 		hmr: {
-			host: 'localhost',
-			protocol: 'ws',
+			clientPort: 443,
+			host: '*.replit.dev'
 		},
 		cors: true,
 		allowedHosts: ['*.replit.dev', '*.worf.replit.dev'],
