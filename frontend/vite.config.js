@@ -18,7 +18,7 @@ export default defineConfig({
 		allowedHosts: ['*.replit.dev', '*.worf.replit.dev', 'fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev'],
 		headers: {
 			'Access-Control-Allow-Origin': '*',
-			'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network ws://localhost:* http://localhost:*",
+			'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev https://replit.com https://events.launchdarkly.com; style-src 'self' 'unsafe-inline' 'unsafe-hashes'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://localhost:* http://localhost:* https://replit.com; frame-src 'self' https://*.replit.dev https://*.worf.replit.dev https://replit.com",
 		},
 		proxy: {
 			"/api": {
