@@ -6,9 +6,9 @@ const connectMongoDB = async () => {
       ? process.env.MONGODB_URI 
       : `mongodb://${encodeURIComponent(process.env.MONGODB_URI)}`;
     await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 60000,
-      socketTimeoutMS: 90000,
-      connectTimeoutMS: 60000,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
       keepAlive: true,
       retryWrites: true,
       w: 'majority',

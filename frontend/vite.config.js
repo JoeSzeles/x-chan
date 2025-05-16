@@ -13,12 +13,9 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     hmr: {
-      clientPort: 443,
-      host: true,
+      host: '0.0.0.0',
       port: 3000,
-      protocol: 'wss',
-      timeout: 120000,
-      overlay: true
+      protocol: 'ws'
     },
     cors: true,
     allowedHosts: ['*.replit.dev', '*.worf.replit.dev', 'fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev'],
