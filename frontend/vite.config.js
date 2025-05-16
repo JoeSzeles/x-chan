@@ -11,8 +11,9 @@ export default defineConfig({
 			clientPort: 443,
 			host: '*.replit.dev',
 			protocol: 'wss',
-			timeout: 60000,
-			overlay: false
+			timeout: 120000,
+			overlay: false,
+			path: '/_hmr'
 		},
 		cors: true,
 		allowedHosts: ['*.replit.dev', '*.worf.replit.dev', 'fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev'],
