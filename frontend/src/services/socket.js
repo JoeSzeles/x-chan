@@ -8,18 +8,19 @@ class SocketService {
   }
 
   connect() {
-    if (!this.socket) {
-      this.socket = io(SOCKET_URL, {
-        path: '/socket.io/',
-        transports: ['polling', 'websocket'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        timeout: 10000,
-        withCredentials: true,
-        autoConnect: true,
-        forceNew: true
-      });
+        if (!this.socket) {
+            this.socket = io(SOCKET_URL, {
+                path: '/socket.io/',
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 10,
+                reconnectionDelay: 2000,
+                timeout: 20000,
+                withCredentials: true,
+                autoConnect: true,
+                forceNew: true,
+                secure: true
+            });
 
       this.socket.on('connect', () => {
         console.log('Connected to socket server');
@@ -86,4 +87,4 @@ class SocketService {
   }
 }
 
-export const socketService = new SocketService(); 
+export const socketService = new SocketService();
