@@ -14,7 +14,8 @@ export default defineConfig({
     host: '0.0.0.0',
     hmr: {
       clientPort: 443,
-      host: '*.replit.dev',
+      host: true,
+      port: 3000,
       protocol: 'wss',
       timeout: 120000,
       overlay: true
@@ -23,7 +24,7 @@ export default defineConfig({
     allowedHosts: ['*.replit.dev', '*.worf.replit.dev', 'fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev'],
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev https://replit.com https://events.launchdarkly.com https://beacon.replit.com; style-src 'self' 'unsafe-inline' 'unsafe-hashes' data: blob:; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://localhost:* http://localhost:* https://replit.com https://beacon.replit.com",
+      'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev https://replit.com https://events.launchdarkly.com https://beacon.replit.com; style-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com",
     },
     proxy: {
       "/api": {
