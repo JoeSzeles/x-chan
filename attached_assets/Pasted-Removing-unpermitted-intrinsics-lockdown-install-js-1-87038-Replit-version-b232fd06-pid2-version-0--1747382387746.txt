@@ -1,0 +1,113 @@
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Replit version b232fd06, pid2 version 0.0.1308 3530-c390d4816391aea0.js:1:281141
+
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      _app-f1d812fcf2f8b811.js:38:5277
+ : 
+_app-f1d812fcf2f8b811.js:38:5277
+NetworkError when attempting to fetch resource. _app-f1d812fcf2f8b811.js:38:5277
+[analytics.js] Failed to load Analytics.js TypeError: NetworkError when attempting to fetch resource. _app-f1d812fcf2f8b811.js:38:5277
+Error sending segment performance metrics TypeError: NetworkError when attempting to fetch resource. _app-f1d812fcf2f8b811.js:38:5277
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='” preload.js:139:16
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='” inpage.js:1:374070
+TypeError: styleElement.sheet is null element-collapser.js:91:9
+Content-Security-Policy: The page’s settings blocked an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://m.stripe.com/6. (Reason: CORS request did not succeed). Status code: (null). 2
+Uncaught (in promise) undefined
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self' 'sha256-pCKj8XxPGtRrg2t2F8Jh2kmynJ/aKJ+cMRDcY36Ef6c='” inpage.js:1:374070
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self' 'sha256-pCKj8XxPGtRrg2t2F8Jh2kmynJ/aKJ+cMRDcY36Ef6c='” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self' https://hcaptcha.com https://*.hcaptcha.com” preload.js:139:16
+Removing unpermitted intrinsics 2 lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self' https://hcaptcha.com https://*.hcaptcha.com” inpage.js:1:374070
+ : 
+vendors~AddressAutocomplete~AffirmInContext~AfterpayInContext~AmazonPayButton~ApplePay~AppleWebProvi~0dbe4425.2b7205e3efe2e00f28af.bundle.js:16:16109
+TypeError: styleElement.sheet is null element-collapser.js:91:9
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+TypeError: styleElement.sheet is null element-collapser.js:91:9
+Content-Security-Policy: The page’s settings blocked an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+ : 
+hcaptcha.html:14:56803
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+ : 
+hcaptcha.html:14:56803
+TypeError: styleElement.sheet is null element-collapser.js:91:9
+Content-Security-Policy: The page’s settings blocked an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self' https://hcaptcha.com https://*.hcaptcha.com” element-collapser.js:88:57
+TypeError: styleElement.sheet is null 2 element-collapser.js:91:9
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+TypeError: styleElement.sheet is null element-collapser.js:91:9
+Cookie “__cflb” has been rejected because it is in a cross-site context and its “SameSite” is “Lax” or “Strict”. 2 463b917e-e264-403f-ad34-34af0ee10294
+Cookie “__cflb” has been rejected because it is in a cross-site context and its “SameSite” is “Lax” or “Strict”. 2 24ed0064-62cf-4d42-9960-5dd1a41d4e29
+Cookie “__cflb” has been rejected because it is in a cross-site context and its “SameSite” is “Lax” or “Strict”. 2 463b917e-e264-403f-ad34-34af0ee10294
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://m.stripe.com/6. (Reason: CORS request did not succeed). Status code: (null). 3
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820 because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:18706
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820. (Reason: CORS request did not succeed). Status code: (null).
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820 because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:18706
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820. (Reason: CORS request did not succeed). Status code: (null).
+Content-Security-Policy: (Report-Only policy) The page’s settings would block a JavaScript eval (script-src) from being executed because it violates the following directive: “script-src 'none'” (Missing 'unsafe-eval') ~:112:31
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'none'” preload.js:139:16
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820 because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:18706
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820. (Reason: CORS request did not succeed). Status code: (null).
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820 because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:18706
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820. (Reason: CORS request did not succeed). Status code: (null).
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820 because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:18706
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820. (Reason: CORS request did not succeed). Status code: (null).
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820 because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:18706
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820. (Reason: CORS request did not succeed). Status code: (null).
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://api.sorryapp.com/v1/pages/27c7b5fc because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://api.sorryapp.com/v1/pages/27c7b5fc because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Content-Security-Policy: (Report-Only policy) The page’s settings would block the loading of a resource (connect-src) at https://replit.com/graphql because it violates the following directive: “connect-src 'none'” _app-f1d812fcf2f8b811.js:38:9046
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Removing unpermitted intrinsics lockdown-install.js:1:87038
