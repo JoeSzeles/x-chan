@@ -11,8 +11,9 @@ export default defineConfig({
 		strictPort: true,
 		cors: true,
 		hmr: {
-			clientPort: 443,
-			host: '0.0.0.0'
+			clientPort: 3000,
+			host: '0.0.0.0',
+			protocol: 'ws'
 		},
 		headers: {
 			'Access-Control-Allow-Origin': '*',
