@@ -11,9 +11,11 @@ const connectMongoDB = async () => {
 		}
 
 		mongoose.set('strictQuery', false);
-		const conn = await mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/twitter-clone", {
+		const mongoUri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/twitter-clone";
+		const conn = await mongoose.connect(mongoUri, {
 			useNewUrlParser: true,
-			useUnifiedTopology: true
+			useUnifiedTopology: true,
+			serverSelectionTimeoutMS: 5000
 		});
 		console.log(`MongoDB connected: ${conn.connection.host}`);
 	} catch (error) {
