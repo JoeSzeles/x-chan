@@ -1,0 +1,64 @@
+[vite] connecting... client:471:9
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/@vite/client :: setupWebSocket :: line 509"  data: no]). client:506:13
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:3000/ because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” client:509:20
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. socket__io-client.js:1061:77
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=xmpj5nrk because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=xmpj6ddt because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=xmrvv12y because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=xmrvwmi2 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Socket.IO connection error: Error: timeout
+    timer manager.js:140
+NewsPage.jsx:183:15
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. socket__io-client.js:1061:77
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+Socket.IO connection error: Error: websocket error
+    TransportError transport.js:7
+    onError transport.js:39
+    onerror websocket.js:49
+NewsPage.jsx:183:15
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+Socket.IO connection error: Error: websocket error
+    TransportError transport.js:7
+    onError transport.js:39
+    onerror websocket.js:49
+NewsPage.jsx:183:15
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+Socket.IO connection error: Error: websocket error
+    TransportError transport.js:7
+    onError transport.js:39
+    onerror websocket.js:49
+NewsPage.jsx:183:15

@@ -75,10 +75,25 @@ const matchWildcard = (origin, pattern) => {
 };
 
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'unsafe-inline' 'unsafe-eval' ws: wss:;");
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = ['https://*.replit.dev', 'https://*.worf.replit.dev'];
+    const origin = req.headers.origin;
+    
+    if (origin && allowedOrigins.some(allowed => origin.match(new RegExp(allowed.replace('*', '.*'))))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev; " +
+        "connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev " +
+        "ws://0.0.0.0:* wss://0.0.0.0:* http://0.0.0.0:* https://0.0.0.0:* " +
+        "https://*.cloudinary.com; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
+        "style-src 'self' 'unsafe-inline';"
+    );
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
 });
 
@@ -159,24 +174,15 @@ if (process.env.NODE_ENV === "production") {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: function(origin, callback) {
-            if (!origin) return callback(null, true);
-
-            if (allowedOrigins.indexOf(origin) === -1) {
-                const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-                return callback(new Error(msg), false);
-            }
-            return callback(null, true);
-        },
+        origin: true,
         methods: ['GET', 'POST'],
         credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'ngrok-skip-browser-warning'],
-        exposedHeaders: ['Set-Cookie']
+        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
     },
-    transports: ['polling'],
-    pingTimeout: 10000,
-    pingInterval: 5000,
-    connectTimeout: 10000,
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    connectTimeout: 30000,
     maxHttpBufferSize: 1e8,
     path: '/socket.io/',
     allowEIO3: true,
