@@ -174,12 +174,8 @@ class LeechService {
                 try {
                     console.log('[LeechService] Processing image:', originalThreadPost.image);
                     
-                    // Get direct image URL from 4chan
-                    const imageUrl = `${this.imgBase}/${board}/${originalThreadPost.tim}${originalThreadPost.ext}`;
-                    console.log('[LeechService] Direct image URL:', imageUrl);
-                    
                     // Download image from 4chan with proper headers
-                    const imageResponse = await axios.get(imageUrl, {
+                    const imageResponse = await axios.get(originalThreadPost.image, {
                         responseType: 'arraybuffer',
                         timeout: 10000,
                         headers: {
@@ -263,10 +259,9 @@ class LeechService {
             // Create the post data
             const postData = {
                 title: originalThreadPost.subject || `Thread #${threadId}`,
-                text: originalThreadPost.comment,
+                text: originalThreadPost.comment + (originalImageUrl ? `\n\n[Source Image: ${originalImageUrl}]` : ''),
                 user: userId,
-                img: uploadedImageUrl || originalThreadPost.image, // Try uploaded URL first, then original image
-                imageSource: originalImageUrl,
+                img: uploadedImageUrl, // This will be null if image processing failed
                 board: repostType === 'board' ? targetBoard : null,
                 boardName: boardName,
                 isPersonal: repostType === 'personal',
