@@ -6,14 +6,10 @@ export const updateCoverPhoto = async (req, res) => {
     try {
         console.log('CoverPhotoController: Update request received:', {
             body: req.body,
-            file: req.file,
             userId: req.user._id
         });
 
-        // If file was uploaded, use the Cloudinary URL
-        const content = req.file ? req.file.path : req.body.content;
-
-        const { type, metadata } = req.body;
+        const { type, content, metadata } = req.body;
         const userId = req.user._id;
 
         // Validate the request data
@@ -92,4 +88,4 @@ export const updateCoverPhoto = async (req, res) => {
             error: error.message 
         });
     }
-};
+}; 
