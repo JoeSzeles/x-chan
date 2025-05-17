@@ -87,7 +87,8 @@ app.use((req, res, next) => {
         "ws://0.0.0.0:* wss://0.0.0.0:* http://0.0.0.0:* https://0.0.0.0:* " +
         "ws://localhost:* wss://localhost:* http://localhost:* https://localhost:* " +
         "https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com " +
-        "https://*.ngrok.io wss://*.ngrok.io http://*.ngrok.io ws://*.ngrok.io; " +
+        "https://*.ngrok.io wss://*.ngrok.io http://*.ngrok.io ws://*.ngrok.io " + 
+        "https://replit.com https://beacon.replit.com; " +
         "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
         "style-src 'self' 'unsafe-inline';"
     );
