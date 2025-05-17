@@ -59,7 +59,7 @@ const LoginPage = () => {
 					alt="4Chan Logo" 
 					className='w-32 h-32 object-contain'
 				/>
-				<h1 className='text-3xl font-bold'>Sign in to 4Chan</h1>
+				<h1 className='text-3xl font-bold'>Sign in to XChan</h1>
 				<form className='flex flex-col gap-4 w-full' onSubmit={handleSubmit}>
 					<input
 						type='text'
