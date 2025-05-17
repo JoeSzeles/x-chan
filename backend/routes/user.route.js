@@ -83,7 +83,7 @@ router.get("/online", protectRoute, getOnlineUsers);
 router.get("/:username/followers", protectRoute, getFollowers);
 router.get("/:username/following", protectRoute, getFollowing);
 router.post("/follow/:id", protectRoute, followUnfollowUser);
-router.post("/update", protectRoute, updateUser);
+router.post("/update", protectRoute, handleUpload, updateUser);
 router.put("/settings", protectRoute, updateSettings);
 
 // Update message permissions
