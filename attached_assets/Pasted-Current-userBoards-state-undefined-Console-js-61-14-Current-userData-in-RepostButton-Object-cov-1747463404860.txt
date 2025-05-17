@@ -1,0 +1,69 @@
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462998/posts/ibeo2fhljlv2yuuga1xc.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462896/posts/q6juh5kwrb6itdhzyred.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462812/posts/hvbkhxfgqnzfzqhyhtg4.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462400/posts/z9l0qcaespjlbmfenr8y.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462998/posts/ibeo2fhljlv2yuuga1xc.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462896/posts/q6juh5kwrb6itdhzyred.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462812/posts/hvbkhxfgqnzfzqhyhtg4.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462400/posts/z9l0qcaespjlbmfenr8y.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Uncaught (in promise) TypeError: NetworkError when attempting to fetch resource.
+    fetch Network.js:219
+    loadImage CachedImage.jsx:126
+    CachedImage CachedImage.jsx:196
+    React 12
+4 Network.js:219:36
+Uncaught (in promise) TypeError: NetworkError when attempting to fetch resource.
+    fetch Network.js:219
+    loadImage CachedImage.jsx:126
+    CachedImage CachedImage.jsx:196
+    React 11
+4 Network.js:219:36
+[RepostButton] Fetching boards for user: 682828859d23238ff0dd5c75 Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Current userBoards state: undefined Console.js:61:14
+Current userData in RepostButton: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: [], following: [], … }
+Console.js:61:14
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462998/posts/ibeo2fhljlv2yuuga1xc.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462896/posts/q6juh5kwrb6itdhzyred.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462812/posts/hvbkhxfgqnzfzqhyhtg4.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462400/posts/z9l0qcaespjlbmfenr8y.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462998/posts/ibeo2fhljlv2yuuga1xc.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462896/posts/q6juh5kwrb6itdhzyred.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462812/posts/hvbkhxfgqnzfzqhyhtg4.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462400/posts/z9l0qcaespjlbmfenr8y.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
