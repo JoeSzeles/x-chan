@@ -31,19 +31,6 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
-}).single('profileImg'); // Configure for single file upload named 'profileImg'
+});
 
-const handleUpload = (req, res, next) => {
-  upload(req, res, (err) => {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).json({ error: `Upload error: ${err.message}` });
-    } else if (err) {
-      return res.status(500).json({ error: 'Server error during upload' });
-    }
-    next();
-  });
-};
-
-export { handleUpload, upload };
-
-export { handleUpload, storage, fileFilter };
+export { upload, storage, fileFilter };

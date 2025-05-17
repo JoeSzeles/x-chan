@@ -10,27 +10,17 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB');
-                return;
-            }
-
             const formData = new FormData();
             formData.append('profileImg', file);
 
             try {
-                const response = await fetch('/api/users/update', {
-                    method: 'POST',
+                const response = await fetch('/api/users/update-profile', {
+                    method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
                     body: formData
                 });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Failed to update profile picture');
-                }
 
                 if (!response.ok) {
                     throw new Error('Failed to update profile picture');
