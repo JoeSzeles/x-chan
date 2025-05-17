@@ -19,8 +19,8 @@ import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
 import bookmarkRoutes from "./routes/bookmark.route.js";
-import ratingRoutes from "./routes/rating.routes.js";
-import commentRoutes from "./routes/comment.route.js";
+import ratingRoutes from './routes/rating.routes.js';
+import commentRoutes from './routes/comment.route.js';
 import grokRoutes from './routes/grok.js';
 import newsBotRoutes from './routes/newsBot.js';
 import boardRoutes from './routes/board.route.js';
@@ -83,27 +83,10 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-    origin: function(origin, callback) {
-        if (!origin) return callback(null, true);
-
-        const isAllowed = allowedOrigins.some(pattern => {
-            if (pattern.includes('*')) {
-                return matchWildcard(origin, pattern);
-            }
-            return origin === pattern;
-        });
-
-        if (!isAllowed) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'ngrok-skip-browser-warning', 'Origin', 'Accept', 'X-Requested-With', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Origin'],
-    exposedHeaders: ['Set-Cookie', 'Access-Control-Allow-Origin', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers'],
-    credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Update body-parser limits
