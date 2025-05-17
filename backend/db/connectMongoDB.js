@@ -1,25 +1,15 @@
-import mongoose from "mongoose";
+
+import mongoose from 'mongoose';
 
 const connectMongoDB = async () => {
   try {
-    const uri = process.env.MONGODB_URI?.startsWith('mongodb') 
-      ? process.env.MONGODB_URI 
-      : `mongodb://${encodeURIComponent(process.env.MONGODB_URI)}`;
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 30000,
-      keepAlive: true,
-      retryWrites: true,
-      w: 'majority',
-      retryReads: true,
-      maxPoolSize: 10,
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/twitter-clone', {
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
     });
-    console.log("Connected to MongoDB");
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error("Error connecting to MongoDB:", error.message);
+    console.error('MongoDB connection error:', error);
     process.exit(1);
   }
 };

@@ -15,7 +15,12 @@ externalPort = 80
 localPort = 3001
 externalPort = 3001
 
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
 [workflows]
+runButton = "Dev Server"
 
 [[workflows.workflow]]
 name = "Backend Server"
@@ -37,6 +42,19 @@ args = "cd frontend && npm run dev"
 
 [[workflows.workflow]]
 name = "Dev Servers"
+author = 41107035
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run dev"
+
+[[workflows.workflow]]
+name = "Dev Server"
 author = 41107035
 mode = "parallel"
 
