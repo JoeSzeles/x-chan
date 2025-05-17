@@ -7,8 +7,11 @@ export const authenticateToken = async (req, res, next) => {
         const token = authHeader && authHeader.split(' ')[1];
 
         if (!token) {
-            console.log("No token found in request");
-            return res.status(401).json({ error: "Not authorized, no token" });
+            console.error('[Auth] No token provided');
+            return res.status(401).json({ 
+                success: false,
+                error: 'Authentication token is required' 
+            });
         }
 
         try {
@@ -30,7 +33,7 @@ export const authenticateToken = async (req, res, next) => {
                 userId: user._id,
                 username: user.username 
             });
-
+            
             next();
         } catch (jwtError) {
             console.error('[Auth] JWT verification failed:', {
@@ -52,4 +55,4 @@ export const authenticateToken = async (req, res, next) => {
             error: 'Authentication failed' 
         });
     }
-};
+}; 
