@@ -9,16 +9,17 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io('/', {
+      this.socket = io(window.location.origin, {
         path: '/socket.io',
-        transports: ['polling', 'websocket'],
+        transports: ['websocket', 'polling'],
         reconnection: true,
-        reconnectionAttempts: 3,
+        reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         autoConnect: true,
         withCredentials: true,
+        secure: true,
         forceNew: true,
-        timeout: 5000
+        timeout: 20000
       });
 
       this.socket.on('connect', () => {

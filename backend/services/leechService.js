@@ -259,9 +259,10 @@ class LeechService {
             // Create the post data
             const postData = {
                 title: originalThreadPost.subject || `Thread #${threadId}`,
-                text: originalThreadPost.comment + (originalImageUrl ? `\n\n[Source Image: ${originalImageUrl}]` : ''),
+                text: originalThreadPost.comment,
                 user: userId,
-                img: uploadedImageUrl, // This will be null if image processing failed
+                img: uploadedImageUrl || originalThreadPost.image, // Try uploaded URL first, then original image
+                imageSource: originalImageUrl,
                 board: repostType === 'board' ? targetBoard : null,
                 boardName: boardName,
                 isPersonal: repostType === 'personal',
