@@ -75,22 +75,18 @@ const matchWildcard = (origin, pattern) => {
 };
 
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'unsafe-inline' 'unsafe-eval' data: blob: ws: wss:;");
+    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://m.stripe.network https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com https://static.cloudflareinsights.com https://cdn.segment.com; style-src 'self' 'unsafe-inline' 'unsafe-hashes' https://*.replit.dev https://*.stripe.network data: blob:; img-src 'self' data: blob: https: *; connect-src 'self' ws: wss: http: https: wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://replit.com https://events.launchdarkly.com https://beacon.replit.com https://m.stripe.network https://api.segment.io ws://0.0.0.0:* http://0.0.0.0:*; frame-src 'self' https://*.replit.dev https://*.worf.replit.dev https://replit.com https://*.stripe.network");
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
 
 app.use(cors({
-  origin: function(origin, callback) {
-    callback(null, true);
-  },
+  origin: true,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-  exposedHeaders: ['Set-Cookie']
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Update body-parser limits
@@ -153,15 +149,11 @@ app.use((err, req, res, next) => {
 });
 
 if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
+	app.use(express.static(path.join(__dirname, "/frontend/dist")));
 
-    app.get("*", (req, res) => {
-        res.sendFile(path.resolve(__dirname, "../frontend/dist/index.html"));
-    });
-} else {
-    app.get("/", (req, res) => {
-        res.send("API is running");
-    });
+	app.get("*", (req, res) => {
+		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+	});
 }
 
 const httpServer = createServer(app);
