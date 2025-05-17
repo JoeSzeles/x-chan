@@ -1,22 +1,18 @@
-import mongoose from "mongoose";
+import pg from 'pg';
+const { Pool } = pg;
 
-const connectMongoDB = async () => {
+const connectDB = async () => {
   try {
-    if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI environment variable is not set');
-    }
-    
-    await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      connectTimeoutMS: 10000,
-      keepAlive: true,
-      retryWrites: true,
-      w: 'majority',
-      retryReads: true,
-      maxPoolSize: 10
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_gXRl0kDT3dCZ@ep-quiet-shape-a5qao9a8.us-east-2.aws.neon.tech/neondb?sslmode=require',
+      ssl: {
+        rejectUnauthorized: false
+      }
     });
-    console.log("Connected to MongoDB");
+
+    await pool.connect();
+    console.log("Connected to PostgreSQL");
+    return pool;
   } catch (error) {
     console.error("Error connecting to MongoDB:", error.message);
     process.exit(1);
