@@ -46,4 +46,4 @@ const handleUpload = (req, res, next) => {
 
 export { handleUpload, upload };
 
-export { upload, storage, fileFilter };
+export { handleUpload, storage, fileFilter };
