@@ -1,0 +1,67 @@
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/__replco/static/devtools/injected.js from being executed because it violates the following directive: “default-src 'none'” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000
+Content-Security-Policy: The page’s settings blocked a JavaScript eval (script-src) from being executed because it violates the following directive: “default-src 'none'” (Missing 'unsafe-eval') workspace_iframe.html:112:31
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://replit.com/public/js/beacon.js from being executed because it violates the following directive: “default-src 'none'” workspace_iframe.html:142:39
+[vite] connecting... Console.js:61:14
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js :: t :: line 2"  data: no]). Console.js:61:14
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:3000/ because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:227:17
+[vite] connecting... Console.js:61:14
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js :: t :: line 2"  data: no]). Console.js:61:14
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:3000/ because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:227:17
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//boards' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//thread/biz/60365075' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvoxmgt3 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvoxp8vi because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+Console.js:61:14
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvpq25hz because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvpq4jgj because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+Console.js:61:14
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `ThreadPage`. See https://reactjs.org/link/warning-keys for more information.
+div
+ThreadPage@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/ThreadPage.jsx:89:31
+RenderedRoute@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:3563:7
+Routes@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:3997:7
+div
+div
+ThemeProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/ThemeProvider.jsx:21:30
+App@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/App.jsx:47:38
+Router@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:3945:7
+BrowserRouter@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:4682:7
+QueryClientProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=2315286c:2644:27 Console.js:61:14
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvra1ku4 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvraninp because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+Console.js:61:14
+[ThreadPage] Error in image processing: 
+Object { error: "Request failed with status code 404", response: Blob, status: 404, stack: "settle@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/axios.js?v=2315286c:1240:12\nonloadend@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/axios.js?v=2315286c:1572:13\n", postData: {…}, imageUrl: "https://i.4cdn.org/biz/1747368442009769.jpg" }
+Console.js:61:14
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvuf2muh because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=yvuftukl because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:159:17
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
