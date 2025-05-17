@@ -85,111 +85,96 @@ const ProfilePage = () => {
 	};
 
 	const handleCoverUpdate = async (data) => {
-		try {
-			console.log('ProfilePage: handleCoverUpdate called with data:', data);
-			setCoverData(data);
-			
-			// Save to backend
-			const requestBody = {
-				type: data.type,
-				content: data.content,
-				metadata: {
-					videoId: data.type === 'video' ? data.content : undefined,
-					source: data.type === 'video' ? 'youtube' : 'upload'
-				}
-			};
-			console.log('ProfilePage: Sending request to backend with body:', requestBody);
+        try {
+            console.log('ProfilePage: handleCoverUpdate called with data:', data);
+            setCoverData(data);
 
-			const response = await fetch('/api/cover-photo/update', {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				},
-				body: JSON.stringify(requestBody)
-			});
+            const requestBody = {
+                type: data.type,
+                content: data.content,
+                metadata: {
+                    videoId: data.type === 'video' ? data.content : undefined,
+                    source: data.type === 'video' ? 'youtube' : 'upload'
+                }
+            };
 
-			let responseData;
-			try {
-				const text = await response.text();
-				responseData = text ? JSON.parse(text) : null;
-			} catch (parseError) {
-				console.error('ProfilePage: Error parsing response:', parseError);
-				throw new Error('Invalid response from server');
-			}
+            const response = await fetch('/api/cover-photo/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(requestBody)
+            });
 
-			if (!response.ok) {
-				console.error('ProfilePage: Backend error response:', responseData);
-				throw new Error(responseData?.error || 'Failed to update cover photo');
-			}
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format from server');
+            }
 
-			if (!responseData?.success) {
-				throw new Error(responseData?.error || 'Failed to update cover photo');
-			}
+            const responseData = await response.json();
 
-			console.log('ProfilePage: Backend update successful:', responseData);
+            if (!response.ok || !responseData.success) {
+                throw new Error(responseData?.error || 'Failed to update cover photo');
+            }
 
-			// Update the user data in the cache
-			if (responseData.user) {
-			const cacheUpdate = {
-					...responseData.user,
-					coverImg: responseData.user.coverImg,
-					coverPhoto: responseData.user.coverPhoto
-			};
-			console.log('ProfilePage: Updating cache with:', cacheUpdate);
-			queryClient.setQueryData(['user', username], cacheUpdate);
-			}
+            if (responseData.user) {
+                queryClient.setQueryData(['user', username], responseData.user);
+            }
 
-			// Refetch user data to ensure everything is in sync
-			console.log('ProfilePage: Refetching user data');
-			await refetch();
+            await refetch();
+            toast.success('Cover photo updated successfully');
 
-			toast.success('Cover photo updated successfully');
-
-		} catch (error) {
-			console.error('ProfilePage: Error updating cover photo:', error);
-			toast.error(error.message || 'Failed to update cover photo');
-		}
-	};
+        } catch (error) {
+            console.error('ProfilePage: Error updating cover photo:', error);
+            // Only show error toast if it's not a background update
+            if (data.showToast !== false) {
+                toast.error(error.message || 'Failed to update cover photo');
+            }
+        }
+    };
 
 	const handleProfileUpdate = async (data) => {
-		try {
-			console.log('Updating profile picture with data:', data);
-			
-			// Save to backend
-			const response = await fetch('/api/users/update-profile', {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				},
-				body: JSON.stringify({
-					profileImg: data.content
-				})
-			});
+        try {
+            console.log('Updating profile picture with data:', data);
 
-			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.error || 'Failed to update profile picture');
-			}
+            const response = await fetch('/api/users/update-profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    profileImg: data.content
+                })
+            });
 
-			const updatedData = await response.json();
-			console.log('Profile picture updated successfully:', updatedData);
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format from server');
+            }
 
-			// Update the user data in the cache
-			queryClient.setQueryData(['user', username], (oldData) => ({
-				...oldData,
-				profileImg: data.content
-			}));
+            const updatedData = await response.json();
 
-			// Refetch user data to ensure everything is in sync
-			await refetch();
+            if (!response.ok) {
+                throw new Error(updatedData.error || 'Failed to update profile picture');
+            }
 
-		} catch (error) {
-			console.error('Error updating profile picture:', error);
-			// You might want to show an error message to the user here
-		}
-	};
+            console.log('Profile picture updated successfully:', updatedData);
+
+            queryClient.setQueryData(['user', username], (oldData) => ({
+                ...oldData,
+                profileImg: data.content
+            }));
+
+            await refetch();
+            toast.success('Profile picture updated successfully');
+
+        } catch (error) {
+            console.error('Error updating profile picture:', error);
+            toast.error(error.message || 'Failed to update profile picture');
+        }
+    };
 
 	useEffect(() => {
 		console.log("Current user data:", user);

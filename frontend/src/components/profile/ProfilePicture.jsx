@@ -1,11 +1,11 @@
+
 import { useState, useRef } from 'react';
-import { MdEdit } from 'react-icons/md';
-import { useQueryClient } from '@tanstack/react-query';
+import { MdEdit } from "react-icons/md";
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [profileImg, setProfileImg] = useState(null);
+    const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
-    const queryClient = useQueryClient();
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -20,7 +20,11 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     };
 
     return (
-        <div className="relative -mt-16 ml-4">
+        <div 
+            className="relative -mt-16 ml-4 group"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
             <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
@@ -35,7 +39,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             
             {isMyProfile && (
                 <div
-                    className="absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer opacity-0 group-hover:opacity-100 transition duration-200"
+                    className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
                     onClick={() => fileInputRef.current.click()}
                 >
                     <MdEdit className="w-5 h-5 text-white" />
@@ -53,4 +57,4 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     );
 };
 
-export default ProfilePicture; 
+export default ProfilePicture;
