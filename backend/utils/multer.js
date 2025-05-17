@@ -1,7 +1,6 @@
 
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
-import path from 'path';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({
@@ -19,14 +18,10 @@ const storage = new CloudinaryStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedFileTypes = /jpeg|jpg|png|gif/;
-  const extname = allowedFileTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedFileTypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    return cb(null, true);
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
   } else {
-    cb('Error: Images only!');
+    cb(new Error('Not an image! Please upload only images.'), false);
   }
 };
 
@@ -34,8 +29,8 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
 });
 
 export default upload;
