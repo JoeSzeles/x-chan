@@ -1,4 +1,3 @@
-
 import { io } from 'socket.io-client';
 
 const SOCKET_URL = '/api';
@@ -10,13 +9,13 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io(SOCKET_URL, {
-        path: '/socket.io/',
+      this.socket = io('/', {
+        path: '/socket.io',
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        timeout: 10000,
+        autoConnect: true,
         withCredentials: true
       });
 
