@@ -75,25 +75,20 @@ const matchWildcard = (origin, pattern) => {
 };
 
 app.use((req, res, next) => {
-    const allowedOrigins = ['https://*.replit.dev', 'https://*.worf.replit.dev'];
     const origin = req.headers.origin;
-    
-    if (origin && allowedOrigins.some(allowed => origin.match(new RegExp(allowed.replace('*', '.*'))))) {
+    if (origin) {
         res.setHeader('Access-Control-Allow-Origin', origin);
     }
-    
-    res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev; " +
-        "connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev " +
-        "ws://0.0.0.0:* wss://0.0.0.0:* http://0.0.0.0:* https://0.0.0.0:* " +
-        "https://*.cloudinary.com; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
-        "style-src 'self' 'unsafe-inline';"
-    );
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self' https://*.replit.dev; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev; " +
+        "connect-src 'self' https://*.replit.dev wss://*.replit.dev ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:*; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
+        "style-src 'self' 'unsafe-inline';"
+    );
     next();
 });
 
