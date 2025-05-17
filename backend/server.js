@@ -18,7 +18,7 @@ import { errorHandler } from "./utils/error.js";
 import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
-import bookmarkRoutes from "./routes/bookmark.route.js";
+import bookmarkRoutes from './routes/bookmark.route.js';
 import ratingRoutes from './routes/rating.routes.js';
 import commentRoutes from './routes/comment.route.js';
 import grokRoutes from './routes/grok.js';
@@ -75,7 +75,7 @@ const matchWildcard = (origin, pattern) => {
 };
 
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com; style-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob: https: https://*.cloudinary.com *; connect-src 'self' ws://localhost:* ws://0.0.0.0:* wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://replit.com https://events.launchdarkly.com https://beacon.replit.com https://*.cloudinary.com https://clientstream.launchdarkly.com");
+    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: wss: data: blob:; connect-src 'self' ws: wss: http: https: wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://replit.com https://events.launchdarkly.com https://beacon.replit.com https://*.cloudinary.com");
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
