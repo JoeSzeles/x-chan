@@ -251,8 +251,8 @@ io.engine.on('connection_error', (err) => {
 
 // Connect to MongoDB before starting the server
 connectMongoDB().then(() => {
-    httpServer.listen(PORT, HOST, () => {
-        console.log(`Server is running on http://${HOST}:${PORT}`);
+    httpServer.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on http://0.0.0.0:${PORT}`);
     });
 }).catch((error) => {
     console.error("Failed to start server:", error);
