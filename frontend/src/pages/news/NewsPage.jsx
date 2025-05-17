@@ -760,7 +760,7 @@ const NewsPage = () => {
                                 <button
                                     onClick={() => {
                                         setSelectedBot(bot);
-                                        updateArticlesMutation.mutate(bot._id);
+                                        updateArticles(bot._id);
                                     }}
                                     className="p-2 text-blue-500 hover:text-blue-400 rounded-full hover:bg-blue-500/10"
                                     title="Update Now"
