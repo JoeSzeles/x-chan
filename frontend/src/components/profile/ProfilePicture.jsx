@@ -7,15 +7,35 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                setProfileImg(reader.result);
-                onUpdate({ type: 'image', content: reader.result });
-            };
-            reader.readAsDataURL(file);
+            const formData = new FormData();
+            formData.append('profileImg', file);
+
+            try {
+                const response = await fetch('/api/users/update-profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update profile picture');
+                }
+
+                const data = await response.json();
+                if (data.user?.profileImg) {
+                    setProfileImg(data.user.profileImg);
+                    if (onUpdate) {
+                        onUpdate({ type: 'image', content: data.user.profileImg });
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating profile picture:', error);
+            }
         }
     };
 
