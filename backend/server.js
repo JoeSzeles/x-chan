@@ -53,6 +53,7 @@ if (!process.env.MONGODB_URI) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
+const HOST = '0.0.0.0';
 
 // Enable CORS
 const allowedOrigins = [
@@ -76,7 +77,7 @@ app.use((req, res, next) => {
 app.use(cors({
     origin: function(origin, callback) {
         if (!origin) return callback(null, true);
-        
+
         if (allowedOrigins.indexOf(origin) === -1) {
             const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
             return callback(new Error(msg), false);
@@ -162,7 +163,7 @@ const io = new Server(httpServer, {
     cors: {
         origin: function(origin, callback) {
             if (!origin) return callback(null, true);
-            
+
             if (allowedOrigins.indexOf(origin) === -1) {
                 const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
                 return callback(new Error(msg), false);
@@ -198,7 +199,7 @@ io.on('error', (error) => {
 // Socket.IO connection handling with better error handling
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
-    
+
     socket.on('error', (error) => {
         console.error('Socket error:', error);
     });
@@ -250,8 +251,8 @@ io.engine.on('connection_error', (err) => {
 
 // Connect to MongoDB before starting the server
 connectMongoDB().then(() => {
-    httpServer.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+    httpServer.listen(PORT, HOST, () => {
+        console.log(`Server is running on http://${HOST}:${PORT}`);
     });
 }).catch((error) => {
     console.error("Failed to start server:", error);
