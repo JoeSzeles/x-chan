@@ -84,8 +84,10 @@ app.use((req, res, next) => {
         "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev; " +
         "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
-        "ws://0.0.0.0:* wss://0.0.0.0:* http://0.0.0.0:* https://0.0.0.0:* ws://localhost:* wss://localhost:* " +
-        "https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com; " +
+        "ws://0.0.0.0:* wss://0.0.0.0:* http://0.0.0.0:* https://0.0.0.0:* " +
+        "ws://localhost:* wss://localhost:* http://localhost:* https://localhost:* " +
+        "https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com " +
+        "https://*.ngrok.io wss://*.ngrok.io http://*.ngrok.io ws://*.ngrok.io; " +
         "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
         "style-src 'self' 'unsafe-inline';"
     );
