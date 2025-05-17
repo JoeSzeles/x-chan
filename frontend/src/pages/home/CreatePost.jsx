@@ -22,20 +22,54 @@ const CreatePost = () => {
 	} = useMutation({
 		mutationFn: async ({ text, img, title }) => {
 			try {
+				// First upload image if present
+				let imageUrl = null;
+				if (img) {
+					console.log('Preparing image upload:', { imgType: typeof img, imgLength: img?.length });
+					const formData = new FormData();
+					const blob = await fetch(img).then(r => r.blob());
+					console.log('Created blob:', { 
+						type: blob.type,
+						size: blob.size
+					});
+					formData.append('file', blob);
+					
+					console.log('Sending upload request to /api/upload');
+					const uploadRes = await fetch('/api/upload', {
+						method: 'POST',
+						body: formData,
+						credentials: 'include'
+					});
+					
+					console.log('Upload response:', await uploadRes.clone().json());
+					
+					if (!uploadRes.ok) {
+						throw new Error('Failed to upload image');
+					}
+					
+					const uploadData = await uploadRes.json();
+					imageUrl = uploadData.url;
+				}
+
 				const res = await fetch("/api/posts/create", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
 					},
-					body: JSON.stringify({ text, img, title }),
+					body: JSON.stringify({ 
+						text, 
+						img: imageUrl, 
+						title 
+					}),
 				});
+				
 				const data = await res.json();
 				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong");
 				}
 				return data;
 			} catch (error) {
-				throw new Error(error);
+				throw new Error(error.message || "Failed to create post");
 			}
 		},
 
