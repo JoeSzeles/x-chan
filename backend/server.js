@@ -83,9 +83,9 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev; " +
-        "connect-src 'self' https://*.replit.dev wss://*.replit.dev ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:*; " +
+        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev; " +
+        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:*; " +
         "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
         "style-src 'self' 'unsafe-inline';"
     );
