@@ -113,14 +113,15 @@ export const updateUser = async (req, res) => {
 			user.password = await bcrypt.hash(newPassword, salt);
 		}
 
-		if (req.body.profileImg) {
+		if (req.file || req.body.profileImg) {
 			try {
 				if (user.profileImg) {
 					const publicId = user.profileImg.split("/").pop().split(".")[0];
 					await cloudinary.uploader.destroy(publicId);
 				}
 
-				const uploadedResponse = await cloudinary.uploader.upload(req.body.profileImg, {
+				const imageToUpload = req.file ? req.file.path : req.body.profileImg;
+				const uploadedResponse = await cloudinary.uploader.upload(imageToUpload, {
 					folder: "profile_images",
 					resource_type: "auto",
 					transformation: [
