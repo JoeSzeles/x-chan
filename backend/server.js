@@ -75,17 +75,17 @@ const matchWildcard = (origin, pattern) => {
 };
 
 app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
+    const origin = req.headers.origin || 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev';
+    res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
         "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev; " +
-        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:*; " +
+        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
+        "ws://0.0.0.0:* wss://0.0.0.0:* http://0.0.0.0:* https://0.0.0.0:* ws://localhost:* wss://localhost:* " +
+        "https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com; " +
         "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
         "style-src 'self' 'unsafe-inline';"
     );
