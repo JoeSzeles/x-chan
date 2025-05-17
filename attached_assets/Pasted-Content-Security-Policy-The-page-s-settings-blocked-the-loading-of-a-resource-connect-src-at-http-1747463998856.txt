@@ -1,0 +1,17 @@
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462896/posts/q6juh5kwrb6itdhzyred.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462812/posts/hvbkhxfgqnzfzqhyhtg4.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://res.cloudinary.com/dzfkfeqpb/image/upload/v1747462400/posts/z9l0qcaespjlbmfenr8y.jpg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com” Network.js:219:36
+Uncaught (in promise) TypeError: NetworkError when attempting to fetch resource.
+    fetch Network.js:219
+    loadImage CachedImage.jsx:126
+    CachedImage CachedImage.jsx:196
+    React 8
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+7 Network.js:219:36
+[LaunchDarkly] Opening stream connection to https://clientstream.launchdarkly.com/eval/62b35a865152ab14c5942820/eyJrZXkiOiI0MTEwNzAzNSIsImtpbmQiOiJ1c2VyIiwibmFtZSI6ImpvZWJlcmVjemtpIiwicm9sZXMiOlsiaW50ZW50X2J1c2luZXNzIiwib25ib2FyZGluZ19qb2JfYml6Iiwib25ib2FyZGluZ19yb2xlX21lbWJlciJdLCJlbWFpbCI6ImpvZS5iZXJlY3praUBnbWFpbC5jb20iLCJ0aW1lX2NyZWF0ZWQiOjE3NDM2NTkwNzg1NjUsIl9tZXRhIjp7InByaXZhdGVBdHRyaWJ1dGVzIjpbImVtYWlsIl19fQ _app-d0b918a1ef7938d4.js:38:5277
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://clientstream.launchdarkly.com/eval/62b35a865152ab14c5942820/eyJrZXkiOiI0MTEwNzAzNSIsImtpbmQiOiJ1c2VyIiwibmFtZSI6ImpvZWJlcmVjemtpIiwicm9sZXMiOlsiaW50ZW50X2J1c2luZXNzIiwib25ib2FyZGluZ19qb2JfYml6Iiwib25ib2FyZGluZ19yb2xlX21lbWJlciJdLCJlbWFpbCI6ImpvZS5iZXJlY3praUBnbWFpbC5jb20iLCJ0aW1lX2NyZWF0ZWQiOjE3NDM2NTkwNzg1NjUsIl9tZXRhIjp7InByaXZhdGVBdHRyaWJ1dGVzIjpbImVtYWlsIl19fQ. (Reason: CORS request did not succeed). Status code: (null).
+
+Firefox can’t establish a connection to the server at https://clientstream.launchdarkly.com/eval/62b35a865152ab14c5942820/eyJrZXkiOiI0MTEwNzAzNSIsImtpbmQiOiJ1c2VyIiwibmFtZSI6ImpvZWJlcmVjemtpIiwicm9sZXMiOlsiaW50ZW50X2J1c2luZXNzIiwib25ib2FyZGluZ19qb2JfYml6Iiwib25ib2FyZGluZ19yb2xlX21lbWJlciJdLCJlbWFpbCI6ImpvZS5iZXJlY3praUBnbWFpbC5jb20iLCJ0aW1lX2NyZWF0ZWQiOjE3NDM2NTkwNzg1NjUsIl9tZXRhIjp7InByaXZhdGVBdHRyaWJ1dGVzIjpbImVtYWlsIl19fQ. _app-d0b918a1ef7938d4.js:1:258523
+[LaunchDarkly] Closing stream connection
