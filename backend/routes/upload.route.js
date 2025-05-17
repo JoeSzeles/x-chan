@@ -29,24 +29,15 @@ const upload = multer({ storage: storage });
 // Upload image
 router.post('/', protectRoute, upload.single('file'), async (req, res) => {
     try {
-        console.log('Upload request received:', {
-            headers: req.headers,
-            body: req.body,
-            file: req.file
-        });
-
         if (!req.file) {
-            console.error('No file in request');
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
         // Log the file details
-        console.log('File successfully uploaded to Cloudinary:', {
+        console.log('Uploaded file:', {
             url: req.file.path,
             public_id: req.file.filename,
-            format: req.file.format,
-            size: req.file.size,
-            mimetype: req.file.mimetype
+            format: req.file.format
         });
 
         // Return the Cloudinary URL

@@ -25,23 +25,14 @@ const CreatePost = () => {
 				// First upload image if present
 				let imageUrl = null;
 				if (img) {
-					console.log('Preparing image upload:', { imgType: typeof img, imgLength: img?.length });
 					const formData = new FormData();
 					const blob = await fetch(img).then(r => r.blob());
-					console.log('Created blob:', { 
-						type: blob.type,
-						size: blob.size
-					});
 					formData.append('file', blob);
 					
-					console.log('Sending upload request to /api/upload');
 					const uploadRes = await fetch('/api/upload', {
 						method: 'POST',
-						body: formData,
-						credentials: 'include'
+						body: formData
 					});
-					
-					console.log('Upload response:', await uploadRes.clone().json());
 					
 					if (!uploadRes.ok) {
 						throw new Error('Failed to upload image');
