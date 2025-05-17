@@ -136,23 +136,16 @@ const ProfilePage = () => {
 
 	const handleProfileUpdate = async (data) => {
         try {
-            console.log('Updating profile picture with data:', data);
+            const formData = new FormData();
+            formData.append('profileImg', data.content);
 
             const response = await fetch('/api/users/update-profile', {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
-                body: JSON.stringify({
-                    profileImg: data.content
-                })
+                body: formData
             });
-
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Invalid response format from server');
-            }
 
             const updatedData = await response.json();
 
@@ -160,11 +153,9 @@ const ProfilePage = () => {
                 throw new Error(updatedData.error || 'Failed to update profile picture');
             }
 
-            console.log('Profile picture updated successfully:', updatedData);
-
             queryClient.setQueryData(['user', username], (oldData) => ({
                 ...oldData,
-                profileImg: data.content
+                profileImg: updatedData.user.profileImg
             }));
 
             await refetch();
