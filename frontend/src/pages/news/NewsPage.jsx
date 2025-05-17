@@ -123,17 +123,14 @@ const NewsPage = () => {
 
     // Initialize Socket.IO client inside useEffect
     useEffect(() => {
-        const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://tradehub.ap.ngrok.io:5000', {
+        const socket = io('/api', {
             path: '/socket.io',
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             autoConnect: true,
-            withCredentials: true,
-            extraHeaders: {
-                'ngrok-skip-browser-warning': 'true'
-            }
+            withCredentials: true
         });
 
         socket.on('connect', () => {
