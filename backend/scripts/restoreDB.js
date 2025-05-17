@@ -31,7 +31,7 @@ const backupToRestore = backups[0];
 const backupPath = path.join(backupDir, backupToRestore);
 
 // MongoDB connection string - replace with your actual connection string
-const MONGO_URI = "mongodb://localhost:27017/twitter-clone";
+const MONGO_URI = process.env.MONGODB_URI || "mongodb+srv://ac-n4e581e-shard-00-02.oycatyc.mongodb.net";
 
 // Use the full path to mongorestore (adjust this path based on your installation)
 const MONGORESTORE_PATH = "C:\\Program Files\\MongoDB\\Tools\\100\\bin\\mongorestore.exe";

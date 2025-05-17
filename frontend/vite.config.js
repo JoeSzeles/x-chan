@@ -10,8 +10,15 @@ export default defineConfig({
     })
   ],
   server: {
-    port: 3000,
     host: '0.0.0.0',
+    port: 3000,
+    proxy: {
+      '/api': {
+        target: 'http://0.0.0.0:5000',
+        changeOrigin: true,
+        secure: false
+      }
+    },
     hmr: {
       host: '0.0.0.0',
       port: 3000,
@@ -22,39 +29,6 @@ export default defineConfig({
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev https://replit.com https://events.launchdarkly.com https://beacon.replit.com; style-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com ws://* wss://* https://replit.com https://beacon.replit.com",
-    },
-    proxy: {
-      "/api": {
-        target: "http://127.0.0.1:5000",
-        changeOrigin: true,
-        secure: false,
-        ws: true,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.error('Proxy error:', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            if (req.method !== 'GET' &&
-              !req.url.includes('/view') &&
-              !req.url.includes('/quotes') &&
-              !req.url.includes('/comments')) {
-              console.log('Sending Request:', req.method, req.url);
-            }
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            if (proxyRes.statusCode === 404) {
-              console.error('Not Found:', req.method, req.url);
-              return;
-            }
-            if ((proxyRes.statusCode !== 200 || req.method !== 'GET') &&
-              !req.url.includes('/view') &&
-              !req.url.includes('/quotes') &&
-              !req.url.includes('/comments')) {
-              console.log('Response:', proxyRes.statusCode, req.method, req.url);
-            }
-          });
-        },
-      },
     },
     fs: {
       strict: true,

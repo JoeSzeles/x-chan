@@ -19,8 +19,8 @@ import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
 import bookmarkRoutes from "./routes/bookmark.route.js";
-import ratingRoutes from "./routes/rating.routes.js";
-import commentRoutes from "./routes/comment.route.js";
+import ratingRoutes from './routes/rating.routes.js';
+import commentRoutes from './routes/comment.route.js';
 import grokRoutes from './routes/grok.js';
 import newsBotRoutes from './routes/newsBot.js';
 import boardRoutes from './routes/board.route.js';
@@ -63,8 +63,16 @@ const allowedOrigins = [
     'https://tradehub.ap.ngrok.io',
     'wss://tradehub.ap.ngrok.io',
     'https://googleads.g.doubleclick.net',
-    'https://i.4cdn.org'
+    'https://i.4cdn.org',
+    'https://*.replit.dev',
+    'https://*.worf.replit.dev'
 ];
+
+// Helper function to check if origin matches wildcard pattern
+const matchWildcard = (origin, pattern) => {
+    const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+    return new RegExp(`^${regexPattern}$`).test(origin);
+};
 
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://m.stripe.network https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com https://static.cloudflareinsights.com https://cdn.segment.com; style-src 'self' 'unsafe-inline' 'unsafe-hashes' https://*.replit.dev https://*.stripe.network data: blob:; img-src 'self' data: blob: https: *; connect-src 'self' ws: wss: http: https: wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://replit.com https://events.launchdarkly.com https://beacon.replit.com https://m.stripe.network https://api.segment.io ws://0.0.0.0:* http://0.0.0.0:*; frame-src 'self' https://*.replit.dev https://*.worf.replit.dev https://replit.com https://*.stripe.network");
@@ -75,20 +83,10 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-    origin: function(origin, callback) {
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'ngrok-skip-browser-warning', 'Origin', 'Accept', 'X-Requested-With', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Origin'],
-    exposedHeaders: ['Set-Cookie', 'Access-Control-Allow-Origin', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers'],
-    credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Update body-parser limits
