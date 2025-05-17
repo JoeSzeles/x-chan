@@ -51,7 +51,7 @@ if (!process.env.MONGODB_URI) {
 }
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 const FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
 const HOST = '0.0.0.0';
 
