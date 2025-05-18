@@ -10,17 +10,29 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [selectedFile, setSelectedFile] = useState(null);
 
     const handleFileChange = (e) => {
+        console.log("File input change detected");
         const file = e.target.files[0];
         if (file) {
+            console.log("File selected:", file.name);
             setSelectedFile(file);
             const reader = new FileReader();
             reader.onload = (e) => {
+                console.log("File loaded successfully");
                 setSelectedImage(e.target.result);
                 setShowEditor(true);
+                console.log("Show editor state set to true");
+            };
+            reader.onerror = (error) => {
+                console.error("Error reading file:", error);
             };
             reader.readAsDataURL(file);
         }
     };
+
+    useEffect(() => {
+        console.log("Editor visibility state:", showEditor);
+        console.log("Selected image state:", !!selectedImage);
+    }, [showEditor, selectedImage]);
 
     const handleEditorSave = async ({ scale, position }) => {
         if (!selectedFile) return;

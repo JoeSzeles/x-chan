@@ -3,8 +3,13 @@ import { useState, useRef, useEffect } from 'react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
 const ImageScaleEditor = ({ image, onSave, onCancel }) => {
+  console.log("ImageScaleEditor mounted", { image });
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    console.log("ImageScaleEditor props received:", { image, scale, position });
+  }, [image, scale, position]);
   const [isDragging, setIsDragging] = useState(false);
   const imageRef = useRef(null);
   const dragStart = useRef({ x: 0, y: 0 });
