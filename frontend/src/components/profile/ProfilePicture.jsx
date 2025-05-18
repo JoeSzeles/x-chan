@@ -49,7 +49,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 <img
                     src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
                     alt="Profile"
-                    className="w-32 h-32 object-cover rounded-full"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
