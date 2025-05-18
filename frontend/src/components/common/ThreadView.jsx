@@ -291,8 +291,19 @@ const ThreadView = () => {
 			e.preventDefault();
 			e.stopPropagation();
 		}
+		// Clear expanded comments when changing focus
+		setExpandedComments(new Set());
 		setFocusedComment(clickedCommentId);
 		setHighlightedComment(clickedCommentId);
+		
+		// Expand all parent comments in the path
+		const newExpanded = new Set();
+		let current = getFocusedComment(comments, clickedCommentId);
+		while (current && current.parentComment) {
+			newExpanded.add(current.parentComment);
+			current = getFocusedComment(comments, current.parentComment);
+		}
+		setExpandedComments(newExpanded);
 	};
 
 	// Get the focused comment object
@@ -546,9 +557,25 @@ const ThreadView = () => {
 
 					{/* Comments Section */}
 					<div className="comments-list mt-4">
-						<h3 className="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
-							Replies {comments?.length > 0 ? `(${comments.length})` : ''}
-						</h3>
+						<div className="flex items-center justify-between mb-4 border-b border-gray-700 pb-2">
+							<h3 className="text-lg font-semibold">
+								Replies {comments?.length > 0 ? `(${comments.length})` : ''}
+							</h3>
+							{commentPath && commentPath.length > 0 && (
+								<div className="flex items-center gap-2 text-sm">
+									<button
+										onClick={() => setFocusedComment(postId)}
+										className="text-blue-400 hover:text-blue-300"
+									>
+										View All
+									</button>
+									<span className="text-gray-500">|</span>
+									<span className="text-gray-400">
+										{commentPath.length} replies deep
+									</span>
+								</div>
+							)}
+						</div>
 						<div className="threaded-comments space-y-4">
 							{comments?.map((comment) => (
 								<div key={comment._id} className="comment-card bg-gray-800 p-4 rounded-lg">
