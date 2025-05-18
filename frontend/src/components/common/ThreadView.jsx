@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import LoadingSpinner from "./LoadingSpinner";
@@ -20,28 +21,36 @@ const ThreadView = () => {
     const { data: post, isLoading: postLoading } = useQuery({
         queryKey: ["post", postId],
         queryFn: async () => {
-            const res = await fetch(`/api/posts/${postId}`);
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Something went wrong");
-            return data;
+            try {
+                const res = await fetch(`/api/posts/${postId}`);
+                if (!res.ok) throw new Error("Failed to fetch post");
+                return res.json();
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+                throw error;
+            }
         },
     });
 
     // Fetch comments data
-    const { data: comments, isLoading: commentsLoading } = useQuery({
+    const { data: comments = [], isLoading: commentsLoading } = useQuery({
         queryKey: ["comments", postId],
         queryFn: async () => {
-            const res = await fetch(`/api/comments/${postId}`);
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Something went wrong");
-            return data;
+            try {
+                const res = await fetch(`/api/comments/${postId}`);
+                if (!res.ok) throw new Error("Failed to fetch comments");
+                return res.json();
+            } catch (error) {
+                console.error("Error fetching comments:", error);
+                return [];
+            }
         },
         enabled: !!postId,
     });
 
     // Build comment path when focused comment changes
     useEffect(() => {
-        if (!comments || !focusedComment) return;
+        if (!comments?.length || !focusedComment) return;
 
         const buildPath = (commentList, targetId, path = []) => {
             for (const comment of commentList) {
@@ -60,16 +69,21 @@ const ThreadView = () => {
         setCommentPath(path || []);
     }, [comments, focusedComment]);
 
-    // Handle clicking on a comment in the breadcrumb
-    const handleCommentClick = (clickedCommentId) => {
-        setFocusedComment(clickedCommentId);
+    // Find the focused comment in the comment tree
+    const findComment = (commentList, targetId) => {
+        for (const comment of commentList || []) {
+            if (comment._id === targetId) return comment;
+            if (comment.replies?.length) {
+                const found = findComment(comment.replies, targetId);
+                if (found) return found;
+            }
+        }
+        return null;
     };
 
-    // Handle reply submission
-    const handleReplySubmit = () => {
-        queryClient.invalidateQueries(["comments", postId]);
-        setShowReplyInput(false);
-    };
+    const currentComment = focusedComment && comments?.length 
+        ? findComment(comments, focusedComment) 
+        : null;
 
     if (postLoading || commentsLoading) {
         return (
@@ -110,9 +124,9 @@ const ThreadView = () => {
                     <div className="w-[60px] h-[60px] relative z-10 rounded-full bg-[#1e1e1e] p-0.5">
                         <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center border-2 border-gray-700 group relative">
                             <img 
-                                src={post.user.profileImg || "/avatar-placeholder.png"}
+                                src={post.user?.profileImg || "/avatar-placeholder.png"}
                                 className="w-full h-full object-cover" 
-                                alt={post.user.username}
+                                alt={post.user?.username}
                                 onError={(e) => {
                                     e.target.src = "/avatar-placeholder.png";
                                 }}
@@ -123,16 +137,16 @@ const ThreadView = () => {
 
                 <div className="flex-1 min-w-0 max-w-full">
                     {/* Comment Path Navigation */}
-                    {commentPath && commentPath.length > 0 && (
+                    {commentPath?.length > 0 && (
                         <div className="comment-path bg-gray-800 p-4 rounded-lg mb-6">
                             <div className="flex items-center gap-3 overflow-x-auto pb-2">
                                 <button
-                                    onClick={() => handleCommentClick(postId)}
+                                    onClick={() => setFocusedComment(null)}
                                     className="flex items-center gap-2 min-w-fit hover:text-blue-400 transition-colors"
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700">
                                         <img
-                                            src={post?.user?.profileImg || "/avatar-placeholder.png"}
+                                            src={post.user?.profileImg || "/avatar-placeholder.png"}
                                             alt="Original Post"
                                             className="w-full h-full object-cover"
                                         />
@@ -144,7 +158,7 @@ const ThreadView = () => {
                                     <React.Fragment key={comment._id}>
                                         <span className="text-gray-500">→</span>
                                         <button
-                                            onClick={() => handleCommentClick(comment._id)}
+                                            onClick={() => setFocusedComment(comment._id)}
                                             className="flex items-center gap-2 min-w-fit hover:text-blue-400 transition-colors"
                                         >
                                             <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700">
@@ -167,18 +181,20 @@ const ThreadView = () => {
                     )}
 
                     {/* Original Post */}
-                    <Post post={post} />
+                    {!focusedComment && <Post post={post} />}
 
                     {/* Focused Comment or Comments List */}
-                    {focusedComment && focusedComment !== postId ? (
+                    {focusedComment ? (
                         <div className="mt-4">
-                            <Comment
-                                comment={commentPath[commentPath.length - 1]}
-                                postId={postId}
-                                disableNavigation={true}
-                            />
+                            {currentComment && (
+                                <Comment
+                                    comment={currentComment}
+                                    postId={postId}
+                                    disableNavigation={true}
+                                />
+                            )}
                         </div>
-                    ) : comments && comments.length > 0 ? (
+                    ) : comments?.length > 0 ? (
                         <div className="comments-list mt-4">
                             <h3 className="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
                                 Comments ({comments.length})
@@ -189,7 +205,7 @@ const ThreadView = () => {
                                         key={comment._id}
                                         comment={comment}
                                         postId={postId}
-                                        onClick={() => handleCommentClick(comment._id)}
+                                        onClick={() => setFocusedComment(comment._id)}
                                     />
                                 ))}
                             </div>
@@ -208,7 +224,10 @@ const ThreadView = () => {
                     onClose={() => setShowReplyInput(false)}
                     postId={postId}
                     isComment={true}
-                    onSubmit={handleReplySubmit}
+                    onSubmit={() => {
+                        queryClient.invalidateQueries(["comments", postId]);
+                        setShowReplyInput(false);
+                    }}
                     parentComment={focusedComment !== postId ? focusedComment : null}
                 />
             )}
