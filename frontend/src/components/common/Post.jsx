@@ -366,8 +366,17 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 	};
 
 	const isYouTubeUrl = (url) => {
-		return url && (url.includes('youtube.com') || url.includes('youtu.be'));
-	};
+    try {
+        if (!url) return false;
+        return url.includes('youtube.com/watch') || 
+               url.includes('youtu.be/') || 
+               url.includes('youtube.com/embed/') ||
+               url.includes('youtube.com/shorts/');
+    } catch (error) {
+        console.error('Error checking YouTube URL:', error);
+        return false;
+    }
+};
 
 	const handlePostNumberHover = (e) => {
 		const rect = e.currentTarget.getBoundingClientRect();
@@ -452,7 +461,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 							</div>
 						</div>
 					)}
-					
+
 					<div className={`flex flex-col flex-1 ${isCompact ? 'bg-transparent' : 'bg-[#272525]'} rounded-lg ${isCompact ? '' : 'p-4'}`}>
 						{!isCompact && (
 							<div className='flex gap-2 items-center pb-3'>
