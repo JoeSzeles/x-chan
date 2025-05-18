@@ -166,7 +166,7 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 			<div className="flex">
 				{/* Indentation based on nesting level */}
 				{level > 0 && (
-					<div style={{ width: `${level * 40}px` }} className="flex-shrink-0"></div>
+					<div style={{ width: `${level * 20}px` }} className="flex-shrink-0"></div>
 				)}
 
 				<div className="flex-grow group">
@@ -295,7 +295,7 @@ const ThreadView = () => {
 		setExpandedComments(new Set());
 		setFocusedComment(clickedCommentId);
 		setHighlightedComment(clickedCommentId);
-		
+
 		// Expand all parent comments in the path
 		const newExpanded = new Set();
 		let current = getFocusedComment(comments, clickedCommentId);
@@ -335,7 +335,7 @@ const ThreadView = () => {
 		setExpandedComments((prevExpanded) => {
 			const newExpanded = new Set();
 			const newComment = getFocusedComment(comments, commentId);
-			
+
 			// If already expanded, collapse it and its children
 			if (prevExpanded.has(commentId)) {
 				// Keep parent comments expanded
@@ -346,17 +346,17 @@ const ThreadView = () => {
 				}
 				return newExpanded;
 			}
-			
+
 			// Add clicked comment and all its parent comments to maintain the path
 			let current = newComment;
 			while (current) {
 				newExpanded.add(current._id);
 				current = getFocusedComment(comments, current.parentComment);
 			}
-			
+
 			return newExpanded;
 		});
-		
+
 		setFocusedComment(commentId);
 		setHighlightedComment(commentId);
 	};
@@ -515,7 +515,7 @@ const ThreadView = () => {
 						</div>
 					</div>
 
-					
+
 
 					{/* Original Post */}
 					<Post post={post} />
@@ -546,7 +546,7 @@ const ThreadView = () => {
 								/>
 								<span className="text-sm">OP</span>
 							</button>
-							
+
 							{commentPath && commentPath.length > 0 && (
 								<>
 									<span className="text-gray-500">→</span>
