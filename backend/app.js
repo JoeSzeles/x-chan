@@ -48,16 +48,15 @@ app.use(cors({
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'", "https://*.youtube.com", "https://*.ytimg.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.cloudinary.com", "https://*.youtube.com", "https://*.ytimg.com"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com", "https://*.youtube.com"],
-      connectSrc: ["'self'", "wss://*", "ws://*", "https://*.cloudinary.com", "https://*.youtube.com"],
-      frameSrc: ["'self'", "https://*.youtube.com", "https://*.ytimg.com"],
-      mediaSrc: ["'self'", "https://*.youtube.com", "https://*.ytimg.com"],
-      workerSrc: ["'self'", "blob:"],
-      childSrc: ["'self'", "blob:", "https://*.youtube.com"],
-      fontSrc: ["'self'", "data:", "https:"],
+      defaultSrc: ["'self'", "https://*.replit.dev", "https://*.worf.replit.dev"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.launchdarkly.com", "https://*.stripe.network", "https://*.replit.dev", "https://replit.com", "https://*.worf.replit.dev", "https://events.launchdarkly.com", "https://beacon.replit.com", "https://*.youtube.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "data:", "blob:"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com"],
+      fontSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", "https://*.replit.dev", "wss://*.replit.dev", "wss://*.worf.replit.dev", "https://*.launchdarkly.com", "https://*.stripe.network", "https://events.launchdarkly.com", "https://*.cloudinary.com", "ws://*", "wss://*", "https://replit.com", "https://beacon.replit.com"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
+      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
+      childSrc: ["'self'", "blob:"],
       objectSrc: ["'none'"],
       formAction: ["'self'"]
     }
