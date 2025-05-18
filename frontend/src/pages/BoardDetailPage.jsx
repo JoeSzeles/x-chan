@@ -13,6 +13,7 @@ const BoardDetailPage = ({ isWideMode }) => {
     const { boardName } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { data: authUser } = useQuery({ queryKey: ["authUser"] });
     const [showAdminModal, setShowAdminModal] = useState(false);
     const [showBanModal, setShowBanModal] = useState(false);
     const [showPostPopup, setShowPostPopup] = useState(false);
@@ -405,7 +406,7 @@ const BoardDetailPage = ({ isWideMode }) => {
             <div className='p-4 border-b border-gray-700'>
                 <div className="w-full h-48 relative mb-4 group">
                     <img
-                        src={board.coverPhoto || '/cover.png'}
+                        src={board.coverPhoto ? board.coverPhoto.replace(/([^:]\/)\/+/g, "$1") : '/cover.png'}
                         alt={`${board.name} cover`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
