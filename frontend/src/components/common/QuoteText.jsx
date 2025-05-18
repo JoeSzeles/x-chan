@@ -111,7 +111,7 @@ const TwitterEmbed = ({ url }) => {
             try {
                 // Clean the URL (remove @ if present and ensure proper format)
                 const cleanUrl = url.replace(/^@/, '').trim();
-                
+
                 // Extract tweet ID
                 const tweetId = cleanUrl.match(/status\/(\d+)/)?.[1];
                 if (!tweetId) {
@@ -163,7 +163,7 @@ const TwitterEmbed = ({ url }) => {
                 }
 
                 const data = await response.json();
-                
+
                 if (data.error) {
                     throw new Error(data.error);
                 }
@@ -424,7 +424,7 @@ const YouTubeEmbed = ({ url }) => {
 
     const getEmbedUrl = useCallback((videoId) => {
         if (!videoId) return null;
-        
+
         // Check if the videoId is a playlist ID (they typically start with 'PL')
         if (videoId.startsWith('PL')) {
             return `https://www.youtube.com/embed/videoseries?list=${videoId}&autoplay=0&rel=0&modestbranding=1&playsinline=1`;
@@ -596,32 +596,32 @@ const GrokImageEmbed = ({ url }) => {
 // Helper function to process text with formatting
 const processText = (text) => {
     if (!text) return '';
-    
+
     // First handle post number links to prevent them from being processed as greentext
     let processed = text.replace(
         /(>>\d+)/g,
         '<span class="text-blue-400 hover:text-blue-300 cursor-pointer">$1</span>'
     );
-    
+
     // Handle bold text
     processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
+
     // Handle italic text
     processed = processed.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
+
     // Handle underlined text
     processed = processed.replace(/__(.*?)__/g, '<u>$1</u>');
-    
+
     // Handle code text
     processed = processed.replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded break-all">$1</code>');
-    
+
     // Handle links (including Twitter/X links)
     processed = processed.replace(/(https?:\/\/[^\s]+)/g, (url) => {
         // Remove any trailing punctuation
         const cleanUrl = url.replace(/[.,;:!?]+$/, '');
         return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-all">${cleanUrl}</a>`;
     });
-    
+
     // Process greentext (only for lines starting with > that aren't post number links)
     processed = processed.split('\n').map(line => {
         if (line.trim().startsWith('>') && !line.trim().startsWith('>>')) {
@@ -629,7 +629,7 @@ const processText = (text) => {
         }
         return line;
     }).join('\n');
-    
+
     return processed;
 };
 
@@ -778,7 +778,7 @@ const PostPreview = ({ url }) => {
 
 const QuoteText = ({ text, onQuoteClick }) => {
     if (!text) return null;
-    
+
     // Split text into parts and extract all media URLs
     const parts = text.split(/(>>\d+)/g);
     const mediaElements = [];
@@ -817,7 +817,7 @@ const QuoteText = ({ text, onQuoteClick }) => {
         urls.forEach(url => {
             // Remove the URL from the remaining text
             remainingText = remainingText.replace(url, '').trim();
-            
+
             // Add the text before the URL
             if (remainingText) {
                 currentText += remainingText;
@@ -933,4 +933,4 @@ const styles = `
 }
 `;
 
-export default QuoteText; 
+export default QuoteText;

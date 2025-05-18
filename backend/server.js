@@ -82,15 +82,30 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev https://*.stripe.network; " +
-        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
-        "ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:* https://*.launchdarkly.com https://*.stripe.network " +
-        "https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* http://* https://*; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
-        "style-src 'self' 'unsafe-inline' https://*.stripe.network;"
-    );
+    const cspHeader = {
+        'default-src': ["'self'", "https://*.youtube.com", "https://www.youtube.com", "https://*.replit.dev", "https://*.worf.replit.dev"],
+        'script-src': ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.youtube.com", "https://www.youtube.com", "https://*.replit.dev", "https://*.worf.replit.dev", "https://*.stripe.network"],
+        'connect-src': ["'self'", "https://*.replit.dev", "wss://*.replit.dev", "https://*.worf.replit.dev", "wss://*.worf.replit.dev", 
+            "ws://0.0.0.0:*", "wss://0.0.0.0:*", "https://0.0.0.0:*", "https://*.youtube.com", "https://www.youtube.com",
+            "https://*.launchdarkly.com", "https://*.stripe.network", "https://events.launchdarkly.com", 
+            "https://*.cloudinary.com", "ws://*", "wss://*", "http://*", "https://*"],
+        'img-src': ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com", "https://i.ytimg.com"],
+        'style-src': ["'self'", "'unsafe-inline'", "https://*.stripe.network", "https://*.youtube.com"],
+        'frame-src': ["'self'", "https://*.youtube.com", "https://www.youtube.com"],
+        'media-src': ["'self'", "https://*.youtube.com", "https://www.youtube.com"]
+    };
+
+    // Log CSP configuration
+    console.log('Setting CSP headers:', cspHeader);
+
+    const cspString = Object.entries(cspHeader)
+        .map(([key, values]) => `${key} ${values.join(' ')}`)
+        .join('; ');
+
+    res.setHeader('Content-Security-Policy', cspString);
+
+    // Log the final CSP string
+    console.log('Final CSP string:', cspString);
     next();
 });
 
