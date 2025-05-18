@@ -232,7 +232,7 @@ const ThreadView = () => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const [showCommentPopup, setShowCommentPopup] = useState(false);
+	const [showCommentPopup, setShowCommentPopup] = useState(showCommentPopup);
 	const [selectedComment, setSelectedComment] = useState(null);
 	const [breadcrumbs, setBreadcrumbs] = useState([]);
 	const [expandedComments, setExpandedComments] = useState(new Set());
@@ -332,80 +332,45 @@ const ThreadView = () => {
 		});
 	};
 
-	// Handle reply submission
-	const handleReplySubmit = () => {
-		// After submitting, refetch comments
-		queryClient.invalidateQueries(["comments", postId]);
-		setShowReplyInput(false); // Close the popup
-	};
+	// Function to build the comment path recursively
+	const findCommentPath = useCallback((comments, targetId, path = []) => {
+		if (!comments) return null;
 
-	// Build comment path for breadcrumbs
-	const buildCommentPath = useCallback((commentId) => {
-		if (!commentId || commentId === postId) {
-			return [];
-		}
-
-		let path = [];
-		let currentComment = null;
-
-		const findComment = (commentsList, targetId) => {
-			for (const comment of commentsList) {
-				if (comment._id === targetId) {
-					currentComment = comment;
-					return true;
-				}
-				if (comment.replies && comment.replies.length > 0) {
-					if (findComment(comment.replies, targetId)) {
-						return true;
-					}
-				}
+		for (const comment of comments) {
+			if (comment._id === targetId) {
+				return [...path, comment];
 			}
-			return false;
-		};
 
-		if (comments && findComment(comments, commentId)) {
-			const buildPath = (comment) => {
-				if (!comment) return [];
-				
-				const parentCommentId = comment.parentComment;
-				if (!parentCommentId) return [comment];
-		
-				let parent = null;
-				const findParent = (commentsList, targetId) => {
-					for (const c of commentsList) {
-						if (c._id === targetId) {
-							parent = c;
-							return true;
-						}
-						if (c.replies && c.replies.length > 0) {
-							if (findParent(c.replies, targetId)) {
-								return true;
-							}
-						}
-					}
-					return false;
-				};
-
-				if(comments && findParent(comments, parentCommentId)) {
-					return [...buildPath(parent), comment];
-				} else {
-					return [comment]
-				}
-			};
-
-			path = buildPath(currentComment);
+			if (comment.replies && comment.replies.length > 0) {
+				const foundPath = findCommentPath(comment.replies, targetId, [...path, comment]);
+				if (foundPath) return foundPath;
+			}
 		}
 
-		return path;
-	}, [comments, postId]);
+		return null;
+	}, []);
 
-	// Update breadcrumbs when focused comment changes
+	// Update comment path when focused comment changes
 	useEffect(() => {
-		const path = buildCommentPath(focusedComment);
-		setBreadcrumbs(path);
-	}, [focusedComment, buildCommentPath]);
+		if (focusedComment && comments) {
+			const path = findCommentPath(comments, focusedComment);
+			setBreadcrumbs(path || []);
+		} else {
+			setBreadcrumbs([]);
+		}
+	}, [focusedComment, comments, findCommentPath]);
 
-	const commentPath = buildCommentPath(focusedComment);
+	const handleReplySubmit = async (replyData) => {
+		try {
+			// After successful submission, refetch comments
+			await queryClient.invalidateQueries(["comments", postId]);
+			setShowReplyInput(false); // Close the popup
+			toast.success("Reply posted successfully");
+		} catch (error) {
+			console.error("Error submitting reply:", error);
+			toast.error("Failed to post reply");
+		}
+	};
 
 	if (postLoading || commentsLoading) {
 		return (
@@ -485,7 +450,7 @@ const ThreadView = () => {
 
 				<div className="flex-1 min-w-0 max-w-full">
 					{/* Breadcrumb Navigation */}
-					{commentPath && commentPath.length > 0 && (
+					{breadcrumbs && breadcrumbs.length > 0 && (
 						<div className="breadcrumbs-container mb-6">
 							<div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
 								{/* Original Post Link */}
@@ -507,7 +472,7 @@ const ThreadView = () => {
 								</button>
 
 								{/* Comment Path */}
-								{commentPath.map((comment, index) => (
+								{breadcrumbs.map((comment, index) => (
 									<React.Fragment key={comment._id}>
 										<span className="text-gray-500 flex-shrink-0">→</span>
 										<button
@@ -532,7 +497,7 @@ const ThreadView = () => {
 
 							{/* Thread Level Indicator */}
 							<div className="text-xs text-gray-500 mt-1">
-								{commentPath.length} {commentPath.length === 1 ? 'reply' : 'replies'} deep
+								{breadcrumbs.length} {breadcrumbs.length === 1 ? 'reply' : 'replies'} deep
 							</div>
 						</div>
 					)}
