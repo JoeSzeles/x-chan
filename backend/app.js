@@ -48,15 +48,15 @@ app.use(cors({
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.cloudinary.com", "https://www.youtube.com"],
+      defaultSrc: ["'self'", "https://*.youtube.com", "https://*.ytimg.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.cloudinary.com", "https://*.youtube.com", "https://*.ytimg.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com"],
-      connectSrc: ["'self'", "wss://*", "ws://*", "https://*.cloudinary.com", "https://www.youtube.com"],
-      frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
-      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com", "https://*.youtube.com"],
+      connectSrc: ["'self'", "wss://*", "ws://*", "https://*.cloudinary.com", "https://*.youtube.com"],
+      frameSrc: ["'self'", "https://*.youtube.com", "https://*.ytimg.com"],
+      mediaSrc: ["'self'", "https://*.youtube.com", "https://*.ytimg.com"],
       workerSrc: ["'self'", "blob:"],
-      childSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "blob:", "https://*.youtube.com"],
       fontSrc: ["'self'", "data:", "https:"],
       objectSrc: ["'none'"],
       formAction: ["'self'"]
