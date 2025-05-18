@@ -11,10 +11,10 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         const file = e.target.files[0];
         if (file) {
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('profileImg', file);
 
             try {
-                const response = await fetch('/api/users/upload/profile', {
+                const response = await fetch('/api/users/update', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -49,13 +49,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 <img
                     src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
                     alt="Profile"
-                    className="w-full h-full"
-                    style={{ 
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        objectPosition: 'center'
-                    }}
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
