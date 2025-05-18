@@ -326,255 +326,75 @@ const TwitterEmbed = ({ url }) => {
 
 // YouTube Embed component
 const YouTubeEmbed = ({ url }) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isHovered, setIsHovered] = useState(false);
-    const embedContainerRef = useRef(null);
-
-    // Memoize the video ID extraction
+    const [showVideo, setShowVideo] = useState(false);
+    
     const videoId = useMemo(() => {
         try {
-            if (!url) {
-                return null;
-            }
-
-            // Clean the URL first
-            const cleanUrl = url.trim().replace(/\/$/, '');
-
-            // Handle different YouTube URL formats
-            let extractedId = null;
-
-            // Handle youtu.be URLs
+            const cleanUrl = url.trim();
+            let id = null;
+            
             if (cleanUrl.includes('youtu.be/')) {
-                extractedId = cleanUrl.split('youtu.be/')[1].split(/[?&]/)[0];
-            }
-            // Handle youtube.com URLs
-            else if (cleanUrl.includes('youtube.com/')) {
-                // Handle watch URLs
+                id = cleanUrl.split('youtu.be/')[1].split(/[?&]/)[0];
+            } else if (cleanUrl.includes('youtube.com/')) {
                 if (cleanUrl.includes('/watch')) {
-                    try {
-                        const urlObj = new URL(cleanUrl);
-                        extractedId = urlObj.searchParams.get('v');
-                    } catch (e) {
-                        const match = cleanUrl.match(/[?&]v=([^&]+)/);
-                        if (match) {
-                            extractedId = match[1];
-                        }
-                    }
-                }
-                // Handle embed URLs
-                else if (cleanUrl.includes('/embed/')) {
-                    extractedId = cleanUrl.split('/embed/')[1].split(/[?&]/)[0];
-                }
-                // Handle shorts URLs
-                else if (cleanUrl.includes('/shorts/')) {
-                    extractedId = cleanUrl.split('/shorts/')[1].split(/[?&]/)[0];
-                }
-                // Handle channel URLs with video IDs
-                else if (cleanUrl.includes('/v/')) {
-                    extractedId = cleanUrl.split('/v/')[1].split(/[?&]/)[0];
-                }
-                // Handle playlist URLs
-                else if (cleanUrl.includes('/playlist')) {
-                    try {
-                        const urlObj = new URL(cleanUrl);
-                        const listId = urlObj.searchParams.get('list');
-                        if (listId) {
-                            extractedId = listId;
-                        }
-                    } catch (e) {
-                        // Ignore parsing errors for playlists
-                    }
+                    const urlObj = new URL(cleanUrl);
+                    id = urlObj.searchParams.get('v');
+                } else if (cleanUrl.includes('/embed/')) {
+                    id = cleanUrl.split('/embed/')[1].split(/[?&]/)[0];
+                } else if (cleanUrl.includes('/shorts/')) {
+                    id = cleanUrl.split('/shorts/')[1].split(/[?&]/)[0];
                 }
             }
-            // Handle direct video IDs
-            else if (/^[a-zA-Z0-9_-]{8,20}$/.test(cleanUrl)) {
-                extractedId = cleanUrl;
-            }
-            // Handle URLs with video ID as a parameter
-            else {
-                const match = cleanUrl.match(/[?&]v=([^&]+)/);
-                if (match) {
-                    extractedId = match[1];
-                }
-            }
-
-            // Validate video ID
-            if (!extractedId) {
-                return null;
-            }
-
-            // Clean up the video ID
-            extractedId = extractedId.split(/[?&]/)[0].trim();
-
-            // Basic validation - be more lenient with validation
-            if (extractedId.length < 8 || extractedId.length > 20) {
-                return null;
-            }
-
-            if (!/^[a-zA-Z0-9_-]+$/.test(extractedId)) {
-                return null;
-            }
-
-            return extractedId;
+            
+            return id && id.length >= 8 ? id : null;
         } catch (error) {
             return null;
         }
-    }, [url]); // Only recompute when URL changes
+    }, [url]);
 
-    const getEmbedUrl = useCallback((videoId) => {
-        if (!videoId) return null;
-
-        // Check if the videoId is a playlist ID (they typically start with 'PL')
-        if (videoId.startsWith('PL')) {
-            return `https://www.youtube.com/embed/videoseries?list=${videoId}&autoplay=0&rel=0&modestbranding=1&playsinline=1`;
-        }
-        return `https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1&playsinline=1`;
-    }, []);
-
-    const loadVideoData = useCallback(async (forceReload = false) => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            if (!videoId) {
-                throw new Error('Invalid YouTube URL');
-            }
-
-            // Simulate loading delay for better UX
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setIsLoading(false);
-        } catch (err) {
-            setError(err.message || 'Failed to load video');
-            setIsLoading(false);
-        }
-    }, [videoId]);
-
-    useEffect(() => {
-        if (videoId) {
-        loadVideoData();
-        } else {
-            setError('Invalid YouTube URL');
-            setIsLoading(false);
-        }
-    }, [loadVideoData, videoId]);
-
-    const handleMouseEnter = useCallback(() => {
-        setIsHovered(true);
-        if (isLoading && videoId) {
-            loadVideoData();
-        }
-    }, [isLoading, loadVideoData, videoId]);
-
-    if (error) {
+    if (!videoId) {
         return (
-            <div className="youtube-embed my-2">
-                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
-                    <div className="flex justify-between items-center mb-2">
-                        <div className="text-red-500">{error}</div>
-                        <button
-                            onClick={() => loadVideoData(true)}
-                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
-                            title="Reload video"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-                    </div>
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
-                        View on YouTube
-                    </a>
-                </div>
-            </div>
-        );
-    }
-
-    if (isLoading) {
-        return (
-            <div className="youtube-embed my-2">
-                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
-                    <div className="flex justify-between items-center">
-                        <div className="text-gray-500">Loading video...</div>
-                        <button
-                            onClick={() => loadVideoData(true)}
-                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
-                            title="Reload video"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    const embedUrl = getEmbedUrl(videoId);
-    if (!embedUrl) {
-        return (
-            <div className="youtube-embed my-2">
-                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
-                    <div className="flex justify-between items-center mb-2">
-                        <div className="text-red-500">Invalid YouTube URL</div>
-                    </div>
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
-                        View on YouTube
-                    </a>
-                </div>
+            <div className="my-2">
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                    {url}
+                </a>
             </div>
         );
     }
 
     return (
-        <div 
-            className="youtube-embed my-2"
-            onMouseEnter={handleMouseEnter}
-        >
-            <div className="bg-red-500/10 rounded-lg border border-red-500/20 overflow-hidden">
-                <div className="p-3 flex items-center justify-between border-b border-red-500/20">
-                    <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                        </svg>
-                        <div className="flex flex-col">
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
-                                View on YouTube
-                            </a>
+        <div className="my-2">
+            {!showVideo ? (
+                <div className="relative cursor-pointer" onClick={() => setShowVideo(true)}>
+                    <img
+                        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+                        alt="YouTube thumbnail"
+                        className="w-full rounded"
+                        loading="lazy"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-red-600/90 rounded-full p-4">
+                            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => loadVideoData(true)}
-                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
-                            title="Reload video"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-                    </div>
                 </div>
-                <div className="relative pt-[56.25%] w-full">
+            ) : (
+                <div className="relative pt-[56.25%]">
                     <iframe
-                        ref={embedContainerRef}
-                        className="absolute top-0 left-0 w-full h-full"
-                        src={embedUrl}
+                        className="absolute top-0 left-0 w-full h-full rounded"
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
                         title="YouTube video player"
-                        frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                         loading="lazy"
-                        onError={(e) => {
-                            setError('Failed to load video');
-                        }}
-                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
                     />
                 </div>
-            </div>
+            )}
         </div>
     );
+};
 };
 
 // Grok Image Embed component
