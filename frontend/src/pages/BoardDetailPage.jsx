@@ -360,6 +360,13 @@ const BoardDetailPage = ({ isWideMode }) => {
                     </div>
                     <div className='flex items-center gap-2'>
                         <button
+                            onClick={() => setShowPostPopup(true)}
+                            className='flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors'
+                        >
+                            <FaFeather className='w-4 h-4' />
+                            New Thread
+                        </button>
+                        <button
                             onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
                             className='p-2 hover:bg-gray-700 rounded-full transition-colors'
                             title={`Switch to ${viewMode === 'list' ? 'grid' : 'list'} view`}
@@ -372,6 +379,19 @@ const BoardDetailPage = ({ isWideMode }) => {
 
             {/* Board Info */}
             <div className='p-4 border-b border-gray-700'>
+                {board.coverPhoto && (
+                    <div className="w-full h-48 relative mb-4">
+                        <img
+                            src={board.coverPhoto}
+                            alt={`${board.name} cover`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = 'https://via.placeholder.com/1200x400?text=No+Cover';
+                            }}
+                        />
+                    </div>
+                )}
                 <div className='flex items-center gap-4'>
                     {board.image && (
                         <img
