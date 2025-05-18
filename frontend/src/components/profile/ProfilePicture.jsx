@@ -55,29 +55,27 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             canvas.width = finalSize;
             canvas.height = finalSize;
 
-            // First create a circular clipping path
+            // Create circular clipping path
             ctx.beginPath();
             ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
             ctx.closePath();
             ctx.clip();
 
-            // Create circular clipping path
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
-            ctx.clip();
+            // Calculate dimensions while maintaining aspect ratio
+            const scaleFactor = Math.max(
+                finalSize / img.width,
+                finalSize / img.height
+            ) * scale;
 
-            // Calculate scaled dimensions
-            const scaledWidth = img.width * scale;
-            const scaledHeight = img.height * scale;
+            const scaledWidth = img.width * scaleFactor;
+            const scaledHeight = img.height * scaleFactor;
 
-            // Calculate position to center the image
-            const x = (finalSize - scaledWidth) / 2 + position.x;
-            const y = (finalSize - scaledHeight) / 2 + position.y;
+            // Center the image
+            const x = (finalSize - scaledWidth) / 2 + position.x * scale;
+            const y = (finalSize - scaledHeight) / 2 + position.y * scale;
 
-            // Draw the image with proper scaling and position
+            // Draw the image with the corrected scaling and position
             ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
-            ctx.restore();
 
             // Convert canvas to blob
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
