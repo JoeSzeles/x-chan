@@ -338,11 +338,22 @@ const ThreadView = () => {
 			
 			// If already expanded, collapse it and its children
 			if (prevExpanded.has(commentId)) {
-				return new Set([]);
+				// Keep parent comments expanded
+				let current = getFocusedComment(comments, newComment?.parentComment);
+				while (current) {
+					newExpanded.add(current._id);
+					current = getFocusedComment(comments, current.parentComment);
+				}
+				return newExpanded;
 			}
 			
-			// Only add the clicked comment to expanded set
-			newExpanded.add(commentId);
+			// Add clicked comment and all its parent comments to maintain the path
+			let current = newComment;
+			while (current) {
+				newExpanded.add(current._id);
+				current = getFocusedComment(comments, current.parentComment);
+			}
+			
 			return newExpanded;
 		});
 		
