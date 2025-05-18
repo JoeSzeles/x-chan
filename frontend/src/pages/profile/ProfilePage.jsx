@@ -113,8 +113,9 @@ const ProfilePage = () => {
             }
 
             const responseData = await response.json();
+            console.log('ProfilePage: Cover photo update response:', responseData);
 
-            if (!response.ok || !responseData.success) {
+            if (!response.ok) {
                 throw new Error(responseData?.error || 'Failed to update cover photo');
             }
 
