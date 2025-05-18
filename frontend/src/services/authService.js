@@ -1,3 +1,5 @@
+const API_URL = process.env.NODE_ENV === 'production' ? '' : 'http://0.0.0.0:5000';
+
 const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     if (!token) {

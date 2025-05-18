@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = '/api';
+const SOCKET_URL = process.env.NODE_ENV === 'production' ? '/api' : 'http://0.0.0.0:5000/api';
 
 class SocketService {
   constructor() {
