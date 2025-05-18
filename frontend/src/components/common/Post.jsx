@@ -387,6 +387,8 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		}
 	};
 
+	// YouTube helper functions removed
+
 	return (
 		<div className={`flex gap-2 items-start ${isCompact ? 'p-0 h-full' : 'p-4'} rounded-lg ${isCompact ? 'hover:bg-[#2a2a2a] transition-colors' : 'bg-[#1e1e1e] mb-4'}`}>
 			<div className='flex flex-col flex-1 h-full'>
