@@ -83,14 +83,17 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://www.youtube.com https://platform.twitter.com; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev https://*.stripe.network https://platform.twitter.com; " +
+        "default-src 'self' https://*.youtube.com https://*.ytimg.com https://*.googlevideo.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://www.youtube.com; " +
         "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
         "ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:* https://*.launchdarkly.com https://*.stripe.network " +
-        "https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* http://* https://*; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
-        "style-src 'self' 'unsafe-inline' https://*.stripe.network; " +
-        "frame-src 'self' https://www.youtube.com;"
+        "https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* http://* https://* " +
+        "https://*.ytimg.com https://*.youtube.com https://*.googlevideo.com; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com https://i.ytimg.com " +
+        "https://*.youtube.com https://www.youtube.com; " +
+        "media-src 'self' https://*.youtube.com https://*.ytimg.com https://*.googlevideo.com; " +
+        "style-src 'self' 'unsafe-inline' https://*.youtube.com; " +
+        "frame-src 'self' https://*.youtube.com https://www.youtube.com https://www.youtube-nocookie.com;"
     );
     next();
 });
