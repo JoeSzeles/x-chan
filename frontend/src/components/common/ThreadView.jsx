@@ -181,42 +181,37 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 				</div>
 			</div>
 
-			{/* View more replies button */}
+			{/* Reply indicator and navigation */}
 			{hasReplies && (
-				<div className="flex">
-					<div style={{ width: `${(level + 1) * 40}px` }} className="flex-shrink-0 relative">
-						{/* Vertical connector line with circles */}
-						<div className="absolute right-0 -top-4 h-[calc(100%+16px)] flex flex-col items-center">
-							{/* Top circle */}
-							<div className="w-1 h-1 rounded-full bg-gray-600"></div>
-							{/* Line */}
-							<div className="w-0.5 flex-grow bg-gray-600"></div>
-							{/* Bottom circle */}
-							<div className="w-1 h-1 rounded-full bg-gray-600"></div>
-						</div>
-					</div>
-					<div className="flex-grow">
-						<button
-							onClick={() => onViewReplies(comment._id)}
-							className="text-blue-400 hover:underline text-sm mb-4 ml-5"
-						>
-							{comment.replies.length > 3 
-								? `Show all ${comment.replies.length} replies` 
-								: `Show ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`}
-						</button>
-
-						{/* Nested replies */}
-						{expandedComments.has(comment._id) && comment.replies.map((reply) => (
-							<ThreadedComment
-								key={reply._id}
-								comment={reply}
-								postId={postId}
-								level={level + 1}
-								onViewReplies={onViewReplies}
-								expandedComments={expandedComments}
-							/>
+				<div className="mt-2 flex items-center gap-2">
+					<div className="flex -space-x-2">
+						{comment.replies.slice(0, 3).map((reply) => (
+							<div key={reply._id} className="w-6 h-6 rounded-full overflow-hidden border-2 border-background-main hover:z-10">
+								<img
+									src={reply.user?.profileImg || "/avatar-placeholder.png"}
+									alt={reply.user?.username}
+									className="w-full h-full object-cover"
+									onError={(e) => {
+										e.target.src = "/avatar-placeholder.png";
+									}}
+								/>
+							</div>
 						))}
+						{comment.replies.length > 3 && (
+							<div className="w-6 h-6 rounded-full bg-gray-700 border-2 border-background-main flex items-center justify-center text-xs text-white">
+								+{comment.replies.length - 3}
+							</div>
+						)}
 					</div>
+					<button
+						onClick={() => {
+							handleCommentClick(comment._id);
+							navigate(`/post/${postId}/comment/${comment._id}`);
+						}}
+						className="text-blue-400 hover:underline text-sm"
+					>
+						{comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+					</button>
 				</div>
 			)}
 		</div>
@@ -449,8 +444,48 @@ const ThreadView = () => {
 				</div>
 
 				<div className="flex-1 min-w-0 max-w-full">
-					{/* Breadcrumb Navigation */}
-					{breadcrumbs && breadcrumbs.length > 0 && (
+					{/* Comment Path Navigation */}
+					{commentPath && commentPath.length > 0 && (
+						<div className="comment-path bg-gray-800 p-4 rounded-lg mb-6">
+							<div className="flex items-center gap-3 overflow-x-auto pb-2">
+								<button
+									onClick={() => handleCommentClick(postId)}
+									className="flex items-center gap-2 min-w-fit hover:text-blue-400 transition-colors"
+								>
+									<div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700">
+										<img
+											src={post?.user?.profileImg || "/avatar-placeholder.png"}
+											alt="Original Post"
+											className="w-full h-full object-cover"
+										/>
+									</div>
+									<span>Original Post</span>
+								</button>
+								
+								{commentPath.map((comment, index) => (
+									<React.Fragment key={comment._id}>
+										<span className="text-gray-500">→</span>
+										<button
+											onClick={() => handleCommentClick(comment._id)}
+											className="flex items-center gap-2 min-w-fit hover:text-blue-400 transition-colors"
+										>
+											<div className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700">
+												<img
+													src={comment.user?.profileImg || "/avatar-placeholder.png"}
+													alt={comment.user?.username}
+													className="w-full h-full object-cover"
+												/>
+											</div>
+											<span>@{comment.user?.username}</span>
+										</button>
+									</React.Fragment>
+								))}
+							</div>
+							<div className="text-sm text-gray-400 mt-2">
+								{commentPath.length} level{commentPath.length === 1 ? '' : 's'} deep
+							</div>
+						</div>
+					)}
 						<div className="breadcrumbs-container mb-6">
 							<div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
 								{/* Original Post Link */}
