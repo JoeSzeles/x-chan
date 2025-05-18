@@ -83,9 +83,12 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.youtube.com https://*.youtu.be; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://*.launchdarkly.com; " +
-        "frame-src 'self' https://*.youtube.com https://www.youtube.com https://youtube.com; "
+        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com; " +
+        "connect-src 'self' wss://* https://* http://*; " +
+        "img-src 'self' data: blob: https:; " + 
+        "media-src 'self' https:; " +
+        "style-src 'self' 'unsafe-inline';"
     );
     next();
 });
