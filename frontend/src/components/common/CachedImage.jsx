@@ -89,6 +89,10 @@ const CachedImage = ({
 
         const loadImage = async () => {
         console.log('[CachedImage] Loading image with src:', src);
+        console.log('[CachedImage] Current loading state:', isLoading);
+        console.log('[CachedImage] Current error state:', error);
+        console.log('[CachedImage] Current retry count:', retryCount);
+        
         if (!src) {
             console.log('[CachedImage] No src provided, using fallback:', fallbackSrc);
             setImageSrc(fallbackSrc);

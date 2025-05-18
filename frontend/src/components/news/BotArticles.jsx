@@ -548,9 +548,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     };
 
     const getYouTubeThumbnail = (url) => {
+        console.log('[BotArticles] Getting YouTube thumbnail for URL:', url);
         try {
             let videoId;
             const urlObj = new URL(url);
+            console.log('[BotArticles] Parsed URL object:', urlObj);
             
             if (url.includes('youtube.com/watch')) {
                 videoId = urlObj.searchParams.get('v');
