@@ -339,6 +339,74 @@ const ThreadView = () => {
 		setShowReplyInput(false); // Close the popup
 	};
 
+	// Build comment path for breadcrumbs
+	const buildCommentPath = useCallback((commentId) => {
+		if (!commentId || commentId === postId) {
+			return [];
+		}
+
+		let path = [];
+		let currentComment = null;
+
+		const findComment = (commentsList, targetId) => {
+			for (const comment of commentsList) {
+				if (comment._id === targetId) {
+					currentComment = comment;
+					return true;
+				}
+				if (comment.replies && comment.replies.length > 0) {
+					if (findComment(comment.replies, targetId)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		};
+
+		if (comments && findComment(comments, commentId)) {
+			const buildPath = (comment) => {
+				if (!comment) return [];
+				
+				const parentCommentId = comment.parentComment;
+				if (!parentCommentId) return [comment];
+		
+				let parent = null;
+				const findParent = (commentsList, targetId) => {
+					for (const c of commentsList) {
+						if (c._id === targetId) {
+							parent = c;
+							return true;
+						}
+						if (c.replies && c.replies.length > 0) {
+							if (findParent(c.replies, targetId)) {
+								return true;
+							}
+						}
+					}
+					return false;
+				};
+
+				if(comments && findParent(comments, parentCommentId)) {
+					return [...buildPath(parent), comment];
+				} else {
+					return [comment]
+				}
+			};
+
+			path = buildPath(currentComment);
+		}
+
+		return path;
+	}, [comments, postId]);
+
+	// Update breadcrumbs when focused comment changes
+	useEffect(() => {
+		const path = buildCommentPath(focusedComment);
+		setBreadcrumbs(path);
+	}, [focusedComment, buildCommentPath]);
+
+	const commentPath = buildCommentPath(focusedComment);
+
 	if (postLoading || commentsLoading) {
 		return (
 			<div className="flex justify-center items-center h-64">
@@ -416,6 +484,59 @@ const ThreadView = () => {
 				</div>
 
 				<div className="flex-1 min-w-0 max-w-full">
+					{/* Breadcrumb Navigation */}
+					{commentPath && commentPath.length > 0 && (
+						<div className="breadcrumbs-container mb-6">
+							<div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
+								{/* Original Post Link */}
+								<button
+									onClick={() => handleCommentClick(postId)}
+									className="flex items-center gap-2 hover:text-blue-500 transition-colors whitespace-nowrap"
+								>
+									<div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+										<img 
+											src={post?.user?.profileImg || "/avatar-placeholder.png"} 
+											alt={post?.user?.username || "Original Post"}
+											className="w-full h-full object-cover"
+											onError={(e) => {
+												e.target.src = "/avatar-placeholder.png";
+											}}
+										/>
+									</div>
+									<span className="font-medium">Original Post</span>
+								</button>
+
+								{/* Comment Path */}
+								{commentPath.map((comment, index) => (
+									<React.Fragment key={comment._id}>
+										<span className="text-gray-500 flex-shrink-0">→</span>
+										<button
+											onClick={() => handleCommentClick(comment._id)}
+											className="flex items-center gap-2 hover:text-blue-500 transition-colors whitespace-nowrap"
+										>
+											<div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+												<img 
+													src={comment.user?.profileImg || "/avatar-placeholder.png"} 
+													alt={comment.user?.username || "Unknown User"}
+													className="w-full h-full object-cover"
+													onError={(e) => {
+														e.target.src = "/avatar-placeholder.png";
+													}}
+												/>
+											</div>
+											<span className="font-medium">@{comment.user?.username || "Unknown User"}</span>
+										</button>
+									</React.Fragment>
+								))}
+							</div>
+
+							{/* Thread Level Indicator */}
+							<div className="text-xs text-gray-500 mt-1">
+								{commentPath.length} {commentPath.length === 1 ? 'reply' : 'replies'} deep
+							</div>
+						</div>
+					)}
+
 					{/* Original Post */}
 					<Post post={post} />
 
