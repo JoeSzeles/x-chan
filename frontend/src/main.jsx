@@ -1,7 +1,21 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+import './index.css'
+import { logCSPViolation, logError } from './utils/errorLogger'
+
+// Set up CSP violation reporting
+document.addEventListener('securitypolicyviolation', logCSPViolation);
+
+// Global error handler
+window.onerror = (message, source, lineno, colno, error) => {
+  logError(error || new Error(message), { source, lineno, colno });
+};
+
+// Handle unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  logError(event.reason, { type: 'UnhandledPromiseRejection' });
+});
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 

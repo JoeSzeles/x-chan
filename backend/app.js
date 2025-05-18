@@ -9,6 +9,7 @@ import mongoose from "mongoose";
 import auth from "./middleware/auth.js";
 import boardRoutes from "./routes/boards.js";
 import morgan from "morgan";
+import helmet from "helmet"; // Import helmet
 
 // Import routes
 import authRoutes from "./routes/auth.route.js";
@@ -41,6 +42,28 @@ app.use(cors({
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// CSP configuration
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.cloudinary.com", "https://www.youtube.com"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com"],
+      connectSrc: ["'self'", "wss://*", "ws://*", "https://*.cloudinary.com", "https://www.youtube.com"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
+      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
+      workerSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "blob:"],
+      fontSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      formAction: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false
 }));
 
 // Get current file path
@@ -78,4 +101,4 @@ try {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-}); 
+});
