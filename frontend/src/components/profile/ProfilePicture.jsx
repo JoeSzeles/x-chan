@@ -14,8 +14,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             formData.append('profileImg', file);
 
             try {
-                const response = await fetch('/api/users/update-profile', {
-                    method: 'PUT',
+                const response = await fetch('/api/users/update', {
+                    method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     },
@@ -51,7 +51,6 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     alt="Profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                        console.error('Error loading profile image:', e);
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
