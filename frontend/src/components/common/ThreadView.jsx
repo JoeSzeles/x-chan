@@ -333,10 +333,16 @@ const ThreadView = () => {
 	};
 
 	// Handle reply submission
-	const handleReplySubmit = () => {
-		// After submitting, refetch comments
-		queryClient.invalidateQueries(["comments", postId]);
-		setShowReplyInput(false); // Close the popup
+	const handleReplySubmit = async (replyData) => {
+		try {
+			// After successful submission, refetch comments
+			await queryClient.invalidateQueries(["comments", postId]);
+			setShowReplyInput(false); // Close the popup
+			toast.success("Reply posted successfully");
+		} catch (error) {
+			console.error("Error submitting reply:", error);
+			toast.error("Failed to post reply");
+		}
 	};
 
 	if (postLoading || commentsLoading) {
@@ -451,6 +457,7 @@ const ThreadView = () => {
 					isComment={true}
 					onSubmit={handleReplySubmit}
 					postNumber={post.postNumber}
+					parentComment={focusedComment !== postId ? focusedComment : null}
 				/>
 			)}
 		</div>
