@@ -1,0 +1,248 @@
+### Solution to YouTube Thumbnails Not Displaying on Your Website
+
+It seems you're having trouble getting YouTube thumbnails to display on your website. Based on the errors in your console logs and the code you've provided (`post.jsx`, `BotArticles.jsx`, and `CachedImage.jsx`), the primary issue appears to be related to your **Content Security Policy (CSP)** settings blocking the loading of YouTube thumbnail images from `img.youtube.com`. Below, I’ll explain the problem and provide a step-by-step solution to fix it.
+
+---
+
+#### Why Are Thumbnails Not Showing Up?
+
+Your console logs show several **Content-Security-Policy (CSP)** errors, including:
+
+```
+Content-Security-Policy: The page’s settings blocked the loading of a resource (frame-src) at https://www.youtube.com/embed/E7kSt4rKS1w?autoplay=0&rel=0&modestbranding=1&playsinline=1 because it violates the following directive: “default-src 'self' https://*.replit.dev https://*.worf.replit.dev”
+```
+
+Although this specific error mentions `frame-src` (related to YouTube embeds), a similar restriction likely applies to `img-src`, which governs image loading. Your CSP is currently configured to allow resources only from specific domains (e.g., `'self'`, `https://*.replit.dev`, `https://*.worf.replit.dev`), but it does not include `https://img.youtube.com`, the domain serving YouTube thumbnails. As a result, the browser blocks these images, causing them not to display.
+
+Additionally, your `CachedImage` component has error handling, but it may not fully address CSP-blocked resources, as the browser prevents the image from loading before your retry logic can intervene.
+
+---
+
+#### Step-by-Step Solution
+
+Here’s how to resolve the issue:
+
+##### 1. Update Your Content Security Policy (CSP)
+
+You need to modify your CSP to allow images from `https://img.youtube.com` (for thumbnails) and optionally `https://www.youtube.com` (for embeds). This can be done either in your server-side configuration or via a `<meta>` tag in your HTML.
+
+###### Option A: Server-Side CSP Header
+If your server is setting the CSP (e.g., via a `Content-Security-Policy` header), update it to include the necessary domains. For example:
+
+```http
+Content-Security-Policy: default-src 'self' https://*.replit.dev https://*.worf.replit.dev; img-src 'self' https://img.youtube.com https://*.replit.dev https://*.worf.replit.dev; frame-src 'self' https://www.youtube.com https://*.replit.dev https://*.worf.replit.dev; script-src 'self'; style-src 'self';
+```
+
+- **`img-src`**: Add `https://img.youtube.com` to allow thumbnail images.
+- **`frame-src`**: Add `https://www.youtube.com` to allow YouTube embed iframes (used in your `BotArticles` and `Post` components).
+
+###### Option B: HTML Meta Tag
+If you’re setting the CSP via a `<meta>` tag in your HTML (e.g., in `index.html`), update it like this:
+
+```html
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.replit.dev https://*.worf.replit.dev; img-src 'self' https://img.youtube.com https://*.replit.dev https://*.worf.replit.dev; frame-src 'self' https://www.youtube.com https://*.replit.dev https://*.worf.replit.dev; script-src 'self'; style-src 'self';">
+```
+
+###### Where to Apply This
+- If you’re using a framework like **Next.js** (as suggested by `_app-e8951ef9e4fe9966.js` in your logs), modify the CSP in your `next.config.js` or server setup.
+- If you’re hosting on **Replit** (as indicated by `worf.replit.dev`), check your server configuration file (e.g., `server.js`, `.replit`, or `nginx.conf`) to add the CSP header.
+
+After updating the CSP, reload your website and check if the thumbnails load.
+
+##### 2. Verify Thumbnail URLs
+
+Your `getYouTubeThumbnail` function in `BotArticles.jsx` is correctly generating thumbnail URLs:
+
+```javascript
+const getYouTubeThumbnail = (url) => {
+    try {
+        let videoId;
+        const urlObj = new URL(url);
+        
+        if (url.includes('youtube.com/watch')) {
+            videoId = urlObj.searchParams.get('v');
+        } else if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
+        } else if (url.includes('youtube.com/embed/')) {
+            videoId = url.split('embed/')[1]?.split(/[?#]/)[0];
+        } else if (url.includes('youtube.com/shorts/')) {
+            videoId = url.split('shorts/')[1]?.split(/[?#]/)[0];
+        }
+
+        if (!videoId) {
+            console.error('Could not extract video ID from URL:', url);
+            return '/avatar-placeholder.png';
+        }
+
+        return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    } catch (error) {
+        console.error('Error parsing YouTube URL:', error);
+        return '/avatar-placeholder.png';
+    }
+};
+```
+
+This function extracts the video ID and constructs a URL like `https://i.ytimg.com/vi/VIDEO_ID/hqdefault.jpg`, which is valid. However, to ensure robustness:
+
+- **Test the URL**: Open a thumbnail URL in your browser (e.g., `https://i.ytimg.com/vi/E7kSt4rKS1w/hqdefault.jpg`) to confirm it works.
+- **Fallback Quality**: Your `CachedImage` component supports multiple thumbnail qualities (`maxresdefault.jpg`, `sddefault.jpg`, etc.), but `BotArticles` only uses `hqdefault.jpg`. If `hqdefault.jpg` isn’t available, it falls back to a placeholder. You could align `BotArticles` with `CachedImage` by using an array of qualities.
+
+##### 3. Enhance Error Handling in `CachedImage`
+
+Your `CachedImage` component attempts to load YouTube thumbnails directly via an `<img>` tag:
+
+```javascript
+if (videoId) {
+    if (isMounted) {
+        setImageSrc(currentUrl);
+        setIsLoading(false);
+    }
+    return;
+}
+```
+
+If the image fails to load (e.g., due to CSP), the `onError` handler retries the same URL up to `MAX_RETRIES` (2) times:
+
+```javascript
+onError={() => {
+    if (retryCount < MAX_RETRIES) {
+        setRetryCount(prev => prev + 1);
+    } else {
+        setError(true);
+        setImageSrc(fallbackSrc);
+    }
+}}
+```
+
+However, retrying the same URL won’t help if it’s blocked by CSP. After fixing the CSP, enhance the component to cycle through thumbnail qualities:
+
+```javascript
+useEffect(() => {
+    let isMounted = true;
+    let retryTimeout;
+
+    const loadImage = async () => {
+        if (!src) {
+            setImageSrc(fallbackSrc);
+            return;
+        }
+
+        const videoId = extractYouTubeId(src);
+        let urlsToTry = [src];
+        
+        if (videoId) {
+            urlsToTry = getYouTubeThumbnailUrl(videoId); // Array of quality URLs
+        }
+
+        const tryNextQuality = async (index) => {
+            if (index >= urlsToTry.length) {
+                setError(true);
+                setImageSrc(fallbackSrc);
+                setIsLoading(false);
+                return;
+            }
+
+            const currentUrl = urlsToTry[index];
+            setImageSrc(currentUrl);
+            setIsLoading(false);
+
+            // Check if the image loads successfully
+            const img = new Image();
+            img.src = currentUrl;
+            img.onload = () => {
+                if (isMounted) {
+                    setError(false);
+                }
+            };
+            img.onerror = () => {
+                if (isMounted) {
+                    if (retryCount < MAX_RETRIES) {
+                        setRetryCount(prev => prev + 1);
+                        retryTimeout = setTimeout(() => tryNextQuality(index), RETRY_DELAY);
+                    } else {
+                        tryNextQuality(index + 1); // Move to next quality
+                    }
+                }
+            };
+        };
+
+        tryNextQuality(currentQualityIndex);
+    };
+
+    loadImage();
+
+    return () => {
+        isMounted = false;
+        if (retryTimeout) clearTimeout(retryTimeout);
+        if (imageSrc && imageSrc.startsWith('blob:')) URL.revokeObjectURL(imageSrc);
+    };
+}, [src, fallbackSrc, retryCount, currentQualityIndex]);
+```
+
+This modification ensures that if one quality fails (e.g., `maxresdefault.jpg`), it tries the next (e.g., `sddefault.jpg`), improving reliability.
+
+##### 4. Debug and Test
+
+- **Check Network Tab**: Open your browser’s DevTools (F12), go to the "Network" tab, filter by "Img", and reload the page. Look for requests to `img.youtube.com`. If they’re blocked, you’ll see a status like "Blocked by CSP". After updating the CSP, they should load with a 200 status.
+- **Add Logging**: In `CachedImage`, log errors to confirm what’s happening:
+
+```javascript
+onError={() => {
+    console.log('Image load error for:', src);
+    if (retryCount < MAX_RETRIES) {
+        setRetryCount(prev => prev + 1);
+    } else {
+        setError(true);
+        setImageSrc(fallbackSrc);
+    }
+}}
+```
+
+- **Test Video Availability**: Some YouTube videos may not have thumbnails if they’re private or deleted. Test with a known public video (e.g., `https://www.youtube.com/watch?v=E7kSt4rKS1w`).
+
+##### 5. Additional Considerations
+
+- **Fallback Images**: Your code already uses `/avatar-placeholder.png` as a fallback, which is good practice. Ensure this image is accessible and not blocked by CSP.
+- **CORS Issues**: The `Cross-Origin Request Blocked` errors in your logs are unrelated to thumbnails (they’re for LaunchDarkly analytics), but ensure your server allows CORS for any custom image sources if applicable.
+
+---
+
+#### Final Code Adjustments
+
+Here’s how your key components should look after changes:
+
+**`BotArticles.jsx` (Updated `getYouTubeThumbnail`)**:
+```javascript
+const getYouTubeThumbnail = (url) => {
+    try {
+        const videoId = extractYouTubeId(url); // Use CachedImage’s function
+        if (!videoId) return '/avatar-placeholder.png';
+        return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`; // Start with highest quality
+    } catch (error) {
+        console.error('Error parsing YouTube URL:', error);
+        return '/avatar-placeholder.png';
+    }
+};
+```
+
+**Usage in `renderArticleCard`**:
+```javascript
+<CachedImage
+    src={thumbnailUrl}
+    alt={article.title}
+    className="w-full h-48 object-cover rounded-lg"
+    onError={() => handleImageError(article._id, true)}
+    loading="lazy"
+/>
+```
+
+---
+
+#### Expected Outcome
+
+After applying these changes:
+1. The CSP will allow `https://img.youtube.com`, enabling thumbnail loading.
+2. The `CachedImage` component will gracefully handle failures by trying different qualities or falling back to a placeholder.
+3. Thumbnails should appear in your `BotArticles` and `Post` components where YouTube URLs are used.
+
+If issues persist, check the browser console and network tab for new errors, and ensure your server applies the updated CSP correctly. Let me know if you need further assistance!
