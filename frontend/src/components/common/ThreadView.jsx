@@ -486,7 +486,24 @@ const ThreadView = () => {
 						</div>
 					</div>
 
-					{/* Reply Chain Breadcrumb */}
+					
+
+					{/* Original Post */}
+					<Post post={post} />
+
+					{/* Original Comment Display */}
+					{currentComment && (
+						<div className="original-comment mb-6 bg-gray-800 p-4 rounded-lg">
+							<Comment 
+								comment={currentComment} 
+								postId={postId}
+								parentCommentId={currentComment.parentComment}
+								disableNavigation={true}
+							/>
+						</div>
+					)}
+
+					{/* Reply Chain Navigation */}
 					<div className="sticky top-16 z-10 bg-background-main py-2 border-b border-gray-700 mb-4">
 						<div className="flex items-center gap-2">
 							<button 
@@ -526,21 +543,6 @@ const ThreadView = () => {
 							)}
 						</div>
 					</div>
-
-					{/* Original Post */}
-					<Post post={post} />
-
-					{/* Original Comment Display */}
-					{currentComment && (
-						<div className="original-comment mb-6 bg-gray-800 p-4 rounded-lg">
-							<Comment 
-								comment={currentComment} 
-								postId={postId}
-								parentCommentId={currentComment.parentComment}
-								disableNavigation={true}
-							/>
-						</div>
-					)}
 
 					{/* Comments Section */}
 					<div className="comments-list mt-4">
