@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MdEdit } from "react-icons/md";
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
