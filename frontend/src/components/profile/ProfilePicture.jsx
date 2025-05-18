@@ -45,11 +45,12 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e] flex items-center justify-center">
                 <img
                     src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
                     alt="Profile"
                     className="w-full h-full object-cover"
+                    style={{ objectFit: 'cover' }}
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
