@@ -8,8 +8,12 @@ const RETRY_DELAY = 1000; // 1 second
 
 // Helper function to extract YouTube video ID
 const extractYouTubeId = (url) => {
-    if (!url) return null;
-    
+    console.log('[CachedImage] Attempting to extract YouTube ID from:', url);
+    if (!url) {
+        console.log('[CachedImage] No URL provided');
+        return null;
+    }
+
     try {
         // Handle various YouTube URL formats
         const patterns = [
@@ -43,11 +47,16 @@ const extractYouTubeId = (url) => {
 
 // Helper function to get YouTube thumbnail URL with quality fallback
 const getYouTubeThumbnailUrl = (videoId) => {
-    if (!videoId) return null;
-    
+    console.log('[CachedImage] Getting thumbnail URL for video ID:', videoId);
+    if (!videoId) {
+        console.log('[CachedImage] No video ID provided');
+        return null;
+    }
+
     // Clean the video ID (remove any extra parameters)
     const cleanId = videoId.split('&')[0].split('?')[0];
-    
+    console.log('[CachedImage] Cleaned video ID:', cleanId);
+
     // Try different thumbnail qualities in order
     const qualities = [
         'maxresdefault.jpg',
@@ -79,32 +88,36 @@ const CachedImage = ({
         let retryTimeout;
 
         const loadImage = async () => {
-            if (!src) {
-                setImageSrc(fallbackSrc);
-                return;
-            }
+        console.log('[CachedImage] Loading image with src:', src);
+        if (!src) {
+            console.log('[CachedImage] No src provided, using fallback:', fallbackSrc);
+            setImageSrc(fallbackSrc);
+            return;
+        }
 
             try {
                 // Handle YouTube thumbnails
                 const videoId = extractYouTubeId(src);
                 let urlsToTry = [src];
-                
+
                 if (videoId) {
                     urlsToTry = getYouTubeThumbnailUrl(videoId);
                 }
 
                 // Try current quality first
                 const currentUrl = urlsToTry[currentQualityIndex];
+                console.log('[CachedImage] Attempting to load URL:', currentUrl);
 
                 // For YouTube thumbnails, use direct img tag loading
                 if (videoId) {
+                    console.log('[CachedImage] Loading YouTube thumbnail, quality index:', currentQualityIndex);
                     if (isMounted) {
                         setImageSrc(currentUrl);
                         setIsLoading(false);
                     }
                     return;
                 }
-                
+
                 // For non-YouTube images, use fetch with caching
                 const cachedData = localStorage.getItem(CACHE_PREFIX + currentUrl);
                 if (cachedData) {
@@ -143,7 +156,7 @@ const CachedImage = ({
                 }
 
                 const blob = await response.blob();
-                
+
                 // Verify it's actually an image
                 if (!blob.type.startsWith('image/')) {
                     throw new Error('Invalid image format');
@@ -225,4 +238,4 @@ const CachedImage = ({
     );
 };
 
-export default CachedImage; 
+export default CachedImage;
