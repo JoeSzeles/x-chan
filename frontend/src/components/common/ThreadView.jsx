@@ -332,15 +332,8 @@ const ThreadView = () => {
 	const isRootView = focusedComment === postId;
 
 	const onViewReplies = (commentId) => {
-		setExpandedComments((prevExpanded) => {
-			const newExpanded = new Set(prevExpanded);
-			if (newExpanded.has(commentId)) {
-				newExpanded.delete(commentId);
-			} else {
-				newExpanded.add(commentId);
-			}
-			return newExpanded;
-		});
+		// Instead of just expanding, navigate to that comment
+		handleCommentClick(commentId);
 	};
 
 	// Handle reply submission
