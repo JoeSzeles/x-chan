@@ -333,14 +333,16 @@ const ThreadView = () => {
 
 	const onViewReplies = (commentId) => {
 		setExpandedComments((prevExpanded) => {
-			const wasExpanded = prevExpanded.has(commentId);
 			const newExpanded = new Set();
-
-			if (!wasExpanded) {
-				// Only show the clicked comment's replies
-				newExpanded.add(commentId);
+			const newComment = getFocusedComment(comments, commentId);
+			
+			// If already expanded, collapse it and its children
+			if (prevExpanded.has(commentId)) {
+				return new Set([]);
 			}
 			
+			// Only add the clicked comment to expanded set
+			newExpanded.add(commentId);
 			return newExpanded;
 		});
 		
