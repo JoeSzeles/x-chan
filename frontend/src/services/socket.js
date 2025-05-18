@@ -27,7 +27,12 @@ class SocketService {
       });
 
       this.socket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
+        console.error('[Socket] Connection error:', {
+            message: error.message,
+            type: error.type,
+            description: error.description,
+            timestamp: new Date().toISOString()
+        });
       });
 
       this.socket.on('error', (error) => {
