@@ -5,7 +5,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import Comment from "./Comment";
 import Post from "./Post";
 import StarRating from "./StarRating";
-import { FaRegComment, FaRegHeart, FaRegBookmark, FaShare, FaRegEye, FaFeather, FaArrowLeft, FaRetweet, FaHeart, FaStar, FaTrash } from "react-icons/fa";
+import { FaRegComment, FaRegHeart, FaRegBookmark, FaShare, FaRegEye, FaFeather, FaArrowLeft, FaRetweet, FaHeart, FaStar, FaTrash, FaList, FaTh } from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
 import { toast } from "react-hot-toast";
 import PostPopup from "./PostPopup";
@@ -225,6 +225,7 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 
 const ThreadView = () => {
 	const { postId, commentId } = useParams();
+	const [viewMode, setViewMode] = useState("list");
 	const [highlightedComment, setHighlightedComment] = useState(null);
 	const [showReplyInput, setShowReplyInput] = useState(false);
 	const [focusedComment, setFocusedComment] = useState(commentId);
@@ -579,29 +580,58 @@ const ThreadView = () => {
 							<h3 className="text-lg font-semibold">
 								Replies {comments?.length > 0 ? `(${comments.length})` : ''}
 							</h3>
-							{commentPath && commentPath.length > 0 && (
-								<div className="flex items-center gap-2 text-sm">
+							<div className="flex items-center gap-4">
+								{/* View Toggle Buttons */}
+								<div className='flex gap-2'>
 									<button
-										onClick={() => setFocusedComment(postId)}
-										className="text-blue-400 hover:text-blue-300"
+										onClick={() => setViewMode("list")}
+										className={`p-2 rounded-full hover:bg-gray-700 transition-colors ${
+											viewMode === "list" ? "text-blue-500" : "text-gray-500"
+										}`}
+										title="List View"
 									>
-										View All
+										<FaList className='w-4 h-4' />
 									</button>
-									<span className="text-gray-500">|</span>
-									<span className="text-gray-400">
-										{commentPath.length} replies deep
-									</span>
+									<button
+										onClick={() => setViewMode("grid")}
+										className={`p-2 rounded-full hover:bg-gray-700 transition-colors ${
+											viewMode === "grid" ? "text-blue-500" : "text-gray-500"
+										}`}
+										title="Grid View"
+									>
+										<FaTh className='w-4 h-4' />
+									</button>
 								</div>
-							)}
+								{commentPath && commentPath.length > 0 && (
+									<div className="flex items-center gap-2 text-sm">
+										<button
+											onClick={() => setFocusedComment(postId)}
+											className="text-blue-400 hover:text-blue-300"
+										>
+											View All
+										</button>
+										<span className="text-gray-500">|</span>
+										<span className="text-gray-400">
+											{commentPath.length} replies deep
+										</span>
+									</div>
+								)}
+							</div>
 						</div>
-						<div className="threaded-comments space-y-4">
+						<div className={viewMode === "grid" ? "grid grid-cols-3 gap-4" : "threaded-comments space-y-4"}>
 							{comments?.map((comment) => (
-								<div key={comment._id} className="comment-card bg-gray-800 p-4 rounded-lg">
+								<div 
+									key={comment._id} 
+									className={`comment-card bg-gray-800 p-4 rounded-lg ${
+										viewMode === "grid" ? "h-[300px] overflow-hidden hover:bg-gray-700 transition-colors" : ""
+									}`}
+								>
 									<Comment 
 										comment={comment}
 										postId={postId}
 										parentCommentId={null}
 										disableNavigation={true}
+										isCompact={viewMode === "grid"}
 									/>
 									{comment.replies?.length > 0 && (
 										<>
