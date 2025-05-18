@@ -291,8 +291,19 @@ const ThreadView = () => {
 			e.preventDefault();
 			e.stopPropagation();
 		}
+		// Clear expanded comments when changing focus
+		setExpandedComments(new Set());
 		setFocusedComment(clickedCommentId);
 		setHighlightedComment(clickedCommentId);
+		
+		// Expand all parent comments in the path
+		const newExpanded = new Set();
+		let current = getFocusedComment(comments, clickedCommentId);
+		while (current && current.parentComment) {
+			newExpanded.add(current.parentComment);
+			current = getFocusedComment(comments, current.parentComment);
+		}
+		setExpandedComments(newExpanded);
 	};
 
 	// Get the focused comment object
@@ -321,15 +332,8 @@ const ThreadView = () => {
 	const isRootView = focusedComment === postId;
 
 	const onViewReplies = (commentId) => {
-		setExpandedComments((prevExpanded) => {
-			const newExpanded = new Set(prevExpanded);
-			if (newExpanded.has(commentId)) {
-				newExpanded.delete(commentId);
-			} else {
-				newExpanded.add(commentId);
-			}
-			return newExpanded;
-		});
+		// Instead of just expanding, navigate to that comment
+		handleCommentClick(commentId);
 	};
 
 	// Handle reply submission
@@ -486,6 +490,8 @@ const ThreadView = () => {
 						</div>
 					</div>
 
+					
+
 					{/* Original Post */}
 					<Post post={post} />
 
@@ -501,38 +507,68 @@ const ThreadView = () => {
 						</div>
 					)}
 
-					{/* Reply Chain Breadcrumb */}
-					{commentPath && commentPath.length > 0 && (
-						<div className="reply-chain bg-gray-800 p-4 rounded-lg mb-6">
-							<h4 className="text-sm text-gray-400 mb-2">Reply Chain:</h4>
-							<div className="flex flex-wrap gap-2">
-								{commentPath.slice(-3).map((comment, index) => (
-									<div key={comment._id} className="flex items-center">
-										<button
-											onClick={() => handleCommentClick(comment._id)}
-											className="flex items-center gap-2 bg-gray-700 p-2 rounded hover:bg-gray-600 transition-colors"
-										>
-											<img 
-												src={comment.user?.profileImg || "/avatar-placeholder.png"} 
-												alt={comment.user?.username}
-												className="w-6 h-6 rounded-full"
-											/>
-											<span className="text-sm">@{comment.user?.username}</span>
-										</button>
-										{index < commentPath.slice(-3).length - 1 && (
-											<span className="mx-2 text-gray-500">→</span>
-										)}
-									</div>
-								))}
-							</div>
+					{/* Reply Chain Navigation */}
+					<div className="sticky top-16 z-10 bg-background-main py-2 border-b border-gray-700 mb-4">
+						<div className="flex items-center gap-2">
+							<button 
+								onClick={() => setFocusedComment(postId)}
+								className="flex items-center gap-2 bg-gray-800 px-3 py-1 rounded-full hover:bg-gray-700 transition-colors"
+							>
+								<img 
+									src={post?.user?.profileImg || "/avatar-placeholder.png"} 
+									alt="Original Post"
+									className="w-6 h-6 rounded-full"
+								/>
+								<span className="text-sm">OP</span>
+							</button>
+							
+							{commentPath && commentPath.length > 0 && (
+								<>
+									<span className="text-gray-500">→</span>
+									{commentPath.map((comment, index) => (
+										<div key={comment._id} className="flex items-center">
+											<button
+												onClick={() => handleCommentClick(comment._id)}
+												className="flex items-center gap-2 bg-gray-800 px-3 py-1 rounded-full hover:bg-gray-700 transition-colors"
+											>
+												<img 
+													src={comment.user?.profileImg || "/avatar-placeholder.png"} 
+													alt={comment.user?.username}
+													className="w-6 h-6 rounded-full"
+												/>
+												<span className="text-sm">@{comment.user?.username}</span>
+											</button>
+											{index < commentPath.length - 1 && (
+												<span className="mx-2 text-gray-500">→</span>
+											)}
+										</div>
+									))}
+								</>
+							)}
 						</div>
-					)}
+					</div>
 
 					{/* Comments Section */}
 					<div className="comments-list mt-4">
-						<h3 className="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
-							Replies {comments?.length > 0 ? `(${comments.length})` : ''}
-						</h3>
+						<div className="flex items-center justify-between mb-4 border-b border-gray-700 pb-2">
+							<h3 className="text-lg font-semibold">
+								Replies {comments?.length > 0 ? `(${comments.length})` : ''}
+							</h3>
+							{commentPath && commentPath.length > 0 && (
+								<div className="flex items-center gap-2 text-sm">
+									<button
+										onClick={() => setFocusedComment(postId)}
+										className="text-blue-400 hover:text-blue-300"
+									>
+										View All
+									</button>
+									<span className="text-gray-500">|</span>
+									<span className="text-gray-400">
+										{commentPath.length} replies deep
+									</span>
+								</div>
+							)}
+						</div>
 						<div className="threaded-comments space-y-4">
 							{comments?.map((comment) => (
 								<div key={comment._id} className="comment-card bg-gray-800 p-4 rounded-lg">
@@ -543,26 +579,28 @@ const ThreadView = () => {
 										disableNavigation={true}
 									/>
 									{comment.replies?.length > 0 && (
-										<button
-											onClick={() => onViewReplies(comment._id)}
-											className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
-										>
-											{expandedComments.has(comment._id) ? 'Hide' : 'Show'} {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
-										</button>
-									)}
-									{expandedComments.has(comment._id) && (
-										<div className="ml-8 mt-4 space-y-4">
-											{comment.replies.map((reply) => (
-												<div key={reply._id} className="bg-gray-700 p-4 rounded-lg">
-													<Comment 
-														comment={reply}
-														postId={postId}
-														parentCommentId={comment._id}
-														disableNavigation={true}
-													/>
+										<>
+											<button
+												onClick={() => onViewReplies(comment._id)}
+												className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
+											>
+												{expandedComments.has(comment._id) ? 'Hide' : 'Show'} {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+											</button>
+											{expandedComments.has(comment._id) && (
+												<div className="ml-8 mt-4 space-y-4">
+													{comment.replies.map((reply) => (
+														<ThreadedComment
+															key={reply._id}
+															comment={reply}
+															postId={postId}
+															level={1}
+															onViewReplies={onViewReplies}
+															expandedComments={expandedComments}
+														/>
+													))}
 												</div>
-											))}
-										</div>
+											)}
+										</>
 									)}
 								</div>
 							))}
