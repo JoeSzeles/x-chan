@@ -379,19 +379,17 @@ const BoardDetailPage = ({ isWideMode }) => {
 
             {/* Board Info */}
             <div className='p-4 border-b border-gray-700'>
-                {board.coverPhoto && (
-                    <div className="w-full h-48 relative mb-4">
-                        <img
-                            src={board.coverPhoto}
-                            alt={`${board.name} cover`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = 'https://via.placeholder.com/1200x400?text=No+Cover';
-                            }}
-                        />
-                    </div>
-                )}
+                <div className="w-full h-48 relative mb-4">
+                    <img
+                        src={board.coverPhoto || 'https://via.placeholder.com/1200x400?text=No+Cover'}
+                        alt={`${board.name} cover`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://via.placeholder.com/1200x400?text=No+Cover';
+                        }}
+                    />
+                </div>
                 <div className='flex items-center gap-4'>
                     {board.image && (
                         <img
