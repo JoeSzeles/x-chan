@@ -49,14 +49,21 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.cloudinary.com", "https://www.youtube.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com"],
-      connectSrc: ["'self'", "wss://*", "ws://*", "https://*.cloudinary.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com"],
+      connectSrc: ["'self'", "wss://*", "ws://*", "https://*.cloudinary.com", "https://www.youtube.com"],
       frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
-      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"]
+      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
+      workerSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "blob:"],
+      fontSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      formAction: ["'self'"]
     }
-  }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: false
 }));
 
 // Get current file path
