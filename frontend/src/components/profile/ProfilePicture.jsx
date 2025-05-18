@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 
@@ -6,36 +5,58 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [profileImg, setProfileImg] = useState(null);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
+    const [showEditor, setShowEditor] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const formData = new FormData();
-            formData.append('profileImg', file);
+            setSelectedFile(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setSelectedImage(e.target.result);
+                setShowEditor(true);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
-            try {
-                const response = await fetch('/api/users/update', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: formData
-                });
+    const handleEditorSave = async ({ scale, position }) => {
+        if (!selectedFile) return;
 
-                if (!response.ok) {
-                    throw new Error('Failed to update profile picture');
-                }
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('scale', scale);
+        formData.append('positionX', position.x);
+        formData.append('positionY', position.y);
 
-                const data = await response.json();
-                if (data.user?.profileImg) {
-                    setProfileImg(data.user.profileImg);
-                    if (onUpdate) {
-                        onUpdate({ type: 'image', content: data.user.profileImg });
-                    }
-                }
-            } catch (error) {
-                console.error('Error updating profile picture:', error);
+        try {
+            const response = await fetch('/api/users/update', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update profile picture');
             }
+
+            const data = await response.json();
+            if (data.user?.profileImg) {
+                setProfileImg(data.user.profileImg);
+                if (onUpdate) {
+                    onUpdate({ type: 'image', content: data.user.profileImg });
+                }
+            }
+            setShowEditor(false);
+            setSelectedImage(null);
+            setSelectedFile(null);
+
+        } catch (error) {
+            console.error('Error updating profile picture:', error);
         }
     };
 
@@ -55,7 +76,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     }}
                 />
             </div>
-            
+
             {isMyProfile && (
                 <div
                     className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
