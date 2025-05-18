@@ -18,6 +18,30 @@ const BoardDetailPage = ({ isWideMode }) => {
     const [showPostPopup, setShowPostPopup] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [viewMode, setViewMode] = useState('grid');
+    
+    const handleCoverPhotoChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('coverPhoto', file);
+
+        try {
+            const res = await fetch(`/api/boards/${boardName}/cover`, {
+                method: 'PUT',
+                body: formData,
+                credentials: 'include'
+            });
+            
+            if (!res.ok) throw new Error('Failed to update cover photo');
+            
+            queryClient.invalidateQueries(['board', boardName]);
+            toast.success('Cover photo updated successfully');
+        } catch (error) {
+            console.error('Error updating cover photo:', error);
+            toast.error(error.message || 'Failed to update cover photo');
+        }
+    };
     const [showCoverUpload, setShowCoverUpload] = useState(false);
     const [coverPreview, setCoverPreview] = useState(null);
 
@@ -379,7 +403,7 @@ const BoardDetailPage = ({ isWideMode }) => {
 
             {/* Board Info */}
             <div className='p-4 border-b border-gray-700'>
-                <div className="w-full h-48 relative mb-4">
+                <div className="w-full h-48 relative mb-4 group">
                     <img
                         src={board.coverPhoto || '/cover.png'}
                         alt={`${board.name} cover`}
@@ -389,6 +413,20 @@ const BoardDetailPage = ({ isWideMode }) => {
                             e.target.src = '/cover.png';
                         }}
                     />
+                    {(board.creator === authUser?._id || board.admins?.includes(authUser?._id)) && (
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <label htmlFor="coverPhotoInput" className="cursor-pointer bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full text-white">
+                                <FaCamera className="w-5 h-5" />
+                            </label>
+                            <input
+                                id="coverPhotoInput"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleCoverPhotoChange}
+                            />
+                        </div>
+                    )}
                 </div>
                 <div className='flex items-center gap-4'>
                     {board.image && (
