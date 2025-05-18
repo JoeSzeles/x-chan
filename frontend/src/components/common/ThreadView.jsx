@@ -332,44 +332,11 @@ const ThreadView = () => {
 		});
 	};
 
-	// Function to build the comment path recursively
-	const findCommentPath = useCallback((comments, targetId, path = []) => {
-		if (!comments) return null;
-
-		for (const comment of comments) {
-			if (comment._id === targetId) {
-				return [...path, comment];
-			}
-
-			if (comment.replies && comment.replies.length > 0) {
-				const foundPath = findCommentPath(comment.replies, targetId, [...path, comment]);
-				if (foundPath) return foundPath;
-			}
-		}
-
-		return null;
-	}, []);
-
-	// Update comment path when focused comment changes
-	useEffect(() => {
-		if (focusedComment && comments) {
-			const path = findCommentPath(comments, focusedComment);
-			setBreadcrumbs(path || []);
-		} else {
-			setBreadcrumbs([]);
-		}
-	}, [focusedComment, comments, findCommentPath]);
-
-	const handleReplySubmit = async (replyData) => {
-		try {
-			// After successful submission, refetch comments
-			await queryClient.invalidateQueries(["comments", postId]);
-			setShowReplyInput(false); // Close the popup
-			toast.success("Reply posted successfully");
-		} catch (error) {
-			console.error("Error submitting reply:", error);
-			toast.error("Failed to post reply");
-		}
+	// Handle reply submission
+	const handleReplySubmit = () => {
+		// After submitting, refetch comments
+		queryClient.invalidateQueries(["comments", postId]);
+		setShowReplyInput(false); // Close the popup
 	};
 
 	if (postLoading || commentsLoading) {
@@ -449,59 +416,6 @@ const ThreadView = () => {
 				</div>
 
 				<div className="flex-1 min-w-0 max-w-full">
-					{/* Breadcrumb Navigation */}
-					{breadcrumbs && breadcrumbs.length > 0 && (
-						<div className="breadcrumbs-container mb-6">
-							<div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
-								{/* Original Post Link */}
-								<button
-									onClick={() => handleCommentClick(postId)}
-									className="flex items-center gap-2 hover:text-blue-500 transition-colors whitespace-nowrap"
-								>
-									<div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-										<img 
-											src={post?.user?.profileImg || "/avatar-placeholder.png"} 
-											alt={post?.user?.username || "Original Post"}
-											className="w-full h-full object-cover"
-											onError={(e) => {
-												e.target.src = "/avatar-placeholder.png";
-											}}
-										/>
-									</div>
-									<span className="font-medium">Original Post</span>
-								</button>
-
-								{/* Comment Path */}
-								{breadcrumbs.map((comment, index) => (
-									<React.Fragment key={comment._id}>
-										<span className="text-gray-500 flex-shrink-0">→</span>
-										<button
-											onClick={() => handleCommentClick(comment._id)}
-											className="flex items-center gap-2 hover:text-blue-500 transition-colors whitespace-nowrap"
-										>
-											<div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
-												<img 
-													src={comment.user?.profileImg || "/avatar-placeholder.png"} 
-													alt={comment.user?.username || "Unknown User"}
-													className="w-full h-full object-cover"
-													onError={(e) => {
-														e.target.src = "/avatar-placeholder.png";
-													}}
-												/>
-											</div>
-											<span className="font-medium">@{comment.user?.username || "Unknown User"}</span>
-										</button>
-									</React.Fragment>
-								))}
-							</div>
-
-							{/* Thread Level Indicator */}
-							<div className="text-xs text-gray-500 mt-1">
-								{breadcrumbs.length} {breadcrumbs.length === 1 ? 'reply' : 'replies'} deep
-							</div>
-						</div>
-					)}
-
 					{/* Original Post */}
 					<Post post={post} />
 
