@@ -43,14 +43,10 @@ const extractYouTubeId = (url) => {
 
 // Helper function to get YouTube thumbnail URL with quality fallback
 const getYouTubeThumbnailUrl = (videoId) => {
-    if (!videoId) {
-        console.log('[YouTube Thumbnail] No video ID provided');
-        return null;
-    }
+    if (!videoId) return null;
     
     // Clean the video ID (remove any extra parameters)
     const cleanId = videoId.split('&')[0].split('?')[0];
-    console.log('[YouTube Thumbnail] Processing video ID:', cleanId);
     
     // Try different thumbnail qualities in order
     const qualities = [
@@ -61,25 +57,7 @@ const getYouTubeThumbnailUrl = (videoId) => {
         'default.jpg'
     ];
 
-    const urls = qualities.map(quality => `https://img.youtube.com/vi/${cleanId}/${quality}`);
-    console.log('[YouTube Thumbnail] Generated URLs:', urls);
-    return urls;
-};
-
-// Add error handler for img tag
-const handleImageError = (e) => {
-    console.error('[YouTube Thumbnail] Failed to load image:', e.target.src);
-    // Try next quality if available
-    const currentUrl = e.target.src;
-    const urls = getYouTubeThumbnailUrl(videoId);
-    const nextIndex = urls.indexOf(currentUrl) + 1;
-    if (nextIndex < urls.length) {
-        console.log('[YouTube Thumbnail] Trying next quality:', urls[nextIndex]);
-        e.target.src = urls[nextIndex];
-    } else {
-        console.log('[YouTube Thumbnail] No more qualities to try, using placeholder');
-        e.target.src = '/avatar-placeholder.png';
-    }
+    return qualities.map(quality => `https://img.youtube.com/vi/${cleanId}/${quality}`);
 };
 
 const CachedImage = ({ 

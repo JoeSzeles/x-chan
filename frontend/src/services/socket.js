@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = process.env.NODE_ENV === 'production' ? '/api' : 'http://0.0.0.0:5000/api';
+const SOCKET_URL = '/api';
 
 class SocketService {
   constructor() {
@@ -27,12 +27,7 @@ class SocketService {
       });
 
       this.socket.on('connect_error', (error) => {
-        console.error('[Socket] Connection error:', {
-            message: error.message,
-            type: error.type,
-            description: error.description,
-            timestamp: new Date().toISOString()
-        });
+        console.error('Socket connection error:', error);
       });
 
       this.socket.on('error', (error) => {
