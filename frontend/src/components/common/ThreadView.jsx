@@ -332,18 +332,20 @@ const ThreadView = () => {
 	const isRootView = focusedComment === postId;
 
 	const onViewReplies = (commentId) => {
-		// When viewing replies, only show the current branch
-		const newComment = getFocusedComment(comments, commentId);
-		const newExpanded = new Set();
+		setExpandedComments((prevExpanded) => {
+			const newExpanded = new Set();
+			const newComment = getFocusedComment(comments, commentId);
+			
+			// If already expanded, collapse it and its children
+			if (prevExpanded.has(commentId)) {
+				return new Set([]);
+			}
+			
+			// Only add the clicked comment to expanded set
+			newExpanded.add(commentId);
+			return newExpanded;
+		});
 		
-		// Add only the current comment and its direct ancestors to expanded set
-		let current = newComment;
-		while (current) {
-			newExpanded.add(current._id);
-			current = getFocusedComment(comments, current.parentComment);
-		}
-		
-		setExpandedComments(newExpanded);
 		setFocusedComment(commentId);
 		setHighlightedComment(commentId);
 	};
