@@ -38,14 +38,55 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const handleEditorSave = async ({ scale, position }) => {
         if (!selectedFile) return;
 
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('scale', scale);
-        formData.append('positionX', position.x);
-        formData.append('positionY', position.y);
+        // Create a canvas to apply the transformations
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
 
         try {
-            const response = await fetch('/api/users/update', {
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = selectedImage;
+            });
+
+            // Set canvas size to final dimensions (circle size)
+            const finalSize = 400;
+            canvas.width = finalSize;
+            canvas.height = finalSize;
+
+            // First create a circular clipping path
+            ctx.beginPath();
+            ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+
+            // Create circular clipping path
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
+            ctx.clip();
+
+            // Calculate scaled dimensions
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+
+            // Calculate position to center the image
+            const x = (finalSize - scaledWidth) / 2 + position.x;
+            const y = (finalSize - scaledHeight) / 2 + position.y;
+
+            // Draw the image with proper scaling and position
+            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+            ctx.restore();
+
+            // Convert canvas to blob
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+            const transformedFile = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+
+            const formData = new FormData();
+            formData.append('profileImg', transformedFile);
+
+            const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -53,11 +94,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to update profile picture');
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format from server');
             }
 
             const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update profile picture');
+            }
+
             if (data.user?.profileImg) {
                 setProfileImg(data.user.profileImg);
                 if (onUpdate) {
@@ -70,6 +116,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
         } catch (error) {
             console.error('Error updating profile picture:', error);
+            toast.error(error.message || 'Failed to update profile picture');
         }
     };
 
