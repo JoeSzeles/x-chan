@@ -18,7 +18,7 @@ export const createPost = async (req, res) => {
 		const user = await User.findById(userId);
 		if (!user) return res.status(404).json({ message: "User not found" });
 
-		if (!text && !img && !videoUrl) {
+		if (!text && !img) {
 			return res.status(400).json({ error: "Post must have text, image, or video" });
 		}
 
@@ -59,7 +59,6 @@ export const createPost = async (req, res) => {
 			title,
 			text,
 			img,
-			videoUrl,
 			postNumber: nextPostNumber,
 			board: boardId
 		});
@@ -190,7 +189,7 @@ export const likeComment = async (req, res) => {
 		// Find the comment in the comments array
 		const commentIndex = post.comments.findIndex(comment => comment._id.toString() === commentId);
 		console.log('Comment index:', commentIndex);
-		
+
 		if (commentIndex === -1) {
 			console.log('Comment not found:', commentId);
 			return res.status(404).json({ error: "Comment not found" });
@@ -241,8 +240,7 @@ export const deleteComment = async (req, res) => {
 
 		console.log('Deleting comment:', { postId, commentId, userId });
 
-		const post = await Post.findById(postId);
-		if (!post) {
+		const post = await Post.findById(postId);		if (!post) {
 			console.log('Post not found:', postId);
 			return res.status(404).json({ error: "Post not found" });
 		}
@@ -488,7 +486,7 @@ export const repostPost = async (req, res) => {
 				{ _id: postId },
 				{ $pull: { reposts: userId } }
 			);
-				
+
 			return res.status(200).json({ 
 				message: "Repost removed successfully",
 				isReposted: false,
@@ -515,7 +513,7 @@ export const repostPost = async (req, res) => {
 
 		// Save the new repost
 		await newRepost.save();
-		
+
 		// Add current user to original post's reposts array
 		await Post.updateOne(
 			{ _id: postId },
@@ -552,9 +550,9 @@ export const repostPost = async (req, res) => {
 export const getPostById = async (req, res, next) => {
 	try {
 		const { postId } = req.params;
-		
+
 		console.log(`Fetching post with ID: ${postId}`);
-		
+
 		// First try to find in posts
 		let post = await Post.findById(postId)
 			.populate({
@@ -623,7 +621,7 @@ export const getPostById = async (req, res, next) => {
 export const incrementViewCount = async (req, res, next) => {
 	try {
 		const { postId } = req.params;
-		
+
 		const post = await Post.findById(postId);
 		if (!post) {
 			return next(errorHandler(404, "Post not found"));
@@ -645,9 +643,9 @@ export const incrementViewCount = async (req, res, next) => {
 export const getUserPostCount = async (req, res) => {
 	try {
 		const { userId } = req.params;
-		
+
 		const postCount = await Post.countDocuments({ user: userId });
-		
+
 		res.status(200).json({ postCount });
 	} catch (error) {
 		console.error("Error in getUserPostCount controller:", error);
