@@ -88,9 +88,9 @@ app.use((req, res, next) => {
         "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
         "ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:* https://*.launchdarkly.com https://*.stripe.network " +
         "https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* http://* https://*; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://img.youtube.com https://i.ytimg.com; " +
         "style-src 'self' 'unsafe-inline' https://*.stripe.network; " +
-        "frame-src 'self' https://www.youtube.com;"
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;"
     );
     next();
 });
