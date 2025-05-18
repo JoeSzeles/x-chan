@@ -332,8 +332,26 @@ const ThreadView = () => {
 	const isRootView = focusedComment === postId;
 
 	const onViewReplies = (commentId) => {
-		// Instead of just expanding, navigate to that comment
-		handleCommentClick(commentId);
+		setExpandedComments((prevExpanded) => {
+			const newExpanded = new Set(prevExpanded);
+			if (newExpanded.has(commentId)) {
+				newExpanded.delete(commentId);
+			} else {
+				// Add the comment and all its parent comments to expanded set
+				let current = getFocusedComment(comments, commentId);
+				while (current) {
+					newExpanded.add(current._id);
+					current = getFocusedComment(comments, current.parentComment);
+				}
+			}
+			return newExpanded;
+		});
+
+		// Update focused comment and breadcrumb path
+		if (!expandedComments.has(commentId)) {
+			setFocusedComment(commentId);
+			setHighlightedComment(commentId);
+		}
 	};
 
 	// Handle reply submission
