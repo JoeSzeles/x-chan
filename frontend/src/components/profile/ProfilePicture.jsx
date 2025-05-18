@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MdEdit } from "react-icons/md";
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
@@ -105,6 +105,20 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
+            
+            {showEditor && selectedImage && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+                    <ImageScaleEditor 
+                        image={selectedImage}
+                        onSave={handleEditorSave}
+                        onClose={() => {
+                            setShowEditor(false);
+                            setSelectedImage(null);
+                            setSelectedFile(null);
+                        }}
+                    />
+                </div>
+            )}
         </div>
     );
 };
