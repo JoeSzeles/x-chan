@@ -549,35 +549,28 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
 
     const getYouTubeThumbnail = (url) => {
         try {
-            // Handle different YouTube URL formats
             let videoId;
+            const urlObj = new URL(url);
+            
             if (url.includes('youtube.com/watch')) {
-                videoId = new URL(url).searchParams.get('v');
+                videoId = urlObj.searchParams.get('v');
             } else if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1].split('?')[0];
+                videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
             } else if (url.includes('youtube.com/embed/')) {
-                videoId = url.split('embed/')[1].split('?')[0];
+                videoId = url.split('embed/')[1]?.split(/[?#]/)[0];
             } else if (url.includes('youtube.com/shorts/')) {
-                videoId = url.split('shorts/')[1].split('?')[0];
+                videoId = url.split('shorts/')[1]?.split(/[?#]/)[0];
             }
 
             if (!videoId) {
                 console.error('Could not extract video ID from URL:', url);
-                return null;
+                return '/avatar-placeholder.png';
             }
 
-            // Try different thumbnail qualities in order of preference
-            const thumbnailQualities = [
-                `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/default.jpg`
-            ];
-
-            return thumbnailQualities[0]; // Start with highest quality
+            return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         } catch (error) {
             console.error('Error parsing YouTube URL:', error);
-            return null;
+            return '/avatar-placeholder.png';
         }
     };
 
