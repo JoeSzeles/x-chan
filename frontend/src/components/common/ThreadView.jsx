@@ -361,6 +361,14 @@ const ThreadView = () => {
 		);
 	}
 
+	// Calculate comment path
+	const commentPath = [];
+	let current = currentComment;
+	while (current) {
+		commentPath.unshift(current);
+		current = getFocusedComment(comments, current.parentComment);
+	}
+
 	return (
 		<div className="flex flex-col gap-4 border-r border-gray-700 min-h-screen w-full">
 			{/* Back Button */}
@@ -416,6 +424,68 @@ const ThreadView = () => {
 				</div>
 
 				<div className="flex-1 min-w-0 max-w-full">
+					{/* Comment Path Navigation with User Avatars */}
+					<div className="comment-path bg-gray-800 p-4 rounded-lg mb-6">
+						<div className="flex items-center gap-3 overflow-x-auto">
+							{/* Avatar Grid for Quick Navigation */}
+							<div className="flex -space-x-2 hover:space-x-1 transition-all duration-200">
+								<div 
+									onClick={() => setFocusedComment(postId)}
+									className="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-700 cursor-pointer hover:scale-110 transition-transform relative z-10"
+								>
+									<img 
+										src={post?.user?.profileImg || "/avatar-placeholder.png"} 
+										alt="Original Post"
+										className="w-full h-full object-cover"
+										onError={(e) => {
+											e.target.src = "/avatar-placeholder.png";
+										}}
+									/>
+									<div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
+										<span className="text-white text-xs">OP</span>
+									</div>
+								</div>
+
+								{comments?.slice(0, 5).map((comment, index) => (
+									<div
+										key={comment._id}
+										onClick={() => handleCommentClick(comment._id)}
+										className={`w-8 h-8 rounded-full overflow-hidden border-2 cursor-pointer hover:scale-110 transition-transform relative z-[${20 - index}] ${
+											focusedComment === comment._id ? 'border-blue-500' : 'border-gray-700'
+										}`}
+									>
+										<img 
+											src={comment.user?.profileImg || "/avatar-placeholder.png"} 
+											alt={comment.user?.username}
+											className="w-full h-full object-cover"
+											onError={(e) => {
+												e.target.src = "/avatar-placeholder.png";
+											}}
+										/>
+										<div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 hover:opacity-100">
+											<span className="text-white text-xs">@{comment.user?.username}</span>
+										</div>
+									</div>
+								))}
+
+								{comments?.length > 5 && (
+									<div className="w-8 h-8 rounded-full bg-gray-700 border-2 border-gray-600 flex items-center justify-center text-xs text-white cursor-pointer hover:bg-gray-600 transition-colors">
+										+{comments.length - 5}
+									</div>
+								)}
+							</div>
+
+							{/* Current Path Indicator */}
+							{commentPath && commentPath.length > 0 && (
+								<div className="flex items-center gap-2 ml-4 text-sm text-gray-400">
+									<span className="text-gray-500">→</span>
+									<span>Viewing reply by @{currentComment?.user?.username}</span>
+									<span className="text-gray-500">({commentPath.length} deep)</span>
+								</div>
+							)}
+						</div>
+					</div>
+
 					{/* Original Post */}
 					<Post post={post} />
 
