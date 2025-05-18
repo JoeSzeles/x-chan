@@ -38,7 +38,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         if (!selectedFile) return;
 
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append('profileImg', selectedFile);
         formData.append('scale', scale);
         formData.append('positionX', position.x);
         formData.append('positionY', position.y);
@@ -52,23 +52,32 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to update profile picture');
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format from server');
             }
 
             const data = await response.json();
-            if (data.user?.profileImg) {
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update profile picture');
+            }
+
+            if (data.success && data.user?.profileImg) {
                 setProfileImg(data.user.profileImg);
                 if (onUpdate) {
                     onUpdate({ type: 'image', content: data.user.profileImg });
                 }
+                setShowEditor(false);
+                setSelectedImage(null);
+                setSelectedFile(null);
+            } else {
+                throw new Error('Invalid response data');
             }
-            setShowEditor(false);
-            setSelectedImage(null);
-            setSelectedFile(null);
 
         } catch (error) {
             console.error('Error updating profile picture:', error);
+            toast.error(error.message || 'Failed to update profile picture');
         }
     };
 
