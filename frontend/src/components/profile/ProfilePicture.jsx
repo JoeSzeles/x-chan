@@ -51,15 +51,22 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             });
 
             // Set canvas size to final dimensions (circle size)
-            canvas.width = 400;
-            canvas.height = 400;
+            const finalSize = 400;
+            canvas.width = finalSize;
+            canvas.height = finalSize;
 
-            // Apply transformations to match the preview
+            // Calculate the scaled dimensions
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+
+            // Center the image and apply position offset
+            const x = (finalSize - scaledWidth) / 2 + position.x;
+            const y = (finalSize - scaledHeight) / 2 + position.y;
+
+            // Clear canvas and draw with proper positioning
+            ctx.clearRect(0, 0, finalSize, finalSize);
             ctx.save();
-            ctx.translate(canvas.width/2, canvas.height/2);
-            ctx.scale(scale, scale);
-            ctx.translate(-canvas.width/2 + position.x, -canvas.height/2 + position.y);
-            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
             ctx.restore();
 
             // Convert canvas to blob
