@@ -381,12 +381,12 @@ const BoardDetailPage = ({ isWideMode }) => {
             <div className='p-4 border-b border-gray-700'>
                 <div className="w-full h-48 relative mb-4">
                     <img
-                        src={board.coverPhoto || 'https://via.placeholder.com/1200x400?text=No+Cover'}
+                        src={board.coverPhoto || '/cover.png'}
                         alt={`${board.name} cover`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'https://via.placeholder.com/1200x400?text=No+Cover';
+                            e.target.src = '/cover.png';
                         }}
                     />
                 </div>
