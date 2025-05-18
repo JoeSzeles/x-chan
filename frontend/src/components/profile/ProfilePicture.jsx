@@ -39,13 +39,13 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         if (!selectedFile) return;
 
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append('profileImg', selectedFile);
         formData.append('scale', scale);
         formData.append('positionX', position.x);
         formData.append('positionY', position.y);
 
         try {
-            const response = await fetch('/api/users/update', {
+            const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -53,11 +53,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to update profile picture');
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Invalid response format from server');
             }
 
             const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to update profile picture');
+            }
+
             if (data.user?.profileImg) {
                 setProfileImg(data.user.profileImg);
                 if (onUpdate) {
@@ -70,6 +75,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
         } catch (error) {
             console.error('Error updating profile picture:', error);
+            toast.error(error.message || 'Failed to update profile picture');
         }
     };
 
