@@ -11,10 +11,10 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         const file = e.target.files[0];
         if (file) {
             const formData = new FormData();
-            formData.append('profileImg', file);
+            formData.append('file', file);
 
             try {
-                const response = await fetch('/api/users/update', {
+                const response = await fetch('/api/users/upload/profile', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`

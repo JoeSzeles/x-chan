@@ -28,6 +28,41 @@ const storage = new CloudinaryStorage({
 // Configure multer with Cloudinary storage
 const upload = multer({ storage: storage });
 
+// Upload profile picture
+router.post('/upload/profile', protectRoute, upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Delete old profile picture if exists
+        const user = await User.findById(req.user._id);
+        if (user.profileImg) {
+            try {
+                const publicId = user.profileImg.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(publicId);
+            } catch (error) {
+                console.error('Error deleting old profile picture:', error);
+            }
+        }
+
+        // Update user's profile picture
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            { profileImg: req.file.path },
+            { new: true }
+        ).select('-password');
+
+        res.status(200).json({
+            success: true,
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        res.status(500).json({ error: 'Failed to upload profile picture' });
+    }
+});
+
 // Upload cover photo
 router.post('/upload/cover', protectRoute, upload.single('coverImg'), async (req, res) => {
     try {
