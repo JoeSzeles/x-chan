@@ -67,13 +67,13 @@ const ThreadConnector = ({ fromX, fromY, toX, toY, level = 0, isReply = false })
 };
 
 // Custom component for displaying a threaded comment layout
-const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInThread = true }) => {
+const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInThread = true, expandedComments }) => {
 	const commentOwner = typeof comment.user === 'object' ? comment.user : { username: 'unknown', fullName: 'Unknown User' };
 	const hasReplies = comment.replies && comment.replies.length > 0;
 	const queryClient = useQueryClient();
 	const commentRef = useRef(null);
 	const [connectorPoints, setConnectorPoints] = useState(null);
-	
+
 	// Track view count for replies
 	useEffect(() => {
 		const trackView = async () => {
@@ -97,34 +97,34 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 
 		trackView();
 	}, [comment._id, queryClient, postId]);
-	
+
 	// Calculate connector points when component mounts or updates
 	const calculateConnectorPoints = useCallback(() => {
 		if (level > 0 && commentRef.current) {
 			// Get the current comment's position
 			const currentRect = commentRef.current.getBoundingClientRect();
-			
+
 			// Get the parent comment's position
 			const parentComment = commentRef.current.parentElement;
 			const parentRect = parentComment.getBoundingClientRect();
-			
+
 			// Get the profile picture
 			const profilePic = commentRef.current.querySelector('img');
 			const profileRect = profilePic?.getBoundingClientRect();
-			
+
 			if (profileRect) {
 				// Calculate points relative to the comment container
 				const containerRect = commentRef.current.getBoundingClientRect();
-				
+
 				setConnectorPoints({
 					// Start from the top left corner of the parent comment
 					fromX: parentRect.left - containerRect.left,
 					fromY: parentRect.top - containerRect.top,
-					
+
 					// End at the center of the profile picture
 					toX: profileRect.left - containerRect.left + (profileRect.width / 2),
 					toY: profileRect.top - containerRect.top + (profileRect.height / 2),
-					
+
 					level,
 					isReply: true
 				});
@@ -135,14 +135,14 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 	// Update points on mount, resize, and scroll
 	useEffect(() => {
 		calculateConnectorPoints();
-		
+
 		const handleUpdate = () => {
 			requestAnimationFrame(calculateConnectorPoints);
 		};
-		
+
 		window.addEventListener('resize', handleUpdate);
 		window.addEventListener('scroll', handleUpdate);
-		
+
 		return () => {
 			window.removeEventListener('resize', handleUpdate);
 			window.removeEventListener('scroll', handleUpdate);
@@ -162,13 +162,13 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 					isReply={connectorPoints.isReply}
 				/>
 			)}
-			
+
 			<div className="flex">
 				{/* Indentation based on nesting level */}
 				{level > 0 && (
 					<div style={{ width: `${level * 40}px` }} className="flex-shrink-0"></div>
 				)}
-				
+
 				<div className="flex-grow group">
 					<div className="group-hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-all duration-200 rounded-lg">
 						<Comment 
@@ -180,7 +180,7 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 					</div>
 				</div>
 			</div>
-			
+
 			{/* View more replies button */}
 			{hasReplies && (
 				<div className="flex">
@@ -195,14 +195,28 @@ const ThreadedComment = ({ comment, postId, level = 0, onViewReplies, isLastInTh
 							<div className="w-1 h-1 rounded-full bg-gray-600"></div>
 						</div>
 					</div>
-					<button
-						onClick={() => onViewReplies(comment._id)}
-						className="text-blue-400 hover:underline text-sm mb-4 ml-5"
-					>
-						{comment.replies.length > 3 
-							? `Show all ${comment.replies.length} replies` 
-							: `Show ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`}
-					</button>
+					<div className="flex-grow">
+						<button
+							onClick={() => onViewReplies(comment._id)}
+							className="text-blue-400 hover:underline text-sm mb-4 ml-5"
+						>
+							{comment.replies.length > 3 
+								? `Show all ${comment.replies.length} replies` 
+								: `Show ${comment.replies.length} ${comment.replies.length === 1 ? 'reply' : 'replies'}`}
+						</button>
+
+						{/* Nested replies */}
+						{expandedComments.has(comment._id) && comment.replies.map((reply) => (
+							<ThreadedComment
+								key={reply._id}
+								comment={reply}
+								postId={postId}
+								level={level + 1}
+								onViewReplies={onViewReplies}
+								expandedComments={expandedComments}
+							/>
+						))}
+					</div>
 				</div>
 			)}
 		</div>
@@ -284,27 +298,46 @@ const ThreadView = () => {
 	// Get the focused comment object
 	const getFocusedComment = (commentList, targetId) => {
 		if (!commentList) return null;
-		
+
 		if (targetId === postId) {
 			return null;
 		}
-		
+
 		for (const comment of commentList) {
 			if (comment._id === targetId) {
 				return comment;
 			}
-			
+
 			if (comment.replies && comment.replies.length > 0) {
 				const nestedComment = getFocusedComment(comment.replies, targetId);
 				if (nestedComment) return nestedComment;
 			}
 		}
-		
+
 		return null;
 	};
-	
+
 	const currentComment = getFocusedComment(comments, focusedComment);
 	const isRootView = focusedComment === postId;
+
+	const onViewReplies = (commentId) => {
+		setExpandedComments((prevExpanded) => {
+			const newExpanded = new Set(prevExpanded);
+			if (newExpanded.has(commentId)) {
+				newExpanded.delete(commentId);
+			} else {
+				newExpanded.add(commentId);
+			}
+			return newExpanded;
+		});
+	};
+
+	// Handle reply submission
+	const handleReplySubmit = () => {
+		// After submitting, refetch comments
+		queryClient.invalidateQueries(["comments", postId]);
+		setShowReplyInput(false); // Close the popup
+	};
 
 	if (postLoading || commentsLoading) {
 		return (
@@ -394,12 +427,14 @@ const ThreadView = () => {
 							</h3>
 							<div className="threaded-comments">
 								{comments.map((comment) => (
-									<Comment
+									<ThreadedComment
 										key={comment._id}
 										comment={comment}
 										postId={postId}
 										parentCommentId={null}
 										disableNavigation={true}
+										onViewReplies={onViewReplies}
+										expandedComments={expandedComments}
 									/>
 								))}
 							</div>
@@ -422,4 +457,4 @@ const ThreadView = () => {
 	);
 };
 
-export default ThreadView; 
+export default ThreadView;
