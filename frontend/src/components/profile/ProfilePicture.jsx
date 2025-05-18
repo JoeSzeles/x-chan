@@ -38,13 +38,37 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const handleEditorSave = async ({ scale, position }) => {
         if (!selectedFile) return;
 
-        const formData = new FormData();
-        formData.append('profileImg', selectedFile);
-        formData.append('scale', scale);
-        formData.append('positionX', position.x);
-        formData.append('positionY', position.y);
+        // Create a canvas to apply the transformations
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
 
         try {
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = selectedImage;
+            });
+
+            // Set canvas size to final dimensions (circle size)
+            canvas.width = 400;
+            canvas.height = 400;
+
+            // Apply transformations to match the preview
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(scale, scale);
+            ctx.translate(-canvas.width/2 + position.x, -canvas.height/2 + position.y);
+            ctx.drawImage(img, 0, 0);
+            ctx.restore();
+
+            // Convert canvas to blob
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+            const transformedFile = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+
+            const formData = new FormData();
+            formData.append('profileImg', transformedFile);
+
             const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
