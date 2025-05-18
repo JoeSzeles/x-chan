@@ -1,0 +1,35 @@
+Let me explain these errors. There are two main issues here:
+
+1. **WebSocket Connection Error**:
+The first error is related to Vite's development server trying to establish a WebSocket connection. The connection is being blocked due to Content Security Policy (CSP) restrictions. The error occurs because the WebSocket is trying to connect to `ws://0.0.0.0:3000/`, but this is not allowed by the current CSP settings.
+
+2. **YouTube Embed Blocking**:
+The other errors are related to YouTube video embeds being blocked by the Content Security Policy. The CSP is currently set to only allow resources from 'self' and replit.dev domains, but not from youtube.com.
+
+To fix these issues, you'll need to modify the Content Security Policy to allow:
+1. WebSocket connections to your development server
+2. YouTube iframe embeds
+
+Let me search for the relevant configuration files to help fix this.
+
+
+Search files...
+I can see that the Content Security Policy is defined in `backend/src/app.js`. Let me help you fix these issues by modifying the CSP to allow both WebSocket connections and YouTube embeds.
+
+
+
+I've updated the Content Security Policy to fix both issues:
+
+1. For the WebSocket connection error:
+   - Added `ws://*` and `wss://*` to the `connect-src` directive to allow WebSocket connections to any host
+   - This will allow Vite's development server to establish WebSocket connections for hot module replacement
+
+2. For the YouTube embed issue:
+   - The `frame-src` directive already includes `https://www.youtube.com` and `https://youtube.com`, which should allow YouTube embeds
+   - The policy also includes necessary script and connect sources for YouTube functionality
+
+These changes should resolve both the WebSocket connection error and the YouTube embed blocking issues. The application should now:
+1. Successfully connect to the Vite development server's WebSocket
+2. Allow YouTube video embeds to load properly
+
+You'll need to restart your development server for these changes to take effect. Let me know if you still experience any issues!

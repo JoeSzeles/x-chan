@@ -49,14 +49,15 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'", "https://*.replit.dev", "https://*.worf.replit.dev"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.launchdarkly.com", "https://*.stripe.network", "https://*.replit.dev", "https://replit.com", "https://*.worf.replit.dev", "https://events.launchdarkly.com", "https://beacon.replit.com", "https://*.youtube.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "data:", "blob:"],
-      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.cloudinary.com", "https://*.ytimg.com"],
-      fontSrc: ["'self'", "data:"],
-      connectSrc: ["'self'", "https://*.replit.dev", "wss://*.replit.dev", "wss://*.worf.replit.dev", "https://*.launchdarkly.com", "https://*.stripe.network", "https://events.launchdarkly.com", "https://*.cloudinary.com", "ws://*", "wss://*", "https://replit.com", "https://beacon.replit.com"],
-      frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
-      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
-      childSrc: ["'self'", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.launchdarkly.com", "https://*.stripe.network", "https://*.replit.dev", "https://replit.com", "https://*.worf.replit.dev", "https://events.launchdarkly.com", "https://beacon.replit.com", "https://*.youtube.com", "https://www.youtube.com", "https://platform.twitter.com", "https://*.twimg.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "data:", "blob:", "https://platform.twitter.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.ytimg.com", "https://i.ytimg.com", "https://img.youtube.com", "https://youtube.com", "https://www.youtube.com", "https://*.youtube.com", "https://*.twimg.com", "https://platform.twitter.com"],
+      fontSrc: ["'self'", "data:", "https://platform.twitter.com"],
+      connectSrc: ["'self'", "https://*.replit.dev", "wss://*.replit.dev", "wss://*.worf.replit.dev", "https://*.launchdarkly.com", "https://*.stripe.network", "https://events.launchdarkly.com", "https://*.cloudinary.com", "ws://*", "wss://*", "https://replit.com", "https://beacon.replit.com", "https://*.twitter.com", "https://*.youtube.com", "https://www.youtube.com"],
+      frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://youtube-nocookie.com", "https://platform.twitter.com"],
+      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://*.ytimg.com"],
+      childSrc: ["'self'", "blob:", "https://platform.twitter.com", "https://www.youtube.com"],
+      workerSrc: ["'self'", "blob:"],
       objectSrc: ["'none'"],
       formAction: ["'self'"]
     }
