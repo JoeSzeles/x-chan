@@ -85,14 +85,14 @@ app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', 
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://*.launchdarkly.com; " +
-        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
+        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev " +
         "https://*.launchdarkly.com https://clientstream.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com " +
         "https://*.cloudinary.com https://*.ytimg.com https://*.youtube.com https://*.googlevideo.com " +
         "ws://* wss://* http://* https://*; " +
         "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com https://*.youtube.com https://i.ytimg.com https://img.youtube.com; " +
         "media-src 'self' https://*.youtube.com https://*.ytimg.com https://*.googlevideo.com; " +
         "style-src 'self' 'unsafe-inline' https://*.youtube.com; " +
-        "frame-src 'self' https://*.youtube.com https://www.youtube.com https://www.youtube-nocookie.com;"
+        "frame-src 'self' https://*.youtube.com https://www.youtube.com https://www.youtube-nocookie.com https://www.youtube.com/embed/* https://youtube.com/embed/*;"
     );
     next();
 });
