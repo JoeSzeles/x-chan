@@ -232,7 +232,7 @@ const ThreadView = () => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const [showCommentPopup, setShowCommentPopup] = useState(showCommentPopup);
+	const [showCommentPopup, setShowCommentPopup] = useState(false);
 	const [selectedComment, setSelectedComment] = useState(null);
 	const [breadcrumbs, setBreadcrumbs] = useState([]);
 	const [expandedComments, setExpandedComments] = useState(new Set());
