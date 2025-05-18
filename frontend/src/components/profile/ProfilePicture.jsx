@@ -61,15 +61,22 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             ctx.closePath();
             ctx.clip();
 
-            // Calculate center offset and scale
-            const centerX = finalSize/2;
-            const centerY = finalSize/2;
-            
+            // Create circular clipping path
             ctx.save();
-            ctx.translate(centerX, centerY);
-            ctx.scale(scale, scale);
-            ctx.translate(-img.width/2 + position.x/scale, -img.height/2 + position.y/scale);
-            ctx.drawImage(img, 0, 0, img.width, img.height);
+            ctx.beginPath();
+            ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
+            ctx.clip();
+
+            // Calculate scaled dimensions
+            const scaledWidth = img.width * scale;
+            const scaledHeight = img.height * scale;
+
+            // Calculate position to center the image
+            const x = (finalSize - scaledWidth) / 2 + position.x;
+            const y = (finalSize - scaledHeight) / 2 + position.y;
+
+            // Draw the image with proper scaling and position
+            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
             ctx.restore();
 
             // Convert canvas to blob
