@@ -26,11 +26,26 @@ import CachedImage from './CachedImage';
 import RepostButton from './RepostButton';
 
 const getYouTubeThumbnail = (url) => {
+	console.log('[Post] Getting YouTube thumbnail for URL:', url);
 	try {
+		if (!url) {
+			console.log('[Post] No URL provided for YouTube thumbnail');
+			return null;
+		}
+
 		const videoId = url.split('v=')[1] || url.split('/').pop();
-		return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+		console.log('[Post] Extracted video ID:', videoId);
+
+		if (!videoId) {
+			console.log('[Post] Could not extract video ID from URL');
+			return null;
+		}
+
+		const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+		console.log('[Post] Generated thumbnail URL:', thumbnailUrl);
+		return thumbnailUrl;
 	} catch (error) {
-		console.error('Error parsing YouTube URL:', error);
+		console.error('[Post] Error parsing YouTube URL:', error);
 		return null;
 	}
 };
