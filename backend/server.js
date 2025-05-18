@@ -83,16 +83,16 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' *.youtube.com *.ytimg.com *.googlevideo.com; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' *.youtube.com; " +
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.youtube.com https://*.launchdarkly.com; " +
         "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
-        "https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com " +
-        "https://*.cloudinary.com ws://* wss://* http://* https://* " +
-        "https://*.ytimg.com https://*.youtube.com https://*.googlevideo.com; " +
-        "img-src 'self' data: blob: https: *.cloudinary.com *.ytimg.com i.ytimg.com *.youtube.com www.youtube.com; " +
-        "media-src 'self' *.youtube.com *.ytimg.com *.googlevideo.com; " +
-        "style-src 'self' 'unsafe-inline' *.youtube.com; " +
-        "frame-src 'self' *.youtube.com www.youtube.com www.youtube-nocookie.com;"
+        "https://*.launchdarkly.com https://clientstream.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com " +
+        "https://*.cloudinary.com https://*.ytimg.com https://*.youtube.com https://*.googlevideo.com " +
+        "ws://* wss://* http://* https://*; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com https://*.youtube.com; " +
+        "media-src 'self' https://*.youtube.com https://*.ytimg.com https://*.googlevideo.com; " +
+        "style-src 'self' 'unsafe-inline' https://*.youtube.com; " +
+        "frame-src 'self' https://*.youtube.com https://www.youtube.com https://www.youtube-nocookie.com;"
     );
     next();
 });
