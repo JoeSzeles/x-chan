@@ -489,27 +489,85 @@ const ThreadView = () => {
 					{/* Original Post */}
 					<Post post={post} />
 
-					{/* Comments Section */}
-					{comments && comments.length > 0 && (
-						<div className="comments-list mt-4">
-							<h3 className="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
-								Comments ({comments.length})
-							</h3>
-							<div className="threaded-comments">
-								{comments.map((comment) => (
-									<ThreadedComment
-										key={comment._id}
-										comment={comment}
-										postId={postId}
-										parentCommentId={null}
-										disableNavigation={true}
-										onViewReplies={onViewReplies}
-										expandedComments={expandedComments}
-									/>
+					{/* Original Comment Display */}
+					{currentComment && (
+						<div className="original-comment mb-6 bg-gray-800 p-4 rounded-lg">
+							<Comment 
+								comment={currentComment} 
+								postId={postId}
+								parentCommentId={currentComment.parentComment}
+								disableNavigation={true}
+							/>
+						</div>
+					)}
+
+					{/* Reply Chain Breadcrumb */}
+					{commentPath && commentPath.length > 0 && (
+						<div className="reply-chain bg-gray-800 p-4 rounded-lg mb-6">
+							<h4 className="text-sm text-gray-400 mb-2">Reply Chain:</h4>
+							<div className="flex flex-wrap gap-2">
+								{commentPath.slice(-3).map((comment, index) => (
+									<div key={comment._id} className="flex items-center">
+										<button
+											onClick={() => handleCommentClick(comment._id)}
+											className="flex items-center gap-2 bg-gray-700 p-2 rounded hover:bg-gray-600 transition-colors"
+										>
+											<img 
+												src={comment.user?.profileImg || "/avatar-placeholder.png"} 
+												alt={comment.user?.username}
+												className="w-6 h-6 rounded-full"
+											/>
+											<span className="text-sm">@{comment.user?.username}</span>
+										</button>
+										{index < commentPath.slice(-3).length - 1 && (
+											<span className="mx-2 text-gray-500">→</span>
+										)}
+									</div>
 								))}
 							</div>
 						</div>
 					)}
+
+					{/* Comments Section */}
+					<div className="comments-list mt-4">
+						<h3 className="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">
+							Replies {comments?.length > 0 ? `(${comments.length})` : ''}
+						</h3>
+						<div className="threaded-comments space-y-4">
+							{comments?.map((comment) => (
+								<div key={comment._id} className="comment-card bg-gray-800 p-4 rounded-lg">
+									<Comment 
+										comment={comment}
+										postId={postId}
+										parentCommentId={null}
+										disableNavigation={true}
+									/>
+									{comment.replies?.length > 0 && (
+										<button
+											onClick={() => onViewReplies(comment._id)}
+											className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
+										>
+											{expandedComments.has(comment._id) ? 'Hide' : 'Show'} {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+										</button>
+									)}
+									{expandedComments.has(comment._id) && (
+										<div className="ml-8 mt-4 space-y-4">
+											{comment.replies.map((reply) => (
+												<div key={reply._id} className="bg-gray-700 p-4 rounded-lg">
+													<Comment 
+														comment={reply}
+														postId={postId}
+														parentCommentId={comment._id}
+														disableNavigation={true}
+													/>
+												</div>
+											))}
+										</div>
+									)}
+								</div>
+							))}
+						</div>
+					</div>
 				</div>
 			</div>
 
