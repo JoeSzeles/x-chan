@@ -9,7 +9,6 @@ import mongoose from "mongoose";
 import auth from "./middleware/auth.js";
 import boardRoutes from "./routes/boards.js";
 import morgan from "morgan";
-import helmet from "helmet"; // Import helmet
 
 // Import routes
 import authRoutes from "./routes/auth.route.js";
@@ -42,28 +41,6 @@ app.use(cors({
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// CSP configuration
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'", "https://*.replit.dev", "https://*.worf.replit.dev"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*.launchdarkly.com", "https://*.stripe.network", "https://*.replit.dev", "https://replit.com", "https://*.worf.replit.dev", "https://events.launchdarkly.com", "https://beacon.replit.com", "https://*.youtube.com", "https://www.youtube.com", "https://platform.twitter.com", "https://*.twimg.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "data:", "blob:", "https://platform.twitter.com"],
-      imgSrc: ["'self'", "data:", "blob:", "https:", "https://*.ytimg.com", "https://i.ytimg.com", "https://img.youtube.com", "https://youtube.com", "https://www.youtube.com", "https://*.youtube.com", "https://*.twimg.com", "https://platform.twitter.com"],
-      fontSrc: ["'self'", "data:", "https://platform.twitter.com"],
-      connectSrc: ["'self'", "https://*.replit.dev", "wss://*.replit.dev", "wss://*.worf.replit.dev", "https://*.launchdarkly.com", "https://*.stripe.network", "https://events.launchdarkly.com", "https://*.cloudinary.com", "ws://*", "wss://*", "https://replit.com", "https://beacon.replit.com", "https://*.twitter.com", "https://*.youtube.com", "https://www.youtube.com"],
-      frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://youtube-nocookie.com", "https://platform.twitter.com"],
-      mediaSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://*.ytimg.com"],
-      childSrc: ["'self'", "blob:", "https://platform.twitter.com", "https://www.youtube.com"],
-      workerSrc: ["'self'", "blob:"],
-      objectSrc: ["'none'"],
-      formAction: ["'self'"]
-    }
-  },
-  crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: false
 }));
 
 // Get current file path
@@ -101,4 +78,4 @@ try {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-});
+}); 

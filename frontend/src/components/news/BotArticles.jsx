@@ -550,13 +550,10 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const getYouTubeThumbnail = (url) => {
         try {
             let videoId;
+            const urlObj = new URL(url);
             
-            if (!url) {
-                return '/avatar-placeholder.png';
-            }
-
             if (url.includes('youtube.com/watch')) {
-                videoId = new URLSearchParams(url.split('?')[1]).get('v');
+                videoId = urlObj.searchParams.get('v');
             } else if (url.includes('youtu.be/')) {
                 videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
             } else if (url.includes('youtube.com/embed/')) {
@@ -570,17 +567,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 return '/avatar-placeholder.png';
             }
 
-            // Try multiple thumbnail URLs with a fallback chain
-            const thumbnailUrls = [
-                `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/default.jpg`,
-                `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
-            ];
-
-            // Use the first URL by default
-            return thumbnailUrls[0];
+            return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         } catch (error) {
             console.error('Error parsing YouTube URL:', error);
             return '/avatar-placeholder.png';
