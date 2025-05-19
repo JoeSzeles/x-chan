@@ -5,38 +5,25 @@ const QuoteText = ({ text, onQuoteClick }) => {
   if (!text) return null;
 
   const renderText = (text) => {
-    const postNumberPattern = />>(\d{10})/g;
-    const greenTextPattern = /^>((?!>).+)$/gm;
-    const parts = [];
-    let lastIndex = 0;
-
-    // Handle post number quotes
-    text.replace(postNumberPattern, (match, postNumber, index) => {
-      // Add text before the match
-      if (index > lastIndex) {
-        const textBefore = text.slice(lastIndex, index);
-        parts.push(renderGreenText(textBefore));
+    // Split the text into parts by newlines
+    const parts = text.split('\n');
+    return parts.map((part, index) => {
+      // Check if the part is a quote (starts with >)
+      if (part.startsWith('>')) {
+        return <div key={index} className="text-green-500">{part}</div>;
       }
-
-      // Add the post number link component
-      parts.push(
-        <PostNumberLink
-          key={`post-${index}`}
-          postNumber={postNumber}
-          onClick={() => onQuoteClick(postNumber)}
-        />
-      );
-
-      lastIndex = index + match.length;
+      // Check if the part is a post number reference
+      else if (part.startsWith('>>')) {
+        const postNumber = part.slice(2);
+        return (
+          <div key={index}>
+            <PostNumberLink postNumber={postNumber} />
+          </div>
+        );
+      }
+      // Regular text
+      return <div key={index}>{part}</div>;
     });
-
-    // Add remaining text
-    if (lastIndex < text.length) {
-      const remainingText = text.slice(lastIndex);
-      parts.push(renderGreenText(remainingText));
-    }
-
-    return parts.length > 0 ? parts : renderGreenText(text);
   };
 
   const renderGreenText = (text) => {
