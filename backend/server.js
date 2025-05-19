@@ -80,14 +80,15 @@ app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', origin);
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "connect-src * ws://* wss://* 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "img-src * data: blob: 'unsafe-inline'; " +
-        "media-src * data: blob: 'unsafe-inline'; " +
-        "style-src * 'unsafe-inline';"
+        "default-src 'self' * data: blob:; " +
+        "connect-src 'self' * ws: wss: data: blob:; " +
+        "img-src 'self' * data: blob:; " +
+        "media-src 'self' * data: blob:; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "style-src 'self' 'unsafe-inline';"
     );
     next();
 });
