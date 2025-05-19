@@ -257,7 +257,7 @@ connectMongoDB().then(() => {
         }).on('error', (err) => {
             if (err.code === 'EADDRINUSE' && retryCount < 3) {
                 console.log(`Port ${PORT} is busy, killing existing process...`);
-                import { exec } from 'child_process';
+                const { exec } = require('child_process');
                 exec(`npx kill-port ${PORT}`, (error) => {
                     if (error) {
                         console.error('Error killing port:', error);
