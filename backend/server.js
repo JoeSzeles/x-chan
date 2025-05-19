@@ -84,11 +84,11 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
         "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.cloudinary.com; " +
-        "connect-src 'self' ws://0.0.0.0:* wss://* https://* http://* https://*.launchdarkly.com https://clientstream.launchdarkly.com https://events.launchdarkly.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.cloudinary.com https://*.stripe.network; " +
+        "connect-src 'self' ws://0.0.0.0:* wss://* https://* http://* https://*.launchdarkly.com https://clientstream.launchdarkly.com https://events.launchdarkly.com https://beacon.replit.com; " +
         "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com; " + 
         "media-src 'self' https: https://*.cloudinary.com; " +
-        "style-src 'self' 'unsafe-inline';"
+        "style-src 'self' 'unsafe-inline' https://*.replit.dev;"
     );
     next();
 });
@@ -251,9 +251,26 @@ io.engine.on('connection_error', (err) => {
 
 // Connect to MongoDB before starting the server
 connectMongoDB().then(() => {
-    httpServer.listen(PORT, '0.0.0.0', () => {
-        console.log(`Server is running on http://0.0.0.0:${PORT}`);
-    });
+    const startServer = (retryCount = 0) => {
+        httpServer.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server is running on http://0.0.0.0:${PORT}`);
+        }).on('error', (err) => {
+            if (err.code === 'EADDRINUSE' && retryCount < 3) {
+                console.log(`Port ${PORT} is busy, killing existing process...`);
+                require('child_process').exec(`npx kill-port ${PORT}`, (error) => {
+                    if (error) {
+                        console.error('Error killing port:', error);
+                        process.exit(1);
+                    }
+                    setTimeout(() => startServer(retryCount + 1), 1000);
+                });
+            } else {
+                console.error('Server error:', err);
+                process.exit(1);
+            }
+        });
+    };
+    startServer();
 }).catch((error) => {
     console.error("Failed to start server:", error);
     process.exit(1);
