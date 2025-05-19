@@ -30,12 +30,9 @@ const LiveBoard = () => {
         queryKey: ['liveBoardPosts'],
         queryFn: async () => {
             try {
-                const response = await fetch('/api/liveboard');
-                if (!response.ok) {
-                  throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const text = await response.text();
-                const data = text ? JSON.parse(text) : null;
+                const res = await fetch('/api/liveboard');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to fetch posts');
                 return data;
             } catch (error) {
                 console.error('Error fetching posts:', error);
@@ -124,7 +121,7 @@ const LiveBoard = () => {
         onMutate: async (postId) => {
             await queryClient.cancelQueries(['liveBoardPosts']);
             const previousPosts = queryClient.getQueryData(['liveBoardPosts']);
-
+            
             queryClient.setQueryData(['liveBoardPosts'], (old = []) => 
                 old.filter(post => post._id !== postId)
             );
@@ -162,7 +159,7 @@ const LiveBoard = () => {
         onMutate: async ({ postId, isPublic }) => {
             await queryClient.cancelQueries(['liveBoardPosts']);
             const previousPosts = queryClient.getQueryData(['liveBoardPosts']);
-
+            
             queryClient.setQueryData(['liveBoardPosts'], (old = []) =>
                 old.map(post =>
                     post._id === postId ? { ...post, isPublic } : post
@@ -247,7 +244,7 @@ const LiveBoard = () => {
     return (
         <div className="bg-[#15202b] rounded-lg p-4 mb-4">
             <h2 className="text-xl font-bold mb-4">Live Board</h2>
-
+            
             {/* Post Form */}
             <form onSubmit={handleSubmit} className="mb-4">
                 <div className="flex gap-2 mb-2">
@@ -288,7 +285,7 @@ const LiveBoard = () => {
                         {isPublic ? <FaLockOpen /> : <FaLock />}
                     </button>
                 </div>
-
+                
                 <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
@@ -296,7 +293,7 @@ const LiveBoard = () => {
                     className="w-full bg-[#1e1e1e] text-white p-2 rounded-lg mb-2 resize-none"
                     rows="3"
                 />
-
+                
                 {postType !== 'text' && (
                     <input
                         type="text"
@@ -306,7 +303,7 @@ const LiveBoard = () => {
                         className="w-full bg-[#1e1e1e] text-white p-2 rounded-lg mb-2"
                     />
                 )}
-
+                
                 <button
                     type="submit"
                     className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition-colors"
@@ -370,4 +367,4 @@ const LiveBoard = () => {
     );
 };
 
-export default LiveBoard;
+export default LiveBoard; 

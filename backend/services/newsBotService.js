@@ -46,13 +46,13 @@ class NewsBotService {
 
             Object.assign(bot, updateData);
             await bot.save();
-
+            
             console.log('[NewsBotService] Bot updated successfully:', {
                 id: bot._id,
                 name: bot.name,
                 websites: bot.websites
             });
-
+            
             return bot;
         } catch (error) {
             console.error('[NewsBotService] Error updating bot:', error);
@@ -92,7 +92,7 @@ class NewsBotService {
                 botId: bot._id,
                 botOwner: bot.owner
             });
-
+            
             // Create a post from the article
             const post = new Post({
                 user: bot.owner, // Use bot owner's ID as the user
@@ -363,7 +363,7 @@ class NewsBotService {
     async postArticle(botId, articleId) {
         try {
             console.log('[NewsBotService] Posting article:', { botId, articleId });
-
+            
             const bot = await NewsBot.findById(botId);
             if (!bot) {
                 throw new Error("Bot not found");
@@ -375,19 +375,8 @@ class NewsBotService {
                 throw new Error("Article not found");
             }
 
-            // Remove youtube handlings
-            const userId = bot.owner;
             // Create post from article
-            const post = new Post({
-                user: userId,
-                bot: botId,
-                article: article._id,
-                text: `Reposted from bot\n\n${article.title}\n\n${article.description}\n\nRead more: ${article.url}`,
-                img: article.imageUrl,
-                postNumber: await newsBotService.getNextPostNumber(),
-                threadId: await newsBotService.getNextThreadId()
-            });
-            // Create post from article
+            const post = await this.createPostFromArticle(article, bot);
             console.log('[NewsBotService] Created post:', post._id);
 
             // Mark article as posted
@@ -409,4 +398,4 @@ class NewsBotService {
     }
 }
 
-export default new NewsBotService();
+export default new NewsBotService(); 

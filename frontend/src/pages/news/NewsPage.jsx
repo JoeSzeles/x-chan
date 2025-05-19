@@ -123,14 +123,17 @@ const NewsPage = () => {
 
     // Initialize Socket.IO client inside useEffect
     useEffect(() => {
-        const socket = io('/api', {
+        const socket = io(import.meta.env.VITE_SOCKET_URL || 'https://tradehub.ap.ngrok.io:5000', {
             path: '/socket.io',
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             autoConnect: true,
-            withCredentials: true
+            withCredentials: true,
+            extraHeaders: {
+                'ngrok-skip-browser-warning': 'true'
+            }
         });
 
         socket.on('connect', () => {
@@ -188,7 +191,7 @@ const NewsPage = () => {
                 // Use relative URL to avoid CORS issues
                 const url = `/api/newsbot/user?search=${encodeURIComponent(searchQuery)}&category=${selectedCategory}`;
                 console.log('Attempting to fetch bots from URL:', url);
-
+                
                 const res = await fetch(url, {
                     credentials: 'include',
                     headers: {
@@ -198,7 +201,7 @@ const NewsPage = () => {
                 });
 
                 console.log('Response status:', res.status);
-
+                
                 // Check if the response is empty
                 const text = await res.text();
                 console.log('Raw response text:', text);
@@ -231,12 +234,12 @@ const NewsPage = () => {
                     });
                     throw new Error(data.error || `Server error: ${res.status} ${res.statusText}`);
                 }
-
+                
                 if (!data.success) {
                     console.error('API returned success: false:', data);
                     throw new Error(data.error || "API request failed");
                 }
-
+                
                 console.log('Successfully fetched bots data:', data.data);
                 return data.data;
             } catch (error) {
@@ -274,34 +277,74 @@ const NewsPage = () => {
     });
 
     // Update bot articles mutation
-    const { mutate: updateArticles } = useMutation({
+    const updateArticlesMutation = useMutation({
         mutationFn: async (botId) => {
             try {
+                console.log('Starting article update for bot:', botId);
+                
+                if (!botId) {
+                    throw new Error('No bot selected for update');
+                }
+
                 const res = await fetch(`/api/newsbot/${botId}/update`, {
                     method: 'POST',
                     credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
                 });
-
-                const data = await res.json();
-
+                
+                console.log('Update response status:', res.status);
+                console.log('Update response headers:', Object.fromEntries(res.headers.entries()));
+                
+                const text = await res.text();
+                console.log('Raw update response:', text);
+                
+                if (!text) {
+                    console.error('Empty response from update endpoint');
+                    throw new Error('Empty response from server');
+                }
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                    console.log('Parsed update response:', data);
+                } catch (parseError) {
+                    console.error('Failed to parse update response:', parseError);
+                    throw new Error('Invalid response from server');
+                }
+                
                 if (!res.ok) {
+                    console.error('Update request failed:', {
+                        status: res.status,
+                        statusText: res.statusText,
+                        data: data
+                    });
                     throw new Error(data.error || 'Failed to update articles');
                 }
-
+                
+                if (!data.success) {
+                    console.error('Update API returned success: false:', data);
+                    throw new Error(data.error || 'Failed to update articles');
+                }
+                
+                // Ensure we have valid data before accessing properties
+                const articles = data.data?.articles || [];
+                const newArticles = data.data?.newArticles || [];
+                
+                console.log('Update successful:', {
+                    totalArticles: articles.length,
+                    newArticles: newArticles.length
+                });
+                
                 return {
-                    success: true,
-                    data: {
-                        newArticles: data.data?.newArticles || [],
-                        errors: data.data?.errors || [],
-                        totalArticles: data.data?.totalArticles || 0
-                    }
+                    ...data.data,
+                    articles,
+                    newArticles
                 };
             } catch (error) {
-                console.error('Error updating articles:', error);
+                console.error('Error updating articles:', {
+                    error: error,
+                    message: error.message,
+                    stack: error.stack
+                });
                 throw error;
             }
         },
@@ -309,13 +352,13 @@ const NewsPage = () => {
             // Ensure we have valid data before accessing properties
             const newArticlesCount = data?.newArticles?.length || 0;
             const totalArticles = data?.articles?.length || 0;
-
+            
             console.log('Update mutation success:', {
                 newArticlesCount,
                 totalArticles,
                 data
             });
-
+            
             if (newArticlesCount > 0) {
                 toast.success(`Found ${newArticlesCount} new articles!`, {
                     duration: 3000,
@@ -337,7 +380,7 @@ const NewsPage = () => {
                     }
                 });
             }
-
+            
             // Invalidate queries to refresh the data
             queryClient.invalidateQueries(["newsBots"]);
         },
@@ -347,7 +390,7 @@ const NewsPage = () => {
                 message: error.message,
                 stack: error.stack
             });
-
+            
             toast.error(error.message || "Failed to update articles", {
                 duration: 3000,
                 position: "bottom-right",
@@ -441,7 +484,7 @@ const NewsPage = () => {
     const { mutate: updateBot } = useMutation({
         mutationFn: async (botData) => {
             console.log('Updating bot with data:', botData);
-
+            
             // For YouTube bots, construct the search URL
             if (botData.websites.some(w => w.type === 'video')) {
                 botData.websites = botData.websites.map(website => {
@@ -485,13 +528,13 @@ const NewsPage = () => {
         mutationFn: async ({ botId, articleId }) => {
             try {
                 console.log('Starting postArticle mutation:', { botId, articleId });
-
+                
                 const url = `/api/newsbot/${botId}/post-article`;
                 console.log('Making request to:', url);
-
+                
                 const requestBody = JSON.stringify({ articleId });
                 console.log('Request body:', requestBody);
-
+                
                 const res = await fetch(url, {
                     method: "POST",
                     credentials: 'include',
@@ -521,7 +564,7 @@ const NewsPage = () => {
                     // Remove any BOM or whitespace
                     const cleanText = text.trim().replace(/^\uFEFF/, '');
                     console.log('Cleaned response text:', cleanText);
-
+                    
                     data = JSON.parse(cleanText);
                     console.log('Parsed JSON data:', data);
                 } catch (parseError) {
@@ -574,7 +617,7 @@ const NewsPage = () => {
     // Add preset selection handler
     const handlePresetSelect = (presetKey) => {
         console.log('Selected preset:', presetKey);
-
+        
         if (presetKey === "custom") {
             setNewBot({
                 name: "",
@@ -586,7 +629,7 @@ const NewsPage = () => {
 
         const preset = websitePresets[presetKey];
         console.log('Preset data:', preset);
-
+        
         // Create a new bot configuration with the preset data
         const newBotConfig = {
             name: preset.name,
@@ -598,7 +641,7 @@ const NewsPage = () => {
             })),
             updateInterval: 5
         };
-
+        
         console.log('Setting new bot config:', newBotConfig);
         setNewBot(newBotConfig);
     };
@@ -760,7 +803,7 @@ const NewsPage = () => {
                                 <button
                                     onClick={() => {
                                         setSelectedBot(bot);
-                                        updateArticles(bot._id);
+                                        updateArticlesMutation.mutate(bot._id);
                                     }}
                                     className="p-2 text-blue-500 hover:text-blue-400 rounded-full hover:bg-blue-500/10"
                                     title="Update Now"
@@ -1112,4 +1155,4 @@ const NewsPage = () => {
     );
 };
 
-export default NewsPage;
+export default NewsPage; 

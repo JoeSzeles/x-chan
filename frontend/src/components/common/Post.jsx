@@ -25,7 +25,15 @@ import usePostNumberNavigation from '../../hooks/usePostNumberNavigation';
 import CachedImage from './CachedImage';
 import RepostButton from './RepostButton';
 
-
+const getYouTubeThumbnail = (url) => {
+	try {
+		const videoId = url.split('v=')[1] || url.split('/').pop();
+		return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+	} catch (error) {
+		console.error('Error parsing YouTube URL:', error);
+		return null;
+	}
+};
 
 const Post = ({ post, isComment = false, isCompact = false }) => {
 	const postRef = useRef(null);
@@ -347,7 +355,19 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		handlePostNumberClick(postNumber, post._id);
 	};
 
+	const getYouTubeEmbedUrl = (url) => {
+		try {
+			const videoId = url.split('v=')[1] || url.split('/').pop();
+			return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
+		} catch (error) {
+			console.error('Error parsing YouTube URL:', error);
+			return null;
+		}
+	};
 
+	const isYouTubeUrl = (url) => {
+		return url && (url.includes('youtube.com') || url.includes('youtu.be'));
+	};
 
 	const handlePostNumberHover = (e) => {
 		const rect = e.currentTarget.getBoundingClientRect();
@@ -386,11 +406,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 			toast.error('Failed to download image');
 		}
 	};
-
-	const [imageError, setImageError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showFullText, setShowFullText] = useState(false);
-  const maxLength = 500;
 
 	return (
 		<div className={`flex gap-2 items-start ${isCompact ? 'p-0 h-full' : 'p-4'} rounded-lg ${isCompact ? 'hover:bg-[#2a2a2a] transition-colors' : 'bg-[#1e1e1e] mb-4'}`}>
@@ -437,7 +452,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 							</div>
 						</div>
 					)}
-
+					
 					<div className={`flex flex-col flex-1 ${isCompact ? 'bg-transparent' : 'bg-[#272525]'} rounded-lg ${isCompact ? '' : 'p-4'}`}>
 						{!isCompact && (
 							<div className='flex gap-2 items-center pb-3'>
@@ -593,7 +608,36 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 										)}
 									</div>
 								)}
-
+								{post.videoUrl && isYouTubeUrl(post.videoUrl) && (
+									isCompact ? (
+										<CachedImage
+											src={getYouTubeThumbnail(post.videoUrl)}
+											className="h-full w-full object-cover rounded-lg"
+											alt="Video thumbnail"
+										/>
+									) : (
+										<div className="relative">
+											<div className={`aspect-video transition-all duration-300 ${isVideoExpanded ? 'w-full' : 'max-w-2xl mx-auto'}`}>
+											<iframe
+												src={getYouTubeEmbedUrl(post.videoUrl)}
+												title="YouTube video"
+												className='w-full h-full rounded-lg'
+												allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+												allowFullScreen
+											/>
+											</div>
+											<button
+												onClick={(e) => {
+													e.stopPropagation();
+													setIsVideoExpanded(!isVideoExpanded);
+												}}
+												className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white px-2 py-1 rounded text-sm backdrop-blur-sm transition-colors z-10"
+											>
+												{isVideoExpanded ? 'Show Less' : 'Show Full'}
+											</button>
+										</div>
+									)
+								)}
 								{isCompact && (
 									<div className='absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm p-2 rounded-b-lg flex justify-between items-center z-20'>
 										<div className='flex gap-2 items-center'>
@@ -800,7 +844,17 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 								alt=""
 							/>
 						)}
-
+						{post.videoUrl && isYouTubeUrl(post.videoUrl) && (
+							<div className="aspect-video">
+								<iframe
+									src={getYouTubeEmbedUrl(post.videoUrl)}
+									title="YouTube video"
+									className="w-full h-full rounded-lg"
+									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+									allowFullScreen
+								/>
+							</div>
+						)}
 					</div>
 				</div>
 			)}

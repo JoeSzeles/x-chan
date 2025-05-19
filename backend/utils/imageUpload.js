@@ -1,5 +1,5 @@
-
 import { upload } from './multer.js';
+import path from 'path';
 
 export const handleImageUpload = (fieldName) => {
     return upload.single(fieldName);
@@ -20,4 +20,4 @@ export const validateImage = (req, res, next) => {
     }
 
     next();
-};
+}; 

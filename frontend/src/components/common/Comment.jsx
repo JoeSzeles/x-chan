@@ -108,7 +108,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 			console.error("User data is missing or unpopulated:", comment);
 		}
 	}, [comment]);
-
+	
 	// Safely access user data with defensive code
 	const commentOwner = typeof comment.user === 'object' ? comment.user : { username: 'unknown', fullName: 'Unknown User' };
 	const isLiked = localLikes?.includes(authUser?._id);
@@ -334,13 +334,13 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 					},
 					body: JSON.stringify({ rating })
 				});
-
+				
 				const data = await res.json();
-
+				
 				if (!res.ok) {
 					throw new Error(data.error || "Failed to rate comment");
 				}
-
+				
 				return data;
 			} catch (error) {
 				console.error("Error rating comment:", error);
@@ -351,7 +351,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 			// Update both the comments list and individual comment cache
 			queryClient.setQueryData(["comments", postId], (oldData) => {
 				if (!oldData) return oldData;
-
+				
 				// Function to update ratings in a comment or its replies
 				const updateRatingsInComment = (comments) => {
 					return comments.map((c) => {
@@ -473,7 +473,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 
 	return (
 		<div className='flex gap-2 items-start p-4 rounded-lg bg-[#1e1e1e] mb-4 relative' ref={commentRef} onClick={(e) => e.stopPropagation()} data-post-number={comment.postNumber}>
-			<div className='flex flex-col flex-1 h-full'>
+			<div className='flex flex-col flex-1'>
 				{/* Post Number Header */}
 				<PostNumberHeader
 					post={comment}
@@ -481,10 +481,9 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 					quotedBy={quotedBy}
 					className="mb-2"
 				/>
-				{!isCompact && <div className='flex items-center gap-2 pb-3'>
-</div>}
-					<div className='flex gap-2'>
-						{!isCompact && <div className='avatar relative flex flex-col items-center'>
+
+				<div className='flex gap-2'>
+			<div className='avatar relative flex flex-col items-center'>
 				{/* Current Commenter's Profile Picture */}
 				<div className="w-12 h-12 relative z-10 rounded-full bg-[#1e1e1e] p-0.5">
 					<Link 
@@ -523,9 +522,9 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 						</Link>
 					</div>
 				)}
-			</div>}
-
-			<div className={`flex flex-col flex-1 ${isCompact ? 'bg-transparent' : 'bg-[#272525]'} rounded-lg ${isCompact ? '' : 'p-4'}`}>
+			</div>
+			
+			<div className={`flex flex-col flex-1 bg-[#272525] rounded-lg p-4 ${comment.post ? 'ml-1' : ''}`}>
 				<div className='flex gap-2 items-center pb-3'>
 					<Link 
 						to={`/profile/${commentOwner.username || 'unknown'}`} 
@@ -706,4 +705,4 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 	);
 };
 
-export default Comment;
+export default Comment; 

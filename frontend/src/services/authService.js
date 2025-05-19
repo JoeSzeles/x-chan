@@ -27,7 +27,6 @@ export const login = async (credentials) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            credentials: 'include',
             body: JSON.stringify(credentials)
         });
 
@@ -85,4 +84,4 @@ export const updateProfile = async (userData) => {
     } catch (error) {
         handleAuthError(error);
     }
-};
+}; 

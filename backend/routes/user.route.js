@@ -83,39 +83,10 @@ router.get("/online", protectRoute, getOnlineUsers);
 router.get("/:username/followers", protectRoute, getFollowers);
 router.get("/:username/following", protectRoute, getFollowing);
 router.post("/follow/:id", protectRoute, followUnfollowUser);
-router.post('/upload/profile', protectRoute, upload.single('profileImg'), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-
-        const user = await User.findById(req.user._id);
-        if (user.profileImg) {
-            try {
-                const publicId = user.profileImg.split('/').pop().split('.')[0];
-                await cloudinary.uploader.destroy(publicId);
-            } catch (error) {
-                console.error('Error deleting old profile picture:', error);
-            }
-        }
-
-        const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            { profileImg: req.file.path },
-            { new: true }
-        ).select('-password');
-
-        res.json({ success: true, user: updatedUser });
-    } catch (error) {
-        console.error('Error uploading profile picture:', error);
-        res.status(500).json({ error: 'Failed to upload profile picture' });
-    }
-});
-
 router.post("/update", protectRoute, updateUser);
 router.put("/settings", protectRoute, updateSettings);
 
-// Update message permissions  
+// Update message permissions
 router.put('/message-permissions', protectRoute, async (req, res) => {
   try {
     const { allowMessages } = req.body;

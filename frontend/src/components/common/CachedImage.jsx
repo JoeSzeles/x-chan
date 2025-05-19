@@ -6,7 +6,59 @@ const MAX_CACHE_SIZE = 4 * 1024 * 1024; // 4MB limit for cache entries
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000; // 1 second
 
-// Removed YouTube thumbnail handling code
+// Helper function to extract YouTube video ID
+const extractYouTubeId = (url) => {
+    if (!url) return null;
+    
+    try {
+        // Handle various YouTube URL formats
+        const patterns = [
+            /(?:youtube\.com\/vi\/|youtu\.be\/)([^&?/]+)/,  // youtu.be/ID or youtube.com/vi/ID
+            /(?:youtube\.com\/watch\?v=|youtube\.com\/embed\/)([^&?/]+)/,  // youtube.com/watch?v=ID
+            /(?:youtube\.com\/v\/)([^&?/]+)/,  // youtube.com/v/ID
+            /(?:youtube\.com\/shorts\/)([^&?/]+)/,  // youtube.com/shorts/ID
+            /(?:youtube\.com\/vi\/)([^&?/]+)/,  // youtube.com/vi/ID
+            /(?:youtube\.com\/user\/[^/]+\/videos\/)([^&?/]+)/,  // youtube.com/user/username/videos/ID
+            /(?:youtube\.com\/channel\/[^/]+\/videos\/)([^&?/]+)/  // youtube.com/channel/channelname/videos/ID
+        ];
+
+        // First try to match any of our patterns
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) return match[1];
+        }
+
+        // If no pattern matches, try to extract from query parameters
+        const urlObj = new URL(url);
+        const videoId = urlObj.searchParams.get('v');
+        if (videoId) return videoId;
+
+        return null;
+    } catch (error) {
+        // If URL parsing fails, try a last resort regex
+        const lastResortMatch = url.match(/[?&]v=([^&]+)/);
+        return lastResortMatch ? lastResortMatch[1] : null;
+    }
+};
+
+// Helper function to get YouTube thumbnail URL with quality fallback
+const getYouTubeThumbnailUrl = (videoId) => {
+    if (!videoId) return null;
+    
+    // Clean the video ID (remove any extra parameters)
+    const cleanId = videoId.split('&')[0].split('?')[0];
+    
+    // Try different thumbnail qualities in order
+    const qualities = [
+        'maxresdefault.jpg',
+        'sddefault.jpg',
+        'hqdefault.jpg',
+        'mqdefault.jpg',
+        'default.jpg'
+    ];
+
+    return qualities.map(quality => `https://img.youtube.com/vi/${cleanId}/${quality}`);
+};
 
 const CachedImage = ({ 
     src, 
@@ -27,21 +79,32 @@ const CachedImage = ({
         let retryTimeout;
 
         const loadImage = async () => {
-        console.log('[CachedImage] Loading image with src:', src);
-        console.log('[CachedImage] Current loading state:', isLoading);
-        console.log('[CachedImage] Current error state:', error);
-        console.log('[CachedImage] Current retry count:', retryCount);
-        
-        if (!src) {
-            console.log('[CachedImage] No src provided, using fallback:', fallbackSrc);
-            setImageSrc(fallbackSrc);
-            return;
-        }
+            if (!src) {
+                setImageSrc(fallbackSrc);
+                return;
+            }
 
             try {
-                const currentUrl = src;
-                console.log('[CachedImage] Attempting to load URL:', currentUrl);
+                // Handle YouTube thumbnails
+                const videoId = extractYouTubeId(src);
+                let urlsToTry = [src];
+                
+                if (videoId) {
+                    urlsToTry = getYouTubeThumbnailUrl(videoId);
+                }
 
+                // Try current quality first
+                const currentUrl = urlsToTry[currentQualityIndex];
+
+                // For YouTube thumbnails, use direct img tag loading
+                if (videoId) {
+                    if (isMounted) {
+                        setImageSrc(currentUrl);
+                        setIsLoading(false);
+                    }
+                    return;
+                }
+                
                 // For non-YouTube images, use fetch with caching
                 const cachedData = localStorage.getItem(CACHE_PREFIX + currentUrl);
                 if (cachedData) {
@@ -80,7 +143,7 @@ const CachedImage = ({
                 }
 
                 const blob = await response.blob();
-
+                
                 // Verify it's actually an image
                 if (!blob.type.startsWith('image/')) {
                     throw new Error('Invalid image format');
@@ -162,4 +225,4 @@ const CachedImage = ({
     );
 };
 
-export default CachedImage;
+export default CachedImage; 

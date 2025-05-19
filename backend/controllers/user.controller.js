@@ -113,22 +113,18 @@ export const updateUser = async (req, res) => {
 			user.password = await bcrypt.hash(newPassword, salt);
 		}
 
-		if (req.file || req.body.profileImg) {
+		if (profileImg) {
 			try {
-				if (user.profileImg) {
+			if (user.profileImg) {
 					const publicId = user.profileImg.split("/").pop().split(".")[0];
 					await cloudinary.uploader.destroy(publicId);
-				}
+			}
 
-				const imageToUpload = req.file ? req.file.path : req.body.profileImg;
-				const uploadedResponse = await cloudinary.uploader.upload(imageToUpload, {
+				const uploadedResponse = await cloudinary.uploader.upload(profileImg, {
 					folder: "profile_images",
-					resource_type: "auto",
-					transformation: [
-						{ width: 400, height: 400, crop: "fill" }
-					]
+					resource_type: "auto"
 				});
-				user.profileImg = uploadedResponse.secure_url;
+			profileImg = uploadedResponse.secure_url;
 			} catch (error) {
 				console.error("Error uploading profile image:", error);
 				return res.status(500).json({ error: "Failed to upload profile image" });
