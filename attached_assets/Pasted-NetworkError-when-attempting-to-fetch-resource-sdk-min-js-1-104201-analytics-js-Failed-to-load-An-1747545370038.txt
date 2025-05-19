@@ -1,0 +1,101 @@
+NetworkError when attempting to fetch resource. sdk.min.js:1:104201
+[analytics.js] Failed to load Analytics.js TypeError: NetworkError when attempting to fetch resource. sdk.min.js:1:107195
+Error sending segment performance metrics TypeError: NetworkError when attempting to fetch resource. sdk.min.js:1:20614
+ : 
+_app-d0b918a1ef7938d4.js:38:5277
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='” inpage.js:1:374070
+TypeError: styleElement.sheet is null element-collapser.js:91:9
+Content-Security-Policy: The page’s settings blocked an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:3002//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//boards' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “default-src 'none'” inpage.js:1:374070
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “default-src 'none'” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/__replco/static/devtools/eruda/3.2.3/eruda.js from being executed because it violates the following directive: “default-src 'none'” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000
+Content-Security-Policy: The page’s settings blocked an event handler (script-src-attr) from being executed because it violates the following directive: “default-src 'none'”
+Source: parent.postMessage({event:'error',payloa… fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/__replco/static/devtools/injected.js from being executed because it violates the following directive: “default-src 'none'” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000
+Content-Security-Policy: The page’s settings blocked a JavaScript eval (script-src) from being executed because it violates the following directive: “default-src 'none'” (Missing 'unsafe-eval') workspace_iframe.html:112:31
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://replit.com/public/js/beacon.js from being executed because it violates the following directive: “default-src 'none'” workspace_iframe.html:142:39
+[vite] connecting... eruda.js:2:135516
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js :: t :: line 2"  data: no]). eruda.js:2:135516
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:3000/ because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” eruda.js:2:218737
+[vite] connecting... eruda.js:2:135516
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js :: t :: line 2"  data: no]). eruda.js:2:135516
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:3000/ because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” eruda.js:2:218737
+[vite] connecting... eruda.js:2:135516
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js :: t :: line 2"  data: no]). eruda.js:2:135516
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:3000/ because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” eruda.js:2:218737
+Invalid href 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev//profile/joe' passed to next/router in page: '/replEnvironmentDesktop'. Repeated forward-slashes (//) or backslashes \ are not valid in the href. _app-d0b918a1ef7938d4.js:38:5277
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://clientstream.launchdarkly.com/eval/62b35a865152ab14c5942820/eyJrZXkiOiI0MTEwNzAzNSIsImtpbmQiOiJ1c2VyIiwibmFtZSI6ImpvZWJlcmVjemtpIiwicm9sZXMiOlsiaW50ZW50X2J1c2luZXNzIiwib25ib2FyZGluZ19qb2JfYml6Iiwib25ib2FyZGluZ19yb2xlX21lbWJlciJdLCJlbWFpbCI6ImpvZS5iZXJlY3praUBnbWFpbC5jb20iLCJ0aW1lX2NyZWF0ZWQiOjE3NDM2NTkwNzg1NjUsIl9tZXRhIjp7InByaXZhdGVBdHRyaWJ1dGVzIjpbImVtYWlsIl19fQ. (Reason: CORS request did not succeed). Status code: (null).
+Firefox can’t establish a connection to the server at https://clientstream.launchdarkly.com/eval/62b35a865152ab14c5942820/eyJrZXkiOiI0MTEwNzAzNSIsImtpbmQiOiJ1c2VyIiwibmFtZSI6ImpvZWJlcmVjemtpIiwicm9sZXMiOlsiaW50ZW50X2J1c2luZXNzIiwib25ib2FyZGluZ19qb2JfYml6Iiwib25ib2FyZGluZ19yb2xlX21lbWJlciJdLCJlbWFpbCI6ImpvZS5iZXJlY3praUBnbWFpbC5jb20iLCJ0aW1lX2NyZWF0ZWQiOjE3NDM2NTkwNzg1NjUsIl9tZXRhIjp7InByaXZhdGVBdHRyaWJ1dGVzIjpbImVtYWlsIl19fQ. _app-d0b918a1ef7938d4.js:1:258523
+SES_UNCAUGHT_EXCEPTION: ReferenceError: ImageScaleEditor is not defined
+    ProfilePicture ProfilePicture.jsx:111
+    React 11
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+lockdown-install.js:1:135422
+SES_UNCAUGHT_EXCEPTION: ReferenceError: ImageScaleEditor is not defined
+    ProfilePicture ProfilePicture.jsx:111
+    React 12
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+lockdown-install.js:1:135422
+ReferenceError: ImageScaleEditor is not defined
+    ProfilePicture ProfilePicture.jsx:111
+    React 9
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+eruda.js:2:135516
+The above error occurred in the <ProfilePicture> component:
+
+ProfilePicture@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/profile/ProfilePicture.jsx:20:24
+div
+div
+ProfilePage@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/profile/ProfilePage.jsx:43:43
+RenderedRoute@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:3563:7
+Routes@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:3997:7
+div
+div
+ThemeProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/ThemeProvider.jsx:21:30
+App@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/App.jsx:47:38
+Router@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:3945:7
+BrowserRouter@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=2315286c:4682:7
+QueryClientProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=2315286c:2644:27
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. eruda.js:2:135516
+SES_UNCAUGHT_EXCEPTION: ReferenceError: ImageScaleEditor is not defined
+    ProfilePicture ProfilePicture.jsx:111
+    React 9
+    workLoop scheduler.development.js:266
+    flushWork scheduler.development.js:239
+    performWorkUntilDeadline scheduler.development.js:533
+lockdown-install.js:1:135422
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://clientstream.launchdarkly.com/eval/62b35a865152ab14c5942820/eyJrZXkiOiI0MTEwNzAzNSIsImtpbmQiOiJ1c2VyIiwibmFtZSI6ImpvZWJlcmVjemtpIiwicm9sZXMiOlsiaW50ZW50X2J1c2luZXNzIiwib25ib2FyZGluZ19qb2JfYml6Iiwib25ib2FyZGluZ19yb2xlX21lbWJlciJdLCJlbWFpbCI6ImpvZS5iZXJlY3praUBnbWFpbC5jb20iLCJ0aW1lX2NyZWF0ZWQiOjE3NDM2NTkwNzg1NjUsIl9tZXRhIjp7InByaXZhdGVBdHRyaWJ1dGVzIjpbImVtYWlsIl19fQ. (Reason: CORS request did not succeed). Status code: (null).
+Firefox can’t establish a connection to the server at https://clientstream.launchdarkly.com/eval/62b35a865152ab14c5942820/eyJrZXkiOiI0MTEwNzAzNSIsImtpbmQiOiJ1c2VyIiwibmFtZSI6ImpvZWJlcmVjemtpIiwicm9sZXMiOlsiaW50ZW50X2J1c2luZXNzIiwib25ib2FyZGluZ19qb2JfYml6Iiwib25ib2FyZGluZ19yb2xlX21lbWJlciJdLCJlbWFpbCI6ImpvZS5iZXJlY3praUBnbWFpbC5jb20iLCJ0aW1lX2NyZWF0ZWQiOjE3NDM2NTkwNzg1NjUsIl9tZXRhIjp7InByaXZhdGVBdHRyaWJ1dGVzIjpbImVtYWlsIl19fQ. _app-d0b918a1ef7938d4.js:1:258523
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+eruda.js:2:135516
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+eruda.js:2:135516
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+eruda.js:2:135516

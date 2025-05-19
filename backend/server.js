@@ -18,9 +18,9 @@ import { errorHandler } from "./utils/error.js";
 import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
-import bookmarkRoutes from "./routes/bookmark.route.js";
-import ratingRoutes from "./routes/rating.routes.js";
-import commentRoutes from "./routes/comment.route.js";
+import bookmarkRoutes from './routes/bookmark.route.js';
+import ratingRoutes from './routes/rating.routes.js';
+import commentRoutes from './routes/comment.route.js';
 import grokRoutes from './routes/grok.js';
 import newsBotRoutes from './routes/newsBot.js';
 import boardRoutes from './routes/board.route.js';
@@ -51,8 +51,9 @@ if (!process.env.MONGODB_URI) {
 }
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 const FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
+const HOST = '0.0.0.0';
 
 // Enable CORS
 const allowedOrigins = [
@@ -62,32 +63,43 @@ const allowedOrigins = [
     'https://tradehub.ap.ngrok.io',
     'wss://tradehub.ap.ngrok.io',
     'https://googleads.g.doubleclick.net',
-    'https://i.4cdn.org'
+    'https://i.4cdn.org',
+    'https://*.replit.dev',
+    'https://*.worf.replit.dev'
 ];
 
+// Helper function to check if origin matches wildcard pattern
+const matchWildcard = (origin, pattern) => {
+    const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+    return new RegExp(`^${regexPattern}$`).test(origin);
+};
+
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://m.stripe.network https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com https://static.cloudflareinsights.com https://cdn.segment.com; style-src 'self' 'unsafe-inline' 'unsafe-hashes' https://*.replit.dev https://*.stripe.network data: blob:; img-src 'self' data: blob: https: *; connect-src 'self' ws: wss: http: https: wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://replit.com https://events.launchdarkly.com https://beacon.replit.com https://m.stripe.network https://api.segment.io; frame-src 'self' https://*.replit.dev https://*.worf.replit.dev https://replit.com https://*.stripe.network");
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin;
+    if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://www.youtube.com https://platform.twitter.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev https://*.stripe.network https://platform.twitter.com; " +
+        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
+        "ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:* https://*.launchdarkly.com https://*.stripe.network " +
+        "https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* http://* https://*; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://img.youtube.com https://i.ytimg.com; " +
+        "style-src 'self' 'unsafe-inline' https://*.stripe.network; " +
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;"
+    );
     next();
 });
 
 app.use(cors({
-    origin: function(origin, callback) {
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'ngrok-skip-browser-warning', 'Origin', 'Accept', 'X-Requested-With', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers', 'Access-Control-Allow-Origin'],
-    exposedHeaders: ['Set-Cookie', 'Access-Control-Allow-Origin', 'Cross-Origin-Resource-Policy', 'Access-Control-Allow-Headers'],
-    credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Update body-parser limits
@@ -160,24 +172,15 @@ if (process.env.NODE_ENV === "production") {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: function(origin, callback) {
-            if (!origin) return callback(null, true);
-            
-            if (allowedOrigins.indexOf(origin) === -1) {
-                const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-                return callback(new Error(msg), false);
-            }
-            return callback(null, true);
-        },
+        origin: true,
         methods: ['GET', 'POST'],
         credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'ngrok-skip-browser-warning'],
-        exposedHeaders: ['Set-Cookie']
+        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
     },
-    transports: ['polling'],
-    pingTimeout: 10000,
-    pingInterval: 5000,
-    connectTimeout: 10000,
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    connectTimeout: 30000,
     maxHttpBufferSize: 1e8,
     path: '/socket.io/',
     allowEIO3: true,
@@ -198,7 +201,7 @@ io.on('error', (error) => {
 // Socket.IO connection handling with better error handling
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
-    
+
     socket.on('error', (error) => {
         console.error('Socket error:', error);
     });
@@ -250,8 +253,8 @@ io.engine.on('connection_error', (err) => {
 
 // Connect to MongoDB before starting the server
 connectMongoDB().then(() => {
-    httpServer.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
+    httpServer.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on http://0.0.0.0:${PORT}`);
     });
 }).catch((error) => {
     console.error("Failed to start server:", error);

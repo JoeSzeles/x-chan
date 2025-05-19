@@ -1,0 +1,99 @@
+[vite] connecting... client.ts:19:8
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/@vite/client :: setupWebSocket :: line 509"  data: no]). client.ts:69:10
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at ws://0.0.0.0:3000/ because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” client.ts:77:17
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools react-dom.development.js:29840:16
+Content-Security-Policy: The page’s settings blocked the loading of a resource (frame-src) at https://www.youtube.com/embed/Nyr-iJqr1mU?autoplay=0&rel=0&modestbranding=1&playsinline=1 because it violates the following directive: “default-src 'self' https://*.replit.dev https://*.worf.replit.dev” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev
+Content-Security-Policy: The page’s settings blocked the loading of a resource (frame-src) at https://www.youtube.com/embed/E7kSt4rKS1w?autoplay=0&rel=0&modestbranding=1&playsinline=1 because it violates the following directive: “default-src 'self' https://*.replit.dev https://*.worf.replit.dev” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+Content-Security-Policy: The page’s settings blocked the loading of a resource (frame-src) at https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1&controls=0&loop=1&playlist=dQw4w9WgXcQ&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev because it violates the following directive: “default-src 'self' https://*.replit.dev https://*.worf.replit.dev” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://platform.twitter.com/widgets.js from being executed because it violates the following directive: “script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com” PostPopup.jsx:150:26
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+Error creating post/comment: Error: Notification validation failed: content: Path `content` is required., type: `comment` is not a valid enum value for path `type`.
+    mutationFn PostPopup.jsx:402
+PostPopup.jsx:406:24
+Error creating post/comment: Error: Notification validation failed: content: Path `content` is required., type: `comment` is not a valid enum value for path `type`.
+    mutationFn PostPopup.jsx:402
+PostPopup.jsx:406:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+Error fetching posts: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data LiveBoard.jsx:38:24
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+Content-Security-Policy: The page’s settings blocked the loading of a resource (frame-src) at https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1&controls=0&loop=1&playlist=dQw4w9WgXcQ&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev because it violates the following directive: “default-src 'self' https://*.replit.dev https://*.worf.replit.dev” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+Error creating post/comment: Error: Notification validation failed: content: Path `content` is required., type: `comment` is not a valid enum value for path `type`.
+    mutationFn PostPopup.jsx:402
+PostPopup.jsx:406:24
+Error creating post/comment: Error: Notification validation failed: content: Path `content` is required., type: `comment` is not a valid enum value for path `type`.
+    mutationFn PostPopup.jsx:402
+PostPopup.jsx:406:24
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+Error creating post/comment: Error: Notification validation failed: content: Path `content` is required., type: `comment` is not a valid enum value for path `type`.
+    mutationFn PostPopup.jsx:402
+PostPopup.jsx:406:24
+Error creating post/comment: Error: Notification validation failed: content: Path `content` is required., type: `comment` is not a valid enum value for path `type`.
+    mutationFn PostPopup.jsx:402
+PostPopup.jsx:406:24
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+Content-Security-Policy: The page’s settings blocked the loading of a resource (frame-src) at https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&mute=1&controls=0&loop=1&playlist=dQw4w9WgXcQ&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev because it violates the following directive: “default-src 'self' https://*.replit.dev https://*.worf.replit.dev” fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+ProfilePage: Error updating cover photo: Error: Invalid response format from server
+    handleCoverUpdate ProfilePage.jsx:112
+ProfilePage.jsx:129:20
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+error { target: script, isTrusted: true, srcElement: script
+, eventPhase: 0, bubbles: false, cancelable: false, returnValue: true, defaultPrevented: false, composed: false, timeStamp: 112487, … }
+
+Error creating post/comment: Error: Post not found
+    mutationFn PostPopup.jsx:402
+PostPopup.jsx:406:24
+Error creating post/comment: Error: Post not found
+    mutationFn PostPopup.jsx:402

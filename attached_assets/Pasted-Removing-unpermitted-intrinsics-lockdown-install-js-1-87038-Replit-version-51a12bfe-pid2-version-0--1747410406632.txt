@@ -1,0 +1,54 @@
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Replit version 51a12bfe, pid2 version 0.0.1308 3530-e4811087abb8ce7f.js:1:281068
+
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      _app-9a9ed35a6ff1e6c8.js:38:5277
+ : 
+_app-9a9ed35a6ff1e6c8.js:38:5277
+NetworkError when attempting to fetch resource. _app-9a9ed35a6ff1e6c8.js:38:5277
+[analytics.js] Failed to load Analytics.js TypeError: NetworkError when attempting to fetch resource. _app-9a9ed35a6ff1e6c8.js:38:5277
+Error sending segment performance metrics TypeError: NetworkError when attempting to fetch resource. _app-9a9ed35a6ff1e6c8.js:38:5277
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” inpage.js:1:374070
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline script (script-src-elem) from being executed because it violates the following directive: “script-src 'self'” preload.js:139:16
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='” preload.js:139:16
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Content-Security-Policy: The page’s settings blocked an inline script (script-src-elem) from being executed because it violates the following directive: “script-src https://m.stripe.network 'sha256-5DA+a07wxWmEka9IdoWjSPVHb17Cp5284/lJzfbl8KA=' 'sha256-/5Guo2nzv5n/w6ukZpOBZOtTJBJPSkJ6mhHpnBgm3Ls='” inpage.js:1:374070
+TypeError: styleElement.sheet is null element-collapser.js:91:9
+Content-Security-Policy: The page’s settings blocked an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Content-Security-Policy: (Report-Only policy) The page’s settings would block an inline style (style-src-elem) from being applied because it violates the following directive: “style-src 'self'” element-collapser.js:88:57
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820. (Reason: CORS request did not succeed). Status code: (null). 2
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+Loading module from “https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/main.jsx” was blocked because of a disallowed MIME type (“text/html”). fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev
+[vite] connecting... eruda.js:2:135516
+[vite] failed to connect to websocket ([Exception... "The load for this content was blocked."  nsresult: "0x805e0006 (NS_ERROR_CONTENT_BLOCKED)"  location: "JS frame :: https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js :: t :: line 2"  data: no]). eruda.js:2:135516
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at wss://true/?token=jgTW--tvtk3m because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.launchdarkly.com https://*.stripe.network ws://localhost:* http://localhost:*” eruda.js:2:218737
+Uncaught (in promise) NS_ERROR_CONTENT_BLOCKED: 
+    t eruda.js:2
+    createConnection client:802
+    connect client:437
+    connect client:811
+    connect client:290
+    connect client:383
+    <anonymous> client:908
+eruda.js:2
+Content-Security-Policy: The page’s settings blocked a script (script-src-elem) at https://replit.com/public/js/beacon.js from being executed because it violates the following directive: “script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network” workspace_iframe.html:142:39
