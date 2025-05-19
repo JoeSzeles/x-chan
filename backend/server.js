@@ -83,13 +83,13 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.segment.com https://*.cloudinary.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev; " +
-        "connect-src 'self' ws://0.0.0.0:* wss://* https://* http://* https://*.launchdarkly.com wss://*.launchdarkly.com https://clientstream.launchdarkly.com wss://clientstream.launchdarkly.com https://events.launchdarkly.com https://api.segment.io https://beacon.replit.com; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com; " + 
-        "media-src 'self' https: https://*.cloudinary.com; " +
+        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com https://*.youtube.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.segment.com https://*.cloudinary.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev https://*.youtube.com https://*.ytimg.com; " +
+        "connect-src 'self' ws://0.0.0.0:* wss://* https://* http://* https://*.launchdarkly.com wss://*.launchdarkly.com https://clientstream.launchdarkly.com wss://clientstream.launchdarkly.com https://events.launchdarkly.com https://api.segment.io https://beacon.replit.com https://*.youtube.com; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com https://*.youtube.com; " + 
+        "media-src 'self' https: https://*.cloudinary.com https://*.youtube.com; " +
         "style-src 'self' 'unsafe-inline' https://*.replit.dev https://*.worf.replit.dev; " +
-        "frame-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com;"
+        "frame-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com https://www.youtube.com https://*.youtube.com;"
     );
     next();
 });
