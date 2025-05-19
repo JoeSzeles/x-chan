@@ -85,11 +85,11 @@ app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', 
         "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.cloudinary.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev; " +
-        "connect-src 'self' ws://0.0.0.0:* wss://* https://* http://* https://*.launchdarkly.com https://clientstream.launchdarkly.com https://events.launchdarkly.com https://beacon.replit.com; " +
+        "connect-src 'self' ws://0.0.0.0:* wss://* https://* http://* https://*.launchdarkly.com wss://*.launchdarkly.com https://clientstream.launchdarkly.com wss://clientstream.launchdarkly.com https://events.launchdarkly.com https://beacon.replit.com; " +
         "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com; " + 
         "media-src 'self' https: https://*.cloudinary.com; " +
         "style-src 'self' 'unsafe-inline' https://*.replit.dev https://*.worf.replit.dev; " +
-        "frame-src 'self' https://*.replit.dev https://*.worf.replit.dev;"
+        "frame-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com;"
     );
     next();
 });
