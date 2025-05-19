@@ -80,15 +80,15 @@ app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', origin);
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' * data: blob:; " +
-        "connect-src 'self' * ws: wss: data: blob:; " +
-        "img-src 'self' * data: blob:; " +
-        "media-src 'self' * data: blob:; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-        "style-src 'self' 'unsafe-inline';"
+        "default-src * 'unsafe-inline' 'unsafe-eval'; " + 
+        "connect-src * 'unsafe-inline' ws: wss:; " +
+        "img-src * data: blob: 'unsafe-inline'; " +
+        "media-src * data: blob: 'unsafe-inline'; " +
+        "script-src * 'unsafe-inline' 'unsafe-eval'; " +
+        "style-src * 'unsafe-inline';"
     );
     next();
 });
@@ -257,7 +257,7 @@ connectMongoDB().then(() => {
         }).on('error', (err) => {
             if (err.code === 'EADDRINUSE' && retryCount < 3) {
                 console.log(`Port ${PORT} is busy, killing existing process...`);
-                const { exec } = require('child_process');
+                const exec = (await import('child_process')).exec;
                 exec(`npx kill-port ${PORT}`, (error) => {
                     if (error) {
                         console.error('Error killing port:', error);
