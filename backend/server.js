@@ -83,12 +83,11 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cloudinary.com; " +
-        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.cloudinary.com ws://0.0.0.0:* wss://*; " +
-        "img-src 'self' data: blob: https://*.cloudinary.com https://*.ytimg.com; " +
-        "media-src 'self' data: blob: https://*.cloudinary.com; " +
-        "style-src 'self' 'unsafe-inline';"
+        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+        "connect-src * ws://* wss://* 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+        "img-src * data: blob: 'unsafe-inline'; " +
+        "media-src * data: blob: 'unsafe-inline'; " +
+        "style-src * 'unsafe-inline';"
     );
     next();
 });
@@ -257,7 +256,8 @@ connectMongoDB().then(() => {
         }).on('error', (err) => {
             if (err.code === 'EADDRINUSE' && retryCount < 3) {
                 console.log(`Port ${PORT} is busy, killing existing process...`);
-                require('child_process').exec(`npx kill-port ${PORT}`, (error) => {
+                import { exec } from 'child_process';
+                exec(`npx kill-port ${PORT}`, (error) => {
                     if (error) {
                         console.error('Error killing port:', error);
                         process.exit(1);
