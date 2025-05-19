@@ -10,22 +10,28 @@ export default defineConfig({
     })
   ],
   server: {
-    host: '0.0.0.0',
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://0.0.0.0:5000',
-        changeOrigin: true,
-        secure: false
-      }
-    },
-    hmr: {
-      host: '0.0.0.0',
-      port: 3000,
-      protocol: 'ws'
-    },
-    cors: true,
-    allowedHosts: ['*.replit.dev', '*.worf.replit.dev', 'fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev'],
+        host: '0.0.0.0',
+        port: 3000,
+        proxy: {
+            '/api': {
+                target: 'http://0.0.0.0:5000',
+                changeOrigin: true,
+                secure: false,
+                ws: true
+            }
+        },
+        hmr: {
+            host: '0.0.0.0',
+            port: 3000,
+            protocol: 'ws',
+            clientPort: 443
+        },
+        cors: {
+            origin: true,
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            credentials: true
+        },
+        allowedHosts: true,
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com; style-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob: https: https://*.cloudinary.com; font-src 'self' data:; connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com",
