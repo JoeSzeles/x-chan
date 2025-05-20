@@ -540,7 +540,8 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 return null;
             }
 
-            return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
+            // Use youtube-nocookie.com for enhanced privacy and better CSP compatibility
+            return `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&modestbranding=1`;
         } catch (error) {
             console.error('Error parsing YouTube URL:', error);
             return null;
