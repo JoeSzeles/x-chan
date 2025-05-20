@@ -106,17 +106,34 @@ io.engine.on("connection_error", (err) => {
 io.on('connection', socket => {
     console.log('[Socket.io] Client connected:', {
         id: socket.id,
-        transport: socket.conn.transport.name
+        transport: socket.conn.transport.name,
+        headers: socket.handshake.headers,
+        timestamp: new Date().toISOString()
     });
 
     socket.on('error', (error) => {
-        console.error('[Socket.io] Socket error:', error);
+        console.error('[Socket.io] Socket error:', {
+            id: socket.id,
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        });
     });
 
     socket.on('disconnect', (reason) => {
         console.log('[Socket.io] Client disconnected:', {
             id: socket.id,
-            reason
+            reason,
+            transport: socket.conn?.transport?.name,
+            timestamp: new Date().toISOString()
+        });
+    });
+
+    socket.conn.on('packet', (packet) => {
+        console.log('[Socket.io] Packet:', {
+            type: packet.type,
+            data: packet.data,
+            timestamp: new Date().toISOString()
         });
     });
 
