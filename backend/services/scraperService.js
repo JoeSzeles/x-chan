@@ -4,6 +4,11 @@ import puppeteer from "puppeteer";
 
 class ScraperService {
     async scrapeWebsite(website) {
+        console.log('[ScraperService] Starting scrape:', {
+            url: website.url,
+            type: website.type,
+            timestamp: new Date().toISOString()
+        });
         try {
             console.log(`[Scraper] Starting scrape for ${website.url} with type: ${website.type}`);
             console.log('[Scraper] Website config:', {
