@@ -82,14 +82,50 @@ const io = new Server(httpServer, {
     cors: {
         origin: true,
         methods: ["GET", "POST"],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization"]
     },
-    transports: ['polling']
+    transports: ['polling', 'websocket'],
+    path: '/socket.io/',
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    allowEIO3: true,
+    upgrade: true
+});
+
+io.engine.on("connection_error", (err) => {
+    console.error('[Socket.io] Connection error:', {
+        type: err.req.query.transport,
+        code: err.code,
+        message: err.message,
+        context: err.context
+    });
 });
 
 io.on('connection', socket => {
-    console.log('Client connected');
-    socket.on('disconnect', () => console.log('Client disconnected'));
+    console.log('[Socket.io] Client connected:', {
+        id: socket.id,
+        transport: socket.conn.transport.name
+    });
+
+    socket.on('error', (error) => {
+        console.error('[Socket.io] Socket error:', error);
+    });
+
+    socket.on('disconnect', (reason) => {
+        console.log('[Socket.io] Client disconnected:', {
+            id: socket.id,
+            reason
+        });
+    });
+
+    socket.on('joinBotRoom', (botId) => {
+        console.log('[Socket.io] Client joined bot room:', {
+            socketId: socket.id,
+            botId
+        });
+        socket.join(`bot_${botId}`);
+    });
 });
 
 connectMongoDB().then(() => {
