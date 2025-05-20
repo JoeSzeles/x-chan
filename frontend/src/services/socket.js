@@ -12,13 +12,14 @@ class SocketService {
         path: '/socket.io',
         withCredentials: true,
         reconnection: true,
-        reconnectionAttempts: Infinity,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 10000,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 3000,
+        reconnectionDelayMax: 10000,
+        timeout: 45000,
         autoConnect: true,
-        forceNew: true,
-        rememberUpgrade: true
+        forceNew: false,
+        upgrade: true,
+        rejectUnauthorized: false
       };
 
       console.log('[Socket] Initializing with options:', socketOptions);
