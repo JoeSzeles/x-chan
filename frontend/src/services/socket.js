@@ -7,78 +7,26 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      const socketOptions = {
-        transports: ['polling'],
-        path: '/socket.io',
-        withCredentials: true,
+      this.socket = io(window.location.origin, {
+        transports: ['polling', 'websocket'],
+        path: '/socket.io/',
         reconnection: true,
-        reconnectionAttempts: Infinity,
+        reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 60000,
-        autoConnect: true,
-        forceNew: true
-      };
-
-      console.log('[Socket] Initializing with options:', socketOptions);
-      this.socket = io('/', socketOptions);
+        timeout: 20000,
+        forceNew: true,
+        withCredentials: true
+      });
 
       this.socket.on('connect_error', (error) => {
-        console.error('[Socket] Connection error:', {
-          message: error.message,
-          description: error.description,
-          type: error.type,
-          stack: error.stack,
-          transport: socket.io.engine?.transport?.name,
-          timestamp: new Date().toISOString(),
-          readyState: socket.io.engine?.readyState,
-          uri: socket.io.uri
-        });
-      });
-
-      this.socket.on('connect_timeout', (timeout) => {
-        console.error('[Socket] Connection timeout:', {
-          timeout,
-          transport: socket.io.engine?.transport?.name,
-          timestamp: new Date().toISOString(),
-          uri: socket.io.uri
-        });
-      });
-
-      this.socket.on('reconnect_attempt', (attemptNumber) => {
-        console.log('[Socket] Reconnection attempt:', {
-          attempt: attemptNumber,
-          transport: socket.io.engine?.transport?.name,
-          timestamp: new Date().toISOString(),
-          opts: socket.io.opts
-        });
-      });
-
-      this.socket.on('reconnect_error', (error) => {
-        console.error('[Socket] Reconnection error:', error);
-      });
-
-      this.socket.on('reconnect_failed', () => {
-        console.error('[Socket] Reconnection failed');
-      });
-
-      this.socket.on('error', (error) => {
-        console.error('[Socket] General error:', error);
-      });
-
-      this.socket.on('connect', () => {
-        console.log('[Socket] Connected successfully:', {
-          id: this.socket.id,
-          transport: this.socket.io.engine.transport.name
-        });
+        console.error('[Socket] Connection error:', error);
       });
 
       this.socket.on('disconnect', (reason) => {
-        console.log('[Socket] Disconnected:', {
-          reason,
-          wasConnected: this.socket.connected,
-          id: this.socket.id
-        });
+        console.log('[Socket] Disconnected:', reason);
+        if (reason === 'io server disconnect') {
+          this.socket.connect();
+        }
       });
     }
     return this.socket;
