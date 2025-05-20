@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 
 const YouTubeEmbed = ({ url }) => {
@@ -6,95 +5,70 @@ const YouTubeEmbed = ({ url }) => {
     const [error, setError] = useState(null);
     const [videoId, setVideoId] = useState(null);
     const iframeRef = useRef(null);
-    const containerRef = useRef(null);
 
     useEffect(() => {
-        const parseVideoId = (url) => {
-            console.log('[YouTubeEmbed] Parsing URL:', url);
-            try {
-                const cleanUrl = url.trim();
-                let id = null;
+        console.log('[YouTubeEmbed] Initializing with URL:', url);
 
-                // Try multiple URL patterns
-                if (cleanUrl.includes('youtu.be/')) {
-                    id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
-                    console.log('[YouTubeEmbed] Extracted ID from youtu.be URL:', id);
-                } else if (cleanUrl.includes('youtube.com/watch')) {
-                    id = new URL(cleanUrl).searchParams.get('v');
-                    console.log('[YouTubeEmbed] Extracted ID from watch URL:', id);
-                } else if (cleanUrl.includes('youtube.com/embed/')) {
-                    id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
-                    console.log('[YouTubeEmbed] Extracted ID from embed URL:', id);
-                } else if (cleanUrl.includes('youtube.com/shorts/')) {
-                    id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
-                    console.log('[YouTubeEmbed] Extracted ID from shorts URL:', id);
-                }
+        if (!url) {
+            console.error('[YouTubeEmbed] No URL provided');
+            setError('No URL provided');
+            setIsLoading(false);
+            return;
+        }
 
-                if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
-                    throw new Error(`Invalid YouTube video ID: ${id}`);
-                }
+        try {
+            const cleanUrl = url.trim();
+            let id = null;
 
-                setVideoId(id);
-                setError(null);
-            } catch (err) {
-                console.error('[YouTubeEmbed] Error parsing URL:', err);
-                setError(`Failed to parse YouTube URL: ${err.message}`);
-                setVideoId(null);
+            // Parse URL to get video ID
+            if (cleanUrl.includes('youtu.be/')) {
+                id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                console.log('[YouTubeEmbed] Extracted ID from youtu.be URL:', id);
+            } else if (cleanUrl.includes('youtube.com/watch')) {
+                const urlParams = new URL(cleanUrl).searchParams;
+                id = urlParams.get('v');
+                console.log('[YouTubeEmbed] Extracted ID from watch URL:', id);
+            } else if (cleanUrl.includes('youtube.com/embed/')) {
+                id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
+                console.log('[YouTubeEmbed] Extracted ID from embed URL:', id);
+            } else if (cleanUrl.includes('youtube.com/shorts/')) {
+              id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
+              console.log('[YouTubeEmbed] Extracted ID from shorts URL:', id);
             }
-        };
 
-        parseVideoId(url);
+            if (!id) {
+                throw new Error('Could not extract video ID from URL');
+            }
+
+            if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+                throw new Error('Invalid video ID format');
+            }
+
+            setVideoId(id);
+            setError(null);
+        } catch (err) {
+            console.error('[YouTubeEmbed] Error parsing URL:', err);
+            setError(`Failed to load video: ${err.message}`);
+            setIsLoading(false);
+        }
     }, [url]);
 
-    useEffect(() => {
-        if (!videoId) return;
-
-        const loadVideo = () => {
-            console.log('[YouTubeEmbed] Starting to load video:', videoId);
-            setIsLoading(true);
-
-            // Create intersection observer to load video only when visible
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        console.log('[YouTubeEmbed] Intersection status:', entry.isIntersecting);
-                        if (entry.isIntersecting) {
-                            setIsLoading(false);
-                            observer.disconnect();
-                        }
-                    });
-                },
-                { threshold: 0.1 }
-            );
-
-            if (containerRef.current) {
-                observer.observe(containerRef.current);
-            }
-
-            return () => observer.disconnect();
-        };
-
-        loadVideo();
-    }, [videoId]);
-
     const handleIframeError = (e) => {
-        console.error('[YouTubeEmbed] Iframe loading error:', e);
-        setError('Failed to load YouTube video player');
+        console.error('[YouTubeEmbed] Iframe error:', e);
+        setError('Failed to load video player');
         setIsLoading(false);
     };
 
     const handleIframeLoad = () => {
         console.log('[YouTubeEmbed] Iframe loaded successfully');
         setIsLoading(false);
-        setError(null);
     };
 
     if (error) {
-        console.log('[YouTubeEmbed] Rendering error state:', error);
         return (
             <div className="youtube-embed my-2">
                 <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
-                    <div className="text-red-500">{error}</div>
+                    <div className="text-red-500 mb-2">{error}</div>
                     <a 
                         href={url}
                         target="_blank"
@@ -108,22 +82,18 @@ const YouTubeEmbed = ({ url }) => {
         );
     }
 
-    if (isLoading) {
-        console.log('[YouTubeEmbed] Rendering loading state');
+    if (!videoId || isLoading) {
         return (
             <div className="youtube-embed my-2">
-                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
-                    <div className="flex justify-between items-center">
-                        <div className="text-gray-500">Loading video...</div>
-                    </div>
+                <div className="bg-gray-500/10 rounded-lg border border-gray-500/20 p-3">
+                    <div className="text-gray-500">Loading video...</div>
                 </div>
             </div>
         );
     }
 
-    console.log('[YouTubeEmbed] Rendering video player:', videoId);
     return (
-        <div className="youtube-embed my-2" ref={containerRef}>
+        <div className="youtube-embed my-2">
             <div className="bg-red-500/10 rounded-lg border border-red-500/20 overflow-hidden">
                 <div className="p-3 flex items-center justify-between border-b border-red-500/20">
                     <div className="flex items-center gap-2">
@@ -149,7 +119,6 @@ const YouTubeEmbed = ({ url }) => {
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                        loading="lazy"
                         onError={handleIframeError}
                         onLoad={handleIframeLoad}
                     />
