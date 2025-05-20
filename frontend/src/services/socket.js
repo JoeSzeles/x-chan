@@ -8,18 +8,15 @@ class SocketService {
   connect() {
     if (!this.socket) {
       const socketOptions = {
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'],
         path: '/socket.io',
         withCredentials: true,
-        secure: true,
         reconnection: true,
-        reconnectionAttempts: Infinity,
+        reconnectionAttempts: 3,
         reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 20000,
-        autoConnect: true,
-        forceNew: true,
-        rejectUnauthorized: false
+        reconnectionDelayMax: 3000,
+        timeout: 5000,
+        autoConnect: true
       };
 
       console.log('[Socket] Initializing with options:', socketOptions);
