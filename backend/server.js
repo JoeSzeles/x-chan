@@ -83,14 +83,12 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://www.youtube.com https://platform.twitter.com; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev https://*.stripe.network https://platform.twitter.com; " +
-        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
-        "ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:* https://*.launchdarkly.com https://*.stripe.network " +
-        "https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* http://* https://*; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com https://img.youtube.com https://i.ytimg.com; " +
-        "style-src 'self' 'unsafe-inline' https://*.stripe.network; " +
-        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;"
+        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.youtube.com https://*.twitter.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev https://*.youtube.com https://*.twitter.com; " +
+        "connect-src 'self' * ws://* wss://*; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com https://*.twitter.com; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "frame-src 'self' https://*.youtube.com https://*.twitter.com;"
     );
     next();
 });
