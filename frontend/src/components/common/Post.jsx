@@ -174,6 +174,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 					return p;
 				});
 			});
+			queryClient.invalidateQueries(["posts", post._id]);
 		},
 		onError: (error) => {
 			toast.error(error.message);
@@ -248,14 +249,12 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		mutationFn: async () => {
       setIsBookmarking(true);
 			try {
-        console.log('Making bookmark request for post:', post._id);
 				const res = await fetch(`/api/bookmarks/${post._id}`, {
 					method: "POST",
 					credentials: "include"
 				});
 				const data = await res.json();
 				if (!res.ok) {
-          console.error('Bookmark request failed:', data);
 					throw new Error(data.error || "Something went wrong");
 				}
 				return data;
@@ -263,22 +262,21 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 				throw new Error(error);
 			}
 		},
-		onSuccess: (data) => {
-      console.log('Bookmark success:', data);
+		onSuccess: (updatedBookmarks) => {
       setIsBookmarking(false);
-			setLocalBookmarks(data.bookmarkedBy || []);
+			setLocalBookmarks(updatedBookmarks);
 			queryClient.setQueryData(["posts"], (oldData) => {
 				if (!oldData) return oldData;
 				return oldData.map((p) => {
 					if (p._id === post._id) {
-						return { ...p, bookmarkedBy: data.bookmarkedBy };
+						return { ...p, bookmarkedBy: updatedBookmarks };
 					}
 					return p;
 				});
 			});
+			queryClient.invalidateQueries(["bookmarks"]);
 		},
 		onError: (error) => {
-      console.error('Bookmark error:', error);
       setIsBookmarking(false);
 			toast.error(error.message || 'Failed to bookmark post');
 		},
