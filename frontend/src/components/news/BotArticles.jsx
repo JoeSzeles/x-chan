@@ -53,12 +53,16 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
                 const socket = io({
-                    transports: ['polling'],
+                    transports: ['polling', 'websocket'],
                     reconnection: true,
-                    reconnectionAttempts: 3,
-                    reconnectionDelay: 1000,
+                    reconnectionAttempts: 5,
+                    reconnectionDelay: 2000,
+                    reconnectionDelayMax: 5000,
+                    timeout: 20000,
                     path: '/socket.io/',
-                    withCredentials: true 
+                    withCredentials: true,
+                    upgrade: true,
+                    rememberUpgrade: true
                 });
 
                 socket.on('connect_error', (error) => {
@@ -820,7 +824,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     <div className="flex justify-between items-center mt-auto">
                         <div className="text-sm text-gray-400">
                             {formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}
-                        </div>
+                                                </div>
                         <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={(e) => handleBookmarkToggle(article, e)}
