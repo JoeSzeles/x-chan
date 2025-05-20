@@ -52,20 +52,13 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
-                const socket = io('/', {
-                    transports: ['polling', 'websocket'],
+                const socket = io({
+                    transports: ['polling'],
                     reconnection: true,
                     reconnectionAttempts: 3,
                     reconnectionDelay: 1000,
-                    reconnectionDelayMax: 5000,
-                    timeout: 10000,
-                    autoConnect: true,
-                    forceNew: true,
                     path: '/socket.io/',
-                    withCredentials: true,
-                    extraHeaders: {
-                        'ngrok-skip-browser-warning': 'true'
-                    }
+                    withCredentials: true 
                 });
 
                 socket.on('connect_error', (error) => {
