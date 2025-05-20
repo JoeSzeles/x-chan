@@ -110,7 +110,7 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
                         onMouseEnter={() => !userRating && setHoverRating(star)}
                         onMouseLeave={() => !userRating && setHoverRating(0)}
                         onClick={() => handleRating(star)}
-                        disabled={isRating || userRating > 0}
+                        disabled={userRating > 0}
                     >
                         <FaStar
                             className={`w-4 h-4 ${userRating > 0 ? 'cursor-default' : 'cursor-pointer'} ${
