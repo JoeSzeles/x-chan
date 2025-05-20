@@ -326,89 +326,58 @@ const TwitterEmbed = ({ url }) => {
 
 // YouTube Embed component
 const YouTubeEmbed = ({ url }) => {
-    const [error, setError] = useState(null);
-    const [videoId, setVideoId] = useState(null);
-
-    useEffect(() => {
-        const parseVideoId = (url) => {
-            try {
-                const cleanUrl = url.trim();
-                let id = null;
-
-                if (cleanUrl.includes('youtu.be/')) {
-                    id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
-                } else if (cleanUrl.includes('youtube.com/watch')) {
-                    id = new URL(cleanUrl).searchParams.get('v');
-                } else if (cleanUrl.includes('youtube.com/embed/')) {
-                    id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
-                } else if (cleanUrl.includes('youtube.com/shorts/')) {
-                    id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
-                }
-
-                if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
-                    throw new Error('Invalid YouTube URL');
-                }
-
-                setVideoId(id);
-                setError(null);
-            } catch (err) {
-                setError('Invalid YouTube URL');
-                setVideoId(null);
+    const getVideoId = (url) => {
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname === 'youtu.be') {
+                return urlObj.pathname.slice(1);
             }
-        };
+            if (urlObj.hostname.includes('youtube.com')) {
+                if (urlObj.pathname.includes('/shorts/')) {
+                    return urlObj.pathname.split('/shorts/')[1];
+                }
+                return urlObj.searchParams.get('v');
+            }
+        } catch (err) {
+            return null;
+        }
+        return null;
+    };
 
-        parseVideoId(url);
-    }, [url]);
+    const videoId = getVideoId(url);
 
     if (!videoId) {
         return (
-            <div className="my-2">
-                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
-                    <div className="text-red-500 mb-2">{error || 'Invalid YouTube URL'}</div>
-                    <a 
-                        href={url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-red-500 hover:underline"
-                    >
-                        View on YouTube
-                    </a>
-                </div>
+            <div className="my-2 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                <div className="text-red-500 mb-2">Invalid YouTube URL</div>
+                <a 
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-red-500 hover:underline"
+                >
+                    Open URL
+                </a>
             </div>
         );
     }
 
     return (
         <div className="my-2">
-            <div className="bg-red-500/10 rounded-lg border border-red-500/20 overflow-hidden">
-                <div className="p-3 flex items-center justify-between border-b border-red-500/20">
-                    <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                        </svg>
-                        <a 
-                            href={url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-red-500 hover:underline"
-                        >
-                            View on YouTube
-                        </a>
-                    </div>
-                </div>
-                <div className="relative pt-[56.25%] w-full">
+            <div className="bg-black rounded-lg overflow-hidden">
+                <div className="aspect-w-16 aspect-h-9">
                     <iframe
-                        className="absolute top-0 left-0 w-full h-full"
-                        src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+                        src={`https://www.youtube.com/embed/${videoId}`}
                         title="YouTube video player"
-                        frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                    />
+                        className="w-full h-full"
+                    ></iframe>
                 </div>
             </div>
         </div>
     );
+};
 };
 
 // Grok Image Embed component
