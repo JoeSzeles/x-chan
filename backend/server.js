@@ -34,17 +34,14 @@ import connectMongoDB from "./db/connectMongoDB.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables first
 dotenv.config();
 
-// Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Verify environment variables
 if (!process.env.MONGODB_URI) {
     console.error("MONGODB_URI is not defined in .env file");
     process.exit(1);
@@ -52,36 +49,28 @@ if (!process.env.MONGODB_URI) {
 
 const app = express();
 const PORT = 5000;
-const FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
 const HOST = '0.0.0.0';
 
-app.use(cors());
+app.use(cors({
+    origin: true,
+    credentials: true
+}));
 
-// Update body-parser limits
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser());
 
-// Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Serve static files with proper headers
-app.use('/uploads', (req, res, next) => {
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    next();
-}, express.static(path.join(__dirname, 'public', 'uploads')));
-
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// Add a route to check if an image exists
 app.get('/api/check-image/:filename', (req, res) => {
     const filename = req.params.filename;
     const filePath = path.join(__dirname, 'public', 'uploads', filename);
-    console.log('Checking image path:', filePath);
     if (fs.existsSync(filePath)) {
         res.json({ exists: true, path: filePath });
     } else {
@@ -107,53 +96,26 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 
-// Add error handling middleware
 app.use((err, req, res, next) => {
     console.error('Error:', err);
-    if (err.message.includes('CORS')) {
-        return res.status(403).json({ error: err.message });
-    }
     res.status(500).json({ error: err.message });
 });
 
 if (process.env.NODE_ENV === "production") {
-	app.use(express.static(path.join(__dirname, "/frontend/dist")));
-
-	app.get("*", (req, res) => {
-		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-	});
+    app.use(express.static(path.join(__dirname, "/frontend/dist")));
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+    });
 }
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
         origin: true,
-        methods: ['GET', 'POST'],
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
-    },
-    transports: ['websocket', 'polling'],
-    pingTimeout: 60000,
-    pingInterval: 25000,
-    connectTimeout: 30000,
-    maxHttpBufferSize: 1e8,
-    path: '/socket.io/',
-    allowEIO3: true,
-    cookie: {
-        name: 'io',
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production'
+        credentials: true
     }
 });
 
-// Socket.IO error handling
-io.on('error', (error) => {
-    console.error('Socket.IO server error:', error);
-});
-
-// Socket.IO connection handling with better error handling
 io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
@@ -165,63 +127,38 @@ io.on('connection', (socket) => {
         console.log('Client disconnected:', socket.id, 'Reason:', reason);
     });
 
-    // Join user's notification room
     socket.on('joinNotifications', (userId) => {
-        if (!userId) {
-            console.error('No userId provided for joinNotifications');
-            return;
-        }
+        if (!userId) return;
         try {
             socket.join(`notifications_${userId}`);
-            console.log(`Client ${socket.id} joined notifications room for user: ${userId}`);
         } catch (error) {
             console.error('Error joining notifications room:', error);
-            socket.emit('error', { message: 'Failed to join notifications room' });
         }
     });
 
-    // Leave user's notification room
     socket.on('leaveNotifications', (userId) => {
-        if (!userId) {
-            console.error('No userId provided for leaveNotifications');
-            return;
-        }
+        if (!userId) return;
         try {
             socket.leave(`notifications_${userId}`);
-            console.log(`Client ${socket.id} left notifications room for user: ${userId}`);
         } catch (error) {
             console.error('Error leaving notifications room:', error);
-            socket.emit('error', { message: 'Failed to leave notifications room' });
         }
     });
-
-    // Add heartbeat mechanism
-    socket.on('ping', () => {
-        socket.emit('pong');
-    });
 });
 
-// Add global error handler for Socket.IO
-io.engine.on('connection_error', (err) => {
-    console.error('Socket.IO connection error:', err);
-});
-
-// Connect to MongoDB before starting the server
 connectMongoDB().then(() => {
-    httpServer.listen(PORT, '0.0.0.0', () => {
-        console.log(`Server is running on http://0.0.0.0:${PORT}`);
+    httpServer.listen(PORT, HOST, () => {
+        console.log(`Server is running on http://${HOST}:${PORT}`);
     });
 }).catch((error) => {
     console.error("Failed to start server:", error);
     process.exit(1);
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
     console.error('Unhandled Promise Rejection:', err);
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
     process.exit(1);
