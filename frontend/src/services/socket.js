@@ -6,29 +6,32 @@ class SocketService {
   }
 
   connect() {
-    if (!this.socket) {
-      this.socket = io('/', {
-        path: '/socket.io/',
-        transports: ['polling'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        timeout: 30000,
-        forceNew: true,
-        withCredentials: true,
-        upgrade: false
-      });
+    try {
+      if (!this.socket) {
+        this.socket = io({
+          path: '/socket.io/',
+          transports: ['websocket'],
+          reconnection: true,
+          reconnectionAttempts: 3,
+          reconnectionDelay: 1000,
+          timeout: 20000,
+          forceNew: true,
+          withCredentials: true
+        });
 
-      this.socket.on('connect_error', (error) => {
-        console.error('[Socket] Connection error:', error);
-      });
+        this.socket.on('connect_error', (error) => {
+          console.error('[Socket] Connection error:', error);
+        });
 
-      this.socket.on('disconnect', (reason) => {
-        console.log('[Socket] Disconnected:', reason);
-        if (reason === 'io server disconnect') {
-          this.socket.connect();
-        }
-      });
+        this.socket.on('disconnect', (reason) => {
+          console.log('[Socket] Disconnected:', reason);
+          if (reason === 'io server disconnect') {
+            this.socket.connect();
+          }
+        });
+      }
+    } catch (e) {
+        console.log(e)
     }
     return this.socket;
   }

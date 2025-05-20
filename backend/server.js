@@ -91,14 +91,11 @@ const io = new Server(httpServer, {
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true
     },
-    transports: ['polling', 'websocket'],
-    allowEIO3: true,
-    pingTimeout: 30000,
+    transports: ['websocket'],
+    pingTimeout: 20000,
     pingInterval: 10000,
-    connectTimeout: 30000,
-    upgradeTimeout: 30000,
-    forcePolling: true,
-    allowUpgrades: false
+    connectTimeout: 20000,
+    path: '/socket.io/'
 });
 
 // Enable detailed debug logging
