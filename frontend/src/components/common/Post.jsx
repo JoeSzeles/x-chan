@@ -37,10 +37,12 @@ const getYouTubeThumbnail = (url) => {
 };
 
 const Post = ({ post, isComment = false, isCompact = false }) => {
+  console.log('Post component rendering:', { postId: post?._id, isComment, isCompact });
   const [isBookmarking, setIsBookmarking] = useState(false);
-	const postRef = useRef(null);
-	const [quotedBy, setQuotedBy] = useState([]);
-	const [showPreview, setShowPreview] = useState(false);
+  const [isBookmarkError, setIsBookmarkError] = useState(false);
+  const postRef = useRef(null);
+  const [quotedBy, setQuotedBy] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
 	const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
 	const [isImageExpanded, setIsImageExpanded] = useState(false);
 	const [isVideoExpanded, setIsVideoExpanded] = useState(false);
@@ -284,16 +286,28 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 
 	const handleBookmark = async (e) => {
     if (e) e.stopPropagation();
-    if (isBookmarking) return;
+    console.log('handleBookmark called:', { isBookmarking, postId: post?._id });
+    
+    try {
+      if (isBookmarking) {
+        console.log('Already processing bookmark request');
+        return;
+      }
 
-    console.log('Bookmark attempt:', { postId: post._id, userId: authUser?._id });
-    if (!authUser) {
+      if (!authUser) {
         console.log('No auth user found');
         toast.error('Please login to bookmark posts');
         return;
-    }
+      }
 
-    bookmarkPost();
+      console.log('Initiating bookmark request:', { postId: post._id, userId: authUser._id });
+      setIsBookmarkError(false);
+      bookmarkPost();
+    } catch (error) {
+      console.error('Error in handleBookmark:', error);
+      setIsBookmarkError(true);
+      toast.error('Failed to process bookmark');
+    }
 };
 
 	const { data: comments, isLoading: commentsLoading } = useQuery({
