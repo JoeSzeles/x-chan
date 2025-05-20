@@ -172,7 +172,7 @@ export const updateBotArticles = async (req, res) => {
     try {
         const { force } = req.query;
         const botId = req.params.botId;
-        
+
         console.log('[NewsBotController] Starting update:', {
             botId,
             force,
@@ -198,39 +198,69 @@ export const updateBotArticles = async (req, res) => {
             websiteCount: bot.websites.length,
             lastUpdate: bot.lastUpdate
         });
-        
+
         // Set force update flag if requested
         if (force) {
-            const bot = await NewsBot.findById(req.params.botId);
-            if (bot) {
-                bot.forceUpdate = true;
-                await bot.save();
-            }
+            bot.forceUpdate = true;
+            await bot.save();
         }
-        const result = await newsBotService.updateBotArticles(req.params.botId);
-        console.log('[NewsBotController] Update result:', {
-            newArticles: result.newArticles.length,
-            errors: result.errors.length,
-            totalArticles: result.totalArticles
-        });
-        res.status(200).json({ 
-            success: true, 
-            message: "Articles updated successfully", 
-            data: result 
-        });
+
+        try {
+            const result = await newsBotService.updateBotArticles(req.params.botId);
+
+            // Check if the result has expected properties
+            if (!result || !result.success) {
+                console.error('[NewsBotController] Update failed with error:', result?.error);
+                return res.status(400).json({ 
+                    success: false, 
+                    error: result?.error || "Update failed" 
+                });
+            }
+
+            // Ensure data structure is valid
+            const data = result.data || {};
+
+            // Ensure all properties exist and have default values to prevent "cannot read property of undefined" errors
+            const safeData = {
+                newArticles: Array.isArray(data.newArticles) ? data.newArticles : [],
+                totalArticles: data.totalArticles || 0,
+                errorCount: data.errorCount || 0,
+                articles: Array.isArray(data.articles) ? data.articles : []
+            };
+
+            // Log the successful result with safe property access
+            console.log('[NewsBotController] Update result:', {
+                newArticles: safeData.newArticles.length,
+                errorCount: safeData.errorCount,
+                totalArticles: safeData.totalArticles
+            });
+
+            // Return success response with safe data
+            return res.status(200).json({ 
+                success: true, 
+                message: "Articles updated successfully", 
+                data: safeData
+            });
+        } catch (serviceError) {
+            console.error('[NewsBotController] Service error updating articles:', serviceError);
+            return res.status(400).json({ 
+                success: false, 
+                error: serviceError.message || "Error in update service" 
+            });
+        }
     } catch (error) {
         console.error('[NewsBotController] Error updating articles:', error);
-        res.status(400).json({ success: false, error: error.message });
+        return res.status(400).json({ success: false, error: error.message });
     }
 };
 
 export const getBotPosts = async (req, res) => {
     try {
         const userId = req.user._id;
-        
+
         // Get all bots for the user
         const bots = await NewsBot.find({ owner: userId });
-        
+
         // Get all posts from these bots
         const posts = await Post.find({
             $or: [
@@ -363,7 +393,7 @@ export const postArticle = async (req, res) => {
 
         // Check if it's a YouTube video
         const isYouTubeUrl = article.url.includes('youtube.com') || article.url.includes('youtu.be');
-        
+
         // Create post from article
         const post = new Post({
             user: userId,
