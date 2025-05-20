@@ -85,12 +85,13 @@ const io = new Server(httpServer, {
         credentials: true,
         allowedHeaders: ["Content-Type", "Authorization"]
     },
-    transports: ['polling', 'websocket'],
+    transports: ['websocket', 'polling'],
     path: '/socket.io/',
-    pingTimeout: 60000,
-    pingInterval: 25000,
+    pingTimeout: 30000,
+    pingInterval: 10000,
     allowEIO3: true,
-    upgrade: true
+    upgrade: true,
+    cookie: false
 });
 
 io.engine.on("connection_error", (err) => {
