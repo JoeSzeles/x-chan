@@ -8,7 +8,9 @@ export default defineConfig({
     port: 3000,
     hmr: {
       clientPort: 443,
-      protocol: 'wss'
+      protocol: 'wss',
+      timeout: 30000,
+      overlay: false
     }
   }
 });
