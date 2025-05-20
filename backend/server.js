@@ -87,14 +87,14 @@ const io = new Server(httpServer, {
     },
     path: '/socket.io/',
     transports: ['polling', 'websocket'],
-    pingTimeout: 30000,
-    pingInterval: 10000,
+    pingTimeout: 60000,
+    pingInterval: 25000,
     maxHttpBufferSize: 1e8,
-    connectTimeout: 30000,
+    connectTimeout: 45000,
     allowEIO3: true,
     forceNew: true,
     upgrade: true,
-    rememberUpgrade: true
+    cookie: false
 });
 
 // Add detailed socket error logging
