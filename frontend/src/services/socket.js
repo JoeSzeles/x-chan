@@ -25,7 +25,6 @@ class SocketService {
       console.log('[Socket] Initializing with options:', socketOptions);
       this.socket = io('/', socketOptions);
 
-      // Add comprehensive error logging
       this.socket.on('connect_error', (error) => {
         console.error('[Socket] Connection error:', {
           message: error.message,
@@ -68,7 +67,6 @@ class SocketService {
           wasConnected: this.socket.connected,
           id: this.socket.id
         });
-      });
       });
     }
     return this.socket;
