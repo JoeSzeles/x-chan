@@ -4,108 +4,87 @@ import puppeteer from "puppeteer";
 
 class ScraperService {
     async scrapeWebsite(website) {
-        console.log('[ScraperService] Starting scrape for:', {
+        console.log('[ScraperService] Starting scrape:', {
             url: website.url,
             type: website.type,
-            selector: website.selector
+            timestamp: new Date().toISOString()
         });
-
         try {
-            if (!website.url || !website.selector) {
-                throw new Error('Missing required website configuration');
-            }
-
-            // If we're in mock mode, generate test data
-            if (global.USE_MOCK_DATA) {
-                console.log('[ScraperService] Using mock data');
-                return this.generateMockData(website);
-            }
-
-            console.log('[ScraperService] Starting scrape:', {
-                url: website.url,
-                type: website.type,
-                timestamp: new Date().toISOString()
-            });
-            try {
-                // Validate website configuration
-                if (!website.url) {
-                    console.error('[ScraperService] Missing URL in website config');
-                    return [];
-                }
-
-                console.log(`[Scraper] Starting scrape for ${website.url} with type: ${website.type || 'news'}`);
-
-                // Handle different website types
-                if (website.type === 'video' || website.url.includes('youtube.com')) {
-                    console.log('[Scraper] Detected YouTube video type, using YouTube scraper');
-                    return await this.scrapeYouTube(website);
-                } else if (website.url.includes('twitter.com') || website.url.includes('x.com')) {
-                    return await this.scrapeTwitter(website);
-                }
-
-                // Use regular scraping for other sites
-                const headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'en-US,en;q=0.5',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'Connection': 'keep-alive',
-                    'Upgrade-Insecure-Requests': '1',
-                    'Cache-Control': 'max-age=0'
-                };
-
-                let response;
-                try {
-                    response = await axios.get(website.url, { 
-                        headers,
-                        timeout: 30000,
-                        withCredentials: true
-                    });
-                } catch (error) {
-                    console.error('[Scraper] Error fetching website:', error.message);
-                    return [];
-                }
-
-                if (!response || !response.data) {
-                    console.error('[Scraper] Empty response from website');
-                    return [];
-                }
-
-                const $ = cheerio.load(response.data);
-
-                // Ensure we have a valid selector
-                const selector = website.selector || 'article';
-                let elements = $(selector);
-
-                if (elements.length === 0) {
-                    console.log('[Scraper] Warning: No elements found with selector, trying fallback selectors');
-                    // Try some common fallback selectors
-                    const fallbackSelectors = ['article', '.article', '.post', '.news-item', '.story', '.entry'];
-                    for (const fallbackSelector of fallbackSelectors) {
-                        elements = $(fallbackSelector);
-                        if (elements.length > 0) {
-                            console.log(`[Scraper] Found elements with fallback selector: ${fallbackSelector}`);
-                            break;
-                        }
-                    }
-                }
-
-                if (elements.length === 0) {
-                    console.log('[Scraper] Warning: No elements found with any selector');
-                    return [];
-                }
-
-                const articles = this.parseNewsWebsite($, website, elements);
-                console.log(`[Scraper] Successfully parsed ${articles.length} articles from ${website.url}`);
-                return articles;
-
-            } catch (error) {
-                console.error('[Scraper] Error scraping website:', error.message);
-                console.error('[Scraper] Error stack:', error.stack);
+            // Validate website configuration
+            if (!website.url) {
+                console.error('[ScraperService] Missing URL in website config');
                 return [];
             }
+
+            console.log(`[Scraper] Starting scrape for ${website.url} with type: ${website.type || 'news'}`);
+
+            // Handle different website types
+            if (website.type === 'video' || website.url.includes('youtube.com')) {
+                console.log('[Scraper] Detected YouTube video type, using YouTube scraper');
+                return await this.scrapeYouTube(website);
+            } else if (website.url.includes('twitter.com') || website.url.includes('x.com')) {
+                return await this.scrapeTwitter(website);
+            }
+
+            // Use regular scraping for other sites
+            const headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Cache-Control': 'max-age=0'
+            };
+
+            let response;
+            try {
+                response = await axios.get(website.url, { 
+                headers,
+                timeout: 30000,
+                withCredentials: true
+            });
+            } catch (error) {
+                console.error('[Scraper] Error fetching website:', error.message);
+                return [];
+            }
+
+            if (!response || !response.data) {
+                console.error('[Scraper] Empty response from website');
+                return [];
+            }
+
+            const $ = cheerio.load(response.data);
+
+            // Ensure we have a valid selector
+            const selector = website.selector || 'article';
+            let elements = $(selector);
+
+            if (elements.length === 0) {
+                console.log('[Scraper] Warning: No elements found with selector, trying fallback selectors');
+                // Try some common fallback selectors
+                const fallbackSelectors = ['article', '.article', '.post', '.news-item', '.story', '.entry'];
+                for (const fallbackSelector of fallbackSelectors) {
+                    elements = $(fallbackSelector);
+                    if (elements.length > 0) {
+                        console.log(`[Scraper] Found elements with fallback selector: ${fallbackSelector}`);
+                        break;
+                    }
+                }
+            }
+
+            if (elements.length === 0) {
+                console.log('[Scraper] Warning: No elements found with any selector');
+                return [];
+            }
+
+            const articles = this.parseNewsWebsite($, website, elements);
+            console.log(`[Scraper] Successfully parsed ${articles.length} articles from ${website.url}`);
+            return articles;
+
         } catch (error) {
-            console.error('[ScraperService] Error scraping website:', error.message);
+            console.error('[Scraper] Error scraping website:', error.message);
+            console.error('[Scraper] Error stack:', error.stack);
             return [];
         }
     }
@@ -133,7 +112,7 @@ class ScraperService {
 
         try {
             console.log('[ScraperService] DEBUG: Initializing browser with parameters');
-            const browser = await puppeteer.launch({
+        const browser = await puppeteer.launch({
                 headless: false, // Try with visible browser for better results
                 args: [
                     '--no-sandbox', 
@@ -148,11 +127,11 @@ class ScraperService {
                     width: 1280,
                     height: 800
                 }
-            });
+        });
 
-            try {
-                console.log('[ScraperService] Browser launched successfully');
-                const page = await browser.newPage();
+        try {
+            console.log('[ScraperService] Browser launched successfully');
+            const page = await browser.newPage();
 
                 // Set a more realistic user agent
                 await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
@@ -192,9 +171,9 @@ class ScraperService {
                     console.log('[ScraperService] Page error:', error.message);
                 });
 
-                console.log('[ScraperService] Page configured with viewport and user agent');
+            console.log('[ScraperService] Page configured with viewport and user agent');
 
-                const articles = [];
+            const articles = [];
                 // Ensure searchTerms is a string before splitting
                 const searchTerms = searchTermsString.split(',').map(term => term.trim()).filter(term => term);
 
@@ -202,16 +181,16 @@ class ScraperService {
                     searchTerms.push("technology news"); // Default search term if none provided
                 }
 
-                console.log('[ScraperService] Processing search terms:', searchTerms);
+            console.log('[ScraperService] Processing search terms:', searchTerms);
 
                 // Process terms one by one to avoid overloading
                 for (let i = 0; i < Math.min(searchTerms.length, 3); i++) {
                     const term = searchTerms[i];
-                    try {
-                        console.log('[ScraperService] Processing search term:', term);
+                try {
+                    console.log('[ScraperService] Processing search term:', term);
                         // Use a simpler query string format to avoid encoding issues
                         const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(term)}`;
-                        console.log('[ScraperService] Navigating to:', searchUrl);
+                    console.log('[ScraperService] Navigating to:', searchUrl);
 
                         try {
                             // Use a simpler navigation approach
@@ -390,9 +369,9 @@ class ScraperService {
                                                 if (videoIdMatch && videoIdMatch[1]) {
                                                     thumbnail = `https://i.ytimg.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
                                                 }
-                                            }
+                                }
 
-                                            return {
+                                return {
                                                 title: title,
                                                 channel: 'YouTube Channel',
                                                 views: 'Unknown views',
@@ -410,7 +389,7 @@ class ScraperService {
                             }
                         }
 
-                        console.log('[ScraperService] Extracted', videos.length, 'videos');
+                    console.log('[ScraperService] Extracted', videos.length, 'videos');
 
                         // Log details of the videos for debugging
                         if (videos.length > 0) {
@@ -422,8 +401,8 @@ class ScraperService {
                             console.log('[ScraperService] WARNING: No videos found for term:', term);
                         }
 
-                        // Convert videos to articles
-                        for (const video of videos) {
+                    // Convert videos to articles
+                    for (const video of videos) {
                             if (!video || !video.title || !video.url) {
                                 console.log('[ScraperService] Skipping invalid video entry');
                                 continue;
@@ -435,24 +414,24 @@ class ScraperService {
                                 continue;
                             }
 
-                            const article = {
-                                title: video.title,
-                                description: `Channel: ${video.channel}\nViews: ${video.views}`,
-                                url: video.url,
-                                imageUrl: video.thumbnail,
-                                publishedAt: new Date(),
-                                source: 'youtube',
-                                type: 'video'
-                            };
-                            articles.push(article);
-                        }
-
-                    } catch (error) {
-                        console.error('[ScraperService] Error processing search term:', term, error);
+                        const article = {
+                            title: video.title,
+                            description: `Channel: ${video.channel}\nViews: ${video.views}`,
+                            url: video.url,
+                            imageUrl: video.thumbnail,
+                            publishedAt: new Date(),
+                            source: 'youtube',
+                            type: 'video'
+                        };
+                        articles.push(article);
                     }
-                }
 
-                console.log('[ScraperService] Total videos found:', articles.length);
+                } catch (error) {
+                    console.error('[ScraperService] Error processing search term:', term, error);
+                }
+            }
+
+            console.log('[ScraperService] Total videos found:', articles.length);
 
                 // If we still have no articles, try one last approach - direct search results page HTML extraction
                 if (articles.length === 0) {
@@ -514,13 +493,6 @@ class ScraperService {
                     }
                 }
 
-                // If all previous methods failed, use mock data as final fallback
-                if (articles.length === 0) {
-                    console.log('[ScraperService] All scraping methods failed, using mock data as final fallback');
-                    const mockArticles = this.generateMockYouTubeData(website);
-                    articles.push(...mockArticles);
-                }
-
                 // Debug information if no articles found
                 if (articles.length === 0) {
                     console.log('[ScraperService] DEBUG: No articles found in YouTube scraping.');
@@ -555,16 +527,16 @@ class ScraperService {
                 }
 
                 // Return empty array if no articles were found, don't throw an error
-                return articles;
+            return articles;
 
-            } catch (error) {
-                console.error('[ScraperService] Error in scrapeYouTube:', error);
+        } catch (error) {
+            console.error('[ScraperService] Error in scrapeYouTube:', error);
                 // Return empty array instead of throwing
                 return [];
-            } finally {
+        } finally {
                 try {
-                    await browser.close();
-                    console.log('[ScraperService] Browser closed');
+            await browser.close();
+            console.log('[ScraperService] Browser closed');
                 } catch (error) {
                     console.error('[ScraperService] Error closing browser:', error);
                 }
@@ -845,7 +817,7 @@ class ScraperService {
 
     // Helper method to generate mock YouTube data when scraping fails
     generateMockYouTubeData(website) {
-        console.log('[ScraperService] Generating mock YouTube data as fallback');
+        console.log('[ScraperService] Generating mock YouTube data');
 
         // Extract search terms
         const searchTerms = (website.searchTerms || "technology news").split(',').map(term => term.trim()).filter(term => term);
@@ -856,68 +828,18 @@ class ScraperService {
         // Generate mock articles based on the search terms
         const articles = [];
 
-        // Sample video titles by category
-        const videoTemplates = {
-            'greentext': [
-                '4chan Greentext Story - Anon Goes to the Gym',
-                'Top 10 FUNNIEST Greentext Stories of All Time',
-                'Greentext Compilation - Best of Anon',
-                '4chan Greentext Stories that Actually Happened',
-                'Hilarious /fit/ Greentext Stories Compilation'
-            ],
-            'stories': [
-                ```text
-                'Short Stories that Will Make You Think',
-                'True Stories from Reddit That Sound Fake',
-                'Unexplainable Stories from the Internet',
-                'Short Horror Stories to Keep You Up at Night',
-                'Amazing True Stories That Changed Lives'
-            ],
-            'star trek': [
-                'Star Trek: The Next Generation - Best Picard Moments',
-                'Star Trek Theory: The Future of the Federation',
-                'Star Trek vs Star Wars - The Ultimate Comparison',
-                'Hidden Easter Eggs in Star Trek You Never Noticed',
-                'The Evolution of Star Trek: From TOS to Strange New Worlds'
-            ],
-            'default': [
-                'Top 10 Trending Topics This Week',
-                'Ultimate Guide to Understanding the Topic',
-                'What You Need to Know About This Subject',
-                'Comprehensive Review and Analysis',
-                'Behind the Scenes Look at This Phenomenon'
-            ]
-        };
-
         // Create 5 mock articles for each search term
         for (const term of searchTerms) {
-            // Find the best matching category
-            let category = 'default';
-            for (const key of Object.keys(videoTemplates)) {
-                if (term.toLowerCase().includes(key.toLowerCase())) {
-                    category = key;
-                    break;
-                }
-            }
-
             // Generate sample videos for the current term
-            const templates = videoTemplates[category];
-            for (let i = 0; i < templates.length; i++) {
+            for (let i = 1; i <= 5; i++) {
                 const now = new Date();
                 const publishDate = new Date(now.setDate(now.getDate() - i));
 
-                // Create a video ID using a hash of the title and term to make it consistent
-                const videoId = btoa(`${term}-${i}`).replace(/[^a-zA-Z0-9]/g, '').substring(0, 11);
-
-                // Generate a title that includes the search term
-                const baseTitle = templates[i];
-                const title = baseTitle.includes(term) ? baseTitle : `${baseTitle} - ${term}`;
-
                 const article = {
-                    title: title,
-                    description: `Channel: ${term.charAt(0).toUpperCase() + term.slice(1)} Channel\nViews: ${Math.floor(Math.random() * 100000) + 1000} views\nUploaded: ${publishDate.toLocaleDateString()}`,
-                    url: `https://www.youtube.com/watch?v=${videoId}`,
-                    imageUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+                    title: `${term} - Latest Update #${i}`,
+                    description: `Channel: ${term} Channel\nViews: ${Math.floor(Math.random() * 100000)} views`,
+                    url: `https://www.youtube.com/watch?v=mock${i}${Math.floor(Math.random() * 1000)}`,
+                    imageUrl: `https://i.ytimg.com/vi/mock${i}${Math.floor(Math.random() * 1000)}/hqdefault.jpg`,
                     publishedAt: publishDate,
                     source: 'youtube',
                     type: 'video'
@@ -931,4 +853,4 @@ class ScraperService {
     }
 }
 
-export default new ScraperService();
+export default new ScraperService(); 

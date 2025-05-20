@@ -715,21 +715,6 @@ const NewsPage = () => {
         }
     });
 
-    // Fix invalid href issue with double slashes
-    const ensureValidPath = (path) => {
-        // Remove trailing slashes from base
-        if (path.startsWith('/')) {
-            path = path.substring(1);
-        }
-        // Ensure the path doesn't have double slashes
-        return path.replace(/\/\//g, '/');
-    };
-
-    // Fix any router push or Link hrefs in the component
-    const handleNavigationWithValidPaths = (path) => {
-        return ensureValidPath(path);
-    };
-
     if (isLoadingBots) {
         return (
             <div className="flex-[4_4_0] mr-auto border-r border-gray-700 min-h-screen flex items-center justify-center">
@@ -847,7 +832,7 @@ const NewsPage = () => {
 
                         {/* Articles Section */}
                         <div className="mt-6 border-t border-gray-700 pt-4">
-                            <BotArticles botId={handleNavigationWithValidPaths(bot._id)} isOpen={true} onClose={() => {}} />
+                            <BotArticles botId={bot._id} isOpen={true} onClose={() => {}} />
                         </div>
                     </div>
                 ))}
