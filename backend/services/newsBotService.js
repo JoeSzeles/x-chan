@@ -173,7 +173,21 @@ class NewsBotService {
             let newArticles = 0;
             let articles = [];
 
+            if (!bot.websites || !Array.isArray(bot.websites)) {
+                console.error('[NewsBotService] No valid websites found');
+                return {
+                    success: false,
+                    error: 'No valid websites configured'
+                };
+            }
+
             for (const website of bot.websites) {
+                if (!website || !website.url) {
+                    console.error('[NewsBotService] Invalid website config:', website);
+                    errorCount++;
+                    continue;
+                }
+
                 console.log('[NewsBotService] Processing website:', {
                     url: website.url,
                     type: website.type,
