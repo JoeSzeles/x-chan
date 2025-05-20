@@ -265,6 +265,10 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		onSuccess: (updatedBookmarks) => {
       setIsBookmarking(false);
 			setLocalBookmarks(updatedBookmarks);
+			queryClient.setQueryData(["posts", post._id], (oldPost) => {
+				if (!oldPost) return oldPost;
+				return { ...oldPost, bookmarkedBy: updatedBookmarks };
+			});
 			queryClient.setQueryData(["posts"], (oldData) => {
 				if (!oldData) return oldData;
 				return oldData.map((p) => {
@@ -274,7 +278,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 					return p;
 				});
 			});
-			queryClient.invalidateQueries(["bookmarks"]);
 		},
 		onError: (error) => {
       setIsBookmarking(false);
