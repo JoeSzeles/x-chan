@@ -907,7 +907,7 @@ class ScraperService {
                 const publishDate = new Date(now.setDate(now.getDate() - i));
 
                 // Create a video ID using a hash of the title and term to make it consistent
-                const videoId = btoa(`${term}-${i}`).replace(/[^a-zA-Z0-9]/g, '').substring(0, 11);
+                const videoId = btoa(term + '-' + i).replace(/[^a-zA-Z0-9]/g, '').substring(0, 11);
 
                 // Generate a title that includes the search term
                 const baseTitle = templates[i];
