@@ -5,13 +5,18 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'fs';
+import { v2 as cloudinary } from "cloudinary";
+
+// Import routes
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
 import postRoutes from './routes/post.route.js';
 import proxyRoutes from './routes/proxy.js';
-import path from "path";
-import cookieParser from "cookie-parser";
-import { v2 as cloudinary } from "cloudinary";
 import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
@@ -26,9 +31,6 @@ import leechRoutes from './routes/leech.js';
 import serviceRoutes from './routes/service.route.js';
 import liveBoardRoutes from './routes/liveBoard.js';
 import connectMongoDB from "./db/connectMongoDB.js";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -46,12 +48,22 @@ const PORT = 5000;
 const HOST = '0.0.0.0';
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', '*');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.removeHeader('X-Frame-Options');
+    res.removeHeader('Content-Security-Policy');
+    res.removeHeader('X-Content-Security-Policy');
+    res.removeHeader('X-WebKit-CSP');
+    res.removeHeader('Cross-Origin-Opener-Policy');
+    res.removeHeader('Cross-Origin-Embedder-Policy');
+    res.removeHeader('Cross-Origin-Resource-Policy');
     next();
 });
+
+app.use(cors({
+    origin: '*',
+    methods: '*',
+    allowedHeaders: '*',
+    credentials: true
+}));
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -65,6 +77,7 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
@@ -94,8 +107,9 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
         origin: '*',
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        credentials: true
+        methods: '*',
+        credentials: true,
+        allowedHeaders: '*'
     }
 });
 
