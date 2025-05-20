@@ -80,9 +80,11 @@ app.use('/api/liveboard', liveBoardRoutes);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+        origin: true,
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['polling']
 });
 
 io.on('connection', socket => {
