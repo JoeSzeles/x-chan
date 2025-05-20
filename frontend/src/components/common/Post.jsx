@@ -165,16 +165,11 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		},
 		onSuccess: (updatedLikes) => {
 			setLocalLikes(updatedLikes);
-			queryClient.setQueryData(["posts"], (oldData) => {
-				if (!oldData) return oldData;
-				return oldData.map((p) => {
-					if (p._id === post._id) {
-						return { ...p, likes: updatedLikes };
-					}
-					return p;
-				});
+			// Update cache without triggering re-render of content
+			queryClient.setQueryData(["posts", post._id], (oldPost) => {
+				if (!oldPost) return oldPost;
+				return { ...oldPost, likes: updatedLikes };
 			});
-			queryClient.invalidateQueries(["posts", post._id]);
 		},
 		onError: (error) => {
 			toast.error(error.message);
