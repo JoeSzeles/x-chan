@@ -7,7 +7,8 @@ import { FaShare } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
 import { FaFeather } from "react-icons/fa";
 import { FaDownload } from "react-icons/fa";
-import { useState, useEffect, useRef } from "react";
+import { useState } from 'react';
+import { useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -36,6 +37,7 @@ const getYouTubeThumbnail = (url) => {
 };
 
 const Post = ({ post, isComment = false, isCompact = false }) => {
+  const [isBookmarking, setIsBookmarking] = useState(false);
 	const postRef = useRef(null);
 	const [quotedBy, setQuotedBy] = useState([]);
 	const [showPreview, setShowPreview] = useState(false);
@@ -833,6 +835,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 									title="YouTube video"
 									className="w-full h-full rounded-lg"
 									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+									```python
 									allowFullScreen
 								/>
 							</div>
@@ -842,7 +845,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 			)}
 
 			{/* PostPopup for comments */}
-```python
 			{showCommentPopup && (
 				<PostPopup
 					onClose={() => setShowCommentPopup(false)}
