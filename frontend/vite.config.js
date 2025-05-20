@@ -11,7 +11,7 @@ export default defineConfig({
     cors: false,
     hmr: {
       host: '0.0.0.0',
-      protocol: 'ws'
+      protocol: 'ws',
     },
     proxy: {
       '/api': {
