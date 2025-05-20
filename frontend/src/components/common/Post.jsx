@@ -52,9 +52,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		const fetchQuoteReferences = async () => {
 			try {
 				const res = await fetch(`/api/posts/${post._id}/quotes`);
-				if (!res.ok) {
-					throw new Error(`HTTP error! status: ${res.status}`);
-				}
 				const data = await res.json();
 				if (res.ok) {
 					setQuotedBy(data.quotes || []);
