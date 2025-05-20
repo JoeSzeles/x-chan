@@ -1,0 +1,266 @@
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+[vite] connecting... client:471:9
+[vite] connected. client:578:21
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools chunk-7FAYBHOI.js:21536:25
+Current notifications state: 
+Array []
+NotificationPage.jsx:169:11
+Current notifications state: 
+Array []
+NotificationPage.jsx:169:11
+Fetching notifications... NotificationPage.jsx:93:17
+Current notifications state: 
+Array []
+NotificationPage.jsx:169:11
+Current notifications state: 
+Array []
+NotificationPage.jsx:169:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4ckvwqvw because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4ckw1qcm because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Attempting to reconnect (1/5)... NotificationPage.jsx:134:19
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4clp5ivp because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Attempting to reconnect (2/5)... NotificationPage.jsx:134:19
+Error fetching notifications: 
+Object { message: "Request failed with status code 500", name: "AxiosError", code: "ERR_BAD_RESPONSE", config: {…}, request: XMLHttpRequest, response: {…}, status: 500, stack: "", … }
+NotificationPage.jsx:100:17
+Current notifications state: 
+Array []
+NotificationPage.jsx:169:11
+Current notifications state: 
+Array []
+NotificationPage.jsx:169:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4cn8xdul because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Attempting to reconnect (3/5)... NotificationPage.jsx:134:19
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4cpki637 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Attempting to reconnect (4/5)... NotificationPage.jsx:134:19
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4csnwh9p because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Max reconnection attempts reached NotificationPage.jsx:137:19
+Attempting to fetch bots from URL: /api/newsbot/user?search=&category=all NewsPage.jsx:219:17
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. socket__io-client.js:1061:77
+Response status: 200 NewsPage.jsx:227:17
+Raw response text: {"success":true,"data":[{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c125d8ffb349773ecb879","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=tech news+gaming+tutorials","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c125d8ffb349773ecb87a"}],"updateInterval":50,"status":"paused","lastUpdate":"2025-05-20T05:34:05.541Z","createdAt":"2025-05-20T05:25:49.258Z","updatedAt":"2025-05-20T05:49:42.808Z","__v":1}]} NewsPage.jsx:229:17
+Parsed JSON data: 
+Object { success: true, data: (1) […] }
+NewsPage.jsx:237:19
+Successfully fetched bots data: 
+Array [ {…} ]
+NewsPage.jsx:259:17
+Connecting to WebSocket at: https://tradehub.ap.ngrok.io:5000 2 BotArticles.jsx:88:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4dqan8mr because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4dqaoyy5 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4dqauefg because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4dqau0pz because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Error updating articles: Error: Cannot read properties of undefined (reading 'length')
+    mutationFn NewsPage.jsx:292
+NewsPage.jsx:315:17
+Error updating articles: Error: Cannot read properties of undefined (reading 'length')
+    mutationFn NewsPage.jsx:292
+NewsPage.jsx:315:17
+Update mutation error: 
+Object { error: Error, message: "Cannot read properties of undefined (reading 'length')", stack: "mutationFn@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/news/NewsPage.jsx:304:17\n" }
+NewsPage.jsx:351:15
+Socket.IO connection error: Error: timeout
+    timer manager.js:140
+NewsPage.jsx:183:15
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. socket__io-client.js:1061:77
+Toggle response: {"success":true,"data":{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c125d8ffb349773ecb879","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=tech news+gaming+tutorials","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c125d8ffb349773ecb87a"}],"updateInterval":50,"status":"active","lastUpdate":"2025-05-20T05:34:05.541Z","createdAt":"2025-05-20T05:25:49.258Z","updatedAt":"2025-05-20T06:15:46.421Z","__v":1}} NewsPage.jsx:137:17
+Attempting to fetch bots from URL: /api/newsbot/user?search=&category=all NewsPage.jsx:219:17
+Response status: 200 NewsPage.jsx:227:17
+Raw response text: {"success":true,"data":[{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c125d8ffb349773ecb879","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=tech news+gaming+tutorials","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c125d8ffb349773ecb87a"}],"updateInterval":50,"status":"active","lastUpdate":"2025-05-20T05:34:05.541Z","createdAt":"2025-05-20T05:25:49.258Z","updatedAt":"2025-05-20T06:15:46.421Z","__v":1}]} NewsPage.jsx:229:17
+Parsed JSON data: 
+Object { success: true, data: (1) […] }
+NewsPage.jsx:237:19
+Successfully fetched bots data: 
+Array [ {…} ]
+NewsPage.jsx:259:17
+Toggle response: {"success":true,"data":{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c125d8ffb349773ecb879","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=tech news+gaming+tutorials","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c125d8ffb349773ecb87a"}],"updateInterval":50,"status":"paused","lastUpdate":"2025-05-20T05:34:05.541Z","createdAt":"2025-05-20T05:25:49.258Z","updatedAt":"2025-05-20T06:15:48.105Z","__v":1}} NewsPage.jsx:137:17
+Attempting to fetch bots from URL: /api/newsbot/user?search=&category=all NewsPage.jsx:219:17
+Response status: 200 NewsPage.jsx:227:17
+Raw response text: {"success":true,"data":[{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c125d8ffb349773ecb879","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=tech news+gaming+tutorials","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c125d8ffb349773ecb87a"}],"updateInterval":50,"status":"paused","lastUpdate":"2025-05-20T05:34:05.541Z","createdAt":"2025-05-20T05:25:49.258Z","updatedAt":"2025-05-20T06:15:48.105Z","__v":1}]} NewsPage.jsx:229:17
+Parsed JSON data: 
+Object { success: true, data: (1) […] }
+NewsPage.jsx:237:19
+Successfully fetched bots data: 
+Array [ {…} ]
+NewsPage.jsx:259:17
+Socket.IO connection error: Error: timeout
+    timer manager.js:140
+NewsPage.jsx:183:15
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. socket__io-client.js:1061:77
+Error updating articles: Error: Cannot read properties of undefined (reading 'length')
+    mutationFn NewsPage.jsx:292
+NewsPage.jsx:315:17
+Error updating articles: Error: Cannot read properties of undefined (reading 'length')
+    mutationFn NewsPage.jsx:292
+NewsPage.jsx:315:17
+Update mutation error: 
+Object { error: Error, message: "Cannot read properties of undefined (reading 'length')", stack: "mutationFn@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/news/NewsPage.jsx:304:17\n" }
+NewsPage.jsx:351:15
+Attempting to fetch bots from URL: /api/newsbot/user?search=&category=all NewsPage.jsx:219:17
+Response status: 200 NewsPage.jsx:227:17
+Raw response text: {"success":true,"data":[]} NewsPage.jsx:229:17
+Parsed JSON data: 
+Object { success: true, data: [] }
+NewsPage.jsx:237:19
+Successfully fetched bots data: 
+Array []
+NewsPage.jsx:259:17
+Selected preset: youtube NewsPage.jsx:551:13
+Preset data: 
+Object { name: "YouTube Feed", websites: (1) […] }
+NewsPage.jsx:561:13
+Setting new bot config: 
+Object { name: "YouTube Feed", websites: (1) […], updateInterval: 5 }
+NewsPage.jsx:572:13
+Socket.IO connection error: Error: timeout
+    timer manager.js:140
+NewsPage.jsx:183:15
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. socket__io-client.js:1061:77
+Sending bot data: 
+Object { name: "YouTube Feed", websites: (1) […], updateInterval: 50 }
+NewsPage.jsx:396:17
+Raw response: {"success":true,"data":{"name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=","type":"video","selector":"ytd-video-renderer","searchTerms":"4chan","active":true,"_id":"682c1e3009bc658cdcf209d1"}],"updateInterval":50,"status":"active","settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c1e3009bc658cdcf209d0","lastUpdate":"2025-05-20T06:16:16.260Z","createdAt":"2025-05-20T06:16:16.261Z","updatedAt":"2025-05-20T06:16:16.261Z","__v":0}} NewsPage.jsx:407:17
+Attempting to fetch bots from URL: /api/newsbot/user?search=&category=all NewsPage.jsx:219:17
+Response status: 200 NewsPage.jsx:227:17
+Raw response text: {"success":true,"data":[{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c1e3009bc658cdcf209d0","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=","type":"video","selector":"ytd-video-renderer","searchTerms":"4chan","active":true,"_id":"682c1e3009bc658cdcf209d1"}],"updateInterval":50,"status":"active","lastUpdate":"2025-05-20T06:16:16.260Z","createdAt":"2025-05-20T06:16:16.261Z","updatedAt":"2025-05-20T06:16:16.261Z","__v":0}]} NewsPage.jsx:229:17
+Parsed JSON data: 
+Object { success: true, data: (1) […] }
+NewsPage.jsx:237:19
+Successfully fetched bots data: 
+Array [ {…} ]
+NewsPage.jsx:259:17
+Connecting to WebSocket at: https://tradehub.ap.ngrok.io:5000 2 BotArticles.jsx:88:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4f5uobiy because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4f5up457 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4f5uxgc3 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at https://tradehub.ap.ngrok.io:5000/socket.io/?EIO=4&transport=polling&t=4f5uy9af because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+BotArticles.jsx:105:19
+Polling error, retrying... BotArticles.jsx:107:21
+Error updating articles: Error: Cannot read properties of undefined (reading 'length')
+    mutationFn NewsPage.jsx:292
+NewsPage.jsx:315:17
+Error updating articles: Error: Cannot read properties of undefined (reading 'length')
+    mutationFn NewsPage.jsx:292
+NewsPage.jsx:315:17
+Update mutation error: 
+Object { error: Error, message: "Cannot read properties of undefined (reading 'length')", stack: "mutationFn@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/news/NewsPage.jsx:304:17\n" }
+NewsPage.jsx:351:15
+Socket.IO connection error: Error: timeout
+    timer manager.js:140
+NewsPage.jsx:183:15
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. socket__io-client.js:1061:77
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. socket__io-client.js:1061:77
