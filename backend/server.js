@@ -48,21 +48,24 @@ const PORT = 5000;
 const HOST = '0.0.0.0';
 
 app.use((req, res, next) => {
-    res.removeHeader('X-Frame-Options');
-    res.removeHeader('Content-Security-Policy');
-    res.removeHeader('X-Content-Security-Policy');
-    res.removeHeader('X-WebKit-CSP');
-    res.removeHeader('Cross-Origin-Opener-Policy');
-    res.removeHeader('Cross-Origin-Embedder-Policy');
-    res.removeHeader('Cross-Origin-Resource-Policy');
+    // Disable all security headers
+    res.setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'unsafe-none');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', '*');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
 });
 
 app.use(cors({
-    origin: '*',
-    methods: '*',
-    allowedHeaders: '*',
-    credentials: true
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+    credentials: true,
+    maxAge: 86400,
+    preflightContinue: true,
+    optionsSuccessStatus: 200
 }));
 
 app.use(express.json({ limit: '50mb' }));

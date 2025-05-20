@@ -9,6 +9,12 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
     cors: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
+      'Cross-Origin-Embedder-Policy': 'unsafe-none',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
+    },
     hmr: {
       host: '0.0.0.0',
       protocol: 'ws',
