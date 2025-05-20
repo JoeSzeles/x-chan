@@ -171,7 +171,33 @@ export const getBotArticles = async (req, res) => {
 export const updateBotArticles = async (req, res) => {
     try {
         const { force } = req.query;
-        console.log('[NewsBotController] Updating articles for bot:', req.params.botId, 'force:', force);
+        const botId = req.params.botId;
+        
+        console.log('[NewsBotController] Starting update:', {
+            botId,
+            force,
+            userId: req.user._id,
+            timestamp: new Date().toISOString()
+        });
+
+        // First verify the bot exists and user has access
+        const bot = await NewsBot.findOne({ _id: botId, owner: req.user._id });
+        if (!bot) {
+            console.error('[NewsBotController] Bot not found or unauthorized:', {
+                botId,
+                userId: req.user._id
+            });
+            return res.status(404).json({
+                success: false,
+                error: "Bot not found or unauthorized"
+            });
+        }
+
+        console.log('[NewsBotController] Bot found:', {
+            name: bot.name,
+            websiteCount: bot.websites.length,
+            lastUpdate: bot.lastUpdate
+        });
         
         // Set force update flag if requested
         if (force) {

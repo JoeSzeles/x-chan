@@ -134,7 +134,10 @@ class NewsBotService {
 
     async updateBotArticles(botId) {
         try {
-            console.log('[NewsBotService] Starting updateBotArticles for bot:', botId);
+            console.log('[NewsBotService] Starting updateBotArticles:', {
+                botId,
+                timestamp: new Date().toISOString()
+            });
 
             // Check if enough time has passed since last update based on updateInterval
             const bot = await NewsBot.findById(botId);
@@ -178,6 +181,13 @@ class NewsBotService {
                 });
 
                 try {
+                    console.log('[NewsBotService] Processing website:', {
+                        url: website.url,
+                        type: website.type,
+                        searchTerms: website.searchTerms,
+                        selector: website.selector
+                    });
+
                     // Ensure search terms are properly added to YouTube URL
                     if (website.type === 'video' && website.url.includes('youtube.com')) {
                         const searchTerms = website.searchTerms.split(',').map(t => t.trim()).join('+');
