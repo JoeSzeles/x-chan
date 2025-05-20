@@ -10,7 +10,7 @@ class SocketService {
     if (!this.socket) {
       const socketOptions = {
         transports: ['polling', 'websocket'],
-        path: '/socket.io/',
+        path: '/socket.io',
         withCredentials: true,
         secure: true,
         reconnection: true,
@@ -19,7 +19,10 @@ class SocketService {
         reconnectionDelayMax: 5000,
         timeout: 20000,
         autoConnect: true,
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        extraHeaders: {
+          'Access-Control-Allow-Origin': '*'
+        }
       };
 
       console.log('[Socket] Initializing with options:', socketOptions);
