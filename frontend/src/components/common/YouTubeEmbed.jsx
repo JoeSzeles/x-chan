@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 
 const YouTubeEmbed = ({ url }) => {
@@ -7,50 +8,58 @@ const YouTubeEmbed = ({ url }) => {
     const iframeRef = useRef(null);
 
     useEffect(() => {
-        console.log('[YouTubeEmbed] Initializing with URL:', url);
+        console.log('[YouTubeEmbed] Starting to process URL:', url);
 
         if (!url) {
-            console.error('[YouTubeEmbed] No URL provided');
-            setError('No URL provided');
+            console.error('[YouTubeEmbed] Missing URL');
+            setError('No video URL provided');
             setIsLoading(false);
             return;
         }
 
-        try {
-            const cleanUrl = url.trim();
-            let id = null;
+        const parseVideoId = () => {
+            try {
+                const cleanUrl = url.trim();
+                let id = null;
 
-            // Parse URL to get video ID
-            if (cleanUrl.includes('youtu.be/')) {
-                id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
-                console.log('[YouTubeEmbed] Extracted ID from youtu.be URL:', id);
-            } else if (cleanUrl.includes('youtube.com/watch')) {
-                const urlParams = new URL(cleanUrl).searchParams;
-                id = urlParams.get('v');
-                console.log('[YouTubeEmbed] Extracted ID from watch URL:', id);
-            } else if (cleanUrl.includes('youtube.com/embed/')) {
-                id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
-                console.log('[YouTubeEmbed] Extracted ID from embed URL:', id);
-            } else if (cleanUrl.includes('youtube.com/shorts/')) {
-              id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
-              console.log('[YouTubeEmbed] Extracted ID from shorts URL:', id);
+                console.log('[YouTubeEmbed] Attempting to parse URL:', cleanUrl);
+
+                if (cleanUrl.includes('youtu.be/')) {
+                    id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                    console.log('[YouTubeEmbed] Extracted from youtu.be URL:', id);
+                } else if (cleanUrl.includes('youtube.com/watch')) {
+                    const urlParams = new URL(cleanUrl).searchParams;
+                    id = urlParams.get('v');
+                    console.log('[YouTubeEmbed] Extracted from watch URL:', id);
+                } else if (cleanUrl.includes('youtube.com/embed/')) {
+                    id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
+                    console.log('[YouTubeEmbed] Extracted from embed URL:', id);
+                } else if (cleanUrl.includes('youtube.com/shorts/')) {
+                    id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
+                    console.log('[YouTubeEmbed] Extracted from shorts URL:', id);
+                }
+
+                if (!id) {
+                    throw new Error('Could not extract video ID');
+                }
+
+                if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+                    throw new Error(`Invalid video ID format: ${id}`);
+                }
+
+                console.log('[YouTubeEmbed] Successfully parsed video ID:', id);
+                setVideoId(id);
+                setError(null);
+            } catch (err) {
+                console.error('[YouTubeEmbed] Error parsing URL:', err.message);
+                setError(`Invalid YouTube URL: ${err.message}`);
+                setVideoId(null);
+            } finally {
+                setIsLoading(false);
             }
+        };
 
-            if (!id) {
-                throw new Error('Could not extract video ID from URL');
-            }
-
-            if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) {
-                throw new Error('Invalid video ID format');
-            }
-
-            setVideoId(id);
-            setError(null);
-        } catch (err) {
-            console.error('[YouTubeEmbed] Error parsing URL:', err);
-            setError(`Failed to load video: ${err.message}`);
-            setIsLoading(false);
-        }
+        parseVideoId();
     }, [url]);
 
     const handleIframeError = (e) => {
@@ -62,27 +71,32 @@ const YouTubeEmbed = ({ url }) => {
     const handleIframeLoad = () => {
         console.log('[YouTubeEmbed] Iframe loaded successfully');
         setIsLoading(false);
+        setError(null);
     };
 
     if (error) {
+        console.log('[YouTubeEmbed] Rendering error state:', error);
         return (
             <div className="youtube-embed my-2">
                 <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
                     <div className="text-red-500 mb-2">{error}</div>
-                    <a 
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:text-blue-600"
-                    >
-                        View on YouTube
-                    </a>
+                    {url && (
+                        <a 
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-600"
+                        >
+                            View on YouTube
+                        </a>
+                    )}
                 </div>
             </div>
         );
     }
 
     if (!videoId || isLoading) {
+        console.log('[YouTubeEmbed] Rendering loading state');
         return (
             <div className="youtube-embed my-2">
                 <div className="bg-gray-500/10 rounded-lg border border-gray-500/20 p-3">
@@ -92,6 +106,7 @@ const YouTubeEmbed = ({ url }) => {
         );
     }
 
+    console.log('[YouTubeEmbed] Rendering video player for ID:', videoId);
     return (
         <div className="youtube-embed my-2">
             <div className="bg-red-500/10 rounded-lg border border-red-500/20 overflow-hidden">
