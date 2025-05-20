@@ -141,6 +141,18 @@ class NewsBotService {
                 throw new Error('Bot not found');
             }
 
+            // Don't scan if bot is paused
+            if (bot.status === 'paused') {
+                console.log('[NewsBotService] Bot is paused, skipping update');
+                return {
+                    success: true,
+                    data: {
+                        skipped: true,
+                        message: 'Update skipped - bot is paused'
+                    }
+                };
+            }
+
             // Use bot's configured update interval in minutes
             const updateIntervalMs = (bot.updateInterval || 5) * 60 * 1000;
             const lastUpdate = bot.lastUpdate ? new Date(bot.lastUpdate).getTime() : 0;
