@@ -9,9 +9,13 @@ class SocketService {
     try {
       if (!this.socket) {
         this.socket = io({
-          path: '/socket.io/',
-          transports: ['websocket'],
+          path: '/socket.io',
+          transports: ['polling', 'websocket'],
           reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          timeout: 20000,
+          forceNew: true,
           reconnectionAttempts: 3,
           reconnectionDelay: 1000,
           timeout: 20000,
