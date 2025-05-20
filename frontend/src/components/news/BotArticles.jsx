@@ -54,16 +54,12 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
             const connectSocket = () => {
                 const socket = io(window.location.origin, {
         transports: ['polling'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 2000,
-        reconnectionDelayMax: 5000,
-        timeout: 10000,
+        reconnection: false,
+        timeout: 5000,
         path: '/socket.io/',
-        withCredentials: true,
-        forceNew: true,
-        autoConnect: true,
-        rejectUnauthorized: false
+        withCredentials: false,
+        forceNew: false,
+        autoConnect: true
     });
 
                 socket.on('connect_error', (error) => {
