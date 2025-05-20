@@ -282,8 +282,19 @@ class NewsBotService {
 
     async getBotArticles(botId, page = 1, limit = 10) {
         try {
-            console.log('Fetching articles for bot:', botId);
-            console.log('Page:', page, 'Limit:', limit);
+            console.log('[NewsBotService] Fetching articles for bot:', botId);
+            
+            // First verify bot exists
+            const bot = await NewsBot.findById(botId);
+            if (!bot) {
+                throw new Error('Bot not found');
+            }
+
+            // Force update if no articles
+            const count = await NewsArticle.countDocuments({ bot: botId });
+            if (count === 0) {
+                await this.updateBotArticles(botId);
+            }
 
             const skip = (page - 1) * limit;
             const articles = await NewsArticle.find({ bot: botId })
