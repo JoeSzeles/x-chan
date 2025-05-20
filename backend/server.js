@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
@@ -44,12 +45,11 @@ const app = express();
 const PORT = 5000;
 const HOST = '0.0.0.0';
 
-// Remove all restrictions
 app.use(cors({
   origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['*']
+  allowedHeaders: '*'
 }));
 
 app.use(express.json({ limit: '5mb' }));
@@ -64,7 +64,6 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
