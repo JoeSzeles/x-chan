@@ -12,12 +12,10 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
         ? (post.ratings.reduce((sum, r) => sum + r.rating, 0) / post.ratings.length).toFixed(1)
         : 0;
 
-    const { mutate: rateItem, isPending: isRating } = useMutation({
+    const { mutate: rateItem } = useMutation({
         mutationFn: async (rating) => {
-            if (!currentUser?._id) {
-                throw new Error("Authentication required");
-            }
-            const endpoint = isComment 
+            try {
+                const endpoint = isComment 
                     ? `/api/comments/rate/${post._id}`
                     : `/api/posts/rate/${post._id}`;
 
@@ -96,17 +94,9 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
 
     const handleRating = (rating) => {
         if (!currentUser?._id) {
-            toast.error("Please login to rate", {
-                icon: '🔒',
-                duration: 2000
-            });
+            toast.error("Please login to rate");
             return;
         }
-        
-        if (userRating > 0) {
-            return; // Prevent multiple ratings
-        }
-        
         rateItem(rating);
     };
 
@@ -120,7 +110,7 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
                         onMouseEnter={() => !userRating && setHoverRating(star)}
                         onMouseLeave={() => !userRating && setHoverRating(0)}
                         onClick={() => handleRating(star)}
-                        disabled={userRating > 0}
+                        disabled={isRating || userRating > 0}
                     >
                         <FaStar
                             className={`w-4 h-4 ${userRating > 0 ? 'cursor-default' : 'cursor-pointer'} ${
