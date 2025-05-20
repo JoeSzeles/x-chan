@@ -82,14 +82,6 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Content-Security-Policy', 
-        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.youtube.com https://*.twitter.com; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev https://*.youtube.com https://*.twitter.com; " +
-        "connect-src 'self' * ws://* wss://*; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com https://*.ytimg.com https://*.twitter.com; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "frame-src 'self' https://*.youtube.com https://*.twitter.com;"
-    );
     next();
 });
 
