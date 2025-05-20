@@ -93,7 +93,6 @@ const PostNumberHeader = ({
                                 <PostNumberLink
                                     postNumber={quoteNumber}
                                     onQuoteClick={onQuoteClick}
-                                    className="text-blue-400 hover:text-blue-300"
                                 />
                             </React.Fragment>
                         ))}
