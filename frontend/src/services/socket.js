@@ -8,7 +8,16 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io('http://0.0.0.0:5000');
+      const socketUrl = window.location.hostname.includes('replit.dev') 
+        ? `wss://${window.location.host}`
+        : 'http://0.0.0.0:5000';
+      
+      this.socket = io(socketUrl, {
+        transports: ['websocket', 'polling'],
+        path: '/socket.io/',
+        withCredentials: true,
+        secure: true
+      });
     }
     return this.socket;
   }
