@@ -50,12 +50,27 @@ const HOST = '0.0.0.0';
 const cleanup = () => {
     if (httpServer) {
         console.log('Shutting down server...');
+        // Add a timeout to force close if graceful shutdown fails
+        const forceClose = setTimeout(() => {
+            console.error('Could not close connections in time, forcefully shutting down');
+            process.exit(1);
+        }, 5000);
+        
+        // Attempt graceful shutdown
         httpServer.close(() => {
-            console.log('Server closed');
+            clearTimeout(forceClose);
+            console.log('Server closed gracefully');
             process.exit(0);
         });
     }
 };
+
+// Track connections to close them properly
+const connections = new Set();
+httpServer.on('connection', (connection) => {
+    connections.add(connection);
+    connection.on('close', () => connections.delete(connection));
+});
 
 // Handle process termination
 process.on('SIGTERM', cleanup);
