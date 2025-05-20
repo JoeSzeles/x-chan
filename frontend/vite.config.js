@@ -15,10 +15,8 @@ export default defineConfig({
     port: 3000,
     hmr: {
       host: '0.0.0.0',
-      protocol: 'ws',
-      timeout: 30000,
-      overlay: true,
-      clientPort: 443
+      clientPort: 443,
+      protocol: 'wss'
     },
     proxy: {
       '/api': {
@@ -27,11 +25,11 @@ export default defineConfig({
         secure: false
       }
     },
-    watch: {
-      usePolling: true
-    },
-    fs: {
-      strict: false
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+      'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev; style-src 'self' 'unsafe-inline'; connect-src 'self' wss://*.replit.dev https://*.replit.dev wss://*.worf.replit.dev https://*.worf.replit.dev ws: wss: http: https:;"
     }
   },
   resolve: {
