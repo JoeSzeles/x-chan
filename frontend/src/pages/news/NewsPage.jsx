@@ -295,7 +295,7 @@ const NewsPage = () => {
                 return {
                     success: true,
                     data: {
-                        newArticles: data.data?.newArticles || [],
+                        newArticles: data.data?.newArticles || 0,
                         errors: data.data?.errors || [],
                         totalArticles: data.data?.totalArticles || 0
                     }

@@ -178,6 +178,11 @@ class NewsBotService {
                 });
 
                 try {
+                    // Ensure search terms are properly added to YouTube URL
+                    if (website.type === 'video' && website.url.includes('youtube.com')) {
+                        const searchTerms = website.searchTerms.split(',').map(t => t.trim()).join('+');
+                        website.url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerms)}`;
+                    }
                     const scrapedArticles = await this.scraperService.scrapeWebsite(website);
                     console.log('[NewsBotService] Found', scrapedArticles.length, 'articles for website:', website.url);
 
