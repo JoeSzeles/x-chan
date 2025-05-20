@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
 const LoginForm = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
@@ -19,12 +19,12 @@ const LoginForm = () => {
                 // Store token in localStorage
                 localStorage.setItem('token', data.token);
                 console.log('[LoginForm] Token stored successfully');
-                
+
                 // Store user data if available
                 if (data.user) {
                     localStorage.setItem('user', JSON.stringify(data.user));
                 }
-                
+
                 toast.success('Login successful!');
                 navigate('/');
             } else {
@@ -39,20 +39,20 @@ const LoginForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        loginMutation.mutate({ email, password });
+        loginMutation.mutate({ username, password });
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                    Username
                 </label>
                 <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     required
                 />
@@ -81,4 +81,4 @@ const LoginForm = () => {
     );
 };
 
-export default LoginForm; 
+export default LoginForm;
