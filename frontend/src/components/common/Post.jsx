@@ -288,7 +288,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 	const handleBookmark = async (e) => {
     if (e) e.stopPropagation();
     console.log('handleBookmark called:', { isBookmarking, postId: post?._id });
-    
+
     try {
       if (isBookmarking) {
         console.log('Already processing bookmark request');
@@ -573,15 +573,9 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 													handleLikePost();
 												}}
 											>
-												{isLiking && <LoadingSpinner size='sm' />}
-												{!isLiked && !isLiking && (
-													<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
-												)}
-												{isLiked && !isLiking && (
-													<FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500' />
-												)}
-												<span className={`text-sm group-hover:text-pink-500 ${isLiked ? "text-pink-500" : "text-slate-500"}`}>
-													{post.likes.length}
+												<FaRegHeart className={`w-4 h-4 cursor-pointer ${isLiked ? 'text-pink-500' : 'text-slate-500 group-hover:text-pink-500'}`} />
+												<span className={`text-sm ${isLiked ? 'text-pink-500' : 'text-slate-500 group-hover:text-pink-500'}`}>
+													{localLikes.length}
 												</span>
 											</div>
 											<div 
@@ -603,15 +597,9 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 												className='flex gap-1 items-center group cursor-pointer bookmark-button' 
 												onClick={handleBookmark}
 											>
-												{isBookmarking && <LoadingSpinner size='sm' />}
-												{!isBookmarked && !isBookmarking && (
-													<FaRegBookmark className='w-4 h-4 text-slate-500 group-hover:text-blue-500' />
-												)}
-												{isBookmarked && !isBookmarking && (
-													<FaRegBookmark className='w-4 h-4 text-blue-500' />
-												)}
-												<span className={`text-sm group-hover:text-blue-500 ${isBookmarked ? "text-blue-500" : "text-slate-500"}`}>
-													{post.bookmarkedBy?.length || 0}
+												<FaRegBookmark className={`w-4 h-4 ${isBookmarked ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-500'}`} />
+												<span className={`text-sm ${isBookmarked ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-500'}`}>
+													{localBookmarks.length || 0}
 												</span>
 											</div>
 										</div>
@@ -795,30 +783,18 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 											handleLikePost();
 										}}
 									>
-										{isLiking && <LoadingSpinner size='sm' />}
-										{!isLiked && !isLiking && (
-											<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
-										)}
-										{isLiked && !isLiking && (
-											<FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />
-										)}
-										<span className={`text-sm group-hover:text-pink-500 ${isLiked ? "text-pink-500" : "text-slate-500"}`}>
-											{post.likes.length}
+										<FaRegHeart className={`w-4 h-4 cursor-pointer ${isLiked ? 'text-pink-500' : 'text-slate-500 group-hover:text-pink-500'}`} />
+										<span className={`text-sm ${isLiked ? 'text-pink-500' : 'text-slate-500 group-hover:text-pink-500'}`}>
+											{localLikes.length}
 										</span>
 									</div>
 									<div 
 										className='flex gap-1 items-center group cursor-pointer bookmark-button' 
 										onClick={handleBookmark}
 									>
-										{isBookmarking && <LoadingSpinner size='sm' />}
-										{!isBookmarked && !isBookmarking && (
-											<FaRegBookmark className='w-4 h-4 text-slate-500 group-hover:text-blue-500' />
-										)}
-										{isBookmarked && !isBookmarking && (
-											<FaRegBookmark className='w-4 h-4 text-blue-500' />
-										)}
-										<span className={`text-sm group-hover:text-blue-500 ${isBookmarked ? "text-blue-500" : "text-slate-500"}`}>
-											{post.bookmarkedBy?.length || 0}
+										<FaRegBookmark className={`w-4 h-4 ${isBookmarked ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-500'}`} />
+										<span className={`text-sm ${isBookmarked ? 'text-blue-500' : 'text-slate-500 group-hover:text-blue-500'}`}>
+											{localBookmarks.length || 0}
 										</span>
 									</div>
 								</div>
@@ -864,8 +840,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 					}}
 				>
 					<div className="p-4">
-						<div className="flex items-center gap-2 mb-2">
-							<img 
+						<div className="flex items-center gap-2 mb-2"><img 
 								src={post.user.profileImg || "/avatar-placeholder.png"} 
 								className="w-8 h-8 rounded-full" 
 								alt="Profile"
