@@ -82,18 +82,17 @@ const io = new Server(httpServer, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"],
-        credentials: false
+        credentials: false,
+        allowedHeaders: ["*"]
     },
     path: '/socket.io/',
-    transports: ['polling'],
-    pingTimeout: 5000,
-    pingInterval: 10000,
-    connectTimeout: 5000,
+    transports: ['polling', 'websocket'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    connectTimeout: 30000,
+    maxHttpBufferSize: 1e8,
     allowEIO3: true,
-    forceNew: false,
-    perMessageDeflate: false,
-    allowUpgrades: false,
-    cookie: false
+    serveClient: false
 });
 
 // Enable detailed debug logging
