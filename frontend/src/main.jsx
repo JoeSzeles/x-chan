@@ -5,6 +5,12 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+// Add global error handler
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+});
+
+// Configure query client with logging
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
