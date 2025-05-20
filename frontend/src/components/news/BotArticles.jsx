@@ -52,12 +52,8 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
-                // Use the same ngrok URL as the frontend
-                const backendUrl = import.meta.env.VITE_SOCKET_URL || 'https://tradehub.ap.ngrok.io:5000';
-                console.log('Connecting to WebSocket at:', backendUrl);
-
-                const socket = io(backendUrl, {
-                    transports: ['polling'],
+                const socket = io('/', {
+                    transports: ['polling', 'websocket'],
                     reconnection: true,
                     reconnectionAttempts: 3,
                     reconnectionDelay: 1000,
