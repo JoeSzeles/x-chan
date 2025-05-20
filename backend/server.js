@@ -86,15 +86,20 @@ const io = new Server(httpServer, {
         allowedHeaders: ["*"]
     },
     path: '/socket.io/',
-    transports: ['polling', 'websocket'],
-    pingTimeout: 60000,
-    pingInterval: 25000,
+    transports: ['polling'],
+    pingTimeout: 30000,
+    pingInterval: 10000,
     maxHttpBufferSize: 1e8,
-    connectTimeout: 45000,
+    connectTimeout: 20000,
     allowEIO3: true,
     forceNew: true,
-    upgrade: true,
-    cookie: false
+    perMessageDeflate: false,
+    allowUpgrades: false
+});
+
+// Enable detailed debug logging
+io.engine.on("initial_headers", (headers, req) => {
+    console.log("Initial headers:", headers);
 });
 
 // Add detailed socket error logging
