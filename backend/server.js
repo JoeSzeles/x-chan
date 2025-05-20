@@ -46,13 +46,24 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 
-// Kill any existing process on the port (if running as root)
-try {
-    const { execSync } = require('child_process');
-    execSync(`lsof -t -i:${PORT} | xargs --no-run-if-empty kill -9`);
-} catch (err) {
-    console.log('Port cleanup attempted');
-}
+// Cleanup handler
+const cleanup = () => {
+    if (httpServer) {
+        console.log('Shutting down server...');
+        httpServer.close(() => {
+            console.log('Server closed');
+            process.exit(0);
+        });
+    }
+};
+
+// Handle process termination
+process.on('SIGTERM', cleanup);
+process.on('SIGINT', cleanup);
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    cleanup();
+});
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
