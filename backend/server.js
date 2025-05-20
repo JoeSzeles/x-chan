@@ -53,6 +53,15 @@ app.use(cors({
     allowedHeaders: '*'
 }));
 
+// Add security headers
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: http: ws: wss:;");
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
