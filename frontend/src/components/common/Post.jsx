@@ -242,6 +242,46 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		},
 	});
 
+	const { mutate: bookmarkPost } = useMutation({
+		mutationFn: async () => {
+      setIsBookmarking(true);
+			try {
+        console.log('Making bookmark request for post:', post._id);
+				const res = await fetch(`/api/bookmarks/${post._id}`, {
+					method: "POST",
+					credentials: "include"
+				});
+				const data = await res.json();
+				if (!res.ok) {
+          console.error('Bookmark request failed:', data);
+					throw new Error(data.error || "Something went wrong");
+				}
+				return data;
+			} catch (error) {
+				throw new Error(error);
+			}
+		},
+		onSuccess: (data) => {
+      console.log('Bookmark success:', data);
+      setIsBookmarking(false);
+			setLocalBookmarks(data.bookmarkedBy || []);
+			queryClient.setQueryData(["posts"], (oldData) => {
+				if (!oldData) return oldData;
+				return oldData.map((p) => {
+					if (p._id === post._id) {
+						return { ...p, bookmarkedBy: data.bookmarkedBy };
+					}
+					return p;
+				});
+			});
+		},
+		onError: (error) => {
+      console.error('Bookmark error:', error);
+      setIsBookmarking(false);
+			toast.error(error.message || 'Failed to bookmark post');
+		},
+	});
+
 	const handleBookmark = async (e) => {
     if (e) e.stopPropagation();
     if (isBookmarking) return;
@@ -802,6 +842,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 			{showPreview && (
 				<div 
 					className="fixed z-50 bg-[#1e1e1e] rounded-lg shadow-lg border border-gray-700 max-w-md"
+					```python
 					style={{
 						left: `${previewPosition.x}px`,
 						top: `${previewPosition.y + 10}px`,
@@ -835,7 +876,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 									title="YouTube video"
 									className="w-full h-full rounded-lg"
 									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-									```python
 									allowFullScreen
 								/>
 							</div>
