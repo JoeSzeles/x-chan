@@ -241,37 +241,47 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 	});
 
 	const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
-		mutationFn: async () => {
-			try {
-				const res = await fetch(`/api/posts/bookmark/${post._id}`, {
-					method: "POST",
-					credentials: "include"
-				});
-				const data = await res.json();
-				if (!res.ok) {
-					throw new Error(data.error || "Something went wrong");
-				}
-				return data;
-			} catch (error) {
-				throw new Error(error);
-			}
-		},
-		onSuccess: (updatedBookmarks) => {
-			setLocalBookmarks(updatedBookmarks);
-			queryClient.setQueryData(["posts"], (oldData) => {
-				if (!oldData) return oldData;
-				return oldData.map((p) => {
-					if (p._id === post._id) {
-						return { ...p, bookmarkedBy: updatedBookmarks };
-					}
-					return p;
-				});
-			});
-		},
-		onError: (error) => {
-			toast.error(error.message);
-		},
-	});
+    mutationFn: async () => {
+        // Optimistically update UI
+        const isCurrentlyBookmarked = post.bookmarkedBy?.includes(authUser?._id);
+        const optimisticBookmarks = isCurrentlyBookmarked 
+            ? post.bookmarkedBy.filter(id => id !== authUser?._id)
+            : [...(post.bookmarkedBy || []), authUser?._id];
+            
+        // Update cache immediately
+        queryClient.setQueryData(["posts"], (oldData) => {
+            if (!oldData) return oldData;
+            return oldData.map((p) => {
+                if (p._id === post._id) {
+                    return { ...p, bookmarkedBy: optimisticBookmarks };
+                }
+                return p;
+            });
+        });
+
+        // Make API call
+        const res = await fetch(`/api/posts/bookmark/${post._id}`, {
+            method: "POST",
+            credentials: "include"
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
+        return data;
+    },
+    onError: (error, variables, context) => {
+        // Revert optimistic update on error
+        queryClient.setQueryData(["posts"], (oldData) => {
+            if (!oldData) return oldData;
+            return oldData.map((p) => {
+                if (p._id === post._id) {
+                    return { ...p, bookmarkedBy: post.bookmarkedBy };
+                }
+                return p;
+            });
+        });
+        toast.error(error.message);
+    }
+});
 
 	const { data: comments, isLoading: commentsLoading } = useQuery({
 		queryKey: ["comments", post._id],
