@@ -1,3 +1,4 @@
+
 import { io } from 'socket.io-client';
 
 class SocketService {
@@ -10,18 +11,12 @@ class SocketService {
       const socketUrl = window.location.hostname.includes('replit.dev') 
         ? `wss://${window.location.host}`
         : 'http://0.0.0.0:5000';
-
+      
       this.socket = io(socketUrl, {
-        transports: ['polling', 'websocket'],
+        transports: ['websocket', 'polling'],
         path: '/socket.io/',
         withCredentials: true,
-        secure: true,
-        reconnection: true,
-        reconnectionAttempts: Infinity,
-        reconnectionDelay: 1000,
-        timeout: 20000,
-        autoConnect: true,
-        forceNew: true
+        secure: true
       });
     }
     return this.socket;
