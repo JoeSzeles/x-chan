@@ -80,16 +80,18 @@ app.use('/api/liveboard', liveBoardRoutes);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: true,
+        origin: "*",
         methods: ["GET", "POST"],
         credentials: true
     },
-    allowEIO3: true,
     transports: ['polling', 'websocket'],
-    pingTimeout: 10000,
-    pingInterval: 5000,
-    path: '/socket.io/',
-    serveClient: false
+    allowUpgrades: true,
+    upgradeTimeout: 10000,
+    pingInterval: 10000,
+    pingTimeout: 5000,
+    cookie: false,
+    allowEIO3: true,
+    path: '/socket.io/'
 });
 
 io.engine.on("connection_error", (err) => {
