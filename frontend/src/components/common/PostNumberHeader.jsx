@@ -86,15 +86,13 @@ const PostNumberHeader = ({
                 <>
                     <span className="text-gray-500">•</span>
                     <span className="text-gray-500">Replies</span>
-                    <span className="flex items-center gap-2">
-                        {quotedBy.map((quoteNumber, index) => (
-                            <PostNumberLink
-                                key={quoteNumber}
-                                postNumber={quoteNumber}
-                                onQuoteClick={onQuoteClick}
-                            />
-                        ))}
-                    </span>
+                    {quotedBy.map((quoteNumber, index) => (
+                        <PostNumberLink
+                            key={quoteNumber}
+                            postNumber={quoteNumber}
+                            onQuoteClick={onQuoteClick}
+                        />
+                    ))}
                 </>
             )}
         </div>
@@ -127,4 +125,4 @@ PostNumberHeader.propTypes = {
     className: PropTypes.string
 };
 
-export default PostNumberHeader;
+export default PostNumberHeader; 
