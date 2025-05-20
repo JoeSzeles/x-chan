@@ -856,7 +856,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 			{showPreview && (
 				<div 
 					className="fixed z-50 bg-[#1e1e1e] rounded-lg shadow-lg border border-gray-700 max-w-md"
-					```python
 					style={{
 						left: `${previewPosition.x}px`,
 						top: `${previewPosition.y + 10}px`,
