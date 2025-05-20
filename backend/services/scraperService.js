@@ -55,7 +55,18 @@ class ScraperService {
         }
     }
 
+    #lastScrapeTime = null;
+    #minScrapingInterval = 5 * 60 * 1000; // 5 minutes
+
     async scrapeYouTube(website) {
+        // Check if enough time has passed since last scrape
+        const now = Date.now();
+        if (this.#lastScrapeTime && (now - this.#lastScrapeTime) < this.#minScrapingInterval) {
+            console.log('[ScraperService] Skipping scrape - too soon since last attempt');
+            return [];
+        }
+        
+        this.#lastScrapeTime = now;
         console.log('[ScraperService] Starting YouTube scraping for:', website.url);
         console.log('[ScraperService] Website config:', {
             url: website.url,
