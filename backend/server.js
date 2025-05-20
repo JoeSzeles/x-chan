@@ -55,39 +55,7 @@ const PORT = 5000;
 const FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
 const HOST = '0.0.0.0';
 
-// Enable CORS
-const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'https://tradehub.ap.ngrok.io',
-    'wss://tradehub.ap.ngrok.io',
-    'https://googleads.g.doubleclick.net',
-    'https://i.4cdn.org',
-    'https://*.replit.dev',
-    'https://*.worf.replit.dev'
-];
-
-// Helper function to check if origin matches wildcard pattern
-const matchWildcard = (origin, pattern) => {
-    const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
-    return new RegExp(`^${regexPattern}$`).test(origin);
-};
-
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-});
-
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 
 // Update body-parser limits
 app.use(express.json({ limit: '5mb' }));
