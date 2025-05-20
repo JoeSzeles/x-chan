@@ -32,11 +32,7 @@ export const bookmarkPost = async (req, res, next) => {
 			const unbookmarkedPost = await Post.findById(postId)
 				.populate('bookmarkedBy', 'username fullName profileImg');
 			
-			return res.status(200).json({ 
-				message: "Post unbookmarked successfully",
-				isBookmarked: false,
-				bookmarkedBy: unbookmarkedPost.bookmarkedBy || []
-			});
+			return res.status(200).json(unbookmarkedPost.bookmarkedBy || []);
 		} else {
 			// Add bookmark
 			await User.findByIdAndUpdate(userId, {
@@ -50,11 +46,7 @@ export const bookmarkPost = async (req, res, next) => {
 			const bookmarkedPost = await Post.findById(postId)
 				.populate('bookmarkedBy', 'username fullName profileImg');
 			
-			return res.status(200).json({ 
-				message: "Post bookmarked successfully",
-				isBookmarked: true,
-				bookmarkedBy: bookmarkedPost.bookmarkedBy || []
-			});
+			return res.status(200).json(bookmarkedPost.bookmarkedBy || []);
 		}
 	} catch (error) {
 		next(error);

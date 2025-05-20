@@ -1,0 +1,274 @@
+Removing unpermitted intrinsics lockdown-install.js:1:87038
+[vite] connecting... client:471:9
+[vite] connected. client:578:21
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools chunk-7FAYBHOI.js:21536:25
+Post component rendering: 
+Object { postId: "682bee3785c0950a16d32e15", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682bee3785c0950a16d32e15", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 13
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "682a88ede0de273f27416d75", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682a88ede0de273f27416d75", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 13
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "682a81f4b592d970094a3fbe", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682a81f4b592d970094a3fbe", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 13
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "682a7143cfaed120abaaf1f0", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682a7143cfaed120abaaf1f0", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 13
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "6829dd5ee5b0a52ccbf11625", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "6829dd5ee5b0a52ccbf11625", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 13
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "682bee3785c0950a16d32e15", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682bee3785c0950a16d32e15", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 14
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "682a88ede0de273f27416d75", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682a88ede0de273f27416d75", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 14
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "682a81f4b592d970094a3fbe", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682a81f4b592d970094a3fbe", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 14
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "682a7143cfaed120abaaf1f0", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "682a7143cfaed120abaaf1f0", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 14
+lockdown-install.js:1:135422
+Post component rendering: 
+Object { postId: "6829dd5ee5b0a52ccbf11625", isComment: false, isCompact: false }
+Post.jsx:55:11
+Post component rendering: 
+Object { postId: "6829dd5ee5b0a52ccbf11625", isComment: false, isCompact: false }
+Post.jsx:55:11
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 14
+lockdown-install.js:1:135422
+ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 11
+chunk-7FAYBHOI.js:14024:25
+The above error occurred in the <StarRating> component:
+
+StarRating@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/StarRating.jsx:23:20
+div
+div
+div
+div
+div
+div
+Post@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/Post.jsx:53:14
+div
+div
+div
+BookmarksPage@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/BookmarksPage.jsx:30:43
+RenderedRoute@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3563:7
+Routes@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3997:7
+div
+div
+ThemeProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/ThemeProvider.jsx:21:30
+App@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/App.jsx:48:38
+Router@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3945:7
+BrowserRouter@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:4682:7
+QueryClientProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=28dfa3ed:2644:27
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. chunk-7FAYBHOI.js:14036:23
+ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 11
+chunk-7FAYBHOI.js:14024:25
+The above error occurred in the <StarRating> component:
+
+StarRating@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/StarRating.jsx:23:20
+div
+div
+div
+div
+div
+div
+Post@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/Post.jsx:53:14
+div
+div
+div
+BookmarksPage@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/BookmarksPage.jsx:30:43
+RenderedRoute@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3563:7
+Routes@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3997:7
+div
+div
+ThemeProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/ThemeProvider.jsx:21:30
+App@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/App.jsx:48:38
+Router@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3945:7
+BrowserRouter@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:4682:7
+QueryClientProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=28dfa3ed:2644:27
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. chunk-7FAYBHOI.js:14036:23
+ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 11
+chunk-7FAYBHOI.js:14024:25
+The above error occurred in the <StarRating> component:
+
+StarRating@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/StarRating.jsx:23:20
+div
+div
+div
+div
+div
+div
+Post@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/Post.jsx:53:14
+div
+div
+div
+BookmarksPage@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/BookmarksPage.jsx:30:43
+RenderedRoute@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3563:7
+Routes@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3997:7
+div
+div
+ThemeProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/ThemeProvider.jsx:21:30
+App@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/App.jsx:48:38
+Router@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3945:7
+BrowserRouter@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:4682:7
+QueryClientProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=28dfa3ed:2644:27
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. chunk-7FAYBHOI.js:14036:23
+ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 11
+chunk-7FAYBHOI.js:14024:25
+The above error occurred in the <StarRating> component:
+
+StarRating@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/StarRating.jsx:23:20
+div
+div
+div
+div
+div
+div
+Post@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/Post.jsx:53:14
+div
+div
+div
+BookmarksPage@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/BookmarksPage.jsx:30:43
+RenderedRoute@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3563:7
+Routes@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3997:7
+div
+div
+ThemeProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/ThemeProvider.jsx:21:30
+App@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/App.jsx:48:38
+Router@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3945:7
+BrowserRouter@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:4682:7
+QueryClientProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=28dfa3ed:2644:27
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. chunk-7FAYBHOI.js:14036:23
+ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 11
+chunk-7FAYBHOI.js:14024:25
+The above error occurred in the <StarRating> component:
+
+StarRating@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/StarRating.jsx:23:20
+div
+div
+div
+div
+div
+div
+Post@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/common/Post.jsx:53:14
+div
+div
+div
+BookmarksPage@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/pages/BookmarksPage.jsx:30:43
+RenderedRoute@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3563:7
+Routes@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3997:7
+div
+div
+ThemeProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/components/ThemeProvider.jsx:21:30
+App@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/src/App.jsx:48:38
+Router@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:3945:7
+BrowserRouter@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=28dfa3ed:4682:7
+QueryClientProvider@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=28dfa3ed:2644:27
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries. chunk-7FAYBHOI.js:14036:23
+SES_UNCAUGHT_EXCEPTION: ReferenceError: isRating is not defined
+    children StarRating.jsx:113
+    StarRating StarRating.jsx:106
+    React 11
+lockdown-install.js:1:135422

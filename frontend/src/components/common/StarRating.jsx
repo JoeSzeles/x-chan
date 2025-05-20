@@ -12,7 +12,7 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
         ? (post.ratings.reduce((sum, r) => sum + r.rating, 0) / post.ratings.length).toFixed(1)
         : 0;
 
-    const { mutate: rateItem, isPending: isRating } = useMutation({
+    const { mutate: rateItem } = useMutation({
         mutationFn: async (rating) => {
             try {
                 const endpoint = isComment 
@@ -93,11 +93,10 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
     });
 
     const handleRating = (rating) => {
-        if (!currentUser) {
+        if (!currentUser?._id) {
             toast.error("Please login to rate");
             return;
         }
-        if (isRating) return;
         rateItem(rating);
     };
 
@@ -113,17 +112,13 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
                         onClick={() => handleRating(star)}
                         disabled={isRating || userRating > 0}
                     >
-                        {isRating ? (
-                            <LoadingSpinner size="sm" />
-                        ) : (
-                            <FaStar
-                                className={`w-4 h-4 ${userRating > 0 ? 'cursor-default' : 'cursor-pointer'} ${
-                                    (hoverRating || userRating) >= star
-                                        ? "text-yellow-500"
-                                        : "text-slate-500"
-                                }`}
-                            />
-                        )}
+                        <FaStar
+                            className={`w-4 h-4 ${userRating > 0 ? 'cursor-default' : 'cursor-pointer'} ${
+                                (hoverRating || userRating) >= star
+                                    ? "text-yellow-500"
+                                    : "text-slate-500"
+                            }`}
+                        />
                     </button>
                 ))}
             </div>
