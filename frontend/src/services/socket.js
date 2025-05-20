@@ -28,16 +28,30 @@ class SocketService {
           message: error.message,
           description: error.description,
           type: error.type,
-          stack: error.stack
+          stack: error.stack,
+          transport: socket.io.engine?.transport?.name,
+          timestamp: new Date().toISOString(),
+          readyState: socket.io.engine?.readyState,
+          uri: socket.io.uri
         });
       });
 
       this.socket.on('connect_timeout', (timeout) => {
-        console.error('[Socket] Connection timeout:', timeout);
+        console.error('[Socket] Connection timeout:', {
+          timeout,
+          transport: socket.io.engine?.transport?.name,
+          timestamp: new Date().toISOString(),
+          uri: socket.io.uri
+        });
       });
 
       this.socket.on('reconnect_attempt', (attemptNumber) => {
-        console.log('[Socket] Reconnection attempt:', attemptNumber);
+        console.log('[Socket] Reconnection attempt:', {
+          attempt: attemptNumber,
+          transport: socket.io.engine?.transport?.name,
+          timestamp: new Date().toISOString(),
+          opts: socket.io.opts
+        });
       });
 
       this.socket.on('reconnect_error', (error) => {
