@@ -4,87 +4,108 @@ import puppeteer from "puppeteer";
 
 class ScraperService {
     async scrapeWebsite(website) {
-        console.log('[ScraperService] Starting scrape:', {
+        console.log('[ScraperService] Starting scrape for:', {
             url: website.url,
             type: website.type,
-            timestamp: new Date().toISOString()
+            selector: website.selector
         });
+
         try {
-            // Validate website configuration
-            if (!website.url) {
-                console.error('[ScraperService] Missing URL in website config');
-                return [];
+            if (!website.url || !website.selector) {
+                throw new Error('Missing required website configuration');
             }
 
-            console.log(`[Scraper] Starting scrape for ${website.url} with type: ${website.type || 'news'}`);
-
-            // Handle different website types
-            if (website.type === 'video' || website.url.includes('youtube.com')) {
-                console.log('[Scraper] Detected YouTube video type, using YouTube scraper');
-                return await this.scrapeYouTube(website);
-            } else if (website.url.includes('twitter.com') || website.url.includes('x.com')) {
-                return await this.scrapeTwitter(website);
+            // If we're in mock mode, generate test data
+            if (global.USE_MOCK_DATA) {
+                console.log('[ScraperService] Using mock data');
+                return this.generateMockData(website);
             }
 
-            // Use regular scraping for other sites
-            const headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-                'Cache-Control': 'max-age=0'
-            };
-
-            let response;
+            console.log('[ScraperService] Starting scrape:', {
+                url: website.url,
+                type: website.type,
+                timestamp: new Date().toISOString()
+            });
             try {
-                response = await axios.get(website.url, { 
-                    headers,
-                    timeout: 30000,
-                    withCredentials: true
-                });
-            } catch (error) {
-                console.error('[Scraper] Error fetching website:', error.message);
-                return [];
-            }
+                // Validate website configuration
+                if (!website.url) {
+                    console.error('[ScraperService] Missing URL in website config');
+                    return [];
+                }
 
-            if (!response || !response.data) {
-                console.error('[Scraper] Empty response from website');
-                return [];
-            }
+                console.log(`[Scraper] Starting scrape for ${website.url} with type: ${website.type || 'news'}`);
 
-            const $ = cheerio.load(response.data);
+                // Handle different website types
+                if (website.type === 'video' || website.url.includes('youtube.com')) {
+                    console.log('[Scraper] Detected YouTube video type, using YouTube scraper');
+                    return await this.scrapeYouTube(website);
+                } else if (website.url.includes('twitter.com') || website.url.includes('x.com')) {
+                    return await this.scrapeTwitter(website);
+                }
 
-            // Ensure we have a valid selector
-            const selector = website.selector || 'article';
-            let elements = $(selector);
+                // Use regular scraping for other sites
+                const headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Cache-Control': 'max-age=0'
+                };
 
-            if (elements.length === 0) {
-                console.log('[Scraper] Warning: No elements found with selector, trying fallback selectors');
-                // Try some common fallback selectors
-                const fallbackSelectors = ['article', '.article', '.post', '.news-item', '.story', '.entry'];
-                for (const fallbackSelector of fallbackSelectors) {
-                    elements = $(fallbackSelector);
-                    if (elements.length > 0) {
-                        console.log(`[Scraper] Found elements with fallback selector: ${fallbackSelector}`);
-                        break;
+                let response;
+                try {
+                    response = await axios.get(website.url, { 
+                        headers,
+                        timeout: 30000,
+                        withCredentials: true
+                    });
+                } catch (error) {
+                    console.error('[Scraper] Error fetching website:', error.message);
+                    return [];
+                }
+
+                if (!response || !response.data) {
+                    console.error('[Scraper] Empty response from website');
+                    return [];
+                }
+
+                const $ = cheerio.load(response.data);
+
+                // Ensure we have a valid selector
+                const selector = website.selector || 'article';
+                let elements = $(selector);
+
+                if (elements.length === 0) {
+                    console.log('[Scraper] Warning: No elements found with selector, trying fallback selectors');
+                    // Try some common fallback selectors
+                    const fallbackSelectors = ['article', '.article', '.post', '.news-item', '.story', '.entry'];
+                    for (const fallbackSelector of fallbackSelectors) {
+                        elements = $(fallbackSelector);
+                        if (elements.length > 0) {
+                            console.log(`[Scraper] Found elements with fallback selector: ${fallbackSelector}`);
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (elements.length === 0) {
-                console.log('[Scraper] Warning: No elements found with any selector');
+                if (elements.length === 0) {
+                    console.log('[Scraper] Warning: No elements found with any selector');
+                    return [];
+                }
+
+                const articles = this.parseNewsWebsite($, website, elements);
+                console.log(`[Scraper] Successfully parsed ${articles.length} articles from ${website.url}`);
+                return articles;
+
+            } catch (error) {
+                console.error('[Scraper] Error scraping website:', error.message);
+                console.error('[Scraper] Error stack:', error.stack);
                 return [];
             }
-
-            const articles = this.parseNewsWebsite($, website, elements);
-            console.log(`[Scraper] Successfully parsed ${articles.length} articles from ${website.url}`);
-            return articles;
-
         } catch (error) {
-            console.error('[Scraper] Error scraping website:', error.message);
-            console.error('[Scraper] Error stack:', error.stack);
+            console.error('[ScraperService] Error scraping website:', error.message);
             return [];
         }
     }
@@ -845,6 +866,7 @@ class ScraperService {
                 'Hilarious /fit/ Greentext Stories Compilation'
             ],
             'stories': [
+                ```text
                 'Short Stories that Will Make You Think',
                 'True Stories from Reddit That Sound Fake',
                 'Unexplainable Stories from the Internet',
@@ -909,4 +931,4 @@ class ScraperService {
     }
 }
 
-export default new ScraperService(); 
+export default new ScraperService();

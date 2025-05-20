@@ -149,7 +149,14 @@ class NewsBotService {
             const lastUpdate = bot.lastUpdate || new Date(0);
             const minutesSinceLastUpdate = (now - lastUpdate) / (1000 * 60);
 
-            if (minutesSinceLastUpdate < bot.updateInterval && !bot.forceUpdate) {
+            // Always update if we have no articles
+            const articleCount = await NewsArticle.countDocuments({ bot: botId });
+            if (articleCount === 0) {
+                console.log('[NewsBotService] No articles found, forcing update');
+                bot.forceUpdate = true;
+            }
+
+            if (!bot.forceUpdate && minutesSinceLastUpdate < bot.updateInterval) {
                 console.log(`[NewsBotService] Skipping update - ${minutesSinceLastUpdate} minutes since last update`);
                 return {
                     success: true,
@@ -158,7 +165,7 @@ class NewsBotService {
                         nextUpdate: new Date(lastUpdate.getTime() + (bot.updateInterval * 60 * 1000)),
                         message: `Next update in ${Math.round(bot.updateInterval - minutesSinceLastUpdate)} minutes`,
                         newArticles: [],
-                        totalArticles: 0,
+                        totalArticles: articleCount,
                         errorCount: 0,
                         articles: []
                     }
@@ -210,12 +217,21 @@ class NewsBotService {
                 });
 
                 try {
-                    // Ensure search terms are properly added to YouTube URL
-                    if (website.type === 'video' && website.url.includes('youtube.com')) {
-                        const searchTerms = (website.searchTerms || "news").split(',').map(t => t.trim()).join('+');
-                        console.log('[NewsBotService] Building YouTube URL with search terms:', searchTerms);
-                        website.url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerms)}`;
-                        console.log('[NewsBotService] Final URL:', website.url);
+                    // Handle YouTube URLs with proper search terms
+                    if (website.type === 'video') {
+                        // Ensure we have search terms
+                        const searchTerms = website.searchTerms || 'news';
+                        const encodedTerms = encodeURIComponent(searchTerms);
+                        
+                        // Always use the base YouTube search URL
+                        website.url = `https://www.youtube.com/results?search_query=${encodedTerms}&sp=CAISAhAB`;
+                        website.selector = 'ytd-video-renderer';
+                        
+                        console.log('[NewsBotService] Processing YouTube URL:', {
+                            searchTerms,
+                            finalUrl: website.url,
+                            selector: website.selector
+                        });
                     }
 
                     console.log('[NewsBotService] Calling scraper for website:', website.url);
