@@ -1,0 +1,25 @@
+Error: Unknown yt page
+    getYtServiceTypeDetails moz-extension://976afed0-a931-483a-a497-ba86eba71c03/includes/commons.js:10283
+    getServiceType moz-extension://976afed0-a931-483a-a497-ba86eba71c03/includes/commons.js:10204
+    getPageType moz-extension://976afed0-a931-483a-a497-ba86eba71c03/includes/commons.js:10195
+    2410 moz-extension://976afed0-a931-483a-a497-ba86eba71c03/includes/youtube_com.js:709
+    a moz-extension://976afed0-a931-483a-a497-ba86eba71c03/includes/commons.js:11556
+commons.js:10197:36
+Error fetching quote references: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data Post.jsx:60:12
+Error fetching quote references: SyntaxError: JSON.parse: unexpected end of data at line 1 column 1 of the JSON data
