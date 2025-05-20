@@ -8,13 +8,17 @@ class SocketService {
   connect() {
     try {
       if (!this.socket) {
-        this.socket = io('/', {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.hostname;
+        const port = process.env.NODE_ENV === 'production' ? window.location.port : '5000';
+        
+        this.socket = io(`${protocol}//${host}:${port}`, {
           path: '/socket.io/',
-          transports: ['websocket', 'polling'],
+          transports: ['websocket'],
           reconnection: true,
-          reconnectionAttempts: 5,
+          reconnectionAttempts: 3,
           reconnectionDelay: 1000,
-          timeout: 60000,
+          timeout: 20000,
           forceNew: true,
           withCredentials: true
         });
