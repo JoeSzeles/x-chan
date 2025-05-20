@@ -91,12 +91,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: '*'
-    },
-    transports: ['polling']
-});
+const io = new Server(httpServer);
 
 io.on('connection', (socket) => {
     socket.on('error', (error) => {

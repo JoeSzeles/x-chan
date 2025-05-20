@@ -1,3 +1,4 @@
+
 import { io } from 'socket.io-client';
 
 class SocketService {
@@ -7,12 +8,7 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io('http://0.0.0.0:5000', { 
-        transports: ['polling'],
-        autoConnect: true,
-        reconnection: false,
-        withCredentials: false
-      });
+      this.socket = io();
     }
     return this.socket;
   }
