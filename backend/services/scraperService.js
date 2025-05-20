@@ -55,18 +55,30 @@ class ScraperService {
         }
     }
 
-    #lastScrapeTime = null;
-    #minScrapingInterval = 5 * 60 * 1000; // 5 minutes
+    static #lastScrapeTime = new Map();
+    static #minScrapingInterval = 5 * 60 * 1000; // 5 minutes
+    static #maxRetries = 3;
+    static #retryCount = new Map();
 
     async scrapeYouTube(website) {
-        // Check if enough time has passed since last scrape
         const now = Date.now();
-        if (this.#lastScrapeTime && (now - this.#lastScrapeTime) < this.#minScrapingInterval) {
+        const websiteKey = website.url + (website.searchTerms || '');
+        const lastScrape = ScraperService.#lastScrapeTime.get(websiteKey) || 0;
+        const retryCount = ScraperService.#retryCount.get(websiteKey) || 0;
+
+        if ((now - lastScrape) < this.#minScrapingInterval) {
             console.log('[ScraperService] Skipping scrape - too soon since last attempt');
             return [];
         }
-        
-        this.#lastScrapeTime = now;
+
+        if (retryCount >= ScraperService.#maxRetries) {
+            console.log('[ScraperService] Max retries reached for', websiteKey);
+            ScraperService.#retryCount.set(websiteKey, 0);
+            return [];
+        }
+
+        ScraperService.#lastScrapeTime.set(websiteKey, now);
+        ScraperService.#retryCount.set(websiteKey, retryCount + 1);
         console.log('[ScraperService] Starting YouTube scraping for:', website.url);
         console.log('[ScraperService] Website config:', {
             url: website.url,
