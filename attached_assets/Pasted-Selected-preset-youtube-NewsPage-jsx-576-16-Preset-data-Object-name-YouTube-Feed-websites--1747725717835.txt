@@ -1,0 +1,99 @@
+Selected preset: youtube NewsPage.jsx:576:16
+Preset data: 
+Object { name: "YouTube Feed", websites: (1) […] }
+NewsPage.jsx:588:16
+Setting new bot config: 
+Object { name: "YouTube Feed", websites: (1) […], updateInterval: 5 }
+NewsPage.jsx:602:16
+Sending bot data: 
+Object { name: "YouTube Feed", websites: (1) […], updateInterval: 50 }
+NewsPage.jsx:393:24
+Raw response: {"success":true,"data":{"name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c2d414ffe1b85cc891538"}],"updateInterval":50,"status":"active","settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c2d414ffe1b85cc891537","lastUpdate":"2025-05-20T07:20:33.557Z","createdAt":"2025-05-20T07:20:33.558Z","updatedAt":"2025-05-20T07:20:33.558Z","__v":0}} NewsPage.jsx:405:24
+Attempting to fetch bots from URL: /api/newsbot/user?search=&category=all NewsPage.jsx:190:24
+Response status: 200 NewsPage.jsx:200:24
+Raw response text: {"success":true,"data":[{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c2d414ffe1b85cc891537","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c2d414ffe1b85cc891538"}],"updateInterval":50,"status":"active","lastUpdate":"2025-05-20T07:20:33.557Z","createdAt":"2025-05-20T07:20:33.558Z","updatedAt":"2025-05-20T07:20:33.558Z","__v":0}]} NewsPage.jsx:204:24
+Parsed JSON data: 
+Object { success: true, data: (1) […] }
+NewsPage.jsx:215:28
+Successfully fetched bots data: 
+Array [ {…} ]
+NewsPage.jsx:240:24
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket.IO connection error: Error: timeout
+    timer manager.js:140
+    setTimeout handler*open manager.js:138
+    timer manager.js:337
+    setTimeout handler*reconnect manager.js:330
+    maybeReconnectOnOpen manager.js:98
+    onError manager.js:130
+    timer manager.js:140
+NewsPage.jsx:141:20
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. websocket.js:119:18
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. websocket.js:119:18
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. websocket.js:119:18
+Socket.IO connection error: Error: websocket error
+    TransportError transport.js:7
+    onError transport.js:39
+    onerror websocket.js:49
+    addEventListeners websocket.js:49
+    doOpen websocket.js:30
+    open transport.js:47
+    _open socket.js:197
+    _SocketWithoutUpgrade socket.js:150
+    SocketWithUpgrade socket.js:565
+    Socket socket.js:725
+    open manager.js:111
+    timer manager.js:337
+    setTimeout handler*reconnect manager.js:330
+    timer manager.js:340
+    onError manager.js:126
+    timer manager.js:140
+    setTimeout handler*open manager.js:138
+    timer manager.js:337
+    setTimeout handler*reconnect manager.js:330
+    maybeReconnectOnOpen manager.js:98
+    onError manager.js:130
+    timer manager.js:140
