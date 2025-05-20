@@ -11,7 +11,7 @@ class ScraperService {
                 type: website.type,
                 searchTerms: website.searchTerms
             });
-            
+
             // Handle different website types
             if (website.type === 'video' || website.url.includes('youtube.com')) {
                 console.log('[Scraper] Detected YouTube video type, using YouTube scraper');
@@ -41,7 +41,7 @@ class ScraperService {
 
             const $ = cheerio.load(response.data);
             let elements = $(website.selector);
-            
+
             if (elements.length === 0) {
                 console.log('[Scraper] Warning: No elements found with selector');
                 return [];
@@ -55,7 +55,30 @@ class ScraperService {
         }
     }
 
+    static #lastScrapeTime = new Map();
+    static #minScrapingInterval = 5 * 60 * 1000; // 5 minutes
+    static #maxRetries = 3;
+    static #retryCount = new Map();
+
     async scrapeYouTube(website) {
+        const now = Date.now();
+        const websiteKey = website.url + (website.searchTerms || '');
+        const lastScrape = ScraperService.#lastScrapeTime.get(websiteKey) || 0;
+        const retryCount = ScraperService.#retryCount.get(websiteKey) || 0;
+
+        if ((now - lastScrape) < this.#minScrapingInterval) {
+            console.log('[ScraperService] Skipping scrape - too soon since last attempt');
+            return [];
+        }
+
+        if (retryCount >= ScraperService.#maxRetries) {
+            console.log('[ScraperService] Max retries reached for', websiteKey);
+            ScraperService.#retryCount.set(websiteKey, 0);
+            return [];
+        }
+
+        ScraperService.#lastScrapeTime.set(websiteKey, now);
+        ScraperService.#retryCount.set(websiteKey, retryCount + 1);
         console.log('[ScraperService] Starting YouTube scraping for:', website.url);
         console.log('[ScraperService] Website config:', {
             url: website.url,
@@ -71,11 +94,11 @@ class ScraperService {
         try {
             console.log('[ScraperService] Browser launched successfully');
             const page = await browser.newPage();
-            
+
             // Set viewport and user agent
             await page.setViewport({ width: 1280, height: 800 });
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-            
+
             console.log('[ScraperService] Page configured with viewport and user agent');
 
             const articles = [];
@@ -88,7 +111,7 @@ class ScraperService {
                     console.log('[ScraperService] Processing search term:', term);
                     const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(term)}&sp=CAI%253D`;
                     console.log('[ScraperService] Navigating to:', searchUrl);
-                    
+
                     await page.goto(searchUrl, { waitUntil: 'networkidle0' });
                     console.log('[ScraperService] Page loaded successfully');
 
@@ -163,7 +186,7 @@ class ScraperService {
 
     async scrapeTwitter(website) {
         console.log('[Scraper] Using Puppeteer for Twitter feed scraping');
-        
+
         try {
             const browser = await puppeteer.launch({
                 headless: true,
@@ -176,7 +199,7 @@ class ScraperService {
             });
 
             const page = await browser.newPage();
-            
+
             // Set viewport and user agent
             await page.setViewport({ width: 1280, height: 800 });
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
@@ -268,7 +291,7 @@ class ScraperService {
                             const videoId = item.link.split('v=')[1] || item.link.split('/').pop();
                             const views = item.description.match(/(\d+(?:,\d+)*)\s*views/)?.[1] || '0';
                             const publishedAt = new Date(item.pubDate);
-                            
+
                             const article = {
                                 title: item.title,
                                 description: item.description,
@@ -304,7 +327,7 @@ class ScraperService {
             // Handle other JSON responses
             const articles = [];
             const elements = data[website.selector] || [];
-            
+
             for (const element of elements) {
                 try {
                     const article = this.extractArticleData(element, website);
@@ -315,7 +338,7 @@ class ScraperService {
                     console.error('[Scraper] Error processing element:', error);
                 }
             }
-            
+
             return articles;
         } catch (error) {
             console.error('[Scraper] Error handling JSON response:', error);
@@ -429,4 +452,4 @@ class ScraperService {
     }
 }
 
-export default new ScraperService(); 
+export default new ScraperService();

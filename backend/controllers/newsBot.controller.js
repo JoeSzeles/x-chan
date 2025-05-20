@@ -170,17 +170,7 @@ export const getBotArticles = async (req, res) => {
 
 export const updateBotArticles = async (req, res) => {
     try {
-        const { force } = req.query;
-        console.log('[NewsBotController] Updating articles for bot:', req.params.botId, 'force:', force);
-        
-        // Set force update flag if requested
-        if (force) {
-            const bot = await NewsBot.findById(req.params.botId);
-            if (bot) {
-                bot.forceUpdate = true;
-                await bot.save();
-            }
-        }
+        console.log('[NewsBotController] Updating articles for bot:', req.params.botId);
         const result = await newsBotService.updateBotArticles(req.params.botId);
         console.log('[NewsBotController] Update result:', {
             newArticles: result.newArticles.length,

@@ -43,8 +43,16 @@ cloudinary.config({
 });
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
+
+// Kill any existing process on the port (if running as root)
+try {
+    const { execSync } = require('child_process');
+    execSync(`lsof -t -i:${PORT} | xargs --no-run-if-empty kill -9`);
+} catch (err) {
+    console.log('Port cleanup attempted');
+}
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -91,9 +99,27 @@ io.on('connection', socket => {
 });
 
 connectMongoDB().then(() => {
-    httpServer.listen(PORT, HOST, () => {
-        console.log(`Server is running on http://${HOST}:${PORT}`);
-    });
+    const startServer = (retryCount = 0) => {
+        try {
+            httpServer.listen(PORT, HOST, () => {
+                console.log(`Server is running on http://${HOST}:${PORT}`);
+            });
+        } catch (err) {
+            if (err.code === 'EADDRINUSE' && retryCount < 3) {
+                console.log(`Port ${PORT} is busy, killing existing process...`);
+                const exec = require('child_process').exec;
+                exec(`lsof -i :${PORT} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (err) => {
+                    if (!err) {
+                        setTimeout(() => startServer(retryCount + 1), 1000);
+                    }
+                });
+            } else {
+                console.error("Failed to start server:", err);
+                process.exit(1);
+            }
+        }
+    };
+    startServer();
 }).catch((error) => {
     console.error("Failed to start server:", error);
     process.exit(1);
