@@ -8,13 +8,9 @@ import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
 import postRoutes from './routes/post.route.js';
 import proxyRoutes from './routes/proxy.js';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import path from "path";
 import cookieParser from "cookie-parser";
-import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
-import { errorHandler } from "./utils/error.js";
 import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
@@ -28,8 +24,10 @@ import uploadRoutes from './routes/upload.route.js';
 import leechRoutes from './routes/leech.js';
 import serviceRoutes from './routes/service.route.js';
 import liveBoardRoutes from './routes/liveBoard.js';
-
 import connectMongoDB from "./db/connectMongoDB.js";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,18 +40,16 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-if (!process.env.MONGODB_URI) {
-    console.error("MONGODB_URI is not defined in .env file");
-    process.exit(1);
-}
-
 const app = express();
 const PORT = 5000;
 const HOST = '0.0.0.0';
 
+// Remove all restrictions
 app.use(cors({
-    origin: true,
-    credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['*']
 }));
 
 app.use(express.json({ limit: '5mb' }));
@@ -68,16 +64,7 @@ if (!fs.existsSync(uploadsDir)) {
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-app.get('/api/check-image/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, 'public', 'uploads', filename);
-    if (fs.existsSync(filePath)) {
-        res.json({ exists: true, path: filePath });
-    } else {
-        res.json({ exists: false, path: filePath });
-    }
-});
-
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
@@ -96,11 +83,6 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({ error: err.message });
-});
-
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "/frontend/dist")));
     app.get("*", (req, res) => {
@@ -117,32 +99,12 @@ const io = new Server(httpServer, {
 });
 
 io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
-
     socket.on('error', (error) => {
         console.error('Socket error:', error);
     });
 
     socket.on('disconnect', (reason) => {
         console.log('Client disconnected:', socket.id, 'Reason:', reason);
-    });
-
-    socket.on('joinNotifications', (userId) => {
-        if (!userId) return;
-        try {
-            socket.join(`notifications_${userId}`);
-        } catch (error) {
-            console.error('Error joining notifications room:', error);
-        }
-    });
-
-    socket.on('leaveNotifications', (userId) => {
-        if (!userId) return;
-        try {
-            socket.leave(`notifications_${userId}`);
-        } catch (error) {
-            console.error('Error leaving notifications room:', error);
-        }
     });
 });
 
@@ -152,15 +114,6 @@ connectMongoDB().then(() => {
     });
 }).catch((error) => {
     console.error("Failed to start server:", error);
-    process.exit(1);
-});
-
-process.on('unhandledRejection', (err) => {
-    console.error('Unhandled Promise Rejection:', err);
-});
-
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
     process.exit(1);
 });
 
