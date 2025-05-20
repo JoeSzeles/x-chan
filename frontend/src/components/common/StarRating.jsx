@@ -23,11 +23,13 @@ const StarRating = ({ post, currentUser, isComment = false }) => {
                 ? `/api/comments/rate/${post._id}`
                 : `/api/posts/rate/${post._id}`;
 
+            const token = localStorage.getItem('token');
             const res = await fetch(endpoint, {
                 method: "POST",
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({ rating }),
             });
