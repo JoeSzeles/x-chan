@@ -47,10 +47,11 @@ const PORT = 5000;
 const HOST = '0.0.0.0';
 
 app.use(cors({
-    origin: true,
+    origin: ['http://localhost:3000', 'http://0.0.0.0:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: '*'
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
 }));
 
 // Add security headers
