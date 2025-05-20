@@ -8,11 +8,7 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io('http://0.0.0.0:5000', {
-        transports: ['websocket', 'polling'],
-        withCredentials: true,
-        forceNew: true
-      });
+      this.socket = io();
     }
     return this.socket;
   }

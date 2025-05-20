@@ -47,11 +47,10 @@ const PORT = 5000;
 const HOST = '0.0.0.0';
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://0.0.0.0:3000'],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200
+    allowedHeaders: '*'
 }));
 
 // Add security headers
@@ -101,21 +100,9 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true,
-        allowedHeaders: ["Content-Type", "Authorization"]
-    },
-    transports: ['websocket', 'polling'],
-    allowEIO3: true,
-    pingTimeout: 60000
-});
+const io = new Server(httpServer);
 
 io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
-    
     socket.on('error', (error) => {
         console.error('Socket error:', error);
     });
