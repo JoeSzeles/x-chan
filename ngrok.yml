@@ -1,10 +1,3 @@
-version: 2
-region: au
-tunnels:
-  frontend:
-    addr: 3000
-    proto: http
-    subdomain: tradehub
-  backend:
-    addr: 5000
-    proto: http
+
+# This file is deprecated and no longer used
+# Using Replit's built-in hosting instead
