@@ -101,9 +101,18 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const httpServer = createServer(app);
-const io = new Server(httpServer);
+const io = new Server(httpServer, {
+    cors: {
+        origin: true,
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
+});
 
 io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+    
     socket.on('error', (error) => {
         console.error('Socket error:', error);
     });
