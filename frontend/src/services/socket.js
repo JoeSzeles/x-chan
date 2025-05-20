@@ -7,13 +7,19 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io(window.location.origin, {
-        transports: ['polling', 'websocket'],
+      const host = window.location.hostname;
+      const port = '5000';
+      const url = `${window.location.protocol}//${host}:${port}`;
+      
+      this.socket = io(url, {
         path: '/socket.io/',
+        transports: ['polling', 'websocket'],
+        autoConnect: true,
         reconnection: true,
-        reconnectionAttempts: 5,
+        reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
-        timeout: 20000,
+        reconnectionDelayMax: 5000,
+        timeout: 60000,
         forceNew: true,
         withCredentials: true
       });

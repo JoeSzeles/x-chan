@@ -52,7 +52,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
-                const socket = io(window.location.origin, {
+                const host = window.location.hostname;
+                const port = '5000';
+                const url = `${window.location.protocol}//${host}:${port}`;
+                
+                const socket = io(url, {
         transports: ['polling', 'websocket'],
         path: '/socket.io/',
         reconnection: true,
