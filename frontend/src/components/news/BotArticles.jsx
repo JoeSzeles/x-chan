@@ -55,7 +55,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 // Use the same ngrok URL as the frontend
                 const backendUrl = import.meta.env.VITE_SOCKET_URL || 'https://tradehub.ap.ngrok.io:5000';
                 console.log('Connecting to WebSocket at:', backendUrl);
-
+                
                 const socket = io(backendUrl, {
                     transports: ['polling'],
                     reconnection: true,
@@ -150,22 +150,22 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         'Pragma': 'no-cache'
                     }
                 });
-
+                
                 if (!res.ok) {
                     const errorData = await res.json().catch(() => ({}));
                     throw new Error(errorData.error || 'Failed to fetch articles');
                 }
-
+                
                 const data = await res.json();
                 if (!data.success) {
                     throw new Error(data.error || 'Failed to fetch articles');
                 }
-
+                
                 // Sort articles by publishedAt in descending order
                 const sortedArticles = (data.data.articles || []).sort((a, b) => 
                     new Date(b.publishedAt) - new Date(a.publishedAt)
                 );
-
+                
                 return {
                     ...data.data,
                     articles: sortedArticles
@@ -208,18 +208,18 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         try {
             // Force refetch by invalidating all queries
             await queryClient.invalidateQueries(["botArticles", botId]);
-
+            
             // Fetch fresh data
             const allArticles = await fetchAllArticles();
             console.log(`Fetched ${allArticles.length} total articles`);
-
+            
             const validArticles = allArticles
                 .filter(article => {
                     // Remove YouTube-only restriction
                     const hasValidUrl = !!article.url;
                     const hasValidTitle = !!article.title;
                     const hasValidDescription = !!article.description;
-
+                    
                     if (!hasValidUrl || !hasValidTitle || !hasValidDescription) {
                         console.log(`Article filtered out:`, {
                             title: article.title,
@@ -229,7 +229,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                             hasValidDescription
                         });
                     }
-
+                    
                     return hasValidUrl && hasValidTitle && hasValidDescription;
                 })
                 .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
@@ -297,7 +297,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
             setLastArticleCount(0);
             setHasNewArticles(false);
             setCurrentPage(1);
-
+            
             // Reset the query data
             queryClient.setQueryData(["botArticles", botId, currentPage], {
                 articles: [],
@@ -305,11 +305,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 currentPage: 1,
                 totalArticles: 0
             });
-
+            
             // Invalidate all queries
             queryClient.invalidateQueries(["botArticles", botId]);
             queryClient.invalidateQueries(["botArticlesPoll", botId]);
-
+            
             toast.success("Feed cleared successfully", {
                 duration: 3000,
                 position: "bottom-right",
@@ -343,7 +343,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 credentials: 'include'
             });
             const data = await res.json();
-
+            
             if (!res.ok || !data.success) {
                 throw new Error(data.error || "Failed to fetch articles");
             }
@@ -374,9 +374,9 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     },
                     body: JSON.stringify(postData)
                 });
-
+                
                 console.log('Post response status:', res.status);
-
+                
                 // Check if response is ok before trying to parse JSON
                 if (!res.ok) {
                     let errorMessage = 'Failed to post';
@@ -389,7 +389,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     }
                     throw new Error(errorMessage);
                 }
-
+                
                 const data = await res.json();
                 console.log('Post response data:', data);
                 return data;
@@ -436,7 +436,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         const cleanContent = postContent
             .replace(/Watch here:.*$/, '') // Remove the "Watch here" line
             .trim();
-
+        
         // Add the link at the top of the content
         const formattedContent = `${cleanUrl}\n\n${cleanContent}`;
 
@@ -457,21 +457,21 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
             event.preventDefault();
             event.stopPropagation();
         }
-
+        
         console.log('handlePostToFeed called with article:', article);
-
+        
         try {
             if (isYouTubeUrl(article.url)) {
                 const cleanUrl = getCleanYouTubeUrl(article.url);
                 console.log('YouTube URL detected, clean URL:', cleanUrl);
-
+                
                 if (cleanUrl) {
                     const thumbnail = getYouTubeThumbnail(article.url);
                     console.log('Generated thumbnail URL:', thumbnail);
-
+                    
                     // Set all state at once to avoid race conditions
                     const content = `Reposted from bot\n\n${article.title}\n\n${article.description}\n\nWatch here: ${cleanUrl}`;
-
+                    
                     setSelectedArticle(article);
                     setPostContent(content);
                     setShowPostPopup(true);
@@ -548,12 +548,10 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     };
 
     const getYouTubeThumbnail = (url) => {
-        console.log('[BotArticles] Getting YouTube thumbnail for URL:', url);
         try {
             let videoId;
             const urlObj = new URL(url);
-            console.log('[BotArticles] Parsed URL object:', urlObj);
-
+            
             if (url.includes('youtube.com/watch')) {
                 videoId = urlObj.searchParams.get('v');
             } else if (url.includes('youtu.be/')) {
@@ -753,7 +751,30 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         return (
             <div key={article._id} className="bg-gray-700 rounded-lg p-4">
                 <div className="flex flex-col h-full">
-                    {article.imageUrl && !hasFailedThumbnail ? (
+                    {isYouTube ? (
+                        <div className="mb-4 relative" onClick={(e) => e.stopPropagation()}>
+                            {hasFailedThumbnail ? (
+                                getPlaceholderImage(true)
+                            ) : (
+                                <>
+                                    <img
+                                        src={thumbnailUrl}
+                                        alt={article.title}
+                                        className="w-full h-48 object-cover rounded-lg"
+                                        onError={() => handleImageError(article._id, true)}
+                                        loading="lazy"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity">
+                                            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M8 5v14l11-7z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : article.imageUrl && !hasFailedThumbnail ? (
                         <div className="mb-4">
                             <img
                                 src={article.imageUrl}
@@ -821,7 +842,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                     console.log('Post button clicked for article:', article);
                                     handlePostToFeed(article, e);
                                 }}
-                                className="px-3 py-1bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                             >
                                 Post
                             </button>
@@ -1108,4 +1129,4 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     );
 };
 
-export default BotArticles;
+export default BotArticles; 

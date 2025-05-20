@@ -4,17 +4,18 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'fs';
+import { v2 as cloudinary } from "cloudinary";
+
+// Import routes
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
 import postRoutes from './routes/post.route.js';
 import proxyRoutes from './routes/proxy.js';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import path from "path";
-import cookieParser from "cookie-parser";
-import fs from 'fs';
-import { v2 as cloudinary } from "cloudinary";
-import { errorHandler } from "./utils/error.js";
 import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
@@ -28,108 +29,35 @@ import uploadRoutes from './routes/upload.route.js';
 import leechRoutes from './routes/leech.js';
 import serviceRoutes from './routes/service.route.js';
 import liveBoardRoutes from './routes/liveBoard.js';
-
 import connectMongoDB from "./db/connectMongoDB.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables first
 dotenv.config();
 
-// Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Verify environment variables
-if (!process.env.MONGODB_URI) {
-    console.error("MONGODB_URI is not defined in .env file");
-    process.exit(1);
-}
-
 const app = express();
 const PORT = 5000;
-const FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
 const HOST = '0.0.0.0';
 
-// Enable CORS
-const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'https://tradehub.ap.ngrok.io',
-    'wss://tradehub.ap.ngrok.io',
-    'https://googleads.g.doubleclick.net',
-    'https://i.4cdn.org',
-    'https://*.replit.dev',
-    'https://*.worf.replit.dev'
-];
-
-// Helper function to check if origin matches wildcard pattern
-const matchWildcard = (origin, pattern) => {
-    const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
-    return new RegExp(`^${regexPattern}$`).test(origin);
-};
-
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Content-Security-Policy', 
-        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "connect-src * ws://* wss://* 'unsafe-inline' 'unsafe-eval' data: blob:; " + 
-        "img-src * data: blob: 'unsafe-inline'; " +
-        "media-src * data: blob: 'unsafe-inline'; " +
-        "style-src * 'unsafe-inline';"
-    );
-    next();
-});
-
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Update body-parser limits
-app.use(express.json({ limit: '5mb' }));
-app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
-// Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Serve static files with proper headers
-app.use('/uploads', (req, res, next) => {
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    next();
-}, express.static(path.join(__dirname, 'public', 'uploads')));
-
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
-
-// Add a route to check if an image exists
-app.get('/api/check-image/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, 'public', 'uploads', filename);
-    console.log('Checking image path:', filePath);
-    if (fs.existsSync(filePath)) {
-        res.json({ exists: true, path: filePath });
-    } else {
-        res.json({ exists: false, path: filePath });
-    }
-});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -149,140 +77,25 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 
-// Add error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    if (err.message.includes('CORS')) {
-        return res.status(403).json({ error: err.message });
-    }
-    res.status(500).json({ error: err.message });
-});
-
-if (process.env.NODE_ENV === "production") {
-	app.use(express.static(path.join(__dirname, "/frontend/dist")));
-
-	app.get("*", (req, res) => {
-		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-	});
-}
-
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: true,
-        methods: ['GET', 'POST'],
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
-    },
-    transports: ['websocket', 'polling'],
-    pingTimeout: 60000,
-    pingInterval: 25000,
-    connectTimeout: 30000,
-    maxHttpBufferSize: 1e8,
-    path: '/socket.io/',
-    allowEIO3: true,
-    cookie: {
-        name: 'io',
-        path: '/',
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production'
+        origin: "*",
+        methods: ["GET", "POST"]
     }
 });
 
-// Socket.IO error handling
-io.on('error', (error) => {
-    console.error('Socket.IO server error:', error);
+io.on('connection', socket => {
+    console.log('Client connected');
+    socket.on('disconnect', () => console.log('Client disconnected'));
 });
 
-// Socket.IO connection handling with better error handling
-io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
-
-    socket.on('error', (error) => {
-        console.error('Socket error:', error);
-    });
-
-    socket.on('disconnect', (reason) => {
-        console.log('Client disconnected:', socket.id, 'Reason:', reason);
-    });
-
-    // Join user's notification room
-    socket.on('joinNotifications', (userId) => {
-        if (!userId) {
-            console.error('No userId provided for joinNotifications');
-            return;
-        }
-        try {
-            socket.join(`notifications_${userId}`);
-            console.log(`Client ${socket.id} joined notifications room for user: ${userId}`);
-        } catch (error) {
-            console.error('Error joining notifications room:', error);
-            socket.emit('error', { message: 'Failed to join notifications room' });
-        }
-    });
-
-    // Leave user's notification room
-    socket.on('leaveNotifications', (userId) => {
-        if (!userId) {
-            console.error('No userId provided for leaveNotifications');
-            return;
-        }
-        try {
-            socket.leave(`notifications_${userId}`);
-            console.log(`Client ${socket.id} left notifications room for user: ${userId}`);
-        } catch (error) {
-            console.error('Error leaving notifications room:', error);
-            socket.emit('error', { message: 'Failed to leave notifications room' });
-        }
-    });
-
-    // Add heartbeat mechanism
-    socket.on('ping', () => {
-        socket.emit('pong');
-    });
-});
-
-// Add global error handler for Socket.IO
-io.engine.on('connection_error', (err) => {
-    console.error('Socket.IO connection error:', err);
-});
-
-// Connect to MongoDB before starting the server
 connectMongoDB().then(() => {
-    const startServer = (retryCount = 0) => {
-        httpServer.listen(PORT, '0.0.0.0', () => {
-            console.log(`Server is running on http://0.0.0.0:${PORT}`);
-        }).on('error', (err) => {
-            if (err.code === 'EADDRINUSE' && retryCount < 3) {
-                console.log(`Port ${PORT} is busy, killing existing process...`);
-                require('child_process').exec(`npx kill-port ${PORT}`, (error) => {
-                    if (error) {
-                        console.error('Error killing port:', error);
-                        process.exit(1);
-                    }
-                    setTimeout(() => startServer(retryCount + 1), 1000);
-                });
-            } else {
-                console.error('Server error:', err);
-                process.exit(1);
-            }
-        });
-    };
-    startServer();
+    httpServer.listen(PORT, HOST, () => {
+        console.log(`Server is running on http://${HOST}:${PORT}`);
+    });
 }).catch((error) => {
     console.error("Failed to start server:", error);
-    process.exit(1);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-    console.error('Unhandled Promise Rejection:', err);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
     process.exit(1);
 });
 
