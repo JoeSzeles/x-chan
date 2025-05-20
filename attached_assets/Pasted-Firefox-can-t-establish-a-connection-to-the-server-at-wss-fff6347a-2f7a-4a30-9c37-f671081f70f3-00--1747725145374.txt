@@ -1,0 +1,59 @@
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. websocket.js:119:18
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading. websocket.js:119:18
+Response status: 200 NewsPage.jsx:200:24
+Raw response text: {"success":true,"data":[{"settings":{"maxArticlesPerUpdate":50,"filterKeywords":[],"excludeKeywords":[],"language":"en","autoPost":false},"stats":{"totalArticles":0,"errorCount":0,"newArticles":0,"postedArticles":0},"_id":"682c20c80ae0a2fd41861bab","name":"YouTube Feed","owner":"682828859d23238ff0dd5c75","websites":[{"url":"https://www.youtube.com/results?search_query=","type":"video","selector":"ytd-video-renderer","searchTerms":"tech news, gaming, tutorials","active":true,"_id":"682c20c80ae0a2fd41861bac"}],"updateInterval":50,"status":"active","lastUpdate":"2025-05-20T06:27:20.224Z","createdAt":"2025-05-20T06:27:20.225Z","updatedAt":"2025-05-20T06:27:20.225Z","__v":0}]} NewsPage.jsx:204:24
+Parsed JSON data: 
+Object { success: true, data: (1) […] }
+NewsPage.jsx:215:28
+Successfully fetched bots data: 
+Array [ {…} ]
+NewsPage.jsx:240:24
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket connection error: Error: server error
+    _onPacket socket.js:253
+    emit index.js:136
+    onPacket transport.js:99
+    callback polling.js:79
+    onData polling.js:82
+    emit index.js:136
+    _onLoad polling-xhr.js:193
+    onreadystatechange polling-xhr.js:129
+BotArticles.jsx:65:28
+Other error, retrying... BotArticles.jsx:75:32
+Socket.IO connection error: Error: timeout
+    timer manager.js:140
+NewsPage.jsx:141:20
+Firefox can’t establish a connection to the server at wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket. websocket.js:119:18
+The connection to wss://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev/socket.io/?EIO=4&transport=websocket was interrupted while the page was loading.
