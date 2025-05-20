@@ -1,21 +1,20 @@
-
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import cookieParser from "cookie-parser";
-import path from "path";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import fs from 'fs';
-import { v2 as cloudinary } from "cloudinary";
-
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
 import postRoutes from './routes/post.route.js';
 import proxyRoutes from './routes/proxy.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import path from "path";
+import cookieParser from "cookie-parser";
+import fs from 'fs';
+import { v2 as cloudinary } from "cloudinary";
+import { errorHandler } from "./utils/error.js";
 import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
@@ -29,50 +28,111 @@ import uploadRoutes from './routes/upload.route.js';
 import leechRoutes from './routes/leech.js';
 import serviceRoutes from './routes/service.route.js';
 import liveBoardRoutes from './routes/liveBoard.js';
+
 import connectMongoDB from "./db/connectMongoDB.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Load environment variables first
 dotenv.config();
 
+// Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Verify environment variables
+if (!process.env.MONGODB_URI) {
+    console.error("MONGODB_URI is not defined in .env file");
+    process.exit(1);
+}
+
 const app = express();
 const PORT = 5000;
+const FRONTEND_PORT = process.env.FRONTEND_PORT || 3000;
 const HOST = '0.0.0.0';
 
-app.use(cors({
-    origin: true,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: '*'
-}));
+// Enable CORS
+const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'https://tradehub.ap.ngrok.io',
+    'wss://tradehub.ap.ngrok.io',
+    'https://googleads.g.doubleclick.net',
+    'https://i.4cdn.org',
+    'https://*.replit.dev',
+    'https://*.worf.replit.dev'
+];
 
-// Add security headers
+// Helper function to check if origin matches wildcard pattern
+const matchWildcard = (origin, pattern) => {
+    const regexPattern = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+    return new RegExp(`^${regexPattern}$`).test(origin);
+};
+
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: http: ws: wss:;");
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
+    const origin = req.headers.origin;
+    if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Content-Security-Policy', 
+        "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://www.youtube.com https://platform.twitter.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.replit.dev https://*.worf.replit.dev https://*.stripe.network https://platform.twitter.com; " +
+        "connect-src 'self' https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev wss://*.worf.replit.dev " +
+        "ws://0.0.0.0:* wss://0.0.0.0:* https://0.0.0.0:* https://*.launchdarkly.com https://*.stripe.network " +
+        "https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* http://* https://*; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://img.youtube.com https://i.ytimg.com; " +
+        "style-src 'self' 'unsafe-inline' https://*.stripe.network; " +
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;"
+    );
     next();
 });
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Update body-parser limits
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser());
 
+// Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+// Serve static files with proper headers
+app.use('/uploads', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+}, express.static(path.join(__dirname, 'public', 'uploads')));
+
 app.use('/public', express.static(path.join(__dirname, 'public')));
+
+// Add a route to check if an image exists
+app.get('/api/check-image/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, 'public', 'uploads', filename);
+    console.log('Checking image path:', filePath);
+    if (fs.existsSync(filePath)) {
+        res.json({ exists: true, path: filePath });
+    } else {
+        res.json({ exists: false, path: filePath });
+    }
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -92,17 +152,56 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 
+// Add error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    if (err.message.includes('CORS')) {
+        return res.status(403).json({ error: err.message });
+    }
+    res.status(500).json({ error: err.message });
+});
+
 if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "/frontend/dist")));
-    app.get("*", (req, res) => {
-        res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-    });
+	app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+	app.get("*", (req, res) => {
+		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+	});
 }
 
 const httpServer = createServer(app);
-const io = new Server(httpServer);
+const io = new Server(httpServer, {
+    cors: {
+        origin: true,
+        methods: ['GET', 'POST'],
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+    },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    connectTimeout: 30000,
+    maxHttpBufferSize: 1e8,
+    path: '/socket.io/',
+    allowEIO3: true,
+    cookie: {
+        name: 'io',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+    }
+});
 
+// Socket.IO error handling
+io.on('error', (error) => {
+    console.error('Socket.IO server error:', error);
+});
+
+// Socket.IO connection handling with better error handling
 io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
     socket.on('error', (error) => {
         console.error('Socket error:', error);
     });
@@ -110,14 +209,66 @@ io.on('connection', (socket) => {
     socket.on('disconnect', (reason) => {
         console.log('Client disconnected:', socket.id, 'Reason:', reason);
     });
+
+    // Join user's notification room
+    socket.on('joinNotifications', (userId) => {
+        if (!userId) {
+            console.error('No userId provided for joinNotifications');
+            return;
+        }
+        try {
+            socket.join(`notifications_${userId}`);
+            console.log(`Client ${socket.id} joined notifications room for user: ${userId}`);
+        } catch (error) {
+            console.error('Error joining notifications room:', error);
+            socket.emit('error', { message: 'Failed to join notifications room' });
+        }
+    });
+
+    // Leave user's notification room
+    socket.on('leaveNotifications', (userId) => {
+        if (!userId) {
+            console.error('No userId provided for leaveNotifications');
+            return;
+        }
+        try {
+            socket.leave(`notifications_${userId}`);
+            console.log(`Client ${socket.id} left notifications room for user: ${userId}`);
+        } catch (error) {
+            console.error('Error leaving notifications room:', error);
+            socket.emit('error', { message: 'Failed to leave notifications room' });
+        }
+    });
+
+    // Add heartbeat mechanism
+    socket.on('ping', () => {
+        socket.emit('pong');
+    });
 });
 
+// Add global error handler for Socket.IO
+io.engine.on('connection_error', (err) => {
+    console.error('Socket.IO connection error:', err);
+});
+
+// Connect to MongoDB before starting the server
 connectMongoDB().then(() => {
-    httpServer.listen(PORT, HOST, () => {
-        console.log(`Server is running on http://${HOST}:${PORT}`);
+    httpServer.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on http://0.0.0.0:${PORT}`);
     });
 }).catch((error) => {
     console.error("Failed to start server:", error);
+    process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled Promise Rejection:', err);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
     process.exit(1);
 });
 

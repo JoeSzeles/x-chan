@@ -326,37 +326,46 @@ const TwitterEmbed = ({ url }) => {
 
 // YouTube Embed component
 const YouTubeEmbed = ({ url }) => {
+    const [error, setError] = useState(null);
+
     const getVideoId = (url) => {
         try {
-            const urlObj = new URL(url);
-            if (urlObj.hostname === 'youtu.be') {
-                return urlObj.pathname.slice(1);
+            const cleanUrl = url.trim();
+            let videoId = null;
+
+            if (cleanUrl.includes('youtu.be/')) {
+                videoId = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+            } else if (cleanUrl.includes('youtube.com/watch')) {
+                videoId = new URL(cleanUrl).searchParams.get('v');
+            } else if (cleanUrl.includes('youtube.com/embed/')) {
+                videoId = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
+            } else if (cleanUrl.includes('youtube.com/shorts/')) {
+                videoId = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
             }
-            if (urlObj.hostname.includes('youtube.com')) {
-                if (urlObj.pathname.includes('/shorts/')) {
-                    return urlObj.pathname.split('/shorts/')[1];
-                }
-                return urlObj.searchParams.get('v');
+
+            if (!videoId || !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+                throw new Error('Invalid YouTube URL');
             }
+
+            return videoId;
         } catch (err) {
+            setError('Invalid YouTube URL');
             return null;
         }
-        return null;
     };
 
     const videoId = getVideoId(url);
-
     if (!videoId) {
         return (
             <div className="my-2 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-                <div className="text-red-500 mb-2">Invalid YouTube URL</div>
+                <div className="text-red-500 mb-2">{error || 'Invalid YouTube URL'}</div>
                 <a 
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
                     className="text-red-500 hover:underline"
                 >
-                    Open URL
+                    View on YouTube
                 </a>
             </div>
         );
@@ -364,20 +373,35 @@ const YouTubeEmbed = ({ url }) => {
 
     return (
         <div className="my-2">
-            <div className="bg-black rounded-lg overflow-hidden">
-                <div className="aspect-w-16 aspect-h-9">
+            <div className="bg-red-500/10 rounded-lg border border-red-500/20 overflow-hidden">
+                <div className="p-3 flex items-center justify-between border-b border-red-500/20">
+                    <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-red-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                        </svg>
+                        <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-red-500 hover:underline"
+                        >
+                            View on YouTube
+                        </a>
+                    </div>
+                </div>
+                <div className="relative pt-[56.25%] w-full">
                     <iframe
+                        className="absolute top-0 left-0 w-full h-full"
                         src={`https://www.youtube.com/embed/${videoId}`}
                         title="YouTube video player"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                        className="w-full h-full"
-                    ></iframe>
+                        loading="lazy"
+                    />
                 </div>
             </div>
         </div>
     );
-};
 };
 
 // Grok Image Embed component
