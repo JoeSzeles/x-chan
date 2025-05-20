@@ -6,6 +6,7 @@ export const useAuthUser = () => {
 
     useEffect(() => {
         const fetchUser = async () => {
+            console.log("Fetching user data...");
             try {
                 const token = localStorage.getItem('token');
                 const res = await fetch('/api/auth/me', {
@@ -34,4 +35,4 @@ export const useAuthUser = () => {
     }, []);
 
     return { authUser, loading };
-}; 
+};

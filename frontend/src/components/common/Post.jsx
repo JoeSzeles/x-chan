@@ -7,7 +7,8 @@ import { FaShare } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
 import { FaFeather } from "react-icons/fa";
 import { FaDownload } from "react-icons/fa";
-import { useState, useEffect, useRef } from "react";
+import { useState } from 'react';
+import { useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -36,9 +37,12 @@ const getYouTubeThumbnail = (url) => {
 };
 
 const Post = ({ post, isComment = false, isCompact = false }) => {
-	const postRef = useRef(null);
-	const [quotedBy, setQuotedBy] = useState([]);
-	const [showPreview, setShowPreview] = useState(false);
+  console.log('Post component rendering:', { postId: post?._id, isComment, isCompact });
+  const [isBookmarking, setIsBookmarking] = useState(false);
+  const [isBookmarkError, setIsBookmarkError] = useState(false);
+  const postRef = useRef(null);
+  const [quotedBy, setQuotedBy] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
 	const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
 	const [isImageExpanded, setIsImageExpanded] = useState(false);
 	const [isVideoExpanded, setIsVideoExpanded] = useState(false);
@@ -240,15 +244,18 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		},
 	});
 
-	const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
+	const { mutate: bookmarkPost } = useMutation({
 		mutationFn: async () => {
+      setIsBookmarking(true);
 			try {
-				const res = await fetch(`/api/posts/bookmark/${post._id}`, {
+        console.log('Making bookmark request for post:', post._id);
+				const res = await fetch(`/api/bookmarks/${post._id}`, {
 					method: "POST",
 					credentials: "include"
 				});
 				const data = await res.json();
 				if (!res.ok) {
+          console.error('Bookmark request failed:', data);
 					throw new Error(data.error || "Something went wrong");
 				}
 				return data;
@@ -256,22 +263,52 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 				throw new Error(error);
 			}
 		},
-		onSuccess: (updatedBookmarks) => {
-			setLocalBookmarks(updatedBookmarks);
+		onSuccess: (data) => {
+      console.log('Bookmark success:', data);
+      setIsBookmarking(false);
+			setLocalBookmarks(data.bookmarkedBy || []);
 			queryClient.setQueryData(["posts"], (oldData) => {
 				if (!oldData) return oldData;
 				return oldData.map((p) => {
 					if (p._id === post._id) {
-						return { ...p, bookmarkedBy: updatedBookmarks };
+						return { ...p, bookmarkedBy: data.bookmarkedBy };
 					}
 					return p;
 				});
 			});
 		},
 		onError: (error) => {
-			toast.error(error.message);
+      console.error('Bookmark error:', error);
+      setIsBookmarking(false);
+			toast.error(error.message || 'Failed to bookmark post');
 		},
 	});
+
+	const handleBookmark = async (e) => {
+    if (e) e.stopPropagation();
+    console.log('handleBookmark called:', { isBookmarking, postId: post?._id });
+    
+    try {
+      if (isBookmarking) {
+        console.log('Already processing bookmark request');
+        return;
+      }
+
+      if (!authUser) {
+        console.log('No auth user found');
+        toast.error('Please login to bookmark posts');
+        return;
+      }
+
+      console.log('Initiating bookmark request:', { postId: post._id, userId: authUser._id });
+      setIsBookmarkError(false);
+      bookmarkPost();
+    } catch (error) {
+      console.error('Error in handleBookmark:', error);
+      setIsBookmarkError(true);
+      toast.error('Failed to process bookmark');
+    }
+};
 
 	const { data: comments, isLoading: commentsLoading } = useQuery({
 		queryKey: ["comments", post._id],
@@ -289,7 +326,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		},
 	});
 
-	// Update comment count when comments change
 	useEffect(() => {
 		if (comments) {
 			queryClient.setQueryData(["posts"], (oldData) => {
@@ -315,22 +351,24 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		commentPost();
 	};
 
-	const handleLikePost = (e) => {
-		if (e) e.stopPropagation();
-		if (isLiking) return;
-		likePost();
-	};
+	const handleLikePost = async (e) => {
+    if (e) e.stopPropagation();
+    if (isLiking) return;
+
+    console.log('Like post attempt:', { postId: post._id, userId: authUser?._id });
+    if (!authUser) {
+        console.log('No auth user found');
+        toast.error('Please login to like posts');
+        return;
+    }
+
+    likePost();
+};
 
 	const handleRepost = (e) => {
 		if (e) e.stopPropagation();
 		if (isReposting) return;
 		repostPost();
-	};
-
-	const handleBookmark = (e) => {
-		if (e) e.stopPropagation();
-		if (isBookmarking) return;
-		bookmarkPost();
 	};
 
 	const handleCommentClick = (e) => {
@@ -452,7 +490,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 							</div>
 						</div>
 					)}
-					
+
 					<div className={`flex flex-col flex-1 ${isCompact ? 'bg-transparent' : 'bg-[#272525]'} rounded-lg ${isCompact ? '' : 'p-4'}`}>
 						{!isCompact && (
 							<div className='flex gap-2 items-center pb-3'>
@@ -818,6 +856,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 			{showPreview && (
 				<div 
 					className="fixed z-50 bg-[#1e1e1e] rounded-lg shadow-lg border border-gray-700 max-w-md"
+					```python
 					style={{
 						left: `${previewPosition.x}px`,
 						top: `${previewPosition.y + 10}px`,

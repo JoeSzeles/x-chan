@@ -21,6 +21,7 @@ import ThreadPage from './pages/ThreadPage';
 import ListsPage from './pages/ListsPage';
 import Messages from './pages/Messages';
 import ServicesPage from './pages/ServicesPage';
+import YouTubeTestPage from './pages/YouTubeTestPage';
 
 import Sidebar from "./components/common/Sidebar";
 import RightPanel from "./components/common/RightPanel";
@@ -92,7 +93,8 @@ function App() {
 						<Route path='/boards' element={authUser ? <BoardsPage isWideMode={isWideMode} /> : <Navigate to='/login' />} />
 						<Route path='/boards/:boardName' element={authUser ? <BoardDetailPage isWideMode={isWideMode} /> : <Navigate to='/login' />} />
 						<Route path="/thread/:board/:threadId" element={<ThreadPage />} />
-						<Route path='/services' element={<ServicesPage />} />
+						<Route path="/services" element={<ServicesPage />} />
+						<Route path="/youtube-test" element={<YouTubeTestPage />} />
 					</Routes>
 					{authUser && <RightPanel isWideMode={isWideMode} />}
 					<Toaster />
