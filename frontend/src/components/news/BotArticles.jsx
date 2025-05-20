@@ -62,20 +62,58 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 });
 
                 socket.on('connect_error', (error) => {
-                    console.error('Socket connection error:', error);
+                    console.error('[Socket] Connection error details:', {
+                        message: error.message,
+                        type: error.type,
+                        description: error.description,
+                        stack: error.stack,
+                        transport: socket.io?.engine?.transport?.name,
+                        protocol: socket.io?.engine?.protocol,
+                        readyState: socket.io?.engine?.readyState,
+                        uri: socket.io?.uri,
+                        options: socket.io?.opts,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    // Log socket engine state
+                    console.log('[Socket] Engine state:', {
+                        state: socket.io?.engine?.state,
+                        transport: socket.io?.engine?.transport,
+                        hostname: window.location.hostname,
+                        protocol: window.location.protocol,
+                        pathname: socket.io?.engine?.path
+                    });
+
                     if (error.message.includes('xhr poll error')) {
-                        console.log('Polling error, retrying...');
+                        console.log('[Socket] Polling error detected, attempting reconnect...');
                         socket.io.opts.transports = ['polling'];
                         socket.connect();
                     } else if (error.message.includes('timeout')) {
-                        console.log('Connection timeout, retrying...');
+                        console.log('[Socket] Timeout detected, attempting reconnect...');
                         socket.io.opts.transports = ['polling'];
                         socket.connect();
                     } else {
-                        console.log('Other error, retrying...');
+                        console.log('[Socket] Unknown error, attempting reconnect...');
                         socket.io.opts.transports = ['polling'];
                         socket.connect();
                     }
+                });
+
+                socket.on('error', (error) => {
+                    console.error('[Socket] General error:', {
+                        error,
+                        timestamp: new Date().toISOString(),
+                        readyState: socket.io?.engine?.readyState,
+                        transport: socket.io?.engine?.transport?.name
+                    });
+                });
+
+                socket.on('reconnect_attempt', (attempt) => {
+                    console.log('[Socket] Reconnection attempt:', {
+                        attempt,
+                        timestamp: new Date().toISOString(),
+                        options: socket.io?.opts
+                    });
                 });
 
                 socket.on('connect', () => {
@@ -107,10 +145,6 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                             border: '1px solid #333'
                         }
                     });
-                });
-
-                socket.on('error', (error) => {
-                    console.error('WebSocket error:', error);
                 });
 
                 setSocket(socket);
