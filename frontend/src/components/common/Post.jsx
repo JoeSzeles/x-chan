@@ -37,7 +37,17 @@ const getYouTubeThumbnail = (url) => {
 };
 
 const Post = ({ post, isComment = false, isCompact = false }) => {
-  console.log('Post component rendering:', { postId: post?._id, isComment, isCompact });
+  const handleError = (error) => {
+    console.error("Post error:", error);
+    // Handle specific error cases
+    if (error.message?.includes('Failed to fetch')) {
+        toast.error('Network error - please check your connection');
+    } else {
+        toast.error('Error loading post');
+    }
+};
+
+  console.log("Post component rendering:", { postId: post?._id, isComment, isCompact });
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [isBookmarkError, setIsBookmarkError] = useState(false);
   const postRef = useRef(null);
