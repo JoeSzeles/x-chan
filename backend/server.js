@@ -81,16 +81,18 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST"],
-        credentials: false
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+        allowedHeaders: ["*"] 
     },
-    path: '/socket.io',
-    transports: ['polling', 'websocket'],
-    pingTimeout: 10000,
-    pingInterval: 5000,
-    connectTimeout: 10000,
+    path: '/socket.io/',
+    transports: ['websocket', 'polling'],
+    pingTimeout: 30000,
+    pingInterval: 10000,
+    connectTimeout: 30000,
     allowEIO3: true,
-    serveClient: false
+    serveClient: false,
+    cookie: false
 });
 
 // Enable detailed debug logging
