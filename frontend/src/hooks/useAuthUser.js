@@ -34,4 +34,4 @@ export const useAuthUser = () => {
     }, []);
 
     return { authUser, loading };
-}; 
+};

@@ -240,48 +240,19 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		},
 	});
 
-	const { mutate: bookmarkPost, isPending: isBookmarking } = useMutation({
-    mutationFn: async () => {
-        // Optimistically update UI
-        const isCurrentlyBookmarked = post.bookmarkedBy?.includes(authUser?._id);
-        const optimisticBookmarks = isCurrentlyBookmarked 
-            ? post.bookmarkedBy.filter(id => id !== authUser?._id)
-            : [...(post.bookmarkedBy || []), authUser?._id];
-            
-        // Update cache immediately
-        queryClient.setQueryData(["posts"], (oldData) => {
-            if (!oldData) return oldData;
-            return oldData.map((p) => {
-                if (p._id === post._id) {
-                    return { ...p, bookmarkedBy: optimisticBookmarks };
-                }
-                return p;
-            });
-        });
+	const handleBookmark = async (e) => {
+    if (e) e.stopPropagation();
+    if (isBookmarking) return;
 
-        // Make API call
-        const res = await fetch(`/api/posts/bookmark/${post._id}`, {
-            method: "POST",
-            credentials: "include"
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Something went wrong");
-        return data;
-    },
-    onError: (error, variables, context) => {
-        // Revert optimistic update on error
-        queryClient.setQueryData(["posts"], (oldData) => {
-            if (!oldData) return oldData;
-            return oldData.map((p) => {
-                if (p._id === post._id) {
-                    return { ...p, bookmarkedBy: post.bookmarkedBy };
-                }
-                return p;
-            });
-        });
-        toast.error(error.message);
+    console.log('Bookmark attempt:', { postId: post._id, userId: authUser?._id });
+    if (!authUser) {
+        console.log('No auth user found');
+        toast.error('Please login to bookmark posts');
+        return;
     }
-});
+
+    bookmarkPost();
+};
 
 	const { data: comments, isLoading: commentsLoading } = useQuery({
 		queryKey: ["comments", post._id],
@@ -299,7 +270,6 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		},
 	});
 
-	// Update comment count when comments change
 	useEffect(() => {
 		if (comments) {
 			queryClient.setQueryData(["posts"], (oldData) => {
@@ -325,22 +295,24 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 		commentPost();
 	};
 
-	const handleLikePost = (e) => {
-		if (e) e.stopPropagation();
-		if (isLiking) return;
-		likePost();
-	};
+	const handleLikePost = async (e) => {
+    if (e) e.stopPropagation();
+    if (isLiking) return;
+
+    console.log('Like post attempt:', { postId: post._id, userId: authUser?._id });
+    if (!authUser) {
+        console.log('No auth user found');
+        toast.error('Please login to like posts');
+        return;
+    }
+
+    likePost();
+};
 
 	const handleRepost = (e) => {
 		if (e) e.stopPropagation();
 		if (isReposting) return;
 		repostPost();
-	};
-
-	const handleBookmark = (e) => {
-		if (e) e.stopPropagation();
-		if (isBookmarking) return;
-		bookmarkPost();
 	};
 
 	const handleCommentClick = (e) => {
@@ -462,7 +434,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 							</div>
 						</div>
 					)}
-					
+
 					<div className={`flex flex-col flex-1 ${isCompact ? 'bg-transparent' : 'bg-[#272525]'} rounded-lg ${isCompact ? '' : 'p-4'}`}>
 						{!isCompact && (
 							<div className='flex gap-2 items-center pb-3'>
@@ -870,6 +842,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 			)}
 
 			{/* PostPopup for comments */}
+```python
 			{showCommentPopup && (
 				<PostPopup
 					onClose={() => setShowCommentPopup(false)}
