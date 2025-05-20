@@ -6,68 +6,98 @@ const YouTubeEmbed = ({ url }) => {
     const [error, setError] = useState(null);
     const [videoId, setVideoId] = useState(null);
     const iframeRef = useRef(null);
+    const retryCount = useRef(0);
+    const maxRetries = 3;
 
     useEffect(() => {
-        let mounted = true;
+        console.log('[YouTubeEmbed] Component mounted with URL:', url);
+        const cleanup = () => {
+            console.log('[YouTubeEmbed] Component cleanup, current videoId:', videoId);
+            retryCount.current = 0;
+        };
 
-        const parseVideo = () => {
+        return cleanup;
+    }, []);
+
+    useEffect(() => {
+        const parseVideoId = (url) => {
+            console.log('[YouTubeEmbed] Starting URL parsing:', url);
             try {
                 if (!url) {
-                    throw new Error('No video URL provided');
+                    throw new Error('No URL provided');
                 }
 
                 const cleanUrl = url.trim();
                 let id = null;
 
+                console.log('[YouTubeEmbed] Attempting to parse URL patterns');
                 if (cleanUrl.includes('youtu.be/')) {
                     id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                    console.log('[YouTubeEmbed] Parsed youtu.be URL, extracted ID:', id);
                 } else if (cleanUrl.includes('youtube.com/watch')) {
                     const urlParams = new URL(cleanUrl).searchParams;
                     id = urlParams.get('v');
+                    console.log('[YouTubeEmbed] Parsed youtube.com/watch URL, extracted ID:', id);
                 } else if (cleanUrl.includes('youtube.com/embed/')) {
                     id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
+                    console.log('[YouTubeEmbed] Parsed youtube.com/embed URL, extracted ID:', id);
                 } else if (cleanUrl.includes('youtube.com/shorts/')) {
                     id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
+                    console.log('[YouTubeEmbed] Parsed youtube.com/shorts URL, extracted ID:', id);
                 }
 
                 if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
-                    throw new Error('Invalid YouTube video ID');
+                    throw new Error(`Invalid YouTube video ID extracted: ${id}`);
                 }
 
-                if (mounted) {
-                    setVideoId(id);
-                    setError(null);
-                }
+                console.log('[YouTubeEmbed] Successfully extracted valid video ID:', id);
+                setVideoId(id);
+                setError(null);
             } catch (err) {
-                console.error('[YouTubeEmbed] Error:', err.message);
-                if (mounted) {
-                    setError(err.message);
-                    setVideoId(null);
-                }
+                console.error('[YouTubeEmbed] Error parsing URL:', err.message, '\nStack:', err.stack);
+                setError(`Failed to parse YouTube URL: ${err.message}`);
+                setVideoId(null);
             } finally {
-                if (mounted) {
-                    setIsLoading(false);
-                }
+                setIsLoading(false);
             }
         };
 
-        parseVideo();
-        return () => {
-            mounted = false;
-        };
+        parseVideoId(url);
     }, [url]);
 
-    const handleIframeError = () => {
-        setError('Failed to load video player');
-        setIsLoading(false);
+    const handleIframeError = (e) => {
+        console.error('[YouTubeEmbed] Iframe error event:', e);
+        
+        if (retryCount.current < maxRetries) {
+            console.log(`[YouTubeEmbed] Retrying load attempt ${retryCount.current + 1}/${maxRetries}`);
+            retryCount.current += 1;
+            
+            // Force iframe reload
+            if (iframeRef.current) {
+                const currentSrc = iframeRef.current.src;
+                iframeRef.current.src = '';
+                setTimeout(() => {
+                    if (iframeRef.current) {
+                        iframeRef.current.src = currentSrc;
+                    }
+                }, 1000);
+            }
+        } else {
+            console.error('[YouTubeEmbed] Max retries reached, showing error state');
+            setError('Failed to load YouTube video player');
+            setIsLoading(false);
+        }
     };
 
     const handleIframeLoad = () => {
+        console.log('[YouTubeEmbed] Iframe loaded successfully');
         setIsLoading(false);
         setError(null);
+        retryCount.current = 0;
     };
 
     if (error) {
+        console.log('[YouTubeEmbed] Rendering error state:', error);
         return (
             <div className="youtube-embed my-4 w-full">
                 <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-4">
@@ -88,6 +118,7 @@ const YouTubeEmbed = ({ url }) => {
     }
 
     if (!videoId || isLoading) {
+        console.log('[YouTubeEmbed] Rendering loading state');
         return (
             <div className="youtube-embed my-4 w-full">
                 <div className="bg-gray-500/10 rounded-lg border border-gray-500/20 p-4">
@@ -97,6 +128,7 @@ const YouTubeEmbed = ({ url }) => {
         );
     }
 
+    console.log('[YouTubeEmbed] Rendering video player, ID:', videoId);
     return (
         <div className="youtube-embed my-4 w-full">
             <div className="bg-red-500/10 rounded-lg border border-red-500/20">
