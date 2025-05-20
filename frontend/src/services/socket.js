@@ -7,13 +7,16 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      this.socket = io(window.location.origin, {
-        transports: ['websocket', 'polling'],
+      this.socket = io('/', {
+        path: '/socket.io/',
+        transports: ['polling'],
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         timeout: 30000,
-        withCredentials: true
+        forceNew: true,
+        withCredentials: true,
+        upgrade: false
       });
 
       this.socket.on('connect_error', (error) => {

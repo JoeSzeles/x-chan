@@ -52,20 +52,18 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
-                const host = window.location.hostname;
-                const port = '5000';
-                const url = `${window.location.protocol}//${host}:${port}`;
-                
-                const socket = io(url, {
-        transports: ['polling', 'websocket'],
-        path: '/socket.io/',
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        timeout: 20000,
-        forceNew: true,
-        withCredentials: true
-    });
+                // Use the socket.io path that will go through the vite proxy
+                const socket = io('/', {
+                    transports: ['polling'],
+                    path: '/socket.io/',
+                    reconnection: true,
+                    reconnectionAttempts: 5,
+                    reconnectionDelay: 1000,
+                    timeout: 20000,
+                    forceNew: true,
+                    withCredentials: true,
+                    upgrade: false
+                });
 
                 socket.on('connect_error', (error) => {
                     console.error('[Socket] Connection error details:', {

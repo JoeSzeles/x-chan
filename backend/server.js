@@ -11,6 +11,10 @@ import { dirname } from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
 
+// Set global flags for debugging and mock data
+global.USE_MOCK_DATA = true;
+console.log('Mock data ENABLED for scrapers - this will generate fake articles instead of scraping');
+
 // Import routes
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
@@ -87,16 +91,22 @@ const io = new Server(httpServer, {
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true
     },
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'],
     allowEIO3: true,
     pingTimeout: 30000,
     pingInterval: 10000,
-    connectTimeout: 30000
+    connectTimeout: 30000,
+    upgradeTimeout: 30000,
+    forcePolling: true,
+    allowUpgrades: false
 });
 
 // Enable detailed debug logging
 io.engine.on("initial_headers", (headers, req) => {
     console.log("Initial headers:", headers);
+    console.log("Request URL:", req.url);
+    console.log("Request method:", req.method);
+    console.log("Request headers:", req.headers);
 });
 
 // Add detailed socket error logging
