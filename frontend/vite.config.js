@@ -8,10 +8,11 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    cors: false,
+    cors: true,
     hmr: {
       host: '0.0.0.0',
       protocol: 'ws',
+      clientPort: 3000
     },
     proxy: {
       '/api': {

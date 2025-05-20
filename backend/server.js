@@ -47,7 +47,7 @@ const HOST = '0.0.0.0';
 
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
     credentials: true,
     allowedHeaders: '*'
 }));
