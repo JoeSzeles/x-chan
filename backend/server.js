@@ -80,27 +80,51 @@ app.use('/api/liveboard', liveBoardRoutes);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: "*",
+        origin: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
         allowedHeaders: ["*"]
     },
     path: '/socket.io/',
-    transports: ['websocket', 'polling'],
-    pingTimeout: 30000,
-    pingInterval: 10000,
+    transports: ['polling', 'websocket'],
+    pingTimeout: 60000,
+    pingInterval: 25000,
     maxHttpBufferSize: 1e8,
-    connectTimeout: 20000,
+    connectTimeout: 45000,
     allowEIO3: true,
     forceNew: true
 });
 
+// Add detailed socket error logging
 io.engine.on("connection_error", (err) => {
     console.error('[Socket.io] Connection error:', {
-        type: err.req.query.transport,
+        type: err.req?.query?.transport,
         code: err.code,
         message: err.message,
-        context: err.context
+        context: err.context,
+        headers: err.req?.headers,
+        method: err.req?.method,
+        url: err.req?.url,
+        timestamp: new Date().toISOString(),
+        stack: err.stack
+    });
+});
+
+io.on("connect_error", (err) => {
+    console.error('[Socket.io] Connect error:', {
+        message: err.message,
+        type: err.type,
+        stack: err.stack,
+        timestamp: new Date().toISOString()
+    });
+});
+
+io.on("error", (err) => {
+    console.error('[Socket.io] General error:', {
+        message: err.message,
+        type: err.type,
+        stack: err.stack,
+        timestamp: new Date().toISOString()
     });
 });
 
