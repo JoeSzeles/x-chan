@@ -46,39 +46,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 
-// Cleanup handler
-const cleanup = () => {
-    if (httpServer) {
-        console.log('Shutting down server...');
-        // Add a timeout to force close if graceful shutdown fails
-        const forceClose = setTimeout(() => {
-            console.error('Could not close connections in time, forcefully shutting down');
-            process.exit(1);
-        }, 5000);
-        
-        // Attempt graceful shutdown
-        httpServer.close(() => {
-            clearTimeout(forceClose);
-            console.log('Server closed gracefully');
-            process.exit(0);
-        });
-    }
-};
-
-// Track connections to close them properly
-const connections = new Set();
-httpServer.on('connection', (connection) => {
-    connections.add(connection);
-    connection.on('close', () => connections.delete(connection));
-});
-
-// Handle process termination
-process.on('SIGTERM', cleanup);
-process.on('SIGINT', cleanup);
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-    cleanup();
-});
+// Kill any existing process on the port (if running as root)
+try {
+    const { execSync } = require('child_process');
+    execSync(`lsof -t -i:${PORT} | xargs --no-run-if-empty kill -9`);
+} catch (err) {
+    console.log('Port cleanup attempted');
+}
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
