@@ -46,13 +46,13 @@ class NewsBotService {
 
             Object.assign(bot, updateData);
             await bot.save();
-            
+
             console.log('[NewsBotService] Bot updated successfully:', {
                 id: bot._id,
                 name: bot.name,
                 websites: bot.websites
             });
-            
+
             return bot;
         } catch (error) {
             console.error('[NewsBotService] Error updating bot:', error);
@@ -92,7 +92,7 @@ class NewsBotService {
                 botId: bot._id,
                 botOwner: bot.owner
             });
-            
+
             // Create a post from the article
             const post = new Post({
                 user: bot.owner, // Use bot owner's ID as the user
@@ -135,9 +135,27 @@ class NewsBotService {
     async updateBotArticles(botId) {
         try {
             console.log('[NewsBotService] Starting updateBotArticles for bot:', botId);
+
             const bot = await NewsBot.findById(botId);
             if (!bot) {
                 throw new Error('Bot not found');
+            }
+
+            // Use bot's configured update interval in minutes
+            const updateIntervalMs = (bot.updateInterval || 5) * 60 * 1000;
+            const lastUpdate = bot.lastUpdate ? new Date(bot.lastUpdate).getTime() : 0;
+            const now = Date.now();
+
+            if (now - lastUpdate < updateIntervalMs) {
+                console.log('[NewsBotService] Skipping update - too soon since last update');
+                return {
+                    success: true,
+                    data: {
+                        skipped: true,
+                        message: 'Update skipped - too soon since last update',
+                        nextUpdate: new Date(lastUpdate + updateIntervalMs)
+                    }
+                };
             }
 
             console.log('[NewsBotService] Bot details:', {
@@ -363,7 +381,7 @@ class NewsBotService {
     async postArticle(botId, articleId) {
         try {
             console.log('[NewsBotService] Posting article:', { botId, articleId });
-            
+
             const bot = await NewsBot.findById(botId);
             if (!bot) {
                 throw new Error("Bot not found");
@@ -398,4 +416,4 @@ class NewsBotService {
     }
 }
 
-export default new NewsBotService(); 
+export default new NewsBotService();
