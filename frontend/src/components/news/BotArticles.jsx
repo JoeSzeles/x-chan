@@ -53,10 +53,14 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
                 const socket = io(window.location.origin, {
-        transports: ['websocket', 'polling'],
+        transports: ['polling', 'websocket'],
+        path: '/socket.io/',
         reconnection: true,
+        reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        timeout: 10000
+        timeout: 20000,
+        forceNew: true,
+        withCredentials: true
     });
 
                 socket.on('connect_error', (error) => {
