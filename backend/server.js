@@ -43,8 +43,16 @@ cloudinary.config({
 });
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
+
+// Kill any existing process on the port (if running as root)
+try {
+    const { execSync } = require('child_process');
+    execSync(`lsof -t -i:${PORT} | xargs --no-run-if-empty kill -9`);
+} catch (err) {
+    console.log('Port cleanup attempted');
+}
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
