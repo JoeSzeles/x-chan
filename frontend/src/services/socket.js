@@ -8,11 +8,7 @@ class SocketService {
   connect() {
     try {
       if (!this.socket) {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.hostname;
-        const port = process.env.NODE_ENV === 'production' ? window.location.port : '5000';
-        
-        this.socket = io(`${protocol}//${host}:${port}`, {
+        this.socket = io({
           path: '/socket.io/',
           transports: ['websocket'],
           reconnection: true,
