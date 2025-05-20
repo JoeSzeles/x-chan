@@ -91,27 +91,9 @@ io.on('connection', socket => {
 });
 
 connectMongoDB().then(() => {
-    const startServer = (retryCount = 0) => {
-        try {
-            httpServer.listen(PORT, HOST, () => {
-                console.log(`Server is running on http://${HOST}:${PORT}`);
-            });
-        } catch (err) {
-            if (err.code === 'EADDRINUSE' && retryCount < 3) {
-                console.log(`Port ${PORT} is busy, killing existing process...`);
-                const exec = require('child_process').exec;
-                exec(`lsof -i :${PORT} | grep LISTEN | awk '{print $2}' | xargs kill -9`, (err) => {
-                    if (!err) {
-                        setTimeout(() => startServer(retryCount + 1), 1000);
-                    }
-                });
-            } else {
-                console.error("Failed to start server:", err);
-                process.exit(1);
-            }
-        }
-    };
-    startServer();
+    httpServer.listen(PORT, HOST, () => {
+        console.log(`Server is running on http://${HOST}:${PORT}`);
+    });
 }).catch((error) => {
     console.error("Failed to start server:", error);
     process.exit(1);
