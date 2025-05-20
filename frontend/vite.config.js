@@ -17,38 +17,16 @@ export default defineConfig({
       host: 'fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev'
     },
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com https://clientstream.launchdarkly.com https://m.stripe.network; style-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob: https: https://*.cloudinary.com https://i.ytimg.com; font-src 'self' data:; connect-src 'self' http://* https://* ws://localhost:* wss://localhost:* http://localhost:* https://localhost:* https://*.replit.dev wss://*.replit.dev https://*.replit.dev:* wss://*.replit.dev:* https://*.worf.replit.dev:* wss://*.worf.replit.dev:* https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://0.0.0.0:* wss://0.0.0.0:* http://0.0.0.0:* https://0.0.0.0:* https://clientstream.launchdarkly.com https://m.stripe.network; frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://*.stripe.network",
+      'Access-Control-Allow-Origin': '*', 
+      'Content-Security-Policy': "default-src 'self' https://*.replit.dev https://*.worf.replit.dev https://www.youtube.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://replit.com https://*.worf.replit.dev https://events.launchdarkly.com https://beacon.replit.com https://www.youtube.com; style-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob: https: https://*.cloudinary.com https://i.ytimg.com; font-src 'self' data:; connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com; frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com",
       'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
-      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+      'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept'
     },
     proxy: {
       '/api': {
         target: 'http://0.0.0.0:5000',
         changeOrigin: true,
         secure: false
-      },
-      '/socket.io': {
-        target: 'http://0.0.0.0:5000',
-        ws: true,
-        changeOrigin: true,
-        secure: false,
-        rewrite: path => path,
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            proxyReq.setHeader('Origin', 'http://0.0.0.0:3000');
-            console.log('Proxying Socket.IO request:', req.method, req.url);
-          });
-          proxy.on('proxyRes', (proxyRes, req, res) => {
-            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
-            proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
-            proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
-          });
-          proxy.on('error', (err, req, res) => {
-            console.error('Socket.IO proxy error:', err);
-          });
-        }
       }
     }
   },

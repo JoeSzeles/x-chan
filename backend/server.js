@@ -11,10 +11,6 @@ import { dirname } from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
 
-// Set global flags for debugging and mock data
-global.USE_MOCK_DATA = true;
-console.log('Mock data ENABLED for scrapers - this will generate fake articles instead of scraping');
-
 // Import routes
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
@@ -47,13 +43,10 @@ cloudinary.config({
 });
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 const HOST = '0.0.0.0';
 
-app.use(cors({
-    origin: true,
-    credentials: true
-}));
+app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
@@ -87,102 +80,14 @@ app.use('/api/liveboard', liveBoardRoutes);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true
-    },
-    transports: ['polling', 'websocket'],
-    allowEIO3: true,
-    pingTimeout: 30000,
-    pingInterval: 10000,
-    connectTimeout: 30000,
-    upgradeTimeout: 30000,
-    forcePolling: true,
-    allowUpgrades: false
-});
-
-// Enable detailed debug logging
-io.engine.on("initial_headers", (headers, req) => {
-    console.log("Initial headers:", headers);
-    console.log("Request URL:", req.url);
-    console.log("Request method:", req.method);
-    console.log("Request headers:", req.headers);
-});
-
-// Add detailed socket error logging
-io.engine.on("connection_error", (err) => {
-    console.error('[Socket.io] Connection error:', {
-        type: err.req?.query?.transport,
-        code: err.code,
-        message: err.message,
-        context: err.context,
-        headers: err.req?.headers,
-        method: err.req?.method,
-        url: err.req?.url,
-        timestamp: new Date().toISOString(),
-        stack: err.stack
-    });
-});
-
-io.on("connect_error", (err) => {
-    console.error('[Socket.io] Connect error:', {
-        message: err.message,
-        type: err.type,
-        stack: err.stack,
-        timestamp: new Date().toISOString()
-    });
-});
-
-io.on("error", (err) => {
-    console.error('[Socket.io] General error:', {
-        message: err.message,
-        type: err.type,
-        stack: err.stack,
-        timestamp: new Date().toISOString()
-    });
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
 });
 
 io.on('connection', socket => {
-    console.log('[Socket.io] Client connected:', {
-        id: socket.id,
-        transport: socket.conn.transport.name,
-        headers: socket.handshake.headers,
-        timestamp: new Date().toISOString()
-    });
-
-    socket.on('error', (error) => {
-        console.error('[Socket.io] Socket error:', {
-            id: socket.id,
-            error: error.message,
-            stack: error.stack,
-            timestamp: new Date().toISOString()
-        });
-    });
-
-    socket.on('disconnect', (reason) => {
-        console.log('[Socket.io] Client disconnected:', {
-            id: socket.id,
-            reason,
-            transport: socket.conn?.transport?.name,
-            timestamp: new Date().toISOString()
-        });
-    });
-
-    socket.conn.on('packet', (packet) => {
-        console.log('[Socket.io] Packet:', {
-            type: packet.type,
-            data: packet.data,
-            timestamp: new Date().toISOString()
-        });
-    });
-
-    socket.on('joinBotRoom', (botId) => {
-        console.log('[Socket.io] Client joined bot room:', {
-            socketId: socket.id,
-            botId
-        });
-        socket.join(`bot_${botId}`);
-    });
+    console.log('Client connected');
+    socket.on('disconnect', () => console.log('Client disconnected'));
 });
 
 connectMongoDB().then(() => {

@@ -52,72 +52,41 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
-                // Use the socket.io path that will go through the vite proxy
-                const socket = io('/', {
+                // Use the same ngrok URL as the frontend
+                const backendUrl = import.meta.env.VITE_SOCKET_URL || 'https://tradehub.ap.ngrok.io:5000';
+                console.log('Connecting to WebSocket at:', backendUrl);
+
+                const socket = io(backendUrl, {
                     transports: ['polling'],
-                    path: '/socket.io/',
                     reconnection: true,
-                    reconnectionAttempts: 5,
+                    reconnectionAttempts: 3,
                     reconnectionDelay: 1000,
-                    timeout: 20000,
+                    reconnectionDelayMax: 5000,
+                    timeout: 10000,
+                    autoConnect: true,
                     forceNew: true,
+                    path: '/socket.io/',
                     withCredentials: true,
-                    upgrade: false
-                });
-
-                socket.on('connect_error', (error) => {
-                    console.error('[Socket] Connection error details:', {
-                        message: error.message,
-                        type: error.type,
-                        description: error.description,
-                        stack: error.stack,
-                        transport: socket.io?.engine?.transport?.name,
-                        protocol: socket.io?.engine?.protocol,
-                        readyState: socket.io?.engine?.readyState,
-                        uri: socket.io?.uri,
-                        options: socket.io?.opts,
-                        timestamp: new Date().toISOString()
-                    });
-
-                    // Log socket engine state
-                    console.log('[Socket] Engine state:', {
-                        state: socket.io?.engine?.state,
-                        transport: socket.io?.engine?.transport,
-                        hostname: window.location.hostname,
-                        protocol: window.location.protocol,
-                        pathname: socket.io?.engine?.path
-                    });
-
-                    if (error.message.includes('xhr poll error')) {
-                        console.log('[Socket] Polling error detected, attempting reconnect...');
-                        socket.io.opts.transports = ['polling'];
-                        socket.connect();
-                    } else if (error.message.includes('timeout')) {
-                        console.log('[Socket] Timeout detected, attempting reconnect...');
-                        socket.io.opts.transports = ['polling'];
-                        socket.connect();
-                    } else {
-                        console.log('[Socket] Unknown error, attempting reconnect...');
-                        socket.io.opts.transports = ['polling'];
-                        socket.connect();
+                    extraHeaders: {
+                        'ngrok-skip-browser-warning': 'true'
                     }
                 });
 
-                socket.on('error', (error) => {
-                    console.error('[Socket] General error:', {
-                        error,
-                        timestamp: new Date().toISOString(),
-                        readyState: socket.io?.engine?.readyState,
-                        transport: socket.io?.engine?.transport?.name
-                    });
-                });
-
-                socket.on('reconnect_attempt', (attempt) => {
-                    console.log('[Socket] Reconnection attempt:', {
-                        attempt,
-                        timestamp: new Date().toISOString(),
-                        options: socket.io?.opts
-                    });
+                socket.on('connect_error', (error) => {
+                    console.error('Socket connection error:', error);
+                    if (error.message.includes('xhr poll error')) {
+                        console.log('Polling error, retrying...');
+                        socket.io.opts.transports = ['polling'];
+                        socket.connect();
+                    } else if (error.message.includes('timeout')) {
+                        console.log('Connection timeout, retrying...');
+                        socket.io.opts.transports = ['polling'];
+                        socket.connect();
+                    } else {
+                        console.log('Other error, retrying...');
+                        socket.io.opts.transports = ['polling'];
+                        socket.connect();
+                    }
                 });
 
                 socket.on('connect', () => {
@@ -149,6 +118,10 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                             border: '1px solid #333'
                         }
                     });
+                });
+
+                socket.on('error', (error) => {
+                    console.error('WebSocket error:', error);
                 });
 
                 setSocket(socket);
@@ -824,7 +797,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     <div className="flex justify-between items-center mt-auto">
                         <div className="text-sm text-gray-400">
                             {formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}
-                                                </div>
+                        </div>
                         <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={(e) => handleBookmarkToggle(article, e)}
