@@ -327,34 +327,39 @@ const TwitterEmbed = ({ url }) => {
 // YouTube Embed component
 const YouTubeEmbed = ({ url }) => {
     const [error, setError] = useState(null);
+    const [videoId, setVideoId] = useState(null);
 
-    const getVideoId = (url) => {
-        try {
-            const cleanUrl = url.trim();
-            let videoId = null;
+    useEffect(() => {
+        const parseVideoId = (url) => {
+            try {
+                const cleanUrl = url.trim();
+                let id = null;
 
-            if (cleanUrl.includes('youtu.be/')) {
-                videoId = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
-            } else if (cleanUrl.includes('youtube.com/watch')) {
-                videoId = new URL(cleanUrl).searchParams.get('v');
-            } else if (cleanUrl.includes('youtube.com/embed/')) {
-                videoId = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
-            } else if (cleanUrl.includes('youtube.com/shorts/')) {
-                videoId = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
+                if (cleanUrl.includes('youtu.be/')) {
+                    id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                } else if (cleanUrl.includes('youtube.com/watch')) {
+                    id = new URL(cleanUrl).searchParams.get('v');
+                } else if (cleanUrl.includes('youtube.com/embed/')) {
+                    id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
+                } else if (cleanUrl.includes('youtube.com/shorts/')) {
+                    id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
+                }
+
+                if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+                    throw new Error('Invalid YouTube URL');
+                }
+
+                setVideoId(id);
+                setError(null);
+            } catch (err) {
+                setError('Invalid YouTube URL');
+                setVideoId(null);
             }
+        };
 
-            if (!videoId || !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
-                throw new Error('Invalid YouTube URL');
-            }
+        parseVideoId(url);
+    }, [url]);
 
-            return videoId;
-        } catch (err) {
-            setError('Invalid YouTube URL');
-            return null;
-        }
-    };
-
-    const videoId = getVideoId(url);
     if (!videoId) {
         return (
             <div className="my-2 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
