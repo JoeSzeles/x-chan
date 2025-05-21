@@ -175,7 +175,7 @@ class ScraperService {
 
             const articles = [];
                 // Ensure searchTerms is a string before splitting
-                const searchTerms = searchTermsString.split(',').map(term => term.trim()).filter(term => term);
+                const searchTerms = (website.searchTerms || "technology news").split(',').map(term => term.trim()).filter(term => term);
 
                 if (searchTerms.length === 0) {
                     searchTerms.push("technology news"); // Default search term if none provided
@@ -901,6 +901,90 @@ class ScraperService {
 
         console.log('[ScraperService] Generated', articles.length, 'mock YouTube articles');
         return articles;
+    }
+    
+    async scrapeTwitter(website) {
+        console.log('[Scraper] Using Puppeteer for Twitter feed scraping');
+
+        try {
+            const browser = await puppeteer.launch({
+                headless: true,
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins,site-per-process'
+                ]
+            });
+
+            const page = await browser.newPage();
+
+            // Set viewport and user agent
+            await page.setViewport({ width: 1280, height: 800 });
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+            // Enable request interception
+            await page.setRequestInterception(true);
+            page.on('request', (request) => {
+                if (request.resourceType() === 'image' || request.resourceType() === 'stylesheet' || request.resourceType() === 'font') {
+                    request.abort();
+                } else {
+                    request.continue();
+                }
+            });
+
+            // Navigate to Twitter
+            await page.goto('https://twitter.com/home', {
+                waitUntil: 'networkidle0',
+                timeout: 30000
+            });
+
+            // Wait for tweets to load
+            await page.waitForSelector('article[data-testid="tweet"]', { timeout: 10000 });
+
+            // Extract tweet information
+            const tweets = await page.evaluate(() => {
+                const tweetElements = document.querySelectorAll('article[data-testid="tweet"]');
+                return Array.from(tweetElements).slice(0, 10).map(tweet => {
+                    const authorElement = tweet.querySelector('[data-testid="User-Name"]');
+                    const contentElement = tweet.querySelector('[data-testid="tweetText"]');
+                    const timeElement = tweet.querySelector('time');
+                    const imageElement = tweet.querySelector('img[src*="pbs.twimg.com/media"]');
+
+                    return {
+                        author: authorElement?.textContent?.trim() || '',
+                        content: contentElement?.textContent?.trim() || '',
+                        publishedAt: timeElement?.getAttribute('datetime') || '',
+                        imageUrl: imageElement?.src || ''
+                    };
+                });
+            });
+
+            await browser.close();
+
+            // Convert to articles
+            const articles = tweets.map(tweet => ({
+                title: tweet.content.substring(0, 100) + (tweet.content.length > 100 ? '...' : ''),
+                description: tweet.content,
+                url: `https://twitter.com/${tweet.author}/status/${tweet.id}`,
+                imageUrl: tweet.imageUrl,
+                publishedAt: tweet.publishedAt,
+                source: {
+                    name: 'Twitter',
+                    url: website.url
+                },
+                metadata: {
+                    author: tweet.author
+                }
+            }));
+
+            console.log(`[Scraper] Total tweets found: ${articles.length}`);
+            return articles;
+
+        } catch (error) {
+            console.error('[Scraper] Error in Twitter scraping:', error);
+            return [];
+        }
     }
 }
 
