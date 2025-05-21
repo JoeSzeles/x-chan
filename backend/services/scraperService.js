@@ -136,7 +136,7 @@ class ScraperService {
         try {
             console.log('[ScraperService] DEBUG: Initializing browser with parameters');
         const browser = await puppeteer.launch({
-                headless: "new", // Use the new headless mode
+                headless: false, // Try with visible browser for better results
                 args: [
                     '--no-sandbox', 
                     '--disable-setuid-sandbox', 
@@ -144,14 +144,12 @@ class ScraperService {
                     '--disable-features=IsolateOrigins',
                     '--disable-site-isolation-trials',
                     '--window-size=1280,800',
-                    '--disable-extensions',
-                    '--disable-gpu'
+                    '--disable-extensions'
                 ],
                 defaultViewport: {
                     width: 1280,
                     height: 800
-                },
-                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+                }
         });
 
         try {

@@ -12,35 +12,8 @@ import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
 
 // Set global flags for debugging and mock data
-// Let the USE_MOCK_DATA environment variable control mock data usage
-global.USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true'; 
-console.log(`Mock data ${global.USE_MOCK_DATA ? 'ENABLED' : 'DISABLED'} - ${global.USE_MOCK_DATA ? 'using mock data for scraping' : 'system will attempt real scraping'}`);
-
-// Warn if running in Replit environment
-if (process.env.REPL_ID || process.env.REPL_SLUG) {
-    console.log('Replit environment detected: Make sure Chrome dependencies are installed');
-}
-
-// Configure Puppeteer environment - updated path with more precise version detection
-const defaultChromePath = path.join(process.env.HOME || '/home/runner', '.cache/puppeteer/chrome');
-// Try to find the Chrome directory dynamically
-let chromeDirs = [];
-try {
-    if (fs.existsSync(defaultChromePath)) {
-        chromeDirs = fs.readdirSync(defaultChromePath)
-            .filter(dir => dir.startsWith('linux-'))
-            .map(dir => path.join(defaultChromePath, dir, 'chrome-linux64/chrome'));
-    }
-} catch (err) {
-    console.warn('Error finding Chrome directories:', err.message);
-}
-
-// Set the executable path
-process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || 
-    (chromeDirs.length > 0 ? chromeDirs[0] : 
-    path.join(defaultChromePath, 'linux-136.0.7103.49/chrome-linux64/chrome'));
-
-console.log('Puppeteer executable path:', process.env.PUPPETEER_EXECUTABLE_PATH);
+global.USE_MOCK_DATA = false;
+console.log('Mock data DISABLED - system will attempt real scraping');
 
 // Import routes
 import authRoutes from './routes/auth.route.js';
