@@ -1199,7 +1199,6 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                     </div>
                                 </div>
                             )
-                        )
                         ) : selectedArticle.imageUrl && !failedThumbnails.has(selectedArticle._id) ? (
                             <div className="mb-4">
                                 <img
