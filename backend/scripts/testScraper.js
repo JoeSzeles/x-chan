@@ -31,13 +31,87 @@ global.USE_MOCK_DATA = false;
 
 // Test cases with different search terms
 const testCases = [
-  { name: "Basic Search", config: { url: "https://www.youtube.com/results?search_query=news", type: "video", searchTerms: "news" } },
-  { name: "Tech News", config: { url: "https://www.youtube.com/results?search_query=technology", type: "video", searchTerms: "technology" } },
-  { name: "Music Videos", config: { url: "https://www.youtube.com/results?search_query=music+videos", type: "video", searchTerms: "music videos" } },
-  { name: "Gaming", config: { url: "https://www.youtube.com/results?search_query=gaming+news", type: "video", searchTerms: "gaming news" } },
-  { name: "Multiple Terms", config: { url: "https://www.youtube.com/results?search_query=news+today", type: "video", searchTerms: "news today" } },
-  { name: "Popular Channel", config: { url: "https://www.youtube.com/c/CNN/videos", type: "video", searchTerms: "CNN" } }
+  { name: "Basic Search", config: { url: "https://www.youtube.com/results?search_query=news", type: "video", searchTerms: "news" } }
 ];
+
+// Add a simple mock implementation to check if puppeteer is the issue
+async function testPuppeteerDirectly() {
+  log('=== TESTING PUPPETEER DIRECTLY ===');
+  try {
+    // Try to load puppeteer
+    log('1. Importing puppeteer...');
+    const puppeteer = await import('puppeteer');
+    log(`2. Puppeteer imported successfully: ${typeof puppeteer}`);
+    
+    // Try to launch browser
+    log('3. Attempting to launch browser...');
+    try {
+      const browser = await puppeteer.default.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-web-security'
+        ]
+      });
+      
+      log('4. Browser launched successfully!');
+      
+      // Try to open page
+      const page = await browser.newPage();
+      log('5. New page opened successfully');
+      
+      // Try to navigate to a simple URL
+      await page.goto('https://example.com', { waitUntil: 'domcontentloaded', timeout: 10000 });
+      log('6. Navigation successful');
+      
+      // Try to extract content
+      const title = await page.title();
+      log(`7. Page title: ${title}`);
+      
+      await browser.close();
+      log('8. Browser closed successfully');
+      return true;
+    } catch (error) {
+      log(`ERROR launching browser: ${error.message}`);
+      log(`Stack trace: ${error.stack}`);
+      return false;
+    }
+  } catch (error) {
+    log(`ERROR importing puppeteer: ${error.message}`);
+    log(`Stack trace: ${error.stack}`);
+    return false;
+  }
+}
+
+// Test the scrapeYouTube method implementation
+async function testScraperImplementation() {
+  log('=== INSPECTING SCRAPER IMPLEMENTATION ===');
+  
+  try {
+    // Check if scrapeYouTube exists
+    log(`1. scraperService type: ${typeof scraperService}`);
+    log(`2. scrapeYouTube method exists: ${typeof scraperService.scrapeYouTube === 'function'}`);
+    
+    // Check implementation details
+    const fnStr = scraperService.scrapeYouTube.toString();
+    log(`3. First 100 chars of implementation: ${fnStr.substring(0, 100)}...`);
+    
+    // Check for critical keywords
+    const hasPuppeteer = fnStr.includes('puppeteer');
+    const hasLaunch = fnStr.includes('launch');
+    const hasGoto = fnStr.includes('goto');
+    
+    log(`4. Implementation contains 'puppeteer': ${hasPuppeteer}`);
+    log(`5. Implementation contains 'launch': ${hasLaunch}`);
+    log(`6. Implementation contains 'goto': ${hasGoto}`);
+    
+    return true;
+  } catch (error) {
+    log(`ERROR inspecting implementation: ${error.message}`);
+    return false;
+  }
+}
 
 async function runTests() {
   log('=== STARTING SCRAPER DIAGNOSTIC TESTS ===');
@@ -46,6 +120,22 @@ async function runTests() {
   log(`Node version: ${process.version}`);
   log(`Platform: ${process.platform}`);
   log(`USE_MOCK_DATA flag: ${global.USE_MOCK_DATA}`);
+  
+  // First test puppeteer directly
+  const puppeteerWorks = await testPuppeteerDirectly();
+  log(`Puppeteer direct test result: ${puppeteerWorks ? 'SUCCESS' : 'FAILED'}`);
+  
+  // Then check the scraper implementation
+  const implCheck = await testScraperImplementation();
+  log(`Scraper implementation check: ${implCheck ? 'COMPLETE' : 'FAILED'}`);
+  
+  // If either test failed, skip the scraper tests
+  if (!puppeteerWorks) {
+    log('CRITICAL ERROR: Puppeteer is not working correctly. Skipping YouTube scraper tests.');
+    log('This suggests an issue with the puppeteer installation or browser execution environment.');
+    logStream.end();
+    return;
+  }
   
   for (let i = 0; i < testCases.length; i++) {
     const testCase = testCases[i];
@@ -56,7 +146,21 @@ async function runTests() {
     try {
       log('Starting scrape...');
       const startTime = Date.now();
-      const articles = await scraperService.scrapeYouTube(testCase.config);
+      
+      // Add instrumentation to trace the execution
+      log('Calling scrapeYouTube method...');
+      
+      // Add a timeout to ensure we don't wait forever
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Scrape timed out after 30 seconds')), 30000);
+      });
+      
+      // Race between the actual scrape and timeout
+      const articles = await Promise.race([
+        scraperService.scrapeYouTube(testCase.config),
+        timeoutPromise
+      ]);
+      
       const duration = Date.now() - startTime;
       
       if (!articles || !Array.isArray(articles)) {
