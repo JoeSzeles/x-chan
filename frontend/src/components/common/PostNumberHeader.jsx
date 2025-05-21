@@ -3,7 +3,7 @@ import { formatPostNumber, formatTimestamp, getCountryFlag } from '../../utils/p
 import PostNumberLink from './PostNumberLink';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 
 const PostNumberHeader = ({ 
     post, 
