@@ -97,7 +97,7 @@ const NewsCards = ({ viewMode }) => {
                     }`}
                 >
                     {isVideoUrl(article.url) ? (
-                        <div className={`${viewMode === "grid" ? "h-48" : "h-64"} relative`}>
+                        <div className={`${viewMode === "grid" ? "h-48" : "h-64"} relative aspect-video`}>
                             <img
                                 src={getVideoThumbnail(article.url)}
                                 alt={article.title}
@@ -139,9 +139,9 @@ const NewsCards = ({ viewMode }) => {
                         
                         {isVideoUrl(article.url) && (
                             <div className="mb-3">
-                                {article.author && (
+                                {(article.author || article.channel?.name) && (
                                     <a 
-                                        href={article.channel?.link} 
+                                        href={article.channel?.link || '#'} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className="text-sm text-blue-400 hover:text-blue-300 block mb-1"
@@ -149,7 +149,7 @@ const NewsCards = ({ viewMode }) => {
                                         {article.author || article.channel?.name}
                                     </a>
                                 )}
-                                <div className="flex items-center text-xs text-gray-400 space-x-2">
+                                <div className="flex flex-wrap items-center text-xs text-gray-400 gap-2">
                                     {article.views && <span>{formatViews(article.views)}</span>}
                                     {article.uploaded && <span>• {article.uploaded}</span>}
                                 </div>
@@ -163,6 +163,17 @@ const NewsCards = ({ viewMode }) => {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-500 hover:text-blue-400"
+                                onClick={(e) => {
+                                    if (isVideoUrl(article.url)) {
+                                        e.preventDefault();
+                                        const videoId = article.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+                                        if (videoId) {
+                                            window.open(`https://www.youtube.com/embed/${videoId}?autoplay=1`, '_blank', 'width=800,height=450');
+                                        } else {
+                                            window.open(article.url, '_blank');
+                                        }
+                                    }
+                                }}
                             >
                                 {isVideoUrl(article.url) ? 'Watch' : 'Read more'}
                             </a>
