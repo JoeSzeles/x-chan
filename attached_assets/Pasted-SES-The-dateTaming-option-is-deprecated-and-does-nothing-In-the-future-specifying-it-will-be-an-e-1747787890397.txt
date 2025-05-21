@@ -1,0 +1,60 @@
+SES The 'dateTaming' option is deprecated and does nothing. In the future specifying it will be an error. lockdown-install.js:1:194912
+SES The 'mathTaming' option is deprecated and does nothing. In the future specifying it will be an error. lockdown-install.js:1:194912
+[vite] connecting... client:471:9
+[vite] connected. client:578:21
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=7rc4u040 because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=7rc4wo6x because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Error fetching notifications: 
+Object { message: "Request failed with status code 500", name: "AxiosError", code: "ERR_BAD_RESPONSE", config: {…}, request: XMLHttpRequest, response: {…}, status: 500, stack: "", … }
+NotificationPage.jsx:100:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=7rcy1v5k because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=7reho71u because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+NotificationPage.jsx:131:17
+Content-Security-Policy: The page’s settings blocked the loading of a resource (connect-src) at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=7rgti39s because it violates the following directive: “connect-src 'self' https://*.replit.dev wss://*.replit.dev wss://*.worf.replit.dev https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com ws://* wss://* https://replit.com https://beacon.replit.com” socket__io-client.js:860:11
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+    setTimeout handler*_create/xhr.onreadystatechange polling-xhr.js:134
+    _create polling-xhr.js:119
+    _Request polling-xhr.js:75
+    request polling-xhr.js:253
+    doPoll polling-xhr.js:52
+    _poll polling.js:59
+    doOpen polling.js:19
+    open transport.js:47
+    _open socket.js:197
+    _SocketWithoutUpgrade socket.js:150
+    SocketWithUpgrade socket.js:565
+    Socket socket.js:725
+    open manager.js:111
+    Manager manager.js:39
+    lookup2 index.js:25
+    connectSocket NotificationPage.jsx:89
+NotificationPage.jsx:131:17

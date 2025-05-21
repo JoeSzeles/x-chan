@@ -123,16 +123,14 @@ const NewsPage = () => {
 
     // Initialize Socket.IO client inside useEffect
     useEffect(() => {
-        const socket = io('/', {
-            path: '/socket.io/',
-            transports: ['polling'],
+        const socket = io('/api', {
+            path: '/socket.io',
+            transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             autoConnect: true,
-            forceNew: true,
-            withCredentials: true,
-            upgrade: false
+            withCredentials: true
         });
 
         socket.on('connect', () => {
@@ -288,35 +286,18 @@ const NewsPage = () => {
                     }
                 });
 
-                // Get the response as text first for debugging
-                const responseText = await res.text();
-                console.log('Update articles raw response:', responseText);
-
-                // Try to parse the response as JSON
-                let data;
-                try {
-                    data = responseText ? JSON.parse(responseText) : {};
-                } catch (parseError) {
-                    console.error('Failed to parse update response:', parseError);
-                    throw new Error('Invalid response from server');
-                }
+                const data = await res.json();
 
                 if (!res.ok) {
-                    throw new Error(data?.error || `Server error: ${res.status}`);
+                    throw new Error(data.error || 'Failed to update articles');
                 }
 
-                // Extract the data safely with default values
-                const responseData = data?.data || {};
-
-                // Ensure all properties exist with proper types
                 return {
                     success: true,
                     data: {
-                        newArticles: responseData.newArticles ? 
-                            (Array.isArray(responseData.newArticles) ? responseData.newArticles.length : 0) : 0,
-                        articles: Array.isArray(responseData.newArticles) ? responseData.newArticles : [],
-                        errors: Array.isArray(responseData.errors) ? responseData.errors : [],
-                        totalArticles: typeof responseData.totalArticles === 'number' ? responseData.totalArticles : 0
+                        newArticles: data.data?.newArticles || [],
+                        errors: data.data?.errors || [],
+                        totalArticles: data.data?.totalArticles || 0
                     }
                 };
             } catch (error) {
@@ -326,8 +307,8 @@ const NewsPage = () => {
         },
         onSuccess: (data) => {
             // Ensure we have valid data before accessing properties
-            const newArticlesCount = data?.data?.newArticles || 0;
-            const totalArticles = data?.data?.totalArticles || 0;
+            const newArticlesCount = data?.newArticles?.length || 0;
+            const totalArticles = data?.articles?.length || 0;
 
             console.log('Update mutation success:', {
                 newArticlesCount,
@@ -405,134 +386,11 @@ const NewsPage = () => {
         }
     });
 
-    // Add preset selection handler
-    const handlePresetSelect = (presetKey) => {
-        console.log('Selected preset:', presetKey);
-
-        if (presetKey === "custom") {
-            setNewBot({
-                name: "",
-                websites: [{ url: "", selector: "", type: "news" }],
-                updateInterval: 5
-            });
-            return;
-        }
-
-        const preset = websitePresets[presetKey];
-        console.log('Preset data:', preset);
-
-        // Create a new bot configuration with the preset data
-        const newBotConfig = {
-            name: preset.name,
-            websites: preset.websites.map(website => ({
-                // For YouTube, only store the base URL - search terms will be added when scraping
-                url: website.type === 'video' ? 
-                    "https://www.youtube.com/results?search_query=" : 
-                    website.url,
-                selector: website.selector,
-                type: website.type,
-                searchTerms: website.searchTerms || ''
-            })),
-            updateInterval: 5
-        };
-
-        console.log('Setting new bot config:', newBotConfig);
-        setNewBot(newBotConfig);
-    };
-
-    const handleCreateBot = (e) => {
-        e.preventDefault();
-        createBot(newBot);
-    };
-
-    const addWebsite = () => {
-        setNewBot(prev => ({
-            ...prev,
-            websites: [...prev.websites, { url: "", selector: "", type: "news" }]
-        }));
-    };
-
-    const removeWebsite = (index) => {
-        setNewBot(prev => ({
-            ...prev,
-            websites: prev.websites.filter((_, i) => i !== index)
-        }));
-    };
-
-    const updateWebsite = (index, field, value) => {
-        setNewBot(prev => ({
-            ...prev,
-            websites: prev.websites.map((website, i) => 
-                i === index ? { ...website, [field]: value } : website
-            )
-        }));
-    };
-
-    // Add website presets
-    const websitePresets = {
-        youtube: {
-            name: "YouTube Feed",
-            websites: [{
-                url: "https://www.youtube.com/results?search_query=",
-                selector: "ytd-video-renderer",
-                type: "video",
-                searchTerms: "tech news, gaming, tutorials"
-            }]
-        },
-        twitter: {
-            name: "Twitter Feed",
-            websites: [
-                {
-                    url: "https://twitter.com/home",
-                    selector: "article[data-testid='tweet']",
-                    type: "social"
-                }
-            ]
-        },
-        test: {
-            name: "Test Bot",
-            websites: [{
-                url: "https://news.ycombinator.com",
-                selector: ".athing",
-                type: "news"
-            }]
-        }
-    };
-
-    // Add this function inside the NewsPage component
-    const copyToClipboard = async (text) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            toast.success('Link copied to clipboard!');
-        } catch (err) {
-            console.error('Failed to copy text: ', err);
-            toast.error('Failed to copy link');
-        }
-    };
-
     // Create bot mutation
     const { mutate: createBot, isLoading: isCreatingBot } = useMutation({
         mutationFn: async (botData) => {
             try {
                 console.log('Sending bot data:', botData);
-
-                // Preprocess bot data before sending
-                const processedBotData = {
-                    ...botData,
-                    websites: botData.websites.map(website => {
-                        // Return the website config with the appropriate changes
-                        return {
-                            ...website,
-                            // Make sure YouTube websites have a well-formed base URL
-                            url: website.type === 'video' ? 
-                                "https://www.youtube.com/results?search_query=" : 
-                                website.url
-                        };
-                    })
-                };
-
-                console.log('Processed bot data:', processedBotData);
-
                 const res = await fetch("/api/newsbot", {
                     method: "POST",
                     credentials: 'include',
@@ -540,7 +398,7 @@ const NewsPage = () => {
                         "Content-Type": "application/json",
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(processedBotData)
+                    body: JSON.stringify(botData)
                 });
 
                 const text = await res.text();
@@ -584,22 +442,20 @@ const NewsPage = () => {
         mutationFn: async (botData) => {
             console.log('Updating bot with data:', botData);
 
-            // For YouTube bots, ensure we have the correct base URL format
-            const processedBotData = {
-                ...botData,
-                websites: botData.websites.map(website => {
+            // For YouTube bots, construct the search URL
+            if (botData.websites.some(w => w.type === 'video')) {
+                botData.websites = botData.websites.map(website => {
                     if (website.type === 'video') {
+                        const searchTerms = website.searchTerms.split(',').map(term => term.trim()).join('+');
                         return {
                             ...website,
-                            url: "https://www.youtube.com/results?search_query=",
+                            url: `https://www.youtube.com/results?search_query=${searchTerms}`,
                             selector: "ytd-video-renderer"
                         };
                     }
                     return website;
-                })
-            };
-
-            console.log('Processed update data:', processedBotData);
+                });
+            }
 
             const res = await fetch(`/api/newsbot/${botData._id}`, {
                 method: "PUT",
@@ -608,7 +464,7 @@ const NewsPage = () => {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(processedBotData)
+                body: JSON.stringify(botData)
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to update bot");
@@ -714,6 +570,108 @@ const NewsPage = () => {
             toast.error(error.message || "Failed to post article");
         }
     });
+
+    // Add preset selection handler
+    const handlePresetSelect = (presetKey) => {
+        console.log('Selected preset:', presetKey);
+
+        if (presetKey === "custom") {
+            setNewBot({
+                name: "",
+                websites: [{ url: "", selector: "", type: "news" }],
+                updateInterval: 5
+            });
+            return;
+        }
+
+        const preset = websitePresets[presetKey];
+        console.log('Preset data:', preset);
+
+        // Create a new bot configuration with the preset data
+        const newBotConfig = {
+            name: preset.name,
+            websites: preset.websites.map(website => ({
+                url: website.url,
+                selector: website.selector,
+                type: website.type,
+                searchTerms: website.searchTerms || ''
+            })),
+            updateInterval: 5
+        };
+
+        console.log('Setting new bot config:', newBotConfig);
+        setNewBot(newBotConfig);
+    };
+
+    const handleCreateBot = (e) => {
+        e.preventDefault();
+        createBot(newBot);
+    };
+
+    const addWebsite = () => {
+        setNewBot(prev => ({
+            ...prev,
+            websites: [...prev.websites, { url: "", selector: "", type: "news" }]
+        }));
+    };
+
+    const removeWebsite = (index) => {
+        setNewBot(prev => ({
+            ...prev,
+            websites: prev.websites.filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateWebsite = (index, field, value) => {
+        setNewBot(prev => ({
+            ...prev,
+            websites: prev.websites.map((website, i) => 
+                i === index ? { ...website, [field]: value } : website
+            )
+        }));
+    };
+
+    // Add website presets
+    const websitePresets = {
+        youtube: {
+            name: "YouTube Feed",
+            websites: [{
+                url: "https://www.youtube.com/results?search_query=",
+                selector: "ytd-video-renderer",
+                type: "video",
+                searchTerms: "tech news, gaming, tutorials"
+            }]
+        },
+        twitter: {
+            name: "Twitter Feed",
+            websites: [
+                {
+                    url: "https://twitter.com/home",
+                    selector: "article[data-testid='tweet']",
+                    type: "social"
+                }
+            ]
+        },
+        test: {
+            name: "Test Bot",
+            websites: [{
+                url: "https://news.ycombinator.com",
+                selector: ".athing",
+                type: "news"
+            }]
+        }
+    };
+
+    // Add this function inside the NewsPage component
+    const copyToClipboard = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success('Link copied to clipboard!');
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            toast.error('Failed to copy link');
+        }
+    };
 
     if (isLoadingBots) {
         return (

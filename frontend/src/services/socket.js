@@ -1,3 +1,4 @@
+
 import { io } from 'socket.io-client';
 
 class SocketService {
@@ -6,36 +7,17 @@ class SocketService {
   }
 
   connect() {
-    try {
-      if (!this.socket) {
-        this.socket = io({
-          path: '/socket.io',
-          transports: ['polling', 'websocket'],
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          timeout: 20000,
-          forceNew: true,
-          reconnectionAttempts: 3,
-          reconnectionDelay: 1000,
-          timeout: 20000,
-          forceNew: true,
-          withCredentials: true
-        });
-
-        this.socket.on('connect_error', (error) => {
-          console.error('[Socket] Connection error:', error);
-        });
-
-        this.socket.on('disconnect', (reason) => {
-          console.log('[Socket] Disconnected:', reason);
-          if (reason === 'io server disconnect') {
-            this.socket.connect();
-          }
-        });
-      }
-    } catch (e) {
-        console.log(e)
+    if (!this.socket) {
+      const socketUrl = window.location.hostname.includes('replit.dev') 
+        ? `wss://${window.location.host}`
+        : 'http://0.0.0.0:5000';
+      
+      this.socket = io(socketUrl, {
+        transports: ['websocket', 'polling'],
+        path: '/socket.io/',
+        withCredentials: true,
+        secure: true
+      });
     }
     return this.socket;
   }
