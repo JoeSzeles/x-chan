@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -23,15 +22,18 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
         enabled: showPreview,
     });
 
+    // Handle mouse enter
     const handleMouseEnter = (e) => {
         setMousePosition({ x: e.clientX, y: e.clientY });
         setShowPreview(true);
     };
 
+    // Handle mouse leave
     const handleMouseLeave = () => {
         setShowPreview(false);
     };
 
+    // Handle click
     const handleClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -40,11 +42,13 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
         }
     };
 
+    // Update preview position
     useEffect(() => {
         if (showPreview && previewRef.current) {
             const preview = previewRef.current;
             const rect = preview.getBoundingClientRect();
             
+            // Check if preview would go off screen
             if (mousePosition.x + rect.width > window.innerWidth) {
                 preview.style.left = `${mousePosition.x - rect.width}px`;
             } else {
@@ -62,7 +66,7 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
     return (
         <>
             <span
-                className="text-blue-600 hover:text-blue-500 cursor-pointer font-medium"
+                className="text-blue-400 hover:text-blue-300 cursor-pointer"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleClick}
@@ -114,4 +118,4 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
     );
 };
 
-export default PostNumberLink;
+export default PostNumberLink; 
