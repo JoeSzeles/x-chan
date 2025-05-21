@@ -10,11 +10,11 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
-import path from 'path';
 
 // Set global flags for debugging and mock data
-global.USE_MOCK_DATA = false;
-console.log('Mock data DISABLED - system will attempt real scraping');
+// Enable mock data by default in development environment
+global.USE_MOCK_DATA = process.env.NODE_ENV !== 'production';
+console.log(`Mock data ${global.USE_MOCK_DATA ? 'ENABLED' : 'DISABLED'} - ${global.USE_MOCK_DATA ? 'using mock data for scraping' : 'system will attempt real scraping'}`);
 
 // Configure Puppeteer environment
 process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || 

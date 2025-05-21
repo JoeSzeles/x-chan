@@ -6,7 +6,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "puppeteer-setup": "node scripts/setupPuppeteer.js",
+    "test-scraper": "node scripts/testScraper.js"
   },
   "keywords": [],
   "author": "",
