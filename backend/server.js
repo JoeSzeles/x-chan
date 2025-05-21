@@ -10,10 +10,15 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
+import path from 'path';
 
 // Set global flags for debugging and mock data
 global.USE_MOCK_DATA = false;
 console.log('Mock data DISABLED - system will attempt real scraping');
+
+// Configure Puppeteer environment
+process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || 
+    path.join(process.env.HOME || '/home/runner', '.cache/puppeteer/chrome/linux-136.0.7103.49/chrome-linux64/chrome');
 
 // Import routes
 import authRoutes from './routes/auth.route.js';

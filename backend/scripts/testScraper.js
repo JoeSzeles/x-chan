@@ -47,12 +47,16 @@ async function testPuppeteerDirectly() {
     log('3. Attempting to launch browser...');
     try {
       const browser = await puppeteer.default.launch({
-        headless: true,
+        headless: "new",
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
-          '--disable-web-security'
-        ]
+          '--disable-web-security',
+          '--disable-gpu',
+          '--disable-features=IsolateOrigins',
+          '--disable-site-isolation-trials'
+        ],
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
       });
       
       log('4. Browser launched successfully!');
