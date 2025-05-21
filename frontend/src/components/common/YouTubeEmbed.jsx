@@ -10,7 +10,6 @@ const YouTubeEmbed = ({ url }) => {
     const iframeRef = useRef(null);
 
     useEffect(() => {
-        console.log('[YouTubeEmbed] Processing URL:', url);
         try {
             let id = null;
             if (url.includes('youtube.com/watch')) {
@@ -24,21 +23,13 @@ const YouTubeEmbed = ({ url }) => {
                 id = url.split('shorts/')[1]?.split(/[?#]/)[0];
             }
 
-            console.log('[YouTubeEmbed] Extracted video ID:', id);
             if (!id) {
                 throw new Error('Could not extract video ID');
             }
             setVideoId(id);
             
-            // Try different thumbnail resolutions
-            const qualities = [
-                'maxresdefault.jpg',
-                'sddefault.jpg',
-                'hqdefault.jpg',
-                'mqdefault.jpg',
-                'default.jpg'
-            ];
-            setThumbnailUrl(`https://img.youtube.com/vi/${id}/${qualities[2]}`);
+            // Set thumbnail URL immediately - try hqdefault first
+            setThumbnailUrl(`https://img.youtube.com/vi/${id}/hqdefault.jpg`);
             setError(null);
         } catch (err) {
             console.error('[YouTubeEmbed] Error processing URL:', err);
@@ -48,7 +39,6 @@ const YouTubeEmbed = ({ url }) => {
     }, [url]);
 
     const handleIframeLoad = () => {
-        console.log('[YouTubeEmbed] Iframe loaded successfully');
         setIsLoading(false);
         setError(null);
     };
@@ -60,7 +50,7 @@ const YouTubeEmbed = ({ url }) => {
     };
 
     const handleThumbnailError = () => {
-        console.error('[YouTubeEmbed] Thumbnail failed to load');
+        console.log('[YouTubeEmbed] Thumbnail failed to load, trying alternate format');
         setThumbnailError(true);
         
         // Try another thumbnail format if current one fails
@@ -68,6 +58,9 @@ const YouTubeEmbed = ({ url }) => {
             setThumbnailUrl(`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`);
         } else if (videoId && thumbnailUrl?.includes('mqdefault.jpg')) {
             setThumbnailUrl(`https://img.youtube.com/vi/${videoId}/default.jpg`);
+        } else if (videoId && thumbnailUrl?.includes('default.jpg')) {
+            // If even default fails, try sddefault as last resort
+            setThumbnailUrl(`https://img.youtube.com/vi/${videoId}/sddefault.jpg`);
         }
     };
 
@@ -80,8 +73,7 @@ const YouTubeEmbed = ({ url }) => {
         );
     }
 
-    const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
-    console.log('[YouTubeEmbed] Using embed URL:', embedUrl);
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
 
     return (
         <div className="youtube-embed my-4">
@@ -94,6 +86,16 @@ const YouTubeEmbed = ({ url }) => {
                             className="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
                             onError={handleThumbnailError}
                         />
+                    )}
+                    {thumbnailError && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
+                            <div className="flex flex-col items-center text-white">
+                                <svg className="w-16 h-16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"/>
+                                </svg>
+                                <div className="mt-2">YouTube Video</div>
+                            </div>
+                        </div>
                     )}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                         <div className="text-white flex flex-col items-center">
