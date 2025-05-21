@@ -62,7 +62,7 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
     return (
         <>
             <span
-                className="text-blue-500 hover:text-blue-400 cursor-pointer"
+                className="text-blue-600 hover:text-blue-500 cursor-pointer font-medium"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleClick}
