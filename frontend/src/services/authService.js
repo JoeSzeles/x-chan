@@ -32,12 +32,13 @@ export const login = async (credentials) => {
         });
 
         if (!response.ok) {
-            throw new Error('Login failed');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Login failed');
         }
 
         const data = await response.json();
         localStorage.setItem('token', data.token);
-        localStorage.setItem('userData', JSON.stringify(data.user));
+        localStorage.setItem('userData', JSON.stringify(data));
         return data;
     } catch (error) {
         console.error('[AuthService] Login error:', error);
