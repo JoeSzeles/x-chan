@@ -12,6 +12,19 @@ console.log('=== PUPPETEER SETUP SCRIPT ===');
 console.log('This script will configure puppeteer to use a compatible browser');
 
 try {
+  // Install required system dependencies for Chrome
+  console.log('Installing system dependencies for Chrome...');
+  try {
+    execSync('apt-get update && apt-get install -y libglib2.0-0 libnss3 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 libgbm1 libasound2', { 
+      stdio: 'inherit',
+      shell: true 
+    });
+    console.log('System dependencies installed successfully');
+  } catch (error) {
+    console.error('Error installing system dependencies. This may require manual installation:', error.message);
+    console.log('Continuing with setup...');
+  }
+
   // Create a .puppeteerrc.cjs file in the project root to configure puppeteer
   const rcPath = path.join(__dirname, '..', '.puppeteerrc.cjs');
   

@@ -30,6 +30,14 @@ function log(message) {
 global.USE_MOCK_DATA = true;
 console.log(`[Test] Setting USE_MOCK_DATA to true for reliable testing`);
 
+// Verify mock data generator is working
+const mockDataTest = scraperService.generateMockYouTubeData({ searchTerms: "test" });
+if (mockDataTest && Array.isArray(mockDataTest) && mockDataTest.length > 0) {
+  console.log(`[Test] Mock data generator is working properly, generated ${mockDataTest.length} test articles`);
+} else {
+  console.error(`[Test] Mock data generator is NOT working properly!`);
+}
+
 // Test cases with different search terms
 const testCases = [
   { name: "Basic Search", config: { url: "https://www.youtube.com/results?search_query=news", type: "video", searchTerms: "news" } }

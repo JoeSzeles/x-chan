@@ -22,9 +22,26 @@ if (process.env.REPL_ID || process.env.REPL_SLUG) {
     console.log('Replit environment detected: Forcing USE_MOCK_DATA to true');
 }
 
-// Configure Puppeteer environment
+// Configure Puppeteer environment - updated path with more precise version detection
+const defaultChromePath = path.join(process.env.HOME || '/home/runner', '.cache/puppeteer/chrome');
+// Try to find the Chrome directory dynamically
+let chromeDirs = [];
+try {
+    if (fs.existsSync(defaultChromePath)) {
+        chromeDirs = fs.readdirSync(defaultChromePath)
+            .filter(dir => dir.startsWith('linux-'))
+            .map(dir => path.join(defaultChromePath, dir, 'chrome-linux64/chrome'));
+    }
+} catch (err) {
+    console.warn('Error finding Chrome directories:', err.message);
+}
+
+// Set the executable path
 process.env.PUPPETEER_EXECUTABLE_PATH = process.env.PUPPETEER_EXECUTABLE_PATH || 
-    path.join(process.env.HOME || '/home/runner', '.cache/puppeteer/chrome/linux-136.0.7103.49/chrome-linux64/chrome');
+    (chromeDirs.length > 0 ? chromeDirs[0] : 
+    path.join(defaultChromePath, 'linux-136.0.7103.49/chrome-linux64/chrome'));
+
+console.log('Puppeteer executable path:', process.env.PUPPETEER_EXECUTABLE_PATH);
 
 // Import routes
 import authRoutes from './routes/auth.route.js';
