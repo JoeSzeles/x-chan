@@ -1055,7 +1055,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 </div>
             )}
 
-            
+
 
             {/* Article Details Modal */}
             {selectedArticle && (

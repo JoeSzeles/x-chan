@@ -37,7 +37,7 @@ const NewsBotCard = ({ bot, onEdit, onDelete }) => {
         onSuccess: async (data) => {
             queryClient.invalidateQueries(["newsBots"]);
             queryClient.invalidateQueries(["botArticles", bot._id]);
-            
+
             // If auto-post is enabled, post to feed after update
             if (safeBot.settings.autoPost) {
                 try {
@@ -46,7 +46,7 @@ const NewsBotCard = ({ bot, onEdit, onDelete }) => {
                     console.error('Auto-post failed:', error);
                 }
             }
-            
+
             if (data.notification) {
                 if (data.notification.type === 'success') {
                     toast.success(data.notification.message, {
@@ -296,4 +296,4 @@ const NewsBotCard = ({ bot, onEdit, onDelete }) => {
     );
 };
 
-export default NewsBotCard; 
+export default NewsBotCard;

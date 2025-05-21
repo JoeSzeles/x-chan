@@ -132,10 +132,11 @@ class NewsBotService {
         return highestPost ? highestPost.threadId + 1 : 1;
     }
 
-    async updateBotArticles(botId) {
+    async updateBotArticles(botId, forceUpdate = false) {
         try {
             console.log('[NewsBotService] Starting updateBotArticles:', {
                 botId,
+                forceUpdate,
                 timestamp: new Date().toISOString()
             });
 
@@ -149,7 +150,10 @@ class NewsBotService {
             const lastUpdate = bot.lastUpdate || new Date(0);
             const minutesSinceLastUpdate = (now - lastUpdate) / (1000 * 60);
 
-            if (minutesSinceLastUpdate < bot.updateInterval && !bot.forceUpdate) {
+            // Force update can be passed from parameter or from bot settings
+            const shouldForceUpdate = forceUpdate || bot.forceUpdate;
+
+            if (minutesSinceLastUpdate < bot.updateInterval && !shouldForceUpdate) {
                 console.log(`[NewsBotService] Skipping update - ${minutesSinceLastUpdate} minutes since last update`);
                 return {
                     success: true,
