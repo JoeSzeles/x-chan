@@ -1,4 +1,5 @@
 
+// Import modules with proper ES module syntax
 import scraperService from '../services/scraperService.js';
 import fs from 'fs';
 import path from 'path';
