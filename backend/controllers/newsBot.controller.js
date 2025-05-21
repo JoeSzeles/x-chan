@@ -515,4 +515,4 @@ export const clearBotArticles = async (req, res) => {
             error: "Failed to clear bot feed"
         });
     }
-}; 
+};

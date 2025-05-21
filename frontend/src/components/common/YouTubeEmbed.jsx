@@ -1,110 +1,59 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-
-// Utility function to extract video ID from a YouTube URL
-const getYouTubeVideoId = (url) => {
-    if (!url) return null;
-
-    try {
-        const cleanUrl = url.trim();
-        let id = null;
-
-        // Handle youtu.be format
-        if (cleanUrl.includes('youtu.be/')) {
-            id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
-        } 
-        // Handle standard youtube.com/watch?v= format
-        else if (cleanUrl.includes('youtube.com/watch')) {
-            const urlObj = new URL(cleanUrl);
-            id = urlObj.searchParams.get('v');
-        } 
-        // Handle embed format
-        else if (cleanUrl.includes('youtube.com/embed/')) {
-            id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
-        } 
-        // Handle shorts format
-        else if (cleanUrl.includes('youtube.com/shorts/')) {
-            id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
-        }
-        // Handle mock URLs that might have a videoId pattern
-        else if (cleanUrl.includes('mock')) {
-            // For mock URLs, extract a potential ID pattern
-            const mockIdMatch = cleanUrl.match(/mock(\w+)/);
-            if (mockIdMatch && mockIdMatch[1]) {
-                // Use a real video ID as fallback for mock data
-                return 'dQw4w9WgXcQ'; // Well-known YouTube video ID
-            }
-        }
-
-        // Validate the video ID format (standard YouTube IDs are 11 characters)
-        if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) {
-            return id;
-        }
-
-        // If we have an ID but it's not valid format, it might be a mock ID
-        if (id) {
-            console.warn('Non-standard YouTube ID detected:', id);
-            return 'dQw4w9WgXcQ'; // Fallback to a real video ID
-        }
-
-        return null;
-    } catch (err) {
-        console.error('Error parsing YouTube URL:', err, url);
-        return null;
-    }
-};
 
 const YouTubeEmbed = ({ url }) => {
     const [videoId, setVideoId] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [thumbnailUrl, setThumbnailUrl] = useState(null);
-    const [thumbnailFailed, setThumbnailFailed] = useState(false);
     const embedContainerRef = useRef(null);
 
     useEffect(() => {
+        const parseVideoId = (url) => {
+            try {
+                const cleanUrl = url.trim();
+                let id = null;
+
+                if (cleanUrl.includes('youtu.be/')) {
+                    id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                } else if (cleanUrl.includes('youtube.com/watch')) {
+                    id = new URL(cleanUrl).searchParams.get('v');
+                } else if (cleanUrl.includes('youtube.com/embed/')) {
+                    id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
+                } else if (cleanUrl.includes('youtube.com/shorts/')) {
+                    id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
+                }
+
+                if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+                    throw new Error('Invalid YouTube URL');
+                }
+
+                setVideoId(id);
+                // Set the thumbnail URL directly based on the video ID
+                setThumbnailUrl(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
+                setError(null);
+            } catch (err) {
+                console.error('YouTube URL parsing error:', err);
+                setError('Invalid YouTube URL');
+                setVideoId(null);
+                setThumbnailUrl(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         setIsLoading(true);
-        setError(null);
-        setThumbnailFailed(false);
-
-        const id = getYouTubeVideoId(url);
-
-        if (id) {
-            setVideoId(id);
-            setThumbnailUrl(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
-            setIsLoading(false);
-        } else {
-            console.error('Could not extract video ID from URL:', url);
-            setError('Invalid YouTube URL');
-            setVideoId(null);
-            setThumbnailUrl(null);
-            setIsLoading(false);
-        }
+        parseVideoId(url);
     }, [url]);
 
     // For checking if the thumbnail image loaded properly
     const handleThumbnailError = () => {
         console.error('YouTube thumbnail failed to load:', thumbnailUrl);
-
-        // If the high-quality thumbnail fails, try the default one
-        if (videoId && !thumbnailFailed) {
-            setThumbnailUrl(`https://i.ytimg.com/vi/${videoId}/default.jpg`);
-            setThumbnailFailed(true);
-        } else {
-            setError('Failed to load video thumbnail');
-        }
+        setError('Failed to load video thumbnail');
     };
 
     const handleThumbnailLoad = () => {
         setIsLoading(false);
-    };
-
-    // Get a display URL for showing to users (can be the original or a cleaned-up version)
-    const getDisplayUrl = () => {
-        if (!url) return '';
-        if (videoId) {
-            return `https://www.youtube.com/watch?v=${videoId}`;
-        }
-        return url;
     };
 
     // Loading state
@@ -127,7 +76,7 @@ const YouTubeEmbed = ({ url }) => {
                 <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
                     <div className="text-red-500 mb-2">{error}</div>
                     <a 
-                        href={getDisplayUrl()} 
+                        href={url} 
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="text-red-500 hover:underline"
@@ -150,7 +99,7 @@ const YouTubeEmbed = ({ url }) => {
                             <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
                         </svg>
                         <a 
-                            href={getDisplayUrl()} 
+                            href={url} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-red-500 hover:underline"
@@ -164,7 +113,7 @@ const YouTubeEmbed = ({ url }) => {
                 <div className="relative pt-[56.25%] w-full bg-black">
                     {thumbnailUrl && (
                         <a 
-                            href={getDisplayUrl()} 
+                            href={url} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="absolute inset-0 flex items-center justify-center"

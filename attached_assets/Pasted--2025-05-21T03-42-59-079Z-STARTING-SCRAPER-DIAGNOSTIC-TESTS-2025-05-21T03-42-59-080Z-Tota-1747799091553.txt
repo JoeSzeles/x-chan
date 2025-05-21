@@ -1,0 +1,51 @@
+[2025-05-21T03:42:59.079Z] === STARTING SCRAPER DIAGNOSTIC TESTS ===
+[2025-05-21T03:42:59.080Z] Total test cases: 6
+[2025-05-21T03:42:59.080Z] System info:
+[2025-05-21T03:42:59.080Z] Node version: v20.18.1
+[2025-05-21T03:42:59.080Z] Platform: linux
+[2025-05-21T03:42:59.080Z] USE_MOCK_DATA flag: false
+[2025-05-21T03:42:59.081Z] 
+[TEST 1/6] Running test: Basic Search
+[2025-05-21T03:42:59.081Z] URL: https://www.youtube.com/results?search_query=news
+[2025-05-21T03:42:59.081Z] Search terms: news
+[2025-05-21T03:42:59.081Z] Starting scrape...
+[2025-05-21T03:42:59.094Z] SUCCESS: Found 0 videos in 13ms
+[2025-05-21T03:42:59.094Z] WARNING: No articles found for this test case
+[2025-05-21T03:42:59.095Z] 
+[TEST 2/6] Running test: Tech News
+[2025-05-21T03:42:59.095Z] URL: https://www.youtube.com/results?search_query=technology
+[2025-05-21T03:42:59.095Z] Search terms: technology
+[2025-05-21T03:42:59.095Z] Starting scrape...
+[2025-05-21T03:42:59.098Z] SUCCESS: Found 0 videos in 3ms
+[2025-05-21T03:42:59.099Z] WARNING: No articles found for this test case
+[2025-05-21T03:42:59.099Z] 
+[TEST 3/6] Running test: Music Videos
+[2025-05-21T03:42:59.099Z] URL: https://www.youtube.com/results?search_query=music+videos
+[2025-05-21T03:42:59.099Z] Search terms: music videos
+[2025-05-21T03:42:59.099Z] Starting scrape...
+[2025-05-21T03:42:59.102Z] SUCCESS: Found 0 videos in 3ms
+[2025-05-21T03:42:59.102Z] WARNING: No articles found for this test case
+[2025-05-21T03:42:59.102Z] 
+[TEST 4/6] Running test: Gaming
+[2025-05-21T03:42:59.103Z] URL: https://www.youtube.com/results?search_query=gaming+news
+[2025-05-21T03:42:59.103Z] Search terms: gaming news
+[2025-05-21T03:42:59.103Z] Starting scrape...
+[2025-05-21T03:42:59.105Z] SUCCESS: Found 0 videos in 2ms
+[2025-05-21T03:42:59.105Z] WARNING: No articles found for this test case
+[2025-05-21T03:42:59.106Z] 
+[TEST 5/6] Running test: Multiple Terms
+[2025-05-21T03:42:59.106Z] URL: https://www.youtube.com/results?search_query=news+today
+[2025-05-21T03:42:59.106Z] Search terms: news today
+[2025-05-21T03:42:59.106Z] Starting scrape...
+[2025-05-21T03:42:59.110Z] SUCCESS: Found 0 videos in 4ms
+[2025-05-21T03:42:59.110Z] WARNING: No articles found for this test case
+[2025-05-21T03:42:59.110Z] 
+[TEST 6/6] Running test: Popular Channel
+[2025-05-21T03:42:59.110Z] URL: https://www.youtube.com/c/CNN/videos
+[2025-05-21T03:42:59.111Z] Search terms: CNN
+[2025-05-21T03:42:59.111Z] Starting scrape...
+[2025-05-21T03:42:59.113Z] SUCCESS: Found 0 videos in 2ms
+[2025-05-21T03:42:59.113Z] WARNING: No articles found for this test case
+[2025-05-21T03:42:59.113Z] 
+=== SCRAPER DIAGNOSTIC COMPLETE ===
+[2025-05-21T03:42:59.113Z] Results saved to: /home/runner/workspace/backend/logs/scraper-test-2025-05-21T03-42-59-077Z.log

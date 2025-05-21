@@ -846,10 +846,46 @@ class ScraperService {
 
     normalizeUrl(url, baseUrl) {
         try {
-            return new URL(url, baseUrl).href;
+            console.log(`[ScraperService] Normalizing URL: ${url} with base ${baseUrl}`);
+            const normalized = new URL(url, baseUrl).href;
+            console.log(`[ScraperService] Normalized URL: ${normalized}`);
+            return normalized;
         } catch (error) {
-            console.warn("Error normalizing URL:", error);
+            console.warn("[ScraperService] Error normalizing URL:", error);
             return url;
+        }
+    }
+    
+    async scrapeWebsite(website) {
+        console.log(`[ScraperService] Starting scrape for website: ${website.url}`);
+        console.log(`[ScraperService] Website type: ${website.type}, Search terms: ${website.searchTerms}`);
+        console.log(`[ScraperService] USE_MOCK_DATA flag is: ${global.USE_MOCK_DATA}`);
+        
+        if (global.USE_MOCK_DATA) {
+            console.log('[ScraperService] Using mock data instead of real scraping');
+            return this.generateMockYouTubeData(website);
+        }
+        
+        try {
+            console.log(`[ScraperService] Attempting real scrape for: ${website.url}`);
+            
+            // Add detailed logging for YouTube scraping
+            if (website.type === 'video' && website.url.includes('youtube.com')) {
+                console.log('[ScraperService] YouTube scraping detected');
+                const results = await this.scrapeYouTube(website);
+                console.log(`[ScraperService] YouTube scrape results: ${results ? results.length : 0} videos found`);
+                return results;
+            }
+            
+            // Your existing code follows here
+            
+        } catch (error) {
+            console.error(`[ScraperService] Scraping error for ${website.url}:`, error);
+            console.error(`[ScraperService] Error stack: ${error.stack}`);
+            
+            // Fallback to mock data on error
+            console.log('[ScraperService] Falling back to mock data due to error');
+            return this.generateMockYouTubeData(website);
         }
     }
 

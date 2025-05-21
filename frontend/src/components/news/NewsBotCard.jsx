@@ -296,4 +296,85 @@ const NewsBotCard = ({ bot, onEdit, onDelete }) => {
     );
 };
 
+import { useMutation } from 'react-query';
+import { useState } from 'react';
+
+const NewsBotCard = (props) => {
+    const [debugInfo, setDebugInfo] = useState(null);
+    
+    // Add a force update mutation
+    const forceUpdateMutation = useMutation(
+        async () => {
+            const response = await fetch(`/api/newsbot/${props.bot._id}/update?force=true`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to force update bot');
+            }
+            
+            const data = await response.json();
+            console.log('Force update response:', data);
+            setDebugInfo(data);
+            return data;
+        },
+        {
+            onSuccess: () => {
+                alert('Force update successful! Check console for details.');
+                // You might want to refresh the articles here
+                if (props.onRefresh) {
+                    props.onRefresh();
+                }
+            },
+            onError: (error) => {
+                console.error('Force update failed:', error);
+                alert(`Force update failed: ${error.message}`);
+            }
+        }
+    );
+    
+    // Add this to your component's JSX
+    const renderForceUpdateButton = () => (
+        <button 
+            onClick={() => forceUpdateMutation.mutate()}
+            className="px-4 py-2 bg-red-500 text-white rounded-md mt-2"
+            disabled={forceUpdateMutation.isLoading}
+        >
+            {forceUpdateMutation.isLoading ? 'Updating...' : 'Force Update (Debug)'}
+        </button>
+    );
+    
+    // Add this to display debug info
+    const renderDebugInfo = () => {
+        if (!debugInfo) return null;
+        
+        return (
+            <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
+                <h4 className="font-bold">Debug Info:</h4>
+                <pre className="overflow-auto max-h-40">
+                    {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+            </div>
+        );
+    };
+    
+    // Modify your return statement to include these elements
+    // This is just a placeholder - add these to your actual component
+    return (
+        <div>
+            {/* Your existing component content */}
+            
+            {/* Add the force update button */}
+            {renderForceUpdateButton()}
+            
+            {/* Debug info display */}
+            {renderDebugInfo()}
+        </div>
+    );
+};
+
 export default NewsBotCard;
