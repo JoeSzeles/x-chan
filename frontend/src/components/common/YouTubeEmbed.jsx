@@ -6,7 +6,17 @@ const YouTubeEmbed = ({ url }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [thumbnailUrl, setThumbnailUrl] = useState(null);
+    const [thumbnailIndex, setThumbnailIndex] = useState(0);
     const embedContainerRef = useRef(null);
+    
+    // Array of possible thumbnail URL formats to try
+    const thumbnailFormats = [
+        (id) => `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
+        (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+        (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+        (id) => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
+        (id) => `https://i.ytimg.com/vi/${id}/default.jpg`,
+    ];
 
     useEffect(() => {
         const parseVideoId = (url) => {
@@ -29,8 +39,9 @@ const YouTubeEmbed = ({ url }) => {
                 }
 
                 setVideoId(id);
-                // Set the thumbnail URL directly based on the video ID
-                setThumbnailUrl(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
+                // Set the thumbnail URL using the first format
+                setThumbnailUrl(thumbnailFormats[0](id));
+                setThumbnailIndex(0);
                 setError(null);
             } catch (err) {
                 console.error('YouTube URL parsing error:', err);
@@ -49,10 +60,20 @@ const YouTubeEmbed = ({ url }) => {
     // For checking if the thumbnail image loaded properly
     const handleThumbnailError = () => {
         console.error('YouTube thumbnail failed to load:', thumbnailUrl);
-        setError('Failed to load video thumbnail');
+        
+        // Try the next thumbnail format in the array
+        if (thumbnailIndex < thumbnailFormats.length - 1 && videoId) {
+            const nextIndex = thumbnailIndex + 1;
+            console.log(`Trying next thumbnail format (${nextIndex}): ${thumbnailFormats[nextIndex](videoId)}`);
+            setThumbnailUrl(thumbnailFormats[nextIndex](videoId));
+            setThumbnailIndex(nextIndex);
+        } else {
+            setError('Failed to load video thumbnail');
+        }
     };
 
     const handleThumbnailLoad = () => {
+        console.log('Thumbnail loaded successfully:', thumbnailUrl);
         setIsLoading(false);
     };
 

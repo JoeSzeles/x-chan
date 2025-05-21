@@ -794,11 +794,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 const nextIndex = currentIndex + 1;
                 const nextThumbnail = thumbnails[nextIndex];
                 console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
-                
+
                 // Set new source and update the index attribute
                 event.target.src = nextThumbnail;
                 event.target.dataset.index = nextIndex;
-                
+
                 // Preload the next thumbnail in the sequence for faster fallback
                 if (nextIndex < thumbnails.length - 1) {
                     const preloadImage = new Image();
@@ -815,26 +815,17 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
             <div key={article._id} className="bg-gray-700 rounded-lg p-4">
                 <div className="flex flex-col h-full">
                     {isYouTube ? (
-                        <div className="mb-4 relative aspect-video" onClick={(e) => e.stopPropagation()}>
-                            {!hasFailedThumbnail && (
-                                <img 
-                                    src={Array.isArray(thumbnailUrls) ? thumbnailUrls[0] : thumbnailUrls}
-                                    alt={article.title}
-                                    className="w-full h-full object-cover rounded-lg"
-                                    data-index="0"
-                                    onError={(e) => {
-                                        // Try next thumbnail in the array if available
-                                        if (Array.isArray(thumbnailUrls)) {
-                                            const currentIndex = parseInt(e.target.dataset.index || "0");
-                                            tryNextThumbnail(currentIndex, thumbnailUrls, e);
-                                        } else {
-                                            handleImageError(article._id, isYouTube);
-                                        }
-                                    }}
-                                    loading="lazy"
-                                />
-                            )}
-                            
+                                <div className="mb-4 relative aspect-video" onClick={(e) => e.stopPropagation()}>
+                                    {!hasFailedThumbnail && (
+                                        <img 
+                                            src={thumbnailUrls}
+                                            alt={article.title}
+                                            className="w-full h-full object-cover rounded-lg"
+                                            onError={() => handleImageError(article._id, isYouTube)}
+                                            loading="lazy"
+                                        />
+                                    )}
+
                             {/* YouTube-specific fallback for thumbnail error */}
                             {isYouTube && hasFailedThumbnail && (
                                 <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
@@ -1100,8 +1091,6 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     </div>
                 </div>
             )}
-
-
 
             {/* Article Details Modal */}
             {selectedArticle && (
