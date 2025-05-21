@@ -43,13 +43,13 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const [socket, setSocket] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const [isWideMode, setIsWideMode] = useState(window.innerWidth > 1024);
-
+    
     // Handle window resize to detect wide mode
     useEffect(() => {
         const handleResize = () => {
             setIsWideMode(window.innerWidth > 1024);
         };
-
+        
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -273,7 +273,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
             console.log(`Found ${validArticles.length} valid articles after filtering`);
-
+            
             // Add debug info in development
             console.log(`Article data sample:`, validArticles.length > 0 ? {
                 first: validArticles[0],
@@ -821,11 +821,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 const nextIndex = currentIndex + 1;
                 const nextThumbnail = thumbnails[nextIndex];
                 console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
-
+                
                 // Set new source and update the index attribute
                 event.target.src = nextThumbnail;
                 event.target.dataset.index = nextIndex;
-
+                
                 // Preload the next thumbnail in the sequence for faster fallback
                 if (nextIndex < thumbnails.length - 1) {
                     const preloadImage = new Image();
@@ -866,7 +866,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                     loading="lazy"
                                 />
                             )}
-
+                            
                             {/* YouTube-specific fallback for thumbnail error */}
                             {isYouTube && hasFailedThumbnail && (
                                 <div 
@@ -879,7 +879,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                 >
                                     <div className="text-center">
                                         <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
+                                            <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
                                         </svg>
                                         <p className="text-white text-sm">YouTube Video</p>
                                         <div className="mt-2 text-xs text-white/70">{getCleanYouTubeUrl(article.url) ? new URL(getCleanYouTubeUrl(article.url)).pathname.substring(1) : 'Video'}</div>
@@ -992,7 +992,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className={isWideMode ? "w-full max-w-full" : "w-full"}>
+        <div className={`${isWideMode ? "w-full max-w-none" : "w-full"}`}>
             {isLoading ? (
                 <div className="flex justify-center items-center h-32">
                     <LoadingSpinner size="lg" />
@@ -1061,7 +1061,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    <div className={`grid grid-cols-1 sm:grid-cols-2 ${isWideMode ? "lg:grid-cols-4" : "lg:grid-cols-2"} gap-4`}>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 ${isWideMode ? "lg:grid-cols-4 w-full max-w-none" : ""} gap-4`}>
                         {data.articles.map(article => renderArticleCard(article))}
                     </div>
 
