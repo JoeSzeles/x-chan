@@ -301,7 +301,7 @@ import { useState } from 'react';
 
 const NewsBotCard = (props) => {
     const [debugInfo, setDebugInfo] = useState(null);
-    
+
     // Add a force update mutation
     const forceUpdateMutation = useMutation(
         async () => {
@@ -312,11 +312,11 @@ const NewsBotCard = (props) => {
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             if (!response.ok) {
                 throw new Error('Failed to force update bot');
             }
-            
+
             const data = await response.json();
             console.log('Force update response:', data);
             setDebugInfo(data);
@@ -336,22 +336,24 @@ const NewsBotCard = (props) => {
             }
         }
     );
-    
+
     // Add this to your component's JSX
     const renderForceUpdateButton = () => (
         <button 
-            onClick={() => forceUpdateMutation.mutate()}
-            className="px-4 py-2 bg-red-500 text-white rounded-md mt-2"
-            disabled={forceUpdateMutation.isLoading}
-        >
-            {forceUpdateMutation.isLoading ? 'Updating...' : 'Force Update (Debug)'}
+                    onClick={() => forceUpdateMutation.mutate()}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md mt-2 flex items-center gap-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    {forceUpdateMutation.isLoading ? "Scraping..." : "Update Now"}
         </button>
     );
-    
+
     // Add this to display debug info
     const renderDebugInfo = () => {
         if (!debugInfo) return null;
-        
+
         return (
             <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
                 <h4 className="font-bold">Debug Info:</h4>
@@ -361,16 +363,16 @@ const NewsBotCard = (props) => {
             </div>
         );
     };
-    
+
     // Modify your return statement to include these elements
     // This is just a placeholder - add these to your actual component
     return (
         <div>
             {/* Your existing component content */}
-            
+
             {/* Add the force update button */}
             {renderForceUpdateButton()}
-            
+
             {/* Debug info display */}
             {renderDebugInfo()}
         </div>

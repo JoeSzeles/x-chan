@@ -241,10 +241,10 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             const updateData = await updateResponse.json();
             console.log('Force update response:', updateData);
-            
+
             // Show feedback to the user
             if (updateData.message?.includes("Articles updated successfully")) {
                 toast.success("Refreshing articles...", {
@@ -267,7 +267,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     }
                 });
             }
-            
+
             // Force refetch by invalidating all queries
             await queryClient.invalidateQueries(["botArticles", botId]);
 
@@ -297,7 +297,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
             console.log(`Found ${validArticles.length} valid articles after filtering`);
-            
+
             // Add debug info in development
             console.log(`Article data sample:`, validArticles.length > 0 ? {
                 first: validArticles[0],
@@ -845,11 +845,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 const nextIndex = currentIndex + 1;
                 const nextThumbnail = thumbnails[nextIndex];
                 console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
-                
+
                 // Set new source and update the index attribute
                 event.target.src = nextThumbnail;
                 event.target.dataset.index = nextIndex;
-                
+
                 // Preload the next thumbnail in the sequence for faster fallback
                 if (nextIndex < thumbnails.length - 1) {
                     const preloadImage = new Image();
@@ -885,7 +885,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                     loading="lazy"
                                 />
                             )}
-                            
+
                             {/* YouTube-specific fallback for thumbnail error */}
                             {isYouTube && hasFailedThumbnail && (
                                 <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
