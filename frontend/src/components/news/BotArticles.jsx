@@ -233,6 +233,41 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const handleRefresh = async () => {
         setIsRefreshing(true);
         try {
+            // First force an update by calling the API with force=true
+            const updateResponse = await fetch(`/api/newsbot/${botId}/update?force=true`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const updateData = await updateResponse.json();
+            console.log('Force update response:', updateData);
+            
+            // Show feedback to the user
+            if (updateData.message?.includes("Articles updated successfully")) {
+                toast.success("Refreshing articles...", {
+                    duration: 3000,
+                    position: "bottom-right",
+                    style: {
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        border: '1px solid #333'
+                    }
+                });
+            } else if (updateData.data?.skipped) {
+                toast.info("Update interval not reached. Forcing refresh anyway...", {
+                    duration: 3000,
+                    position: "bottom-right",
+                    style: {
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        border: '1px solid #333'
+                    }
+                });
+            }
+            
             // Force refetch by invalidating all queries
             await queryClient.invalidateQueries(["botArticles", botId]);
 
