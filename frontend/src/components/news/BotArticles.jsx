@@ -828,7 +828,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         };
 
         return (
-            <div key={article._id} className="bg-gray-700 rounded-lg p-4">
+            <div key={article._id} className="bg-gray-700 rounded-lg p-4 h-full flex flex-col">
                 <div className="flex flex-col h-full">
                     {isYouTube ? (
                         <div className="mb-4 relative aspect-video" onClick={(e) => e.stopPropagation()}>
@@ -906,8 +906,10 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     <h3 className="text-lg font-semibold text-white mb-2">
                         {article.title}
                     </h3>
-                    <p className="text-gray-300 text-sm mb-4 flex-grow">
-                        {article.description}
+                    <p className="text-gray-300 text-sm mb-4 flex-grow overflow-hidden">
+                        {window.innerWidth > 1024 && data.articles.length > 6 
+                            ? article.description.substring(0, 80) + (article.description.length > 80 ? '...' : '')
+                            : article.description}
                     </p>
                     <div className="flex justify-between items-center mt-auto">
                         <div className="text-sm text-gray-400">
@@ -1048,7 +1050,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {data.articles.map(article => renderArticleCard(article))}
                     </div>
 
