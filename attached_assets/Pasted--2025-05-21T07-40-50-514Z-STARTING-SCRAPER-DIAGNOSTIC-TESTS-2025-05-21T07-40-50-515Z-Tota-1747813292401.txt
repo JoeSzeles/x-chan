@@ -1,0 +1,41 @@
+[2025-05-21T07:40:50.514Z] === STARTING SCRAPER DIAGNOSTIC TESTS ===
+[2025-05-21T07:40:50.515Z] Total test cases: 1
+[2025-05-21T07:40:50.515Z] System info:
+[2025-05-21T07:40:50.515Z] Node version: v20.18.1
+[2025-05-21T07:40:50.516Z] Platform: linux
+[2025-05-21T07:40:50.516Z] USE_MOCK_DATA flag: false
+[2025-05-21T07:40:50.516Z] === TESTING PUPPETEER DIRECTLY ===
+[2025-05-21T07:40:50.516Z] 1. Importing puppeteer...
+[2025-05-21T07:40:50.518Z] 2. Puppeteer imported successfully: object
+[2025-05-21T07:40:50.518Z] 3. Attempting to launch browser...
+[2025-05-21T07:40:50.548Z] ERROR launching browser: Failed to launch the browser process!
+/home/runner/.cache/puppeteer/chrome/linux-136.0.7103.49/chrome-linux64/chrome: error while loading shared libraries: libglib-2.0.so.0: cannot open shared object file: No such file or directory
+
+
+TROUBLESHOOTING: https://pptr.dev/troubleshooting
+
+[2025-05-21T07:40:50.548Z] Stack trace: Error: Failed to launch the browser process!
+/home/runner/.cache/puppeteer/chrome/linux-136.0.7103.49/chrome-linux64/chrome: error while loading shared libraries: libglib-2.0.so.0: cannot open shared object file: No such file or directory
+
+
+TROUBLESHOOTING: https://pptr.dev/troubleshooting
+
+    at Interface.onClose (file:///home/runner/workspace/backend/node_modules/@puppeteer/browsers/lib/esm/launch.js:314:24)
+    at Interface.emit (node:events:530:35)
+    at Interface.close (node:internal/readline/interface:527:10)
+    at Socket.onend (node:internal/readline/interface:253:10)
+    at Socket.emit (node:events:530:35)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+[2025-05-21T07:40:50.549Z] Puppeteer direct test result: FAILED
+[2025-05-21T07:40:50.549Z] === INSPECTING SCRAPER IMPLEMENTATION ===
+[2025-05-21T07:40:50.549Z] 1. scraperService type: object
+[2025-05-21T07:40:50.549Z] 2. scrapeYouTube method exists: true
+[2025-05-21T07:40:50.549Z] 3. First 100 chars of implementation: async scrapeYouTube(website) {
+        console.log('[ScraperService] Starting YouTube scraping for:'...
+[2025-05-21T07:40:50.549Z] 4. Implementation contains 'puppeteer': true
+[2025-05-21T07:40:50.549Z] 5. Implementation contains 'launch': true
+[2025-05-21T07:40:50.550Z] 6. Implementation contains 'goto': true
+[2025-05-21T07:40:50.550Z] Scraper implementation check: COMPLETE
+[2025-05-21T07:40:50.550Z] CRITICAL ERROR: Puppeteer is not working correctly. Skipping YouTube scraper tests.
+[2025-05-21T07:40:50.550Z] This suggests an issue with the puppeteer installation or browser execution environment.
