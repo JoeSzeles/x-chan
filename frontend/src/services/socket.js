@@ -1,4 +1,3 @@
-
 import { io } from 'socket.io-client';
 
 class SocketService {
@@ -8,15 +7,27 @@ class SocketService {
 
   connect() {
     if (!this.socket) {
-      const socketUrl = window.location.hostname.includes('replit.dev') 
-        ? `wss://${window.location.host}`
-        : 'http://0.0.0.0:5000';
-      
-      this.socket = io(socketUrl, {
-        transports: ['websocket', 'polling'],
+      this.socket = io('/', {
         path: '/socket.io/',
+        transports: ['polling'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 30000,
+        forceNew: true,
         withCredentials: true,
-        secure: true
+        upgrade: false
+      });
+
+      this.socket.on('connect_error', (error) => {
+        console.error('[Socket] Connection error:', error);
+      });
+
+      this.socket.on('disconnect', (reason) => {
+        console.log('[Socket] Disconnected:', reason);
+        if (reason === 'io server disconnect') {
+          this.socket.connect();
+        }
       });
     }
     return this.socket;
