@@ -42,6 +42,17 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const [lastArticleCount, setLastArticleCount] = useState(0);
     const [socket, setSocket] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
+    const [isWideMode, setIsWideMode] = useState(window.innerWidth > 1024);
+    
+    // Handle window resize to detect wide mode
+    useEffect(() => {
+        const handleResize = () => {
+            setIsWideMode(window.innerWidth > 1024);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     const queryClient = useQueryClient();
     const limit = 20;
     const [bookmarkedArticles, setBookmarkedArticles] = useState(new Set());
@@ -907,7 +918,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         {article.title}
                     </h3>
                     <p className="text-gray-300 text-sm mb-4 flex-grow overflow-hidden">
-                        {window.innerWidth > 1024 && data.articles.length > 6 
+                        {isWideMode && data.articles.length > 6 
                             ? article.description.substring(0, 80) + (article.description.length > 80 ? '...' : '')
                             : article.description}
                     </p>
@@ -1050,7 +1061,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className={`grid grid-cols-1 md:grid-cols-2 ${isWideMode ? "lg:grid-cols-4 w-full" : ""} gap-4`}>
                         {data.articles.map(article => renderArticleCard(article))}
                     </div>
 
