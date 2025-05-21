@@ -575,44 +575,53 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         }
     };
 
-    const getYouTubeThumbnail = (url) => {
-        try {
-            let videoId;
-            const urlObj = new URL(url);
-
-            if (url.includes('youtube.com/watch')) {
-                videoId = urlObj.searchParams.get('v');
-            } else if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
-            } else if (url.includes('youtube.com/embed/')) {
-                videoId = url.split('embed/')[1]?.split(/[?#]/)[0];
-            } else if (url.includes('youtube.com/shorts/')) {
-                videoId = url.split('shorts/')[1]?.split(/[?#]/)[0];
-            }
-
-            if (!videoId) {
-                console.error('Could not extract video ID from URL:', url);
-                return '/avatar-placeholder.png';
-            }
-
-            return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-        } catch (error) {
-            console.error('Error parsing YouTube URL:', error);
-            return '/avatar-placeholder.png';
-        }
+    // For YouTube handling
+    const isYouTubeUrl = (url) => {
+        if (!url) return false;
+        return url.includes('youtube.com') || url.includes('youtu.be') || 
+               // Also detect mock YouTube URLs from the scraper
+               (url.includes('mock') && url.includes('watch?v='));
     };
 
-    const isYouTubeUrl = (url) => {
+    // Get a proper YouTube thumbnail URL from any YouTube URL
+    const getYouTubeThumbnail = (url) => {
+        if (!url) return null;
+
         try {
-            if (!url) return false;
-            return url.includes('youtube.com/watch') || 
-                   url.includes('youtu.be/') || 
-                   url.includes('youtube.com/embed/') ||
-                   url.includes('youtube.com/shorts/');
+            let videoId = null;
+
+            // Handle youtu.be format
+            if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
+            } 
+            // Handle standard youtube.com/watch?v= format
+            else if (url.includes('youtube.com/watch')) {
+                const urlObj = new URL(url);
+                videoId = urlObj.searchParams.get('v');
+            } 
+            // Handle embed format
+            else if (url.includes('youtube.com/embed/')) {
+                videoId = url.split('embed/')[1]?.split(/[?#]/)[0];
+            } 
+            // Handle shorts format
+            else if (url.includes('youtube.com/shorts/')) {
+                videoId = url.split('shorts/')[1]?.split(/[?#]/)[0];
+            }
+            // Handle mock URLs from scraper
+            else if (url.includes('mock')) {
+                // Use a default YouTube video ID for mock URLs
+                return 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
+            }
+
+            if (videoId) {
+                return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            }
         } catch (error) {
-            console.error('Error checking YouTube URL:', error);
-            return false;
+            console.error('Error extracting YouTube video ID:', error);
         }
+
+        // Fallback to a default thumbnail
+        return 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
     };
 
     const getCleanYouTubeUrl = (url) => {
@@ -781,26 +790,37 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 <div className="flex flex-col h-full">
                     {isYouTube ? (
                         <div className="mb-4 relative" onClick={(e) => e.stopPropagation()}>
-                            {hasFailedThumbnail ? (
-                                getPlaceholderImage(true)
-                            ) : (
-                                <>
-                                    <img
-                                        src={thumbnailUrl}
-                                        alt={article.title}
-                                        className="w-full h-48 object-cover rounded-lg"
-                                        onError={() => handleImageError(article._id, true)}
-                                        loading="lazy"
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity">
-                                            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
+                            {/* YouTube-specific fallback for thumbnail error */}
+                                        {isYouTubeUrl(article.url) && failedThumbnails.has(article._id) && (
+                                            <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
+                                                <div className="text-center">
+                                                    <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22-2.65-.28-1.3-.07-2.49-.1-3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
+                                                    </svg>
+                                                    <p className="text-white text-sm">YouTube Video</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Additional attempt with direct thumbnail URL if normal image fails */}
+                                        {isYouTubeUrl(article.url) && failedThumbnails.has(article._id) && (
+                                            <img 
+                                                src={getYouTubeThumbnail(article.url)} 
+                                                alt={article.title}
+                                                className="absolute inset-0 w-full h-full object-cover object-center rounded-lg"
+                                                onError={(e) => e.target.style.display = 'none'}
+                                                style={{display: 'none'}}
+                                                onLoad={(e) => {
+                                                    e.target.style.display = 'block';
+                                                    setFailedThumbnails(prev => {
+                                                        const newSet = new Set(prev);
+                                                        newSet.delete(article._id);
+                                                        return newSet;
+                                                    });
+                                                }}
+                                            />
+                                        )}
+
                         </div>
                     ) : article.imageUrl && !hasFailedThumbnail ? (
                         <div className="mb-4">
@@ -1092,17 +1112,12 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                 </div>
                             ) : (
                                 <div className="mb-4 aspect-video">
-                                    <iframe
-                                        src={getYouTubeEmbedUrl(selectedArticle.url)}
-                                        title={selectedArticle.title}
-                                        className="w-full h-full rounded-lg"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                        onError={handleEmbedError}
-                                        loading="lazy"
-                                        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
-                                        referrerPolicy="strict-origin"
-                                    />
+                                    <div className="video-container">
+                                <YouTubeEmbed 
+                                    url={selectedArticle.url} 
+                                    onError={handleEmbedError}
+                                />
+                            </div>
                                 </div>
                             )
                         ) : selectedArticle.imageUrl && !failedThumbnails.has(selectedArticle._id) ? (
@@ -1149,6 +1164,75 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     </div>
                 </div>
             )}
+        </div>
+    );
+};
+
+const YouTubeEmbed = ({ url, onError }) => {
+    const [embedUrl, setEmbedUrl] = useState(null);
+    const [loadError, setLoadError] = useState(false);
+
+    useEffect(() => {
+        try {
+            // Handle different YouTube URL formats
+            let videoId;
+            if (url.includes('youtube.com/watch')) {
+                videoId = new URL(url).searchParams.get('v');
+            } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            } else if (url.includes('youtube.com/embed/')) {
+                videoId = url.split('embed/')[1].split('?')[0];
+            } else if (url.includes('youtube.com/shorts/')) {
+                videoId = url.split('shorts/')[1].split('?')[0];
+            }
+
+            if (!videoId) {
+                console.error('Could not extract video ID from URL:', url);
+                setLoadError(true);
+                return;
+            }
+
+            const youtubeUrl = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&modestbranding=1`;
+
+            setEmbedUrl(youtubeUrl);
+        } catch (error) {
+            console.error('Error parsing YouTube URL:', error);
+            setLoadError(true);
+        }
+    }, [url]);
+
+    if (loadError) {
+        console.error('Failed to load YouTube video:', url);
+        if (onError) {
+            onError();
+        }
+        return (
+            <div className="aspect-video bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
+                <div className="text-center p-4">
+                    <svg className="w-16 h-16 text-white mx-auto mb-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                    </svg>
+                    <p className="text-white text-lg mb-2">Unable to play video</p>
+                    <p className="text-white/80 text-sm mb-4">There was an issue loading the video.</p>
+                </div>
+            </div>
+        );
+    }
+
+    return embedUrl ? (
+        <iframe
+            src={embedUrl}
+            title="YouTube video player"
+            className="w-full h-full rounded-lg"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
+            referrerPolicy="strict-origin"
+        />
+    ) : (
+        <div className="aspect-video bg-gray-700 rounded-lg flex items-center justify-center">
+            <LoadingSpinner size="lg" />
         </div>
     );
 };
