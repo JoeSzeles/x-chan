@@ -170,12 +170,13 @@ export const getBotArticles = async (req, res) => {
 
 export const updateBotArticles = async (req, res) => {
     try {
-        const { force } = req.query;
+        const { force, debug } = req.query;
         const botId = req.params.botId;
 
         console.log('[NewsBotController] Starting update:', {
             botId,
-            force,
+            force: !!force,
+            debug: !!debug,
             userId: req.user._id,
             timestamp: new Date().toISOString()
         });
@@ -196,17 +197,21 @@ export const updateBotArticles = async (req, res) => {
         console.log('[NewsBotController] Bot found:', {
             name: bot.name,
             websiteCount: bot.websites.length,
-            lastUpdate: bot.lastUpdate
+            lastUpdate: bot.lastUpdate,
+            websites: bot.websites.map(w => ({
+                url: w.url,
+                type: w.type,
+                searchTerms: w.searchTerms,
+                active: w.active
+            }))
         });
 
-        // Set force update flag if requested
-        if (force) {
-            bot.forceUpdate = true;
-            await bot.save();
-        }
+        // Set force update flag if requested (we'll pass it directly now)
+        const forceUpdate = force === 'true' || force === '1';
 
         try {
-            const result = await newsBotService.updateBotArticles(req.params.botId);
+            // Pass the force flag directly to the service
+            const result = await newsBotService.updateBotArticles(req.params.botId, forceUpdate);
 
             // Check if the result has expected properties
             if (!result || !result.success) {
@@ -225,11 +230,13 @@ export const updateBotArticles = async (req, res) => {
                 newArticles: Array.isArray(data.newArticles) ? data.newArticles : [],
                 totalArticles: data.totalArticles || 0,
                 errorCount: data.errorCount || 0,
-                articles: Array.isArray(data.articles) ? data.articles : []
+                articles: Array.isArray(data.articles) ? data.articles : [],
+                skipped: data.skipped || false
             };
 
             // Log the successful result with safe property access
             console.log('[NewsBotController] Update result:', {
+                skipped: safeData.skipped,
                 newArticles: safeData.newArticles.length,
                 errorCount: safeData.errorCount,
                 totalArticles: safeData.totalArticles
@@ -238,7 +245,7 @@ export const updateBotArticles = async (req, res) => {
             // Return success response with safe data
             return res.status(200).json({ 
                 success: true, 
-                message: "Articles updated successfully", 
+                message: safeData.skipped ? "Update skipped due to interval" : "Articles updated successfully", 
                 data: safeData
             });
         } catch (serviceError) {

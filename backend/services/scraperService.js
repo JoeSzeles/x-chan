@@ -4,6 +4,29 @@ import puppeteer from "puppeteer";
 
 class ScraperService {
     async scrapeWebsite(website) {
+        console.log('[ScraperService] Starting scrape of website:', {
+            url: website.url,
+            type: website.type,
+            searchTerms: website.searchTerms
+        });
+
+        // Check if we're using mock data
+        if (global.USE_MOCK_DATA) {
+            console.log('[ScraperService] Using mock data for scraping');
+
+            if (website.type === 'video' && website.url.includes('youtube.com')) {
+                console.log('[ScraperService] Generating YouTube mock data');
+                const articles = this.generateMockYouTubeData(website);
+                console.log(`[ScraperService] Generated ${articles.length} mock YouTube articles`);
+                return articles;
+            }
+
+            // Return mock data for other types
+            console.log('[ScraperService] Generating generic mock news data');
+            const articles = this.generateMockNewsData(website);
+            console.log(`[ScraperService] Generated ${articles.length} mock news articles`);
+            return articles;
+        }
         console.log('[ScraperService] Starting scrape:', {
             url: website.url,
             type: website.type,
@@ -853,4 +876,4 @@ class ScraperService {
     }
 }
 
-export default new ScraperService(); 
+export default new ScraperService();
