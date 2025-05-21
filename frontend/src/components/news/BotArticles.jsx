@@ -836,8 +836,13 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                 <img 
                                     src={Array.isArray(thumbnailUrls) ? thumbnailUrls[0] : thumbnailUrls}
                                     alt={article.title}
-                                    className="w-full h-full object-cover rounded-lg"
+                                    className="w-full h-full object-cover rounded-lg cursor-pointer"
                                     data-index="0"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleViewDetails(article);
+                                    }}
                                     onError={(e) => {
                                         // Try next thumbnail in the array if available
                                         if (Array.isArray(thumbnailUrls)) {
@@ -853,7 +858,14 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                             
                             {/* YouTube-specific fallback for thumbnail error */}
                             {isYouTube && hasFailedThumbnail && (
-                                <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
+                                <div 
+                                    className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg cursor-pointer"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleViewDetails(article);
+                                    }}
+                                >
                                     <div className="text-center">
                                         <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
@@ -869,13 +881,27 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                             <img
                                 src={article.imageUrl}
                                 alt={article.title}
-                                className="w-full h-48 object-cover rounded-lg"
+                                className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleViewDetails(article);
+                                }}
                                 onError={() => handleImageError(article._id)}
                                 loading="lazy"
                             />
                         </div>
                     ) : (
-                        getPlaceholderImage()
+                        <div 
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleViewDetails(article);
+                            }}
+                        >
+                            {getPlaceholderImage()}
+                        </div>
                     )}
                     <h3 className="text-lg font-semibold text-white mb-2">
                         {article.title}
