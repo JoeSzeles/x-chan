@@ -12,8 +12,8 @@ import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
 
 // Set global flags for debugging and mock data
-// Enable mock data by default in development environment
-global.USE_MOCK_DATA = process.env.NODE_ENV !== 'production';
+// Force enable mock data for now due to environment compatibility issues
+global.USE_MOCK_DATA = true; 
 console.log(`Mock data ${global.USE_MOCK_DATA ? 'ENABLED' : 'DISABLED'} - ${global.USE_MOCK_DATA ? 'using mock data for scraping' : 'system will attempt real scraping'}`);
 
 // Configure Puppeteer environment
