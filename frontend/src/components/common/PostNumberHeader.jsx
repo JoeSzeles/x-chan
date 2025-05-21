@@ -133,7 +133,7 @@ const PostNumberHeader = ({
                 <span>{formatTimeAgo(displayTimestamp)}</span>
                 <span>•</span>
                 <span 
-                    className="cursor-pointer hover:text-blue-400 transition-colors"
+                    className="cursor-pointer text-blue-400 hover:text-blue-300 transition-colors"
                     onClick={handlePostNumberClick}
                     title={onQuoteClick ? "Click to quote this post" : "Click to copy reference"}
                     onMouseEnter={handleMouseEnter}
