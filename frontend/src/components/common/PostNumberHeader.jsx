@@ -90,12 +90,14 @@ const PostNumberHeader = ({
                         {quotedBy.map((quoteNumber, index) => (
                             <React.Fragment key={quoteNumber}>
                                 {index > 0 && <span className="text-gray-500">,</span>}
-                                <PostNumberLink
-                                    key={quoteNumber}
-                                    postNumber={quoteNumber}
-                                    onQuoteClick={onQuoteClick}
-                                    className="text-blue-500 hover:text-blue-400 cursor-pointer"
-                                />
+                                <span className="text-blue-500">
+                                    <PostNumberLink
+                                        key={quoteNumber}
+                                        postNumber={quoteNumber}
+                                        onQuoteClick={onQuoteClick}
+                                        showQuotePreview={true}
+                                    />
+                                </span>
                             </React.Fragment>
                         ))}
                     </div>
