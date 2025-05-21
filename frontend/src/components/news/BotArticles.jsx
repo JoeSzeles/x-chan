@@ -992,7 +992,17 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className={`w-full ${isWideMode ? "max-w-none" : ""}`} style={isWideMode ? {width: '100vw', maxWidth: '100vw', marginLeft: '-1rem', marginRight: '-1rem', paddingLeft: '1rem', paddingRight: '1rem'} : {}}>
+        <div className={`w-full ${isWideMode ? "max-w-full" : ""}`} 
+             style={isWideMode ? {
+                width: 'calc(100vw - 4rem)', 
+                maxWidth: '100%', 
+                marginLeft: '-1rem', 
+                marginRight: '-1rem', 
+                paddingLeft: '1.5rem', 
+                paddingRight: '1.5rem',
+                position: 'relative',
+                left: '-0.5rem'
+             } : {}}>
             {isLoading ? (
                 <div className="flex justify-center items-center h-32">
                     <LoadingSpinner size="lg" />
@@ -1061,7 +1071,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    <div className={`grid grid-cols-1 md:grid-cols-2 ${isWideMode ? "lg:grid-cols-4 xl:grid-cols-5" : ""} gap-4 w-full`}>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 ${isWideMode ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : ""} gap-5 w-full`}>
                         {data.articles.map(article => renderArticleCard(article))}
                     </div>
 
