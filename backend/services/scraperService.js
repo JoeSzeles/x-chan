@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import puppeteer from "puppeteer";
+import puppeteer from 'puppeteer';
 
 class ScraperService {
     async scrapeWebsite(website) {
@@ -113,46 +113,20 @@ class ScraperService {
     }
 
     async scrapeYouTube(website) {
-        console.log('[ScraperService] Starting YouTube scraping for:', website.url);
-        console.log('[ScraperService] Website config:', {
-            url: website.url,
-            type: website.type,
-            searchTerms: website.searchTerms
-        });
+        console.log('[ScraperService] Starting YouTube scraping for:', website);
 
-        // Check for potentially filtered terms and provide more common alternatives 
-        const sensitiveTerms = ['nsfw', 'xxx', 'porn'];
-        let searchTermsString = website.searchTerms || "technology news";
-
-        // Clean up trailing commas from search terms
-        searchTermsString = searchTermsString.replace(/,\s*$/, '');
-
-        // Check if any sensitive terms are in the search and replace with safer alternatives
-        if (sensitiveTerms.some(term => searchTermsString.toLowerCase().includes(term))) {
-            console.log('[ScraperService] Detected potentially filtered search terms, using safer alternatives');
-            searchTermsString = "news, gaming news, tech reviews";
-        }
-
-        try {
-            console.log('[ScraperService] DEBUG: Initializing browser with parameters');
         const browser = await puppeteer.launch({
-                headless: true, // Use headless mode in Replit environment
-                args: [
-                    '--no-sandbox', 
-                    '--disable-setuid-sandbox', 
-                    '--disable-web-security',
-                    '--disable-features=IsolateOrigins',
-                    '--disable-site-isolation-trials',
-                    '--window-size=1280,800',
-                    '--disable-extensions',
-                    '--disable-gpu',
-                    '--disable-dev-shm-usage'
-                ],
-                defaultViewport: {
-                    width: 1280,
-                    height: 800
-                },
-                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gpu',
+                '--no-first-run',
+                '--no-zygote'
+            ],
+            headless: "new",
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null
         });
 
         try {
@@ -340,7 +314,7 @@ class ScraperService {
                                                 const match = url.match(/shorts\/([^?&]+)/);
                                                 if (match && match[1]) videoId = match[1];
                                             }
-                                            
+
                                             if (videoId) {
                                                 thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                                                 console.log('[ScraperService] Generated thumbnail for video ID:', videoId);
@@ -858,34 +832,34 @@ class ScraperService {
             return url;
         }
     }
-    
+
     async scrapeWebsite(website) {
         console.log(`[ScraperService] Starting scrape for website: ${website.url}`);
         console.log(`[ScraperService] Website type: ${website.type}, Search terms: ${website.searchTerms}`);
         console.log(`[ScraperService] USE_MOCK_DATA flag is: ${global.USE_MOCK_DATA}`);
-        
+
         if (global.USE_MOCK_DATA) {
             console.log('[ScraperService] Using mock data instead of real scraping');
             return this.generateMockYouTubeData(website);
         }
-        
+
         try {
             console.log(`[ScraperService] Attempting real scrape for: ${website.url}`);
-            
+
             // Add detailed logging for YouTube scraping
-            if (website.type === 'video' && website.url.includes('youtube.com')) {
+            if (website.type === 'video' && website.url.includes('youtube.com)')) {
                 console.log('[ScraperService] YouTube scraping detected');
                 const results = await this.scrapeYouTube(website);
                 console.log(`[ScraperService] YouTube scrape results: ${results ? results.length : 0} videos found`);
                 return results;
             }
-            
+
             // Your existing code follows here
-            
+
         } catch (error) {
             console.error(`[ScraperService] Scraping error for ${website.url}:`, error);
             console.error(`[ScraperService] Error stack: ${error.stack}`);
-            
+
             // Fallback to mock data on error
             console.log('[ScraperService] Falling back to mock data due to error');
             return this.generateMockYouTubeData(website);
