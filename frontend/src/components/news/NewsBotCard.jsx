@@ -323,63 +323,16 @@ const NewsBotCard = (props) => {
             return data;
         },
         {
-            onSuccess: (data) => {
-                // Use toast instead of alert for better UX
-                toast.success('Refreshing articles...', {
-                    duration: 3000,
-                    position: "bottom-right",
-                    style: {
-                        background: '#1a1a1a',
-                        color: '#fff',
-                        border: '1px solid #333'
-                    }
-                });
-                
-                // Determine if the update was real or skipped
-                const wasSkipped = data.data?.skipped;
-                
-                if (wasSkipped) {
-                    toast.info('Update interval not reached, but refreshing anyway', {
-                        duration: 3000,
-                        position: "bottom-right",
-                        style: {
-                            background: '#1a1a1a',
-                            color: '#fff',
-                            border: '1px solid #333'
-                        }
-                    });
-                } else {
-                    // Show how many new articles were found if any
-                    const newArticlesCount = data.data?.newArticles?.length || 0;
-                    if (newArticlesCount > 0) {
-                        toast.success(`Found ${newArticlesCount} new articles!`, {
-                            duration: 3000,
-                            position: "bottom-right",
-                            style: {
-                                background: '#1a1a1a',
-                                color: '#fff',
-                                border: '1px solid #333'
-                            }
-                        });
-                    }
-                }
-                
-                // Refresh the articles display
+            onSuccess: () => {
+                alert('Force update successful! Check console for details.');
+                // You might want to refresh the articles here
                 if (props.onRefresh) {
                     props.onRefresh();
                 }
             },
             onError: (error) => {
                 console.error('Force update failed:', error);
-                toast.error(`Update failed: ${error.message}`, {
-                    duration: 3000,
-                    position: "bottom-right",
-                    style: {
-                        background: '#1a1a1a',
-                        color: '#fff',
-                        border: '1px solid #333'
-                    }
-                });
+                alert(`Force update failed: ${error.message}`);
             }
         }
     );
