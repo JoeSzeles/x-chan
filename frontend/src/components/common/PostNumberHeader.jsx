@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatPostNumber, formatTimestamp, getCountryFlag } from '../../utils/postNumberUtils';
 import PostNumberLink from './PostNumberLink';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
+import { useQuery } from 'react-query';
 
 const PostNumberHeader = ({ 
     post, 
@@ -42,23 +43,71 @@ const PostNumberHeader = ({
         return null;
     }
 
+    const [showPreview, setShowPreview] = useState(false);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const previewRef = useRef(null);
+
+    // Fetch post data when preview is shown
+    const { data: postData, isLoading } = useQuery({
+        queryKey: ['post', displayPostNumber],
+        queryFn: async () => {
+            const res = await fetch(`/api/posts/number/${displayPostNumber}`);
+            if (!res.ok) throw new Error('Post not found');
+            return res.json();
+        },
+        enabled: showPreview,
+    });
+
+    // Handle mouse enter
+    const handleMouseEnter = (e) => {
+        setMousePosition({ x: e.clientX, y: e.clientY });
+        setShowPreview(true);
+    };
+
+    // Handle mouse leave
+    const handleMouseLeave = () => {
+        setShowPreview(false);
+    };
+
     const handlePostNumberClick = (e) => {
         e.stopPropagation();
-        
+
         if (onQuoteClick) {
             // If onQuoteClick is provided, use it for the primary click action
             onQuoteClick(displayPostNumber);
-        } else {
-            // Default behavior: copy to clipboard
-            const formattedNumber = formatPostNumber(displayPostNumber);
-            const reference = `>>${formattedNumber}`;
-            navigator.clipboard.writeText(reference).then(() => {
-                toast.success('Post reference copied to clipboard!');
-            }).catch(() => {
-                toast.error('Failed to copy post reference');
-            });
+            return;
         }
+
+        // Default behavior: copy to clipboard
+        const formattedNumber = formatPostNumber(displayPostNumber);
+        const reference = `>>${formattedNumber}`;
+        navigator.clipboard.writeText(reference).then(() => {
+            toast.success('Post reference copied to clipboard!');
+        }).catch(() => {
+            toast.error('Failed to copy post reference');
+        });
     };
+
+    // Update preview position
+    useEffect(() => {
+        if (showPreview && previewRef.current) {
+            const preview = previewRef.current;
+            const rect = preview.getBoundingClientRect();
+
+            // Check if preview would go off screen
+            if (mousePosition.x + rect.width > window.innerWidth) {
+                preview.style.left = `${mousePosition.x - rect.width}px`;
+            } else {
+                preview.style.left = `${mousePosition.x}px`;
+            }
+
+            if (mousePosition.y + rect.height > window.innerHeight) {
+                preview.style.top = `${mousePosition.y - rect.height}px`;
+            } else {
+                preview.style.top = `${mousePosition.y}px`;
+            }
+        }
+    }, [showPreview, mousePosition]);
 
     return (
         <div className={`flex flex-wrap items-center gap-2 text-sm text-gray-400 ${className}`}>
@@ -84,6 +133,8 @@ const PostNumberHeader = ({
                     className="cursor-pointer hover:text-blue-400 transition-colors"
                     onClick={handlePostNumberClick}
                     title={onQuoteClick ? "Click to quote this post" : "Click to copy reference"}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                 >
                     No.{formatPostNumber(displayPostNumber)}
                 </span>
@@ -102,6 +153,28 @@ const PostNumberHeader = ({
                         />
                     ))}
                 </>
+            )}
+             {/* Post Preview */}
+             {showPreview && (
+                <div
+                    ref={previewRef}
+                    className="fixed z-50 p-4 bg-white border border-gray-200 rounded-md shadow-lg"
+                    style={{
+                        top: mousePosition.y,
+                        left: mousePosition.x,
+                    }}
+                >
+                    {isLoading ? (
+                        <p>Loading...</p>
+                    ) : postData ? (
+                        <div className="max-w-md">
+                            <p className="text-sm text-gray-800">{postData.content}</p>
+                            {/* You can add more details here, like user info, timestamp, etc. */}
+                        </div>
+                    ) : (
+                        <p>Post not found</p>
+                    )}
+                </div>
             )}
         </div>
     );
@@ -133,4 +206,4 @@ PostNumberHeader.propTypes = {
     className: PropTypes.string
 };
 
-export default PostNumberHeader; 
+export default PostNumberHeader;
