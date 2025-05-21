@@ -12,7 +12,7 @@ const NewsCards = ({ viewMode }) => {
             });
             if (!botsRes.ok) throw new Error('Failed to fetch bots');
             const botsData = await botsRes.json();
-            
+
             if (!botsData.success || !botsData.data || botsData.data.length === 0) {
                 return [];
             }
@@ -71,6 +71,15 @@ const NewsCards = ({ viewMode }) => {
         return viewCount + ' views';
     };
 
+    const playVideo = (url) => {
+        const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1];
+        if (videoId) {
+            window.open(`https://www.youtube.com/embed/${videoId}?autoplay=1`, '_blank', 'width=800,height=450');
+        } else {
+            window.open(url, '_blank');
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -97,7 +106,10 @@ const NewsCards = ({ viewMode }) => {
                     }`}
                 >
                     {isVideoUrl(article.url) ? (
-                        <div className={`${viewMode === "grid" ? "h-48" : "h-64"} relative`}>
+                        <div 
+                            className={`${viewMode === "grid" ? "h-48" : "h-64"} relative aspect-video cursor-pointer`}
+                            onClick={() => playVideo(article.url)}
+                        >
                             <img
                                 src={getVideoThumbnail(article.url)}
                                 alt={article.title}
@@ -107,7 +119,7 @@ const NewsCards = ({ viewMode }) => {
                                     e.target.src = 'https://via.placeholder.com/400x300?text=Video+Preview';
                                 }}
                             />
-                            <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="absolute inset-0 flex items-center justify-center hover:bg-black/20 transition-colors">
                                 <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
@@ -135,13 +147,13 @@ const NewsCards = ({ viewMode }) => {
                     ) : null}
                     <div className="p-4">
                         <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
-                        <p className="text-gray-400 text-sm mb-4">{article.description}</p>
-                        
+                        <p className="text-gray-400 text-sm mb-4 line-clamp-2">{article.description}</p>
+
                         {isVideoUrl(article.url) && (
                             <div className="mb-3">
-                                {article.author && (
+                                {(article.author || article.channel?.name) && (
                                     <a 
-                                        href={article.channel?.link} 
+                                        href={article.channel?.link || '#'} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className="text-sm text-blue-400 hover:text-blue-300 block mb-1"
@@ -149,23 +161,21 @@ const NewsCards = ({ viewMode }) => {
                                         {article.author || article.channel?.name}
                                     </a>
                                 )}
-                                <div className="flex items-center text-xs text-gray-400 space-x-2">
+                                <div className="flex flex-wrap items-center text-xs text-gray-400 gap-2">
                                     {article.views && <span>{formatViews(article.views)}</span>}
                                     {article.uploaded && <span>• {article.uploaded}</span>}
                                 </div>
                             </div>
                         )}
-                        
-                        <div className="flex justify-between items-center text-sm text-gray-500">
-                            <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
-                            <a
-                                href={article.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+
+                        <div className="flex justify-between items-center text-sm mt-2">
+                            <span className="text-gray-500">{new Date(article.publishedAt).toLocaleDateString()}</span>
+                            <button
+                                onClick={() => playVideo(article.url)}
                                 className="text-blue-500 hover:text-blue-400"
                             >
                                 {isVideoUrl(article.url) ? 'Watch' : 'Read more'}
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -174,4 +184,4 @@ const NewsCards = ({ viewMode }) => {
     );
 };
 
-export default NewsCards; 
+export default NewsCards;
