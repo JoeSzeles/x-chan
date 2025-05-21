@@ -20,7 +20,6 @@ try {
 module.exports = {
   cacheDirectory: '.cache/puppeteer',
   skipDownload: false,
-  browserRevision: '',
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
@@ -69,6 +68,15 @@ module.exports = {
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
       console.log('Added test-scraper script to package.json');
     }
+  }
+
+  // Install Chrome for Puppeteer if needed
+  try {
+    console.log('Installing Chrome for Puppeteer...');
+    execSync('npx puppeteer browsers install chrome', { stdio: 'inherit' });
+    console.log('Chrome installed successfully');
+  } catch (error) {
+    console.error('Error installing Chrome:', error.message);
   }
 
   console.log('Puppeteer setup completed successfully');
