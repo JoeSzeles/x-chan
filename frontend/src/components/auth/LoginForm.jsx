@@ -5,7 +5,7 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
 const LoginForm = () => {
-    const [identifier, setIdentifier] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
@@ -21,7 +21,9 @@ const LoginForm = () => {
                 console.log('[LoginForm] Token stored successfully');
                 
                 // Store user data if available
-                localStorage.setItem('userData', JSON.stringify(data));
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                }
                 
                 toast.success('Login successful!');
                 navigate('/');
@@ -37,26 +39,20 @@ const LoginForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Check if the identifier is an email or username
-        const isEmail = identifier.includes('@');
-        const credentials = {
-            [isEmail ? 'email' : 'username']: identifier,
-            password
-        };
-        loginMutation.mutate(credentials);
+        loginMutation.mutate({ email, password });
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-                <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
-                    Username or Email
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email
                 </label>
                 <input
-                    type="text"
-                    id="identifier"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     required
                 />
