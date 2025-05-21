@@ -51,8 +51,11 @@ async function testPuppeteerDirectly() {
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
-          '--disable-web-security'
-        ]
+          '--disable-web-security',
+          '--disable-gpu',
+          '--disable-dev-shm-usage'
+        ],
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
       });
       
       log('4. Browser launched successfully!');
