@@ -12,14 +12,13 @@ import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
 
 // Set global flags for debugging and mock data
-// Force enable mock data due to Replit environment compatibility issues with Puppeteer
-global.USE_MOCK_DATA = true; 
+// Let the USE_MOCK_DATA environment variable control mock data usage
+global.USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true'; 
 console.log(`Mock data ${global.USE_MOCK_DATA ? 'ENABLED' : 'DISABLED'} - ${global.USE_MOCK_DATA ? 'using mock data for scraping' : 'system will attempt real scraping'}`);
 
-// Running in Replit environment, ensure we're using mock data
+// Warn if running in Replit environment
 if (process.env.REPL_ID || process.env.REPL_SLUG) {
-    global.USE_MOCK_DATA = true;
-    console.log('Replit environment detected: Forcing USE_MOCK_DATA to true');
+    console.log('Replit environment detected: Make sure Chrome dependencies are installed');
 }
 
 // Configure Puppeteer environment - updated path with more precise version detection

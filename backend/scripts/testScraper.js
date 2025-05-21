@@ -6,9 +6,35 @@ import fs from 'fs';
 import puppeteer from 'puppeteer';
 import scraperService from '../services/scraperService.js';
 
-// Force disable mock data for testing real scraping
+// Set USE_MOCK_DATA based on environment variable
 global.USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true' ? true : false;
 console.log(`[TestScript] USE_MOCK_DATA set to: ${global.USE_MOCK_DATA}`);
+
+// Check for required Chrome dependencies
+try {
+  const fs = fs; // Use existing fs import
+  const missingDeps = [];
+  const requiredDeps = [
+    '/lib/x86_64-linux-gnu/libglib-2.0.so.0',
+    '/lib/x86_64-linux-gnu/libnss3.so',
+    '/lib/x86_64-linux-gnu/libxcb.so.1'
+  ];
+  
+  for (const dep of requiredDeps) {
+    if (!fs.existsSync(dep)) {
+      missingDeps.push(dep);
+    }
+  }
+  
+  if (missingDeps.length > 0) {
+    console.warn('[WARNING] Missing Chrome dependencies detected:', missingDeps);
+    console.warn('[WARNING] Real scraping might fail until these are installed via System Dependencies pane');
+  } else {
+    console.log('[TestScript] All critical Chrome dependencies appear to be available');
+  }
+} catch (err) {
+  console.warn('[WARNING] Could not check for Chrome dependencies:', err.message);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
