@@ -69,9 +69,15 @@ const NotificationPage = () => {
 				return notifications;
 			} catch (error) {
 				console.error("Error fetching notifications:", error);
-				return [];
+				// Properly throw the error so React Query can handle it
+				throw new Error(error.response?.data?.error || "Failed to fetch notifications");
 			}
 		},
+		retry: 1,
+		retryDelay: 1000,
+		onError: (error) => {
+			toast.error(error.message || "Failed to load notifications");
+		}
 	});
 
 	// Socket.IO setup
@@ -86,14 +92,8 @@ const NotificationPage = () => {
 				socket.disconnect();
 			}
 
-			socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
-				path: '/socket.io',
-				transports: ['polling'],
-				reconnection: false,
-				timeout: 10000,
-				withCredentials: true,
-				forceNew: true
-			});
+			// Use the socketService instead of creating a new connection
+			socket = socketService.connect();
 
 			socket.on('connect', () => {
 				console.log('Socket connected successfully');
