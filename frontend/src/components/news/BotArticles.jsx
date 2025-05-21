@@ -578,9 +578,9 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const getYouTubeThumbnail = (url) => {
         try {
             let videoId;
+            const urlObj = new URL(url);
 
             if (url.includes('youtube.com/watch')) {
-                const urlObj = new URL(url);
                 videoId = urlObj.searchParams.get('v');
             } else if (url.includes('youtu.be/')) {
                 videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
@@ -595,18 +595,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 return '/avatar-placeholder.png';
             }
 
-            // Return array of possible thumbnail URLs in order of preference
-            // Including multiple domains and formats for better reliability
-            return [
-                `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
-                `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`, 
-                `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, // Alternative domain
-                `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-                `https://i.ytimg.com/vi/${videoId}/default.jpg`,
-                `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
-                `https://img.youtube.com/vi/${videoId}/default.jpg`
-            ];
+            return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
         } catch (error) {
             console.error('Error parsing YouTube URL:', error);
             return '/avatar-placeholder.png';
@@ -783,61 +772,46 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     // Modify the article card rendering to include better error handling
     const renderArticleCard = (article) => {
         const isYouTube = isYouTubeUrl(article.url);
-        const thumbnailUrls = isYouTube ? getYouTubeThumbnail(article.url) : [article.imageUrl];
+        const thumbnailUrl = isYouTube ? getYouTubeThumbnail(article.url) : article.imageUrl;
         const hasFailedThumbnail = failedThumbnails.has(article._id);
         const isBookmarked = bookmarkedArticles.has(article._id);
-
-        // Function to handle progressive image loading with better logging
-        const tryNextThumbnail = (currentIndex, thumbnails, event) => {
-            if (Array.isArray(thumbnails) && currentIndex < thumbnails.length - 1) {
-                // Try the next thumbnail in the array
-                const nextIndex = currentIndex + 1;
-                const nextThumbnail = thumbnails[nextIndex];
-                console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
-
-                // Set new source and update the index attribute
-                event.target.src = nextThumbnail;
-                event.target.dataset.index = nextIndex;
-
-                // Preload the next thumbnail in the sequence for faster fallback
-                if (nextIndex < thumbnails.length - 1) {
-                    const preloadImage = new Image();
-                    preloadImage.src = thumbnails[nextIndex + 1];
-                }
-            } else {
-                // All thumbnails failed
-                console.error(`All thumbnails failed for article ${article._id}`);
-                handleImageError(article._id, isYouTube);
-            }
-        };
 
         return (
             <div key={article._id} className="bg-gray-700 rounded-lg p-4">
                 <div className="flex flex-col h-full">
                     {isYouTube ? (
-                                <div className="mb-4 relative aspect-video" onClick={(e) => e.stopPropagation()}>
-                                    {!hasFailedThumbnail && (
-                                        <img 
-                                            src={thumbnailUrls}
-                                            alt={article.title}
-                                            className="w-full h-full object-cover rounded-lg"
-                                            onError={() => handleImageError(article._id, isYouTube)}
-                                            loading="lazy"
-                                        />
-                                    )}
-
+                        <div className="mb-4 relative" onClick={(e) => e.stopPropagation()}>
                             {/* YouTube-specific fallback for thumbnail error */}
-                            {isYouTube && hasFailedThumbnail && (
-                                <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
-                                    <div className="text-center">
-                                        <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
-                                        </svg>
-                                        <p className="text-white text-sm">YouTube Video</p>
-                                        <div className="mt-2 text-xs text-white/70">{getCleanYouTubeUrl(article.url) ? new URL(getCleanYouTubeUrl(article.url)).pathname.substring(1) : 'Video'}</div>
-                                    </div>
-                                </div>
-                            )}
+                                        {isYouTubeUrl(article.url) && failedThumbnails.has(article._id) && (
+                                            <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
+                                                <div className="text-center">
+                                                    <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22-2.65-.28-1.3-.07-2.49-.1-3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
+                                                    </svg>
+                                                    <p className="text-white text-sm">YouTube Video</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Additional attempt with direct thumbnail URL if normal image fails */}
+                                        {isYouTubeUrl(article.url) && failedThumbnails.has(article._id) && (
+                                            <img 
+                                                src={getYouTubeThumbnail(article.url)} 
+                                                alt={article.title}
+                                                className="absolute inset-0 w-full h-full object-cover object-center rounded-lg"
+                                                onError={(e) => e.target.style.display = 'none'}
+                                                style={{display: 'none'}}
+                                                onLoad={(e) => {
+                                                    e.target.style.display = 'block';
+                                                    setFailedThumbnails(prev => {
+                                                        const newSet = new Set(prev);
+                                                        newSet.delete(article._id);
+                                                        return newSet;
+                                                    });
+                                                }}
+                                            />
+                                        )}
+                            
                         </div>
                     ) : article.imageUrl && !hasFailedThumbnail ? (
                         <div className="mb-4">
@@ -1091,6 +1065,8 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     </div>
                 </div>
             )}
+
+
 
             {/* Article Details Modal */}
             {selectedArticle && (
