@@ -233,6 +233,41 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const handleRefresh = async () => {
         setIsRefreshing(true);
         try {
+            // First force an update by calling the API with force=true
+            const updateResponse = await fetch(`/api/newsbot/${botId}/update?force=true`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const updateData = await updateResponse.json();
+            console.log('Force update response:', updateData);
+
+            // Show feedback to the user
+            if (updateData.message?.includes("Articles updated successfully")) {
+                toast.success("Refreshing articles...", {
+                    duration: 3000,
+                    position: "bottom-right",
+                    style: {
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        border: '1px solid #333'
+                    }
+                });
+            } else if (updateData.data?.skipped) {
+                toast.info("Update interval not reached. Forcing refresh anyway...", {
+                    duration: 3000,
+                    position: "bottom-right",
+                    style: {
+                        background: '#1a1a1a',
+                        color: '#fff',
+                        border: '1px solid #333'
+                    }
+                });
+            }
+
             // Force refetch by invalidating all queries
             await queryClient.invalidateQueries(["botArticles", botId]);
 
@@ -262,7 +297,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
             console.log(`Found ${validArticles.length} valid articles after filtering`);
-            
+
             // Add debug info in development
             console.log(`Article data sample:`, validArticles.length > 0 ? {
                 first: validArticles[0],
@@ -781,6 +816,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     newSet.add(article._id);
                 }
                 return newSet;
+            ```tool_code
             });
             toast.success(data.message || 'Bookmark updated');
         },
@@ -810,11 +846,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 const nextIndex = currentIndex + 1;
                 const nextThumbnail = thumbnails[nextIndex];
                 console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
-                
+
                 // Set new source and update the index attribute
                 event.target.src = nextThumbnail;
                 event.target.dataset.index = nextIndex;
-                
+
                 // Preload the next thumbnail in the sequence for faster fallback
                 if (nextIndex < thumbnails.length - 1) {
                     const preloadImage = new Image();
@@ -850,7 +886,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                     loading="lazy"
                                 />
                             )}
-                            
+
                             {/* YouTube-specific fallback for thumbnail error */}
                             {isYouTube && hasFailedThumbnail && (
                                 <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
@@ -955,16 +991,20 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     return (
         <div className="w-full">
             {isLoading ? (
-                <div className="flex justify-center items-center h-32">
+                <div className="flex flex-col justify-center items-center h-32">
                     <LoadingSpinner size="lg" />
+                    <p className="mt-3 text-blue-400">Loading articles, this may take a moment...</p>
                 </div>
             ) : error ? (
                 <div className="text-center text-red-500 p-4">
                     Error loading articles: {error.message}
                 </div>
             ) : !data?.articles || data.articles.length === 0 ? (
-                <div className="text-center text-gray-400 p-4">
-                    No articles found
+                <div className="text-center p-4">
+                    <p className="text-gray-400 mb-2">No articles found</p>
+                    <p className="text-blue-400 text-sm">
+                        {isRefreshing ? "Searching for articles..." : "If this is a new bot, click 'Refresh Feed' to start scraping"}
+                    </p>
                 </div>
             ) : (
                 <>

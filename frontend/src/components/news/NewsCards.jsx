@@ -54,6 +54,23 @@ const NewsCards = ({ viewMode }) => {
         return null;
     };
 
+    const formatDuration = (seconds) => {
+        if (!seconds) return '';
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+    };
+
+    const formatViews = (viewCount) => {
+        if (!viewCount) return '';
+        if (viewCount >= 1000000) {
+            return (viewCount / 1000000).toFixed(1) + 'M views';
+        } else if (viewCount >= 1000) {
+            return (viewCount / 1000).toFixed(1) + 'K views';
+        }
+        return viewCount + ' views';
+    };
+
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -76,7 +93,7 @@ const NewsCards = ({ viewMode }) => {
                 <div
                     key={article._id}
                     className={`bg-[#1e1e1e] rounded-lg overflow-hidden hover:bg-[#2a2a2a] transition-colors ${
-                        viewMode === "grid" ? "h-[300px]" : ""
+                        viewMode === "grid" ? "h-auto" : ""
                     }`}
                 >
                     {isVideoUrl(article.url) ? (
@@ -97,6 +114,11 @@ const NewsCards = ({ viewMode }) => {
                                     </svg>
                                 </div>
                             </div>
+                            {article.duration && (
+                                <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                                    {formatDuration(article.duration)}
+                                </div>
+                            )}
                         </div>
                     ) : article.imageUrl ? (
                         <div className={`${viewMode === "grid" ? "h-48" : "h-64"} relative`}>
@@ -114,6 +136,26 @@ const NewsCards = ({ viewMode }) => {
                     <div className="p-4">
                         <h3 className="text-lg font-semibold mb-2">{article.title}</h3>
                         <p className="text-gray-400 text-sm mb-4">{article.description}</p>
+                        
+                        {isVideoUrl(article.url) && (
+                            <div className="mb-3">
+                                {article.author && (
+                                    <a 
+                                        href={article.channel?.link} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-blue-400 hover:text-blue-300 block mb-1"
+                                    >
+                                        {article.author || article.channel?.name}
+                                    </a>
+                                )}
+                                <div className="flex items-center text-xs text-gray-400 space-x-2">
+                                    {article.views && <span>{formatViews(article.views)}</span>}
+                                    {article.uploaded && <span>• {article.uploaded}</span>}
+                                </div>
+                            </div>
+                        )}
+                        
                         <div className="flex justify-between items-center text-sm text-gray-500">
                             <span>{new Date(article.publishedAt).toLocaleDateString()}</span>
                             <a
