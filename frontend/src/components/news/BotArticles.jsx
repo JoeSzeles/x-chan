@@ -52,72 +52,41 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     useEffect(() => {
         if (isOpen && retryCount < MAX_RETRIES) {
             const connectSocket = () => {
-                // Use the socket.io path that will go through the vite proxy
-                const socket = io('/', {
+                // Use the same ngrok URL as the frontend
+                const backendUrl = import.meta.env.VITE_SOCKET_URL || 'https://tradehub.ap.ngrok.io:5000';
+                console.log('Connecting to WebSocket at:', backendUrl);
+                
+                const socket = io(backendUrl, {
                     transports: ['polling'],
-                    path: '/socket.io/',
                     reconnection: true,
-                    reconnectionAttempts: 5,
+                    reconnectionAttempts: 3,
                     reconnectionDelay: 1000,
-                    timeout: 20000,
+                    reconnectionDelayMax: 5000,
+                    timeout: 10000,
+                    autoConnect: true,
                     forceNew: true,
+                    path: '/socket.io/',
                     withCredentials: true,
-                    upgrade: false
-                });
-
-                socket.on('connect_error', (error) => {
-                    console.error('[Socket] Connection error details:', {
-                        message: error.message,
-                        type: error.type,
-                        description: error.description,
-                        stack: error.stack,
-                        transport: socket.io?.engine?.transport?.name,
-                        protocol: socket.io?.engine?.protocol,
-                        readyState: socket.io?.engine?.readyState,
-                        uri: socket.io?.uri,
-                        options: socket.io?.opts,
-                        timestamp: new Date().toISOString()
-                    });
-
-                    // Log socket engine state
-                    console.log('[Socket] Engine state:', {
-                        state: socket.io?.engine?.state,
-                        transport: socket.io?.engine?.transport,
-                        hostname: window.location.hostname,
-                        protocol: window.location.protocol,
-                        pathname: socket.io?.engine?.path
-                    });
-
-                    if (error.message.includes('xhr poll error')) {
-                        console.log('[Socket] Polling error detected, attempting reconnect...');
-                        socket.io.opts.transports = ['polling'];
-                        socket.connect();
-                    } else if (error.message.includes('timeout')) {
-                        console.log('[Socket] Timeout detected, attempting reconnect...');
-                        socket.io.opts.transports = ['polling'];
-                        socket.connect();
-                    } else {
-                        console.log('[Socket] Unknown error, attempting reconnect...');
-                        socket.io.opts.transports = ['polling'];
-                        socket.connect();
+                    extraHeaders: {
+                        'ngrok-skip-browser-warning': 'true'
                     }
                 });
 
-                socket.on('error', (error) => {
-                    console.error('[Socket] General error:', {
-                        error,
-                        timestamp: new Date().toISOString(),
-                        readyState: socket.io?.engine?.readyState,
-                        transport: socket.io?.engine?.transport?.name
-                    });
-                });
-
-                socket.on('reconnect_attempt', (attempt) => {
-                    console.log('[Socket] Reconnection attempt:', {
-                        attempt,
-                        timestamp: new Date().toISOString(),
-                        options: socket.io?.opts
-                    });
+                socket.on('connect_error', (error) => {
+                    console.error('Socket connection error:', error);
+                    if (error.message.includes('xhr poll error')) {
+                        console.log('Polling error, retrying...');
+                        socket.io.opts.transports = ['polling'];
+                        socket.connect();
+                    } else if (error.message.includes('timeout')) {
+                        console.log('Connection timeout, retrying...');
+                        socket.io.opts.transports = ['polling'];
+                        socket.connect();
+                    } else {
+                        console.log('Other error, retrying...');
+                        socket.io.opts.transports = ['polling'];
+                        socket.connect();
+                    }
                 });
 
                 socket.on('connect', () => {
@@ -151,6 +120,10 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     });
                 });
 
+                socket.on('error', (error) => {
+                    console.error('WebSocket error:', error);
+                });
+
                 setSocket(socket);
             };
 
@@ -177,22 +150,22 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         'Pragma': 'no-cache'
                     }
                 });
-
+                
                 if (!res.ok) {
                     const errorData = await res.json().catch(() => ({}));
                     throw new Error(errorData.error || 'Failed to fetch articles');
                 }
-
+                
                 const data = await res.json();
                 if (!data.success) {
                     throw new Error(data.error || 'Failed to fetch articles');
                 }
-
+                
                 // Sort articles by publishedAt in descending order
                 const sortedArticles = (data.data.articles || []).sort((a, b) => 
                     new Date(b.publishedAt) - new Date(a.publishedAt)
                 );
-
+                
                 return {
                     ...data.data,
                     articles: sortedArticles
@@ -235,18 +208,18 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         try {
             // Force refetch by invalidating all queries
             await queryClient.invalidateQueries(["botArticles", botId]);
-
+            
             // Fetch fresh data
             const allArticles = await fetchAllArticles();
             console.log(`Fetched ${allArticles.length} total articles`);
-
+            
             const validArticles = allArticles
                 .filter(article => {
                     // Remove YouTube-only restriction
                     const hasValidUrl = !!article.url;
                     const hasValidTitle = !!article.title;
                     const hasValidDescription = !!article.description;
-
+                    
                     if (!hasValidUrl || !hasValidTitle || !hasValidDescription) {
                         console.log(`Article filtered out:`, {
                             title: article.title,
@@ -256,7 +229,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                             hasValidDescription
                         });
                     }
-
+                    
                     return hasValidUrl && hasValidTitle && hasValidDescription;
                 })
                 .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
@@ -324,7 +297,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
             setLastArticleCount(0);
             setHasNewArticles(false);
             setCurrentPage(1);
-
+            
             // Reset the query data
             queryClient.setQueryData(["botArticles", botId, currentPage], {
                 articles: [],
@@ -332,11 +305,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 currentPage: 1,
                 totalArticles: 0
             });
-
+            
             // Invalidate all queries
             queryClient.invalidateQueries(["botArticles", botId]);
             queryClient.invalidateQueries(["botArticlesPoll", botId]);
-
+            
             toast.success("Feed cleared successfully", {
                 duration: 3000,
                 position: "bottom-right",
@@ -370,7 +343,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 credentials: 'include'
             });
             const data = await res.json();
-
+            
             if (!res.ok || !data.success) {
                 throw new Error(data.error || "Failed to fetch articles");
             }
@@ -401,9 +374,9 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     },
                     body: JSON.stringify(postData)
                 });
-
+                
                 console.log('Post response status:', res.status);
-
+                
                 // Check if response is ok before trying to parse JSON
                 if (!res.ok) {
                     let errorMessage = 'Failed to post';
@@ -416,7 +389,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     }
                     throw new Error(errorMessage);
                 }
-
+                
                 const data = await res.json();
                 console.log('Post response data:', data);
                 return data;
@@ -463,7 +436,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         const cleanContent = postContent
             .replace(/Watch here:.*$/, '') // Remove the "Watch here" line
             .trim();
-
+        
         // Add the link at the top of the content
         const formattedContent = `${cleanUrl}\n\n${cleanContent}`;
 
@@ -484,21 +457,21 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
             event.preventDefault();
             event.stopPropagation();
         }
-
+        
         console.log('handlePostToFeed called with article:', article);
-
+        
         try {
             if (isYouTubeUrl(article.url)) {
                 const cleanUrl = getCleanYouTubeUrl(article.url);
                 console.log('YouTube URL detected, clean URL:', cleanUrl);
-
+                
                 if (cleanUrl) {
                     const thumbnail = getYouTubeThumbnail(article.url);
                     console.log('Generated thumbnail URL:', thumbnail);
-
+                    
                     // Set all state at once to avoid race conditions
                     const content = `Reposted from bot\n\n${article.title}\n\n${article.description}\n\nWatch here: ${cleanUrl}`;
-
+                    
                     setSelectedArticle(article);
                     setPostContent(content);
                     setShowPostPopup(true);
@@ -579,7 +552,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         try {
             let videoId;
             const urlObj = new URL(url);
-
+            
             if (url.includes('youtube.com/watch')) {
                 videoId = urlObj.searchParams.get('v');
             } else if (url.includes('youtu.be/')) {
@@ -824,7 +797,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                     <div className="flex justify-between items-center mt-auto">
                         <div className="text-sm text-gray-400">
                             {formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}
-                                                </div>
+                        </div>
                         <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={(e) => handleBookmarkToggle(article, e)}
@@ -1106,9 +1079,6 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                         onError={handleEmbedError}
-                                        loading="lazy"
-                                        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
-                                        referrerPolicy="strict-origin"
                                     />
                                 </div>
                             )
@@ -1160,4 +1130,4 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     );
 };
 
-export default BotArticles;
+export default BotArticles; 

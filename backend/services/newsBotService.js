@@ -134,231 +134,127 @@ class NewsBotService {
 
     async updateBotArticles(botId) {
         try {
-            console.log('[NewsBotService] Starting updateBotArticles:', {
-                botId,
-                timestamp: new Date().toISOString()
-            });
+            console.log('[NewsBotService] Starting updateBotArticles for bot:', botId);
 
-            // Check if enough time has passed since last update based on updateInterval
             const bot = await NewsBot.findById(botId);
             if (!bot) {
                 throw new Error('Bot not found');
             }
 
-            const now = new Date();
-            const lastUpdate = bot.lastUpdate || new Date(0);
-            const minutesSinceLastUpdate = (now - lastUpdate) / (1000 * 60);
+            // Use bot's configured update interval in minutes
+            const updateIntervalMs = (bot.updateInterval || 5) * 60 * 1000;
+            const lastUpdate = bot.lastUpdate ? new Date(bot.lastUpdate).getTime() : 0;
+            const now = Date.now();
 
-            if (minutesSinceLastUpdate < bot.updateInterval && !bot.forceUpdate) {
-                console.log(`[NewsBotService] Skipping update - ${minutesSinceLastUpdate} minutes since last update`);
+            if (now - lastUpdate < updateIntervalMs) {
+                console.log('[NewsBotService] Skipping update - too soon since last update');
                 return {
                     success: true,
                     data: {
                         skipped: true,
-                        nextUpdate: new Date(lastUpdate.getTime() + (bot.updateInterval * 60 * 1000)),
-                        message: `Next update in ${Math.round(bot.updateInterval - minutesSinceLastUpdate)} minutes`,
-                        newArticles: [],
-                        totalArticles: 0,
-                        errorCount: 0,
-                        articles: []
+                        message: 'Update skipped - too soon since last update',
+                        nextUpdate: new Date(lastUpdate + updateIntervalMs)
                     }
                 };
-            }
-
-            // Reset forceUpdate flag
-            if (bot.forceUpdate) {
-                bot.forceUpdate = false;
-                await bot.save();
             }
 
             console.log('[NewsBotService] Bot details:', {
                 id: bot._id,
                 name: bot.name,
-                websites: bot.websites.length,
+                websites: bot.websites,
                 searchTerms: bot.websites.map(w => w.searchTerms)
             });
 
             let totalArticles = 0;
             let errorCount = 0;
-            let newArticles = [];
+            let newArticles = 0;
             let articles = [];
 
-            if (!bot.websites || !Array.isArray(bot.websites) || bot.websites.length === 0) {
-                console.error('[NewsBotService] No valid websites found');
-                return {
-                    success: false,
-                    error: 'No valid websites configured'
-                };
-            }
-
             for (const website of bot.websites) {
-                if (!website || !website.url) {
-                    console.error('[NewsBotService] Invalid website config:', website);
-                    errorCount++;
-                    continue;
-                }
-
-                if (!website.active) {
-                    console.log('[NewsBotService] Skipping inactive website:', website.url);
-                    continue;
-                }
-
                 console.log('[NewsBotService] Processing website:', {
                     url: website.url,
-                    type: website.type || 'news',
+                    type: website.type,
                     searchTerms: website.searchTerms
                 });
 
                 try {
-                    // Ensure search terms are properly added to YouTube URL
-                    if (website.type === 'video' && website.url.includes('youtube.com')) {
-                        const searchTerms = (website.searchTerms || "news").split(',').map(t => t.trim()).join('+');
-                        console.log('[NewsBotService] Building YouTube URL with search terms:', searchTerms);
-                        website.url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerms)}`;
-                        console.log('[NewsBotService] Final URL:', website.url);
-                    }
-
-                    console.log('[NewsBotService] Calling scraper for website:', website.url);
                     const scrapedArticles = await this.scraperService.scrapeWebsite(website);
-
-                    // Ensure scraped articles is always an array
-                    if (!scrapedArticles || !Array.isArray(scrapedArticles)) {
-                        console.error('[NewsBotService] Invalid response from scraper - not an array');
-                        errorCount++;
-                        continue;
-                    }
-
                     console.log('[NewsBotService] Found', scrapedArticles.length, 'articles for website:', website.url);
 
-                    // If YouTube scraping returned no articles, log detailed information
-                    if (scrapedArticles.length === 0 && website.type === 'video') {
-                        console.log('[NewsBotService] YouTube scraping returned no articles for search terms:', website.searchTerms);
-
-                        // Try with a fallback term if the original search terms failed
-                        if (website.searchTerms && !website.searchTerms.includes('news')) {
-                            console.log('[NewsBotService] Attempting fallback with "news" search term');
-                            // Create temporary website config with "news" as the search term
-                            const fallbackWebsite = {
-                                ...website,
-                                searchTerms: "news"
-                            };
-
-                            try {
-                                console.log('[NewsBotService] Calling scraper with fallback term');
-                                const fallbackArticles = await this.scraperService.scrapeWebsite(fallbackWebsite);
-
-                                if (fallbackArticles && Array.isArray(fallbackArticles) && fallbackArticles.length > 0) {
-                                    console.log('[NewsBotService] Fallback search succeeded with', fallbackArticles.length, 'articles');
-                                    // Use these articles instead
-                                    scrapedArticles.push(...fallbackArticles);
-                                }
-                            } catch (fallbackError) {
-                                console.error('[NewsBotService] Fallback search also failed:', fallbackError);
-                            }
-                        }
-                    }
-
                     // Save articles to database and count new ones
-                    if (scrapedArticles.length > 0) {
-                        for (const article of scrapedArticles) {
-                            try {
-                                if (!article || !article.url) {
-                                    console.log('[NewsBotService] Skipping invalid article without URL');
-                                    continue;
-                                }
-
-                                const existingArticle = await NewsArticle.findOne({ url: article.url });
-                                if (!existingArticle) {
-                                    console.log('[NewsBotService] New article found:', article.title);
-
-                                    // Add the article to the newArticles array
-                                    newArticles.push(article);
-                                }
-
-                                await NewsArticle.findOneAndUpdate(
-                                    { url: article.url },
-                                    { 
-                                        ...article, 
-                                        bot: botId,
-                                        lastUpdated: new Date()
-                                    },
-                                    { upsert: true, new: true }
-                                );
-
-                                // Add to article collection for return data
-                                articles.push(article);
-                            } catch (error) {
-                                console.error('[NewsBotService] Error saving article:', error);
-                                errorCount++;
-                            }
+                    for (const article of scrapedArticles) {
+                        const existingArticle = await NewsArticle.findOne({ url: article.url });
+                        if (!existingArticle) {
+                            newArticles++;
                         }
+                        await NewsArticle.findOneAndUpdate(
+                            { url: article.url },
+                            { ...article, bot: botId },
+                            { upsert: true, new: true }
+                        );
                     }
+
+                    totalArticles += scrapedArticles.length;
+                    articles = articles.concat(scrapedArticles);
                 } catch (error) {
-                    console.error('[NewsBotService] Error scraping website:', error);
+                    console.error('[NewsBotService] Error processing website:', website.url, error);
                     errorCount++;
                 }
             }
 
-            // Get total count of articles for this bot
-            totalArticles = await NewsArticle.countDocuments({ bot: botId });
-
-            // Update bot stats
-            bot.stats = {
-                ...bot.stats,
-                totalArticles,
-                errorCount,
-                newArticles: newArticles.length
+            // Update bot stats and lastUpdate
+            const updateData = {
+                $set: {
+                    lastUpdate: new Date(),
+                    'stats.totalArticles': totalArticles,
+                    'stats.errorCount': errorCount,
+                    'stats.newArticles': newArticles
+                }
             };
-            bot.lastUpdate = new Date();
-            await bot.save();
+
+            const updatedBot = await NewsBot.findByIdAndUpdate(
+                botId,
+                updateData,
+                { new: true }
+            );
 
             console.log('[NewsBotService] Update complete:', {
                 botId,
-                newArticles: newArticles.length,
                 totalArticles,
-                errorCount
+                errorCount,
+                newArticles,
+                lastUpdate: updatedBot.lastUpdate
             });
 
             return {
                 success: true,
                 data: {
-                    newArticles,
                     totalArticles,
                     errorCount,
-                    articles
+                    newArticles,
+                    lastUpdate: updatedBot.lastUpdate,
+                    articles: articles || [],
+                    notification: newArticles > 0 ? {
+                        type: 'success',
+                        message: `Found ${newArticles} new articles!`,
+                        botName: bot.name
+                    } : {
+                        type: 'info',
+                        message: 'No new articles found.',
+                        botName: bot.name
+                    }
                 }
             };
-
         } catch (error) {
-            console.error('[NewsBotService] Critical error in updateBotArticles:', error);
-            return {
-                success: false,
-                error: error.message || 'Unknown error occurred',
-                data: {
-                    newArticles: [],
-                    totalArticles: 0,
-                    errorCount: 1,
-                    articles: []
-                }
-            };
+            console.error('[NewsBotService] Error updating bot articles:', error);
+            throw error;
         }
     }
 
     async getBotArticles(botId, page = 1, limit = 10) {
         try {
-            console.log('[NewsBotService] Fetching articles for bot:', botId);
-
-            // First verify bot exists
-            const bot = await NewsBot.findById(botId);
-            if (!bot) {
-                throw new Error('Bot not found');
-            }
-
-            // Force update if no articles
-            const count = await NewsArticle.countDocuments({ bot: botId });
-            if (count === 0) {
-                await this.updateBotArticles(botId);
-            }
+            console.log('Fetching articles for bot:', botId);
+            console.log('Page:', page, 'Limit:', limit);
 
             const skip = (page - 1) * limit;
             const articles = await NewsArticle.find({ bot: botId })

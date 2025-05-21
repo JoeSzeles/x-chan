@@ -4,19 +4,13 @@ import puppeteer from "puppeteer";
 
 class ScraperService {
     async scrapeWebsite(website) {
-        console.log('[ScraperService] Starting scrape:', {
-            url: website.url,
-            type: website.type,
-            timestamp: new Date().toISOString()
-        });
         try {
-            // Validate website configuration
-            if (!website.url) {
-                console.error('[ScraperService] Missing URL in website config');
-                return [];
-            }
-
-            console.log(`[Scraper] Starting scrape for ${website.url} with type: ${website.type || 'news'}`);
+            console.log(`[Scraper] Starting scrape for ${website.url} with type: ${website.type}`);
+            console.log('[Scraper] Website config:', {
+                url: website.url,
+                type: website.type,
+                searchTerms: website.searchTerms
+            });
 
             // Handle different website types
             if (website.type === 'video' || website.url.includes('youtube.com')) {
@@ -34,62 +28,57 @@ class ScraperService {
                 'Accept-Encoding': 'gzip, deflate, br',
                 'Connection': 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
-                'Cache-Control': 'max-age=0'
+                'Cache-Control': 'max-age=0',
+                'Origin': 'https://www.youtube.com',
+                'Referer': 'https://www.youtube.com/'
             };
 
-            let response;
-            try {
-                response = await axios.get(website.url, { 
+            const response = await axios.get(website.url, { 
                 headers,
                 timeout: 30000,
                 withCredentials: true
             });
-            } catch (error) {
-                console.error('[Scraper] Error fetching website:', error.message);
-                return [];
-            }
-
-            if (!response || !response.data) {
-                console.error('[Scraper] Empty response from website');
-                return [];
-            }
 
             const $ = cheerio.load(response.data);
-
-            // Ensure we have a valid selector
-            const selector = website.selector || 'article';
-            let elements = $(selector);
+            let elements = $(website.selector);
 
             if (elements.length === 0) {
-                console.log('[Scraper] Warning: No elements found with selector, trying fallback selectors');
-                // Try some common fallback selectors
-                const fallbackSelectors = ['article', '.article', '.post', '.news-item', '.story', '.entry'];
-                for (const fallbackSelector of fallbackSelectors) {
-                    elements = $(fallbackSelector);
-                    if (elements.length > 0) {
-                        console.log(`[Scraper] Found elements with fallback selector: ${fallbackSelector}`);
-                        break;
-                    }
-                }
-            }
-
-            if (elements.length === 0) {
-                console.log('[Scraper] Warning: No elements found with any selector');
+                console.log('[Scraper] Warning: No elements found with selector');
                 return [];
             }
 
-            const articles = this.parseNewsWebsite($, website, elements);
-            console.log(`[Scraper] Successfully parsed ${articles.length} articles from ${website.url}`);
-            return articles;
+            return this.parseNewsWebsite($, website, elements);
 
         } catch (error) {
-            console.error('[Scraper] Error scraping website:', error.message);
-            console.error('[Scraper] Error stack:', error.stack);
+            console.error('[Scraper] Error scraping website:', error);
             return [];
         }
     }
 
+    static #lastScrapeTime = new Map();
+    static #minScrapingInterval = 5 * 60 * 1000; // 5 minutes
+    static #maxRetries = 3;
+    static #retryCount = new Map();
+
     async scrapeYouTube(website) {
+        const now = Date.now();
+        const websiteKey = website.url + (website.searchTerms || '');
+        const lastScrape = ScraperService.#lastScrapeTime.get(websiteKey) || 0;
+        const retryCount = ScraperService.#retryCount.get(websiteKey) || 0;
+
+        if ((now - lastScrape) < this.#minScrapingInterval) {
+            console.log('[ScraperService] Skipping scrape - too soon since last attempt');
+            return [];
+        }
+
+        if (retryCount >= ScraperService.#maxRetries) {
+            console.log('[ScraperService] Max retries reached for', websiteKey);
+            ScraperService.#retryCount.set(websiteKey, 0);
+            return [];
+        }
+
+        ScraperService.#lastScrapeTime.set(websiteKey, now);
+        ScraperService.#retryCount.set(websiteKey, retryCount + 1);
         console.log('[ScraperService] Starting YouTube scraping for:', website.url);
         console.log('[ScraperService] Website config:', {
             url: website.url,
@@ -97,323 +86,75 @@ class ScraperService {
             searchTerms: website.searchTerms
         });
 
-        // Check for potentially filtered terms and provide more common alternatives 
-        const sensitiveTerms = ['nsfw', 'xxx', 'porn'];
-        let searchTermsString = website.searchTerms || "technology news";
-
-        // Clean up trailing commas from search terms
-        searchTermsString = searchTermsString.replace(/,\s*$/, '');
-
-        // Check if any sensitive terms are in the search and replace with safer alternatives
-        if (sensitiveTerms.some(term => searchTermsString.toLowerCase().includes(term))) {
-            console.log('[ScraperService] Detected potentially filtered search terms, using safer alternatives');
-            searchTermsString = "news, gaming news, tech reviews";
-        }
-
-        try {
-            console.log('[ScraperService] DEBUG: Initializing browser with parameters');
         const browser = await puppeteer.launch({
-                headless: false, // Try with visible browser for better results
-                args: [
-                    '--no-sandbox', 
-                    '--disable-setuid-sandbox', 
-                    '--disable-web-security',
-                    '--disable-features=IsolateOrigins',
-                    '--disable-site-isolation-trials',
-                    '--window-size=1280,800',
-                    '--disable-extensions'
-                ],
-                defaultViewport: {
-                    width: 1280,
-                    height: 800
-                }
+            headless: "new",
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
 
         try {
             console.log('[ScraperService] Browser launched successfully');
             const page = await browser.newPage();
 
-                // Set a more realistic user agent
-                await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-
-                // Set extra HTTP headers
-                await page.setExtraHTTPHeaders({
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                    'sec-ch-ua': '"Google Chrome";v="124", " Not A;Brand";v="99", "Chromium";v="124"',
-                    'sec-ch-ua-mobile': '?0',
-                    'sec-ch-ua-platform': '"Windows"'
-                });
-
-                console.log('[ScraperService] DEBUG: Setting up request interception to optimize page loading');
-                // Block only certain resources to speed up loading but keep essential ones
-                await page.setRequestInterception(true);
-                page.on('request', (req) => {
-                    const resourceType = req.resourceType();
-                    if (resourceType === 'font' || 
-                        resourceType === 'image' && !req.url().includes('ytimg.com') ||
-                        resourceType === 'media' && !req.url().includes('youtube.com')) {
-                        req.abort();
-                    } else {
-                        req.continue();
-                    }
-                });
-
-                // Add page error handler to catch console errors
-                page.on('console', (msg) => {
-                    if (msg.type() === 'error' || msg.type() === 'warning') {
-                        console.log(`[ScraperService] Page console ${msg.type()}: ${msg.text()}`);
-                    }
-                });
-
-                // Add page error handler
-                page.on('pageerror', (error) => {
-                    console.log('[ScraperService] Page error:', error.message);
-                });
+            // Set viewport and user agent
+            await page.setViewport({ width: 1280, height: 800 });
+            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
 
             console.log('[ScraperService] Page configured with viewport and user agent');
 
             const articles = [];
-                // Ensure searchTerms is a string before splitting
-                const searchTerms = searchTermsString.split(',').map(term => term.trim()).filter(term => term);
-
-                if (searchTerms.length === 0) {
-                    searchTerms.push("technology news"); // Default search term if none provided
-                }
+            const searchTerms = website.searchTerms.split(',').map(term => term.trim()).filter(term => term);
 
             console.log('[ScraperService] Processing search terms:', searchTerms);
 
-                // Process terms one by one to avoid overloading
-                for (let i = 0; i < Math.min(searchTerms.length, 3); i++) {
-                    const term = searchTerms[i];
+            for (const term of searchTerms) {
                 try {
                     console.log('[ScraperService] Processing search term:', term);
-                        // Use a simpler query string format to avoid encoding issues
-                        const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(term)}`;
+                    const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(term)}&sp=CAI%253D`;
                     console.log('[ScraperService] Navigating to:', searchUrl);
 
-                        try {
-                            // Use a simpler navigation approach
-                            await page.goto(searchUrl, { 
-                                waitUntil: 'domcontentloaded', 
-                                timeout: 30000 
-                            });
-                            console.log('[ScraperService] Successfully navigated to search URL');
-                        } catch (navigationError) {
-                            console.error('[ScraperService] Error during navigation:', navigationError.message);
-                            continue; // Skip this term and try the next one
-                        }
+                    await page.goto(searchUrl, { waitUntil: 'networkidle0' });
+                    console.log('[ScraperService] Page loaded successfully');
 
-                        // Wait for page to stabilize
-                        await page.waitForTimeout(3000);
+                    // Wait for video elements to load
+                    await page.waitForSelector('ytd-video-renderer', { timeout: 10000 })
+                        .catch(() => console.log('[ScraperService] No video elements found'));
 
-                        console.log('[ScraperService] DEBUG: Page loaded, now scrolling to load more content');
-                        // Scroll down to load more videos - do this multiple times
-                        for (let scroll = 0; scroll < 3; scroll++) {
-                            await page.evaluate(() => {
-                                window.scrollBy(0, 800);
-                            });
-                            await page.waitForTimeout(1000); // Wait after each scroll
-                        }
+                    // Extract video information
+                    const videos = await page.evaluate(() => {
+                        const videoElements = document.querySelectorAll('ytd-video-renderer');
+                        console.log('[ScraperService] Video elements found:', videoElements.length);
 
-                        // Take a screenshot for debugging
-                        try {
-                            await page.screenshot({ path: `youtube-debug-${i}.png` });
-                            console.log(`[ScraperService] Debug screenshot saved to youtube-debug-${i}.png`);
-                        } catch (screenshotError) {
-                            console.error('[ScraperService] Could not save debug screenshot:', screenshotError);
-                        }
-
-                        // Try multiple approaches to find videos
-                        console.log('[ScraperService] DEBUG: Attempting to extract videos using multiple approaches');
-
-                        // First, try to find common YouTube video selectors
-                        let videos = [];
-
-                        // Approach 1: Standard YouTube video renderers
-                        try {
-                            videos = await page.evaluate(() => {
-                                // Log what we're looking for
-                                console.log('Looking for YouTube video elements');
-
-                                // Try different patterns of selectors that might work
-                                const selectors = [
-                                    'ytd-video-renderer',
-                                    'ytd-grid-video-renderer',
-                                    'ytd-rich-item-renderer',
-                                    '.ytd-item-section-renderer'
-                                ];
-
-                                // Try each selector
-                                let elements = [];
-                                for (const selector of selectors) {
-                                    const found = document.querySelectorAll(selector);
-                                    console.log(`Selector ${selector} found ${found.length} elements`);
-                                    if (found && found.length > 0) {
-                                        elements = found;
-                                        break;
-                                    }
-                                }
-
-                                if (!elements || elements.length === 0) {
-                                    console.log('No video elements found with standard selectors');
-                                    return [];
-                                }
-
-                                console.log(`Found ${elements.length} video elements`);
-
-                                // Extract data from the elements
-                                return Array.from(elements).slice(0, 10).map(video => {
-                                    try {
-                                        const titleElement = video.querySelector('#video-title, [id="video-title"], .title, a[title]');
-                                        const channelElement = video.querySelector('#channel-name, [id="channel-name"], .channel-name, [href*="channel"]');
-                                        const linkElement = video.querySelector('a#video-title, a[id="video-title"], a[href*="watch"], a[title]');
-                                        const thumbnailElement = video.querySelector('img[src*="ytimg"], img[src*="i.ytimg"]');
-
-                                        if (!titleElement && !linkElement) {
-                                            return null;
-                                        }
-
-                                        const title = titleElement ? titleElement.textContent.trim() : 
-                                                     (linkElement && linkElement.title) ? linkElement.title : 'Untitled Video';
-
-                                        const channel = channelElement ? channelElement.textContent.trim() : 'Unknown Channel';
-
-                                        // Get URL
-                                        let url = '';
-                                        if (linkElement) {
-                                            if (linkElement.href) {
-                                                url = linkElement.href;
-                                            } else if (linkElement.getAttribute('href')) {
-                                                const href = linkElement.getAttribute('href');
-                                                if (href.startsWith('http')) {
-                                                    url = href;
-                                                } else if (href.startsWith('/watch')) {
-                                                    url = 'https://www.youtube.com' + href;
-                                                }
-                                            }
-                                        }
-
-                                        // Get thumbnail
-                                        let thumbnail = '';
-                                        if (thumbnailElement && thumbnailElement.src) {
-                                            thumbnail = thumbnailElement.src;
-                                        } else if (url) {
-                                            // Extract video ID from URL
-                                            const videoIdMatch = url.match(/[?&]v=([^&]+)/);
-                                            if (videoIdMatch && videoIdMatch[1]) {
-                                                thumbnail = `https://i.ytimg.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
-                                            }
-                                        }
-
-                                        return {
-                                            title,
-                                            channel,
-                                            views: 'Unknown views',
-                                            url,
-                                            thumbnail
-                                        };
-                                    } catch (error) {
-                                        console.error('Error extracting video:', error);
-                                        return null;
-                                    }
-                                }).filter(Boolean);
-                            });
-                        } catch (error) {
-                            console.error('[ScraperService] Error in primary video extraction:', error);
-                        }
-
-                        // If first approach failed, try fallback approach
-                        if (!videos || videos.length === 0) {
-                            console.log('[ScraperService] First extraction approach failed, trying fallback');
-
+                        return Array.from(videoElements).map(video => {
                             try {
-                                // Simpler approach: just look for video links
-                                videos = await page.evaluate(() => {
-                                    // Get all links that might be videos
-                                    const videoLinks = Array.from(document.querySelectorAll('a[href*="watch"]'));
-                                    console.log(`Found ${videoLinks.length} potential video links`);
+                                const titleElement = video.querySelector('#video-title');
+                                const channelElement = video.querySelector('#channel-name');
+                                const viewsElement = video.querySelector('#metadata-line span');
+                                const thumbnailElement = video.querySelector('#thumbnail img');
+                                const linkElement = video.querySelector('#video-title');
 
-                                    // Filter to unique URLs and get associated data
-                                    const uniqueUrls = new Set();
-                                    return videoLinks.map(link => {
-                                        try {
-                                            const href = link.href || link.getAttribute('href') || '';
-                                            if (!href || uniqueUrls.has(href)) return null;
-
-                                            let url = href;
-                                            if (href.startsWith('/')) {
-                                                url = 'https://www.youtube.com' + href;
-                                            }
-
-                                            uniqueUrls.add(url);
-
-                                            // Try to find a title
-                                            let title = link.textContent?.trim() || 'Unknown Video';
-                                            if (link.title) title = link.title;
-                                            if (!title || title === '') {
-                                                const imgElement = link.querySelector('img');
-                                                if (imgElement && imgElement.alt) {
-                                                    title = imgElement.alt;
-                                                }
-                                            }
-
-                                            // Try to find an image
-                                            let thumbnail = '';
-                                            const imgElement = link.querySelector('img');
-                                            if (imgElement && imgElement.src) {
-                                                thumbnail = imgElement.src;
-                                            } else {
-                                                // Extract video ID from URL
-                                                const videoIdMatch = url.match(/[?&]v=([^&]+)/);
-                                                if (videoIdMatch && videoIdMatch[1]) {
-                                                    thumbnail = `https://i.ytimg.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
-                                                }
+                                if (!titleElement || !linkElement) {
+                                    console.log('[ScraperService] Missing required elements for video');
+                                    return null;
                                 }
 
                                 return {
-                                                title: title,
-                                                channel: 'YouTube Channel',
-                                                views: 'Unknown views',
-                                                url: url,
-                                                thumbnail: thumbnail
-                                            };
-                                        } catch (err) {
-                                            console.error('Error processing link:', err);
-                                            return null;
-                                        }
-                                    }).filter(Boolean).slice(0, 10);
-                                });
+                                    title: titleElement.textContent.trim(),
+                                    channel: channelElement?.textContent.trim() || 'Unknown Channel',
+                                    views: viewsElement?.textContent.trim() || '0 views',
+                                    url: linkElement.href,
+                                    thumbnail: thumbnailElement?.src || null
+                                };
                             } catch (error) {
-                                console.error('[ScraperService] Error in fallback video extraction:', error);
+                                console.error('[ScraperService] Error extracting video:', error);
+                                return null;
                             }
-                        }
+                        }).filter(video => video !== null);
+                    });
 
                     console.log('[ScraperService] Extracted', videos.length, 'videos');
 
-                        // Log details of the videos for debugging
-                        if (videos.length > 0) {
-                            console.log('[ScraperService] DEBUG: First 2 videos:', videos.slice(0, 2).map(v => ({
-                                title: v.title,
-                                url: v.url
-                            })));
-                        } else {
-                            console.log('[ScraperService] WARNING: No videos found for term:', term);
-                        }
-
                     // Convert videos to articles
                     for (const video of videos) {
-                            if (!video || !video.title || !video.url) {
-                                console.log('[ScraperService] Skipping invalid video entry');
-                                continue;
-                            }
-
-                            // Check if this URL is already in articles
-                            if (articles.some(a => a.url === video.url)) {
-                                console.log('[ScraperService] Skipping duplicate video:', video.title);
-                                continue;
-                            }
-
                         const article = {
                             title: video.title,
                             description: `Channel: ${video.channel}\nViews: ${video.views}`,
@@ -432,119 +173,14 @@ class ScraperService {
             }
 
             console.log('[ScraperService] Total videos found:', articles.length);
-
-                // If we still have no articles, try one last approach - direct search results page HTML extraction
-                if (articles.length === 0) {
-                    console.log('[ScraperService] No articles found, trying direct HTML extraction as last resort');
-
-                    try {
-                        // Try with a popular search term that's likely to have results
-                        const term = "latest news";
-                        const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(term)}`;
-
-                        await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
-                        await page.waitForTimeout(3000);
-
-                        // Extract video information from HTML content
-                        const htmlContent = await page.content();
-                        console.log('[ScraperService] Got HTML content, length:', htmlContent.length);
-
-                        // Look for video data in the page HTML
-                        const videoIdRegex = /videoId":"([^"]+)"/g;
-                        const titleRegex = /title":{"runs":\[{"text":"([^"]+)"\}\]/g;
-
-                        const videoIds = [];
-                        const titles = [];
-
-                        let match;
-                        while ((match = videoIdRegex.exec(htmlContent)) !== null) {
-                            videoIds.push(match[1]);
-                        }
-
-                        while ((match = titleRegex.exec(htmlContent)) !== null) {
-                            titles.push(match[1]);
-                        }
-
-                        console.log('[ScraperService] Extracted from HTML:', {
-                            videoIds: videoIds.length,
-                            titles: titles.length
-                        });
-
-                        // Create articles from extracted data
-                        const minLength = Math.min(videoIds.length, titles.length, 10);
-                        for (let i = 0; i < minLength; i++) {
-                            const videoId = videoIds[i];
-                            const title = titles[i];
-
-                            articles.push({
-                                title: title,
-                                description: `YouTube video`,
-                                url: `https://www.youtube.com/watch?v=${videoId}`,
-                                imageUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-                                publishedAt: new Date(),
-                                source: 'youtube',
-                                type: 'video'
-                            });
-                        }
-
-                        console.log('[ScraperService] Created', articles.length, 'articles from HTML extraction');
-                    } catch (error) {
-                        console.error('[ScraperService] Error in direct HTML extraction:', error);
-                    }
-                }
-
-                // Debug information if no articles found
-                if (articles.length === 0) {
-                    console.log('[ScraperService] DEBUG: No articles found in YouTube scraping.');
-                    console.log('[ScraperService] DEBUG: Search terms used:', searchTerms);
-                    console.log('[ScraperService] DEBUG: Browser and page configuration used:');
-                    console.log('- Headless mode:', false);
-                    console.log('- User agent: Chrome/124');
-                    console.log('- Viewport size: 1280x800');
-
-                    // Try to get DOM structure as string for debugging
-                    try {
-                        const domInfo = await page.evaluate(() => {
-                            return {
-                                title: document.title,
-                                bodyChildCount: document.body.childElementCount,
-                                hasYtElements: !!document.querySelector('ytd-app'),
-                                visibleText: Array.from(document.querySelectorAll('h1, h2, h3, p'))
-                                    .slice(0, 5)
-                                    .map(el => el.textContent?.trim())
-                                    .filter(Boolean)
-                            };
-                        });
-                        console.log('[ScraperService] DEBUG: Page DOM info:', domInfo);
-                    } catch (e) {
-                        console.error('[ScraperService] Could not extract DOM info:', e);
-                    }
-                } else {
-                    console.log('[ScraperService] DEBUG: Successfully found articles. Example:', {
-                        title: articles[0].title,
-                        url: articles[0].url
-                    });
-                }
-
-                // Return empty array if no articles were found, don't throw an error
             return articles;
 
         } catch (error) {
             console.error('[ScraperService] Error in scrapeYouTube:', error);
-                // Return empty array instead of throwing
-                return [];
+            return []; // Return empty array instead of throwing error
         } finally {
-                try {
             await browser.close();
             console.log('[ScraperService] Browser closed');
-                } catch (error) {
-                    console.error('[ScraperService] Error closing browser:', error);
-                }
-            }
-        } catch (error) {
-            console.error('[ScraperService] Critical error in scrapeYouTube, returning empty array:', error);
-            // Return empty array
-            return [];
         }
     }
 
@@ -814,43 +450,6 @@ class ScraperService {
             return url;
         }
     }
-
-    // Helper method to generate mock YouTube data when scraping fails
-    generateMockYouTubeData(website) {
-        console.log('[ScraperService] Generating mock YouTube data');
-
-        // Extract search terms
-        const searchTerms = (website.searchTerms || "technology news").split(',').map(term => term.trim()).filter(term => term);
-        if (searchTerms.length === 0) {
-            searchTerms.push("technology news");
-        }
-
-        // Generate mock articles based on the search terms
-        const articles = [];
-
-        // Create 5 mock articles for each search term
-        for (const term of searchTerms) {
-            // Generate sample videos for the current term
-            for (let i = 1; i <= 5; i++) {
-                const now = new Date();
-                const publishDate = new Date(now.setDate(now.getDate() - i));
-
-                const article = {
-                    title: `${term} - Latest Update #${i}`,
-                    description: `Channel: ${term} Channel\nViews: ${Math.floor(Math.random() * 100000)} views`,
-                    url: `https://www.youtube.com/watch?v=mock${i}${Math.floor(Math.random() * 1000)}`,
-                    imageUrl: `https://i.ytimg.com/vi/mock${i}${Math.floor(Math.random() * 1000)}/hqdefault.jpg`,
-                    publishedAt: publishDate,
-                    source: 'youtube',
-                    type: 'video'
-                };
-                articles.push(article);
-            }
-        }
-
-        console.log('[ScraperService] Generated', articles.length, 'mock YouTube articles');
-        return articles;
-    }
 }
 
-export default new ScraperService(); 
+export default new ScraperService();
