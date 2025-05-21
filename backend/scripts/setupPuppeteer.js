@@ -1,4 +1,3 @@
-
 // Script to configure puppeteer for a headless environment
 import { execSync } from 'child_process';
 import fs from 'fs';
@@ -8,7 +7,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('=== PUPPETEER SETUP SCRIPT ===');
 console.log('This script will configure puppeteer to use a compatible browser');
 
 try {
@@ -27,33 +25,27 @@ try {
 
   // Create a .puppeteerrc.cjs file in the project root to configure puppeteer
   const rcPath = path.join(__dirname, '..', '.puppeteerrc.cjs');
-  
-  // Configuration to make puppeteer use a system-compatible browser
-  const puppeteerConfig = `
+
+  // Puppeteer configuration content
+  const rcContent = `
+const {join} = require('path');
+
+/**
+ * @type {import('puppeteer').Configuration}
+ */
 module.exports = {
-  cacheDirectory: '.cache/puppeteer',
-  skipDownload: false,
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-accelerated-2d-canvas',
-    '--no-first-run',
-    '--no-zygote',
-    '--single-process',
-    '--disable-gpu'
-  ]
+  cacheDirectory: join(__dirname, '.cache', 'puppeteer'),
 };
 `;
 
-  fs.writeFileSync(rcPath, puppeteerConfig);
-  console.log('Created .puppeteerrc.cjs configuration file');
+  fs.writeFileSync(rcPath, rcContent);
+  console.log(`Created .puppeteerrc.cjs at ${rcPath}`);
 
   // Ensure scraperService always falls back to mock data
   const scraperServicePath = path.join(__dirname, '..', 'services', 'scraperService.js');
   if (fs.existsSync(scraperServicePath)) {
     let scraperService = fs.readFileSync(scraperServicePath, 'utf8');
-    
+
     // Add fallback to mock data if not already there
     if (!scraperService.includes('USE_MOCK_DATA')) {
       scraperService = scraperService.replace(
@@ -65,7 +57,7 @@ module.exports = {
         '            return this.generateMockYouTubeData(website);\n' +
         '        }\n'
       );
-      
+
       fs.writeFileSync(scraperServicePath, scraperService);
       console.log('Updated scraperService.js with mock data fallback');
     }
@@ -75,7 +67,7 @@ module.exports = {
   const packageJsonPath = path.join(__dirname, '..', 'package.json');
   if (fs.existsSync(packageJsonPath)) {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    
+
     if (!packageJson.scripts['test-scraper']) {
       packageJson.scripts['test-scraper'] = 'node scripts/testScraper.js';
       fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
@@ -92,8 +84,9 @@ module.exports = {
     console.error('Error installing Chrome:', error.message);
   }
 
-  console.log('Puppeteer setup completed successfully');
+  console.log('Setup complete. You can now use puppeteer with: npm run test-scraper');
 } catch (error) {
-  console.error('Error during puppeteer setup:', error);
+  console.error('Error during setup:', error.message);
+  console.error('Stack trace:', error.stack);
   process.exit(1);
 }
