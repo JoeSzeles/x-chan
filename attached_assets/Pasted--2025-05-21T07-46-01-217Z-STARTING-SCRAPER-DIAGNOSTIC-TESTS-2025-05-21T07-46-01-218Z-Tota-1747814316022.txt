@@ -1,0 +1,35 @@
+[2025-05-21T07:46:01.217Z] === STARTING SCRAPER DIAGNOSTIC TESTS ===
+[2025-05-21T07:46:01.218Z] Total test cases: 1
+[2025-05-21T07:46:01.218Z] System info:
+[2025-05-21T07:46:01.218Z] Node version: v20.18.1
+[2025-05-21T07:46:01.218Z] Platform: linux
+[2025-05-21T07:46:01.218Z] USE_MOCK_DATA flag: false
+[2025-05-21T07:46:01.218Z] === TESTING PUPPETEER DIRECTLY ===
+[2025-05-21T07:46:01.218Z] 1. Importing puppeteer...
+[2025-05-21T07:46:01.220Z] 2. Puppeteer imported successfully: object
+[2025-05-21T07:46:01.220Z] 3. Attempting to launch browser...
+[2025-05-21T07:46:01.225Z] ERROR launching browser: Could not find Chrome (ver. 136.0.7103.49). This can occur if either
+ 1. you did not perform an installation before running the script (e.g. `npx puppeteer browsers install chrome`) or
+ 2. your cache path is incorrectly configured (which is: .cache/puppeteer).
+For (2), check out our guide on configuring puppeteer at https://pptr.dev/guides/configuration.
+[2025-05-21T07:46:01.225Z] Stack trace: Error: Could not find Chrome (ver. 136.0.7103.49). This can occur if either
+ 1. you did not perform an installation before running the script (e.g. `npx puppeteer browsers install chrome`) or
+ 2. your cache path is incorrectly configured (which is: .cache/puppeteer).
+For (2), check out our guide on configuring puppeteer at https://pptr.dev/guides/configuration.
+    at ChromeLauncher.resolveExecutablePath (file:///home/runner/workspace/backend/node_modules/puppeteer-core/lib/esm/puppeteer/node/BrowserLauncher.js:272:27)
+    at ChromeLauncher.computeLaunchArguments (file:///home/runner/workspace/backend/node_modules/puppeteer-core/lib/esm/puppeteer/node/ChromeLauncher.js:85:24)
+    at async ChromeLauncher.launch (file:///home/runner/workspace/backend/node_modules/puppeteer-core/lib/esm/puppeteer/node/BrowserLauncher.js:48:28)
+    at async testPuppeteerDirectly (file:///home/runner/workspace/backend/scripts/testScraper.js:49:23)
+    at async runTests (file:///home/runner/workspace/backend/scripts/testScraper.js:129:26)
+[2025-05-21T07:46:01.225Z] Puppeteer direct test result: FAILED
+[2025-05-21T07:46:01.225Z] === INSPECTING SCRAPER IMPLEMENTATION ===
+[2025-05-21T07:46:01.225Z] 1. scraperService type: object
+[2025-05-21T07:46:01.226Z] 2. scrapeYouTube method exists: true
+[2025-05-21T07:46:01.226Z] 3. First 100 chars of implementation: async scrapeYouTube(website) {
+        console.log('[ScraperService] Starting YouTube scraping for:'...
+[2025-05-21T07:46:01.226Z] 4. Implementation contains 'puppeteer': true
+[2025-05-21T07:46:01.226Z] 5. Implementation contains 'launch': true
+[2025-05-21T07:46:01.226Z] 6. Implementation contains 'goto': true
+[2025-05-21T07:46:01.226Z] Scraper implementation check: COMPLETE
+[2025-05-21T07:46:01.226Z] CRITICAL ERROR: Puppeteer is not working correctly. Skipping YouTube scraper tests.
+[2025-05-21T07:46:01.226Z] This suggests an issue with the puppeteer installation or browser execution environment.
