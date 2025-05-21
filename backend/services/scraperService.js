@@ -322,25 +322,10 @@ class ScraperService {
                                         if (thumbnailElement && thumbnailElement.src) {
                                             thumbnail = thumbnailElement.src;
                                         } else if (url) {
-                                            // Extract video ID from URL using more comprehensive regex
-                                            let videoId = null;
-                                            if (url.includes('youtube.com/watch')) {
-                                                const match = url.match(/[?&]v=([^&]+)/);
-                                                if (match && match[1]) videoId = match[1];
-                                            } else if (url.includes('youtu.be/')) {
-                                                const match = url.match(/youtu\.be\/([^?&]+)/);
-                                                if (match && match[1]) videoId = match[1];
-                                            } else if (url.includes('youtube.com/embed/')) {
-                                                const match = url.match(/embed\/([^?&]+)/);
-                                                if (match && match[1]) videoId = match[1];
-                                            } else if (url.includes('youtube.com/shorts/')) {
-                                                const match = url.match(/shorts\/([^?&]+)/);
-                                                if (match && match[1]) videoId = match[1];
-                                            }
-                                            
-                                            if (videoId) {
-                                                thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-                                                console.log('[ScraperService] Generated thumbnail for video ID:', videoId);
+                                            // Extract video ID from URL
+                                            const videoIdMatch = url.match(/[?&]v=([^&]+)/);
+                                            if (videoIdMatch && videoIdMatch[1]) {
+                                                thumbnail = `https://i.ytimg.com/vi/${videoIdMatch[1]}/hqdefault.jpg`;
                                             }
                                         }
 
