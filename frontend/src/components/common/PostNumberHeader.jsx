@@ -1,9 +1,12 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { formatPostNumber, formatTimestamp, getCountryFlag } from '../../utils/postNumberUtils';
 import PostNumberLink from './PostNumberLink';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
 import { useQuery } from '@tanstack/react-query';
+import LoadingSpinner from './LoadingSpinner';
+import QuoteText from './QuoteText';
 
 const PostNumberHeader = ({ 
     post, 
@@ -154,25 +157,45 @@ const PostNumberHeader = ({
                     ))}
                 </>
             )}
-             {/* Post Preview */}
-             {showPreview && (
+             
+            {/* Post Preview */}
+            {showPreview && (
                 <div
                     ref={previewRef}
-                    className="fixed z-50 p-4 bg-white border border-gray-200 rounded-md shadow-lg"
+                    className="fixed z-50 bg-[#1e1e1e] border border-gray-700 rounded-lg shadow-lg p-4 max-w-md w-[300px]"
                     style={{
-                        top: mousePosition.y,
-                        left: mousePosition.x,
+                        transform: 'translate(10px, 10px)',
+                        pointerEvents: 'none'
                     }}
                 >
                     {isLoading ? (
-                        <p>Loading...</p>
+                        <LoadingSpinner size="sm" />
                     ) : postData ? (
-                        <div className="max-w-md">
-                            <p className="text-sm text-gray-800">{postData.content}</p>
-                            {/* You can add more details here, like user info, timestamp, etc. */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <img
+                                    src={postData.user?.profileImg || "/avatar-placeholder.png"}
+                                    alt={postData.user?.username}
+                                    className="w-8 h-8 rounded-full flex-shrink-0"
+                                />
+                                <div className="min-w-0">
+                                    <p className="font-semibold truncate">{postData.user?.fullName}</p>
+                                    <p className="text-sm text-gray-400 truncate">@{postData.user?.username}</p>
+                                </div>
+                            </div>
+                            <div className="break-words break-all whitespace-pre-wrap overflow-hidden">
+                                <QuoteText text={postData.text} onQuoteClick={onQuoteClick} />
+                            </div>
+                            {postData.img && (
+                                <img
+                                    src={postData.img}
+                                    alt="Post media"
+                                    className="max-h-40 rounded-lg object-contain w-full"
+                                />
+                            )}
                         </div>
                     ) : (
-                        <p>Post not found</p>
+                        <p className="text-red-500">Post not found</p>
                     )}
                 </div>
             )}
