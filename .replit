@@ -95,3 +95,12 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd backend && node scripts/setupPuppeteer.js && USE_MOCK_DATA=false node scripts/testScraper.js"
+
+[[workflows.workflow]]
+name = "Test Real Scraper"
+author = 41107035
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && node scripts/setupPuppeteer.js && USE_MOCK_DATA=false node scripts/testScraper.js"

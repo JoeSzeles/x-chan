@@ -3,7 +3,12 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import puppeteer from 'puppeteer';
 import scraperService from '../services/scraperService.js';
+
+// Force disable mock data for testing real scraping
+global.USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true' ? true : false;
+console.log(`[TestScript] USE_MOCK_DATA set to: ${global.USE_MOCK_DATA}`);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,17 +30,20 @@ const log = (message) => {
   fs.appendFileSync(logFilePath, timestampedMessage + '\n');
 };
 
-// Check if mock data should be used
-const useMockData = process.env.USE_MOCK_DATA === 'true' || global.USE_MOCK_DATA === true;
-log(`[Test] Setting USE_MOCK_DATA to ${useMockData} for reliable testing`);
+// Check if mock data should be used (respect environment variable)
+const useMockData = process.env.USE_MOCK_DATA === 'true';
+log(`[Test] USE_MOCK_DATA flag: ${useMockData}`);
+global.USE_MOCK_DATA = useMockData;
 
-// Force mock data flag if needed
+// If using mock data, generate test data to verify the generator works
 if (useMockData) {
-  global.USE_MOCK_DATA = true;
-  log('[ScraperService] Generating mock YouTube data');
+  log('[ScraperService] Generating mock YouTube data for testing');
   const mockArticles = scraperService.generateMockYouTubeData({ searchTerms: 'news' });
   log(`[ScraperService] Generated ${mockArticles.length} mock YouTube articles`);
   log('[Test] Mock data generator is working properly, generated ' + mockArticles.length + ' test articles');
+} else {
+  log('[Test] Using REAL scraping - no mock data will be used');
+  log('[Test] This will attempt to launch a real browser and scrape actual content');
 }
 
 // Main test function
