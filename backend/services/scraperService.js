@@ -14,13 +14,10 @@ class ScraperService {
         if (global.USE_MOCK_DATA) {
             console.log('[ScraperService] Using mock data for scraping');
 
-            // Import dynamically to avoid circular dependencies
-            const { default: youtubeScraperService } = await import('./youtubeScraperService.js');
-
             if (website.type === 'video' && website.url.includes('youtube.com')) {
-                console.log('[ScraperService] Getting YouTube data from specialized service');
-                const articles = await youtubeScraperService.getYouTubeVideos(website);
-                console.log(`[ScraperService] Retrieved ${articles.length} YouTube articles`);
+                console.log('[ScraperService] Generating YouTube mock data');
+                const articles = this.generateMockYouTubeData(website);
+                console.log(`[ScraperService] Generated ${articles.length} mock YouTube articles`);
                 return articles;
             }
 
@@ -116,25 +113,6 @@ class ScraperService {
     }
 
     async scrapeYouTube(website) {
-        console.log('[ScraperService] Starting YouTube scraping for:', website.url);
-        
-        // Import our specialized YouTube scraper service
-        const { default: youtubeScraperService } = await import('./youtubeScraperService.js');
-        
-        try {
-            console.log('[ScraperService] Delegating to YouTube scraper service');
-            const articles = await youtubeScraperService.getYouTubeVideos(website);
-            console.log(`[ScraperService] YouTube scraper service returned ${articles.length} articles`);
-            return articles;
-        } catch (error) {
-            console.error('[ScraperService] Error using YouTube scraper service:', error);
-            console.log('[ScraperService] Falling back to mock data due to error');
-            return youtubeScraperService.generateMockData(website);
-        }
-    }
-    
-    /* Legacy scrapeYouTube implementation kept for reference
-    async legacyScrapeYouTube(website) {
         console.log('[ScraperService] Starting YouTube scraping for:', website.url);
         console.log('[ScraperService] Website config:', {
             url: website.url,
