@@ -44,13 +44,20 @@ const PostNumberHeader = ({
 
     const handlePostNumberClick = (e) => {
         e.stopPropagation();
-        const formattedNumber = formatPostNumber(displayPostNumber);
-        const reference = `>>${formattedNumber}`;
-        navigator.clipboard.writeText(reference).then(() => {
-            toast.success('Post reference copied to clipboard!');
-        }).catch(() => {
-            toast.error('Failed to copy post reference');
-        });
+        
+        if (onQuoteClick) {
+            // If onQuoteClick is provided, use it for the primary click action
+            onQuoteClick(displayPostNumber);
+        } else {
+            // Default behavior: copy to clipboard
+            const formattedNumber = formatPostNumber(displayPostNumber);
+            const reference = `>>${formattedNumber}`;
+            navigator.clipboard.writeText(reference).then(() => {
+                toast.success('Post reference copied to clipboard!');
+            }).catch(() => {
+                toast.error('Failed to copy post reference');
+            });
+        }
     };
 
     return (
@@ -76,6 +83,7 @@ const PostNumberHeader = ({
                 <span 
                     className="cursor-pointer hover:text-blue-400 transition-colors"
                     onClick={handlePostNumberClick}
+                    title={onQuoteClick ? "Click to quote this post" : "Click to copy reference"}
                 >
                     No.{formatPostNumber(displayPostNumber)}
                 </span>
