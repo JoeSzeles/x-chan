@@ -778,67 +778,6 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         bookmarkMutation.mutate(article);
     };
 
-  const fetchArticles = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      console.log('Fetching articles for bot ID:', botId);
-      const response = await fetch(`/api/newsbot/${botId}/articles?page=${page}&limit=${limit}`);
-
-      if (!response.ok) {
-        throw new Error(`Error fetching articles: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch articles');
-      }
-
-      console.log('Articles fetched:', data.data.articles.length);
-
-      // Process YouTube URLs to ensure they have valid video IDs
-      const processedArticles = data.data.articles.map(article => {
-        if (article.url && article.url.includes('youtube.com')) {
-          // If image URL is missing or has 'undefined' in it, fix it
-          if (!article.imageUrl || article.imageUrl.includes('undefined')) {
-            // Extract video ID
-            let videoId = null;
-            if (article.url.includes('youtube.com/watch')) {
-              const match = article.url.match(/[?&]v=([^&]+)/);
-              if (match && match[1]) videoId = match[1];
-            } else if (article.url.includes('youtu.be/')) {
-              const match = article.url.match(/youtu\.be\/([^?&]+)/);
-              if (match && match[1]) videoId = match[1];
-            }
-
-            if (videoId) {
-              article.imageUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-            }
-          }
-        }
-        return article;
-      });
-
-      setArticles(processedArticles);
-      setTotalPages(data.data.totalPages || 1);
-      setTotalArticles(data.data.total || 0);
-    } catch (err) {
-      console.error('Error fetching articles:', err.message);
-      setError(err.message || 'Failed to fetch articles');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-    // Add function to handle bookmark toggle
-    const handleBookmarkToggle = (article, e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        bookmarkMutation.mutate(article);
-    };
-
     // Modify the article card rendering to include better error handling
     const renderArticleCard = (article) => {
         const isYouTube = isYouTubeUrl(article.url);
