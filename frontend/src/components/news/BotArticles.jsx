@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -42,17 +42,6 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const [lastArticleCount, setLastArticleCount] = useState(0);
     const [socket, setSocket] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
-    const [isWideMode, setIsWideMode] = useState(window.innerWidth > 1024);
-    
-    // Handle window resize to detect wide mode
-    useEffect(() => {
-        const handleResize = () => {
-            setIsWideMode(window.innerWidth > 1024);
-        };
-        
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
     const queryClient = useQueryClient();
     const limit = 20;
     const [bookmarkedArticles, setBookmarkedArticles] = useState(new Set());
@@ -918,7 +907,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         {article.title}
                     </h3>
                     <p className="text-gray-300 text-sm mb-4 flex-grow overflow-hidden">
-                        {isWideMode && data.articles.length > 6 
+                        {window.innerWidth > 1024 && data.articles.length > 6 
                             ? article.description.substring(0, 80) + (article.description.length > 80 ? '...' : '')
                             : article.description}
                     </p>
@@ -992,17 +981,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     if (!isOpen) return null;
 
     return (
-        <div className={`w-full ${isWideMode ? "max-w-full" : ""}`} 
-             style={isWideMode ? {
-                width: 'calc(100vw - 4rem)', 
-                maxWidth: '100%', 
-                marginLeft: '-1rem', 
-                marginRight: '-1rem', 
-                paddingLeft: '1.5rem', 
-                paddingRight: '1.5rem',
-                position: 'relative',
-                left: '-0.5rem'
-             } : {}}>
+        <div className="w-full">
             {isLoading ? (
                 <div className="flex justify-center items-center h-32">
                     <LoadingSpinner size="lg" />
@@ -1071,7 +1050,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    <div className={`grid grid-cols-1 md:grid-cols-2 ${isWideMode ? "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5" : ""} gap-5 w-full`}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {data.articles.map(article => renderArticleCard(article))}
                     </div>
 

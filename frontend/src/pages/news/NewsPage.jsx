@@ -831,7 +831,7 @@ const NewsPage = () => {
                         </div>
 
                         {/* Articles Section */}
-                        <div className="mt-6 border-t border-gray-700 pt-4 w-full">
+                        <div className="mt-6 border-t border-gray-700 pt-4">
                             <BotArticles botId={bot._id} isOpen={true} onClose={() => {}} />
                         </div>
                     </div>
