@@ -575,44 +575,53 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         }
     };
 
-    const getYouTubeThumbnail = (url) => {
-        try {
-            let videoId;
-            const urlObj = new URL(url);
-
-            if (url.includes('youtube.com/watch')) {
-                videoId = urlObj.searchParams.get('v');
-            } else if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
-            } else if (url.includes('youtube.com/embed/')) {
-                videoId = url.split('embed/')[1]?.split(/[?#]/)[0];
-            } else if (url.includes('youtube.com/shorts/')) {
-                videoId = url.split('shorts/')[1]?.split(/[?#]/)[0];
-            }
-
-            if (!videoId) {
-                console.error('Could not extract video ID from URL:', url);
-                return '/avatar-placeholder.png';
-            }
-
-            return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-        } catch (error) {
-            console.error('Error parsing YouTube URL:', error);
-            return '/avatar-placeholder.png';
-        }
+    // For YouTube handling
+    const isYouTubeUrl = (url) => {
+        if (!url) return false;
+        return url.includes('youtube.com') || url.includes('youtu.be') || 
+               // Also detect mock YouTube URLs from the scraper
+               (url.includes('mock') && url.includes('watch?v='));
     };
 
-    const isYouTubeUrl = (url) => {
+    // Get a proper YouTube thumbnail URL from any YouTube URL
+    const getYouTubeThumbnail = (url) => {
+        if (!url) return null;
+
         try {
-            if (!url) return false;
-            return url.includes('youtube.com/watch') || 
-                   url.includes('youtu.be/') || 
-                   url.includes('youtube.com/embed/') ||
-                   url.includes('youtube.com/shorts/');
+            let videoId = null;
+
+            // Handle youtu.be format
+            if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
+            } 
+            // Handle standard youtube.com/watch?v= format
+            else if (url.includes('youtube.com/watch')) {
+                const urlObj = new URL(url);
+                videoId = urlObj.searchParams.get('v');
+            } 
+            // Handle embed format
+            else if (url.includes('youtube.com/embed/')) {
+                videoId = url.split('embed/')[1]?.split(/[?#]/)[0];
+            } 
+            // Handle shorts format
+            else if (url.includes('youtube.com/shorts/')) {
+                videoId = url.split('shorts/')[1]?.split(/[?#]/)[0];
+            }
+            // Handle mock URLs from scraper
+            else if (url.includes('mock')) {
+                // Use a default YouTube video ID for mock URLs
+                return 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
+            }
+
+            if (videoId) {
+                return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+            }
         } catch (error) {
-            console.error('Error checking YouTube URL:', error);
-            return false;
+            console.error('Error extracting YouTube video ID:', error);
         }
+
+        // Fallback to a default thumbnail
+        return 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
     };
 
     const getCleanYouTubeUrl = (url) => {
@@ -811,7 +820,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                                 }}
                                             />
                                         )}
-                            
+
                         </div>
                     ) : article.imageUrl && !hasFailedThumbnail ? (
                         <div className="mb-4">
