@@ -262,6 +262,22 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
             console.log(`Found ${validArticles.length} valid articles after filtering`);
+            
+            // Add debug info in development
+            console.log(`Article data sample:`, validArticles.length > 0 ? {
+                first: validArticles[0],
+                last: validArticles[validArticles.length - 1],
+                types: [...new Set(validArticles.map(a => a.type))],
+                urlPatterns: [...new Set(validArticles.map(a => {
+                    if (a.url && a.url.includes('youtube.com')) return 'youtube';
+                    if (a.url && a.url.includes('youtu.be')) return 'youtu.be';
+                    return 'other';
+                }))],
+                // Count how many have videoUrl property
+                videoUrlCount: validArticles.filter(a => a.videoUrl).length,
+                // Count how many have imageUrl property
+                imageUrlCount: validArticles.filter(a => a.imageUrl).length
+            } : 'No articles');
 
             // Update query data
             queryClient.setQueryData(["botArticles", botId, currentPage], {

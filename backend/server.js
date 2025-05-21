@@ -12,8 +12,8 @@ import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
 
 // Set global flags for debugging and mock data
-global.USE_MOCK_DATA = true;
-console.log('Mock data ENABLED for scrapers - this will generate fake articles instead of scraping');
+global.USE_MOCK_DATA = false;
+console.log('Mock data DISABLED - system will attempt real scraping');
 
 // Import routes
 import authRoutes from './routes/auth.route.js';

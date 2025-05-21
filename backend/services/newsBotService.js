@@ -218,8 +218,22 @@ class NewsBotService {
                     if (website.type === 'video' && website.url.includes('youtube.com')) {
                         const searchTerms = (website.searchTerms || "news").split(',').map(t => t.trim()).join('+');
                         console.log('[NewsBotService] Building YouTube URL with search terms:', searchTerms);
+                        console.log('[NewsBotService] Original URL before modification:', website.url);
+                        
+                        // Make sure we're using the search results URL format
                         website.url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTerms)}`;
+                        
                         console.log('[NewsBotService] Final URL:', website.url);
+                        console.log('[NewsBotService] Encoded search terms:', encodeURIComponent(searchTerms));
+                        
+                        // Add detailed website object for debugging
+                        console.log('[NewsBotService] Final website object:', {
+                            url: website.url,
+                            type: website.type,
+                            selector: website.selector,
+                            searchTerms: website.searchTerms,
+                            active: website.active
+                        });
                     }
 
                     console.log('[NewsBotService] Calling scraper for website:', website.url);
@@ -305,29 +319,55 @@ class NewsBotService {
 
             // Process YouTube videos
             try {
-                // Your YouTube processing logic
                 console.log('[NewsBotService] Processing YouTube videos for bot:', bot.name);
+                console.log('[NewsBotService] Total articles to process:', articles.length);
 
                 // Add error detection for video IDs
-                articles.forEach(article => {
-                    if (article.url && article.url.includes('youtube.com') && (!article.imageUrl || article.imageUrl.includes('undefined'))) {
-                        console.log('[NewsBotService] Fixing missing thumbnail for article:', article.title);
+                articles.forEach((article, index) => {
+                    console.log(`[NewsBotService] Processing article ${index + 1}/${articles.length}:`, {
+                        title: article.title,
+                        url: article.url,
+                        hasImageUrl: !!article.imageUrl
+                    });
+                    
+                    if (article.url && article.url.includes('youtube.com')) {
+                        console.log('[NewsBotService] YouTube URL detected:', article.url);
+                        
+                        // Check for missing thumbnail
+                        if (!article.imageUrl || article.imageUrl.includes('undefined')) {
+                            console.log('[NewsBotService] Fixing missing thumbnail for article:', article.title);
 
-                        // Extract video ID
-                        let videoId = null;
-                        if (article.url.includes('youtube.com/watch')) {
-                            const match = article.url.match(/[?&]v=([^&]+)/);
-                            if (match && match[1]) videoId = match[1];
-                        } else if (article.url.includes('youtu.be/')) {
-                            const match = article.url.match(/youtu\.be\/([^?&]+)/);
-                            if (match && match[1]) videoId = match[1];
+                            // Extract video ID with improved logging
+                            let videoId = null;
+                            if (article.url.includes('youtube.com/watch')) {
+                                const match = article.url.match(/[?&]v=([^&]+)/);
+                                console.log('[NewsBotService] YouTube watch URL match:', match);
+                                if (match && match[1]) videoId = match[1];
+                            } else if (article.url.includes('youtu.be/')) {
+                                const match = article.url.match(/youtu\.be\/([^?&]+)/);
+                                console.log('[NewsBotService] YouTube short URL match:', match);
+                                if (match && match[1]) videoId = match[1];
+                            }
+
+                            console.log('[NewsBotService] Extracted video ID:', videoId);
+                            
+                            if (videoId) {
+                                article.imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                                console.log('[NewsBotService] Updated thumbnail URL:', article.imageUrl);
+                            } else {
+                                console.warn('[NewsBotService] Could not extract video ID from URL:', article.url);
+                            }
                         }
-
-                        if (videoId) {
-                            article.imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                        
+                        // Ensure video URL is properly set for the frontend
+                        if (!article.videoUrl) {
+                            article.videoUrl = article.url;
+                            console.log('[NewsBotService] Set videoUrl property for YouTube content:', article.videoUrl);
                         }
                     }
                 });
+                
+                console.log('[NewsBotService] YouTube video processing completed');
             } catch (error) {
                 console.error('[NewsBotService] Error processing YouTube videos:', error);
             }
