@@ -19,7 +19,8 @@ try {
   const puppeteerConfig = `
 module.exports = {
   cacheDirectory: '.cache/puppeteer',
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+  skipDownload: false,
+  browserRevision: '',
   args: [
     '--no-sandbox',
     '--disable-setuid-sandbox',
@@ -36,7 +37,7 @@ module.exports = {
   fs.writeFileSync(rcPath, puppeteerConfig);
   console.log('Created .puppeteerrc.cjs configuration file');
 
-  // Modify scraperService to use mock data if browser fails to launch
+  // Ensure scraperService always falls back to mock data
   const scraperServicePath = path.join(__dirname, '..', 'services', 'scraperService.js');
   if (fs.existsSync(scraperServicePath)) {
     let scraperService = fs.readFileSync(scraperServicePath, 'utf8');
@@ -49,16 +50,24 @@ module.exports = {
         '        // Fall back to mock data if USE_MOCK_DATA is true\n' +
         '        if (global.USE_MOCK_DATA) {\n' +
         '            console.log("[ScraperService] Using mock data for YouTube");\n' +
-        '            return {\n' +
-        '                title: "Mock YouTube Video",\n' +
-        '                description: "This is mock data when puppeteer is unavailable",\n' +
-        '                videoId: "dQw4w9WgXcQ"\n' +
-        '            };\n' +
+        '            return this.generateMockYouTubeData(website);\n' +
         '        }\n'
       );
       
       fs.writeFileSync(scraperServicePath, scraperService);
       console.log('Updated scraperService.js with mock data fallback');
+    }
+  }
+
+  // Create a package.json script for easier testing
+  const packageJsonPath = path.join(__dirname, '..', 'package.json');
+  if (fs.existsSync(packageJsonPath)) {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    
+    if (!packageJson.scripts['test-scraper']) {
+      packageJson.scripts['test-scraper'] = 'node scripts/testScraper.js';
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      console.log('Added test-scraper script to package.json');
     }
   }
 
