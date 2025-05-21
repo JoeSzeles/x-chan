@@ -136,24 +136,24 @@ class NewsBotService {
         try {
             console.log('[NewsBotService] Starting updateBotArticles for bot:', botId);
 
+            // Check if enough time has passed since last update based on updateInterval
             const bot = await NewsBot.findById(botId);
             if (!bot) {
                 throw new Error('Bot not found');
             }
 
-            // Use bot's configured update interval in minutes
-            const updateIntervalMs = (bot.updateInterval || 5) * 60 * 1000;
-            const lastUpdate = bot.lastUpdate ? new Date(bot.lastUpdate).getTime() : 0;
-            const now = Date.now();
+            const now = new Date();
+            const lastUpdate = bot.lastUpdate || new Date(0);
+            const minutesSinceLastUpdate = (now - lastUpdate) / (1000 * 60);
 
-            if (now - lastUpdate < updateIntervalMs) {
-                console.log('[NewsBotService] Skipping update - too soon since last update');
+            if (minutesSinceLastUpdate < bot.updateInterval && !bot.forceUpdate) {
+                console.log(`[NewsBotService] Skipping update - ${minutesSinceLastUpdate} minutes since last update`);
                 return {
                     success: true,
                     data: {
                         skipped: true,
-                        message: 'Update skipped - too soon since last update',
-                        nextUpdate: new Date(lastUpdate + updateIntervalMs)
+                        nextUpdate: new Date(lastUpdate.getTime() + (bot.updateInterval * 60 * 1000)),
+                        message: `Next update in ${Math.round(bot.updateInterval - minutesSinceLastUpdate)} minutes`
                     }
                 };
             }
