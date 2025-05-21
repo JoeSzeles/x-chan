@@ -12,8 +12,8 @@ import fs from 'fs';
 import { v2 as cloudinary } from "cloudinary";
 
 // Set global flags for debugging and mock data
-global.USE_MOCK_DATA = false;
-console.log('Mock data DISABLED - system will use real scraping for articles');
+global.USE_MOCK_DATA = true;
+console.log('Mock data ENABLED for scrapers - this will generate fake articles instead of scraping');
 
 // Import routes
 import authRoutes from './routes/auth.route.js';
@@ -185,32 +185,12 @@ io.on('connection', socket => {
     });
 });
 
-const startServer = (port) => {
-    return new Promise((resolve, reject) => {
-        const server = httpServer.listen(port, HOST, () => {
-            console.log(`Server is running on http://${HOST}:${port}`);
-            resolve(server);
-        });
-
-        server.on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-                console.log(`Port ${port} is in use, trying ${port + 1}`);
-                server.close();
-                resolve(startServer(port + 1));
-            } else {
-                reject(err);
-            }
-        });
-    });
-};
-
 connectMongoDB().then(() => {
-    startServer(PORT).catch((error) => {
-        console.error("Failed to start server:", error);
-        process.exit(1);
+    httpServer.listen(PORT, HOST, () => {
+        console.log(`Server is running on http://${HOST}:${PORT}`);
     });
 }).catch((error) => {
-    console.error("Failed to connect to MongoDB:", error);
+    console.error("Failed to start server:", error);
     process.exit(1);
 });
 

@@ -575,53 +575,55 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         }
     };
 
-    // For YouTube handling
-    const isYouTubeUrl = (url) => {
-        if (!url) return false;
-        return url.includes('youtube.com') || url.includes('youtu.be') || 
-               // Also detect mock YouTube URLs from the scraper
-               (url.includes('mock') && url.includes('watch?v='));
-    };
-
-    // Get a proper YouTube thumbnail URL from any YouTube URL
     const getYouTubeThumbnail = (url) => {
-        if (!url) return null;
-
         try {
-            let videoId = null;
+            let videoId;
 
-            // Handle youtu.be format
-            if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
-            } 
-            // Handle standard youtube.com/watch?v= format
-            else if (url.includes('youtube.com/watch')) {
+            if (url.includes('youtube.com/watch')) {
                 const urlObj = new URL(url);
                 videoId = urlObj.searchParams.get('v');
-            } 
-            // Handle embed format
-            else if (url.includes('youtube.com/embed/')) {
+            } else if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1]?.split(/[?#]/)[0];
+            } else if (url.includes('youtube.com/embed/')) {
                 videoId = url.split('embed/')[1]?.split(/[?#]/)[0];
-            } 
-            // Handle shorts format
-            else if (url.includes('youtube.com/shorts/')) {
+            } else if (url.includes('youtube.com/shorts/')) {
                 videoId = url.split('shorts/')[1]?.split(/[?#]/)[0];
             }
-            // Handle mock URLs from scraper
-            else if (url.includes('mock')) {
-                // Use a default YouTube video ID for mock URLs
-                return 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
+
+            if (!videoId) {
+                console.error('Could not extract video ID from URL:', url);
+                return '/avatar-placeholder.png';
             }
 
-            if (videoId) {
-                return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-            }
+            // Return array of possible thumbnail URLs in order of preference
+            // Including multiple domains and formats for better reliability
+            return [
+                `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+                `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`, 
+                `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+                `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, // Alternative domain
+                `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+                `https://i.ytimg.com/vi/${videoId}/default.jpg`,
+                `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                `https://img.youtube.com/vi/${videoId}/default.jpg`
+            ];
         } catch (error) {
-            console.error('Error extracting YouTube video ID:', error);
+            console.error('Error parsing YouTube URL:', error);
+            return '/avatar-placeholder.png';
         }
+    };
 
-        // Fallback to a default thumbnail
-        return 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg';
+    const isYouTubeUrl = (url) => {
+        try {
+            if (!url) return false;
+            return url.includes('youtube.com/watch') || 
+                   url.includes('youtu.be/') || 
+                   url.includes('youtube.com/embed/') ||
+                   url.includes('youtube.com/shorts/');
+        } catch (error) {
+            console.error('Error checking YouTube URL:', error);
+            return false;
+        }
     };
 
     const getCleanYouTubeUrl = (url) => {
@@ -778,110 +780,73 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         bookmarkMutation.mutate(article);
     };
 
-  const fetchArticles = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      console.log('Fetching articles for bot ID:', botId);
-      const response = await fetch(`/api/newsbot/${botId}/articles?page=${page}&limit=${limit}`);
-
-      if (!response.ok) {
-        throw new Error(`Error fetching articles: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch articles');
-      }
-
-      console.log('Articles fetched:', data.data.articles.length);
-
-      // Process YouTube URLs to ensure they have valid video IDs
-      const processedArticles = data.data.articles.map(article => {
-        if (article.url && article.url.includes('youtube.com')) {
-          // If image URL is missing or has 'undefined' in it, fix it
-          if (!article.imageUrl || article.imageUrl.includes('undefined')) {
-            // Extract video ID
-            let videoId = null;
-            if (article.url.includes('youtube.com/watch')) {
-              const match = article.url.match(/[?&]v=([^&]+)/);
-              if (match && match[1]) videoId = match[1];
-            } else if (article.url.includes('youtu.be/')) {
-              const match = article.url.match(/youtu\.be\/([^?&]+)/);
-              if (match && match[1]) videoId = match[1];
-            }
-
-            if (videoId) {
-              article.imageUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-            }
-          }
-        }
-        return article;
-      });
-
-      setArticles(processedArticles);
-      setTotalPages(data.data.totalPages || 1);
-      setTotalArticles(data.data.total || 0);
-    } catch (err) {
-      console.error('Error fetching articles:', err.message);
-      setError(err.message || 'Failed to fetch articles');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-    // Add function to handle bookmark toggle
-    const handleBookmarkToggle = (article, e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        bookmarkMutation.mutate(article);
-    };
-
     // Modify the article card rendering to include better error handling
     const renderArticleCard = (article) => {
         const isYouTube = isYouTubeUrl(article.url);
-        const thumbnailUrl = isYouTube ? getYouTubeThumbnail(article.url) : article.imageUrl;
+        const thumbnailUrls = isYouTube ? getYouTubeThumbnail(article.url) : [article.imageUrl];
         const hasFailedThumbnail = failedThumbnails.has(article._id);
         const isBookmarked = bookmarkedArticles.has(article._id);
+
+        // Function to handle progressive image loading with better logging
+        const tryNextThumbnail = (currentIndex, thumbnails, event) => {
+            if (Array.isArray(thumbnails) && currentIndex < thumbnails.length - 1) {
+                // Try the next thumbnail in the array
+                const nextIndex = currentIndex + 1;
+                const nextThumbnail = thumbnails[nextIndex];
+                console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
+                
+                // Set new source and update the index attribute
+                event.target.src = nextThumbnail;
+                event.target.dataset.index = nextIndex;
+                
+                // Preload the next thumbnail in the sequence for faster fallback
+                if (nextIndex < thumbnails.length - 1) {
+                    const preloadImage = new Image();
+                    preloadImage.src = thumbnails[nextIndex + 1];
+                }
+            } else {
+                // All thumbnails failed
+                console.error(`All thumbnails failed for article ${article._id}`);
+                handleImageError(article._id, isYouTube);
+            }
+        };
 
         return (
             <div key={article._id} className="bg-gray-700 rounded-lg p-4">
                 <div className="flex flex-col h-full">
                     {isYouTube ? (
-                        <div className="mb-4 relative" onClick={(e) => e.stopPropagation()}>
+                        <div className="mb-4 relative aspect-video" onClick={(e) => e.stopPropagation()}>
+                            {!hasFailedThumbnail && (
+                                <img 
+                                    src={Array.isArray(thumbnailUrls) ? thumbnailUrls[0] : thumbnailUrls}
+                                    alt={article.title}
+                                    className="w-full h-full object-cover rounded-lg"
+                                    data-index="0"
+                                    onError={(e) => {
+                                        // Try next thumbnail in the array if available
+                                        if (Array.isArray(thumbnailUrls)) {
+                                            const currentIndex = parseInt(e.target.dataset.index || "0");
+                                            tryNextThumbnail(currentIndex, thumbnailUrls, e);
+                                        } else {
+                                            handleImageError(article._id, isYouTube);
+                                        }
+                                    }}
+                                    loading="lazy"
+                                />
+                            )}
+                            
                             {/* YouTube-specific fallback for thumbnail error */}
-                                        {isYouTubeUrl(article.url) && failedThumbnails.has(article._id) && (
-                                            <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
-                                                <div className="text-center">
-                                                    <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
-                                                        <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22-2.65-.28-1.3-.07-2.49-.1-3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
-                                                    </svg>
-                                                    <p className="text-white text-sm">YouTube Video</p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Additional attempt with direct thumbnail URL if normal image fails */}
-                                        {isYouTubeUrl(article.url) && failedThumbnails.has(article._id) && (
-                                            <img 
-                                                src={getYouTubeThumbnail(article.url)} 
-                                                alt={article.title}
-                                                className="absolute inset-0 w-full h-full object-cover object-center rounded-lg"
-                                                onError={(e) => e.target.style.display = 'none'}
-                                                style={{display: 'none'}}
-                                                onLoad={(e) => {
-                                                    e.target.style.display = 'block';
-                                                    setFailedThumbnails(prev => {
-                                                        const newSet = new Set(prev);
-                                                        newSet.delete(article._id);
-                                                        return newSet;
-                                                    });
-                                                }}
-                                            />
-                                        )}
-
+                            {isYouTube && hasFailedThumbnail && (
+                                <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
+                                    <div className="text-center">
+                                        <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
+                                        </svg>
+                                        <p className="text-white text-sm">YouTube Video</p>
+                                        <div className="mt-2 text-xs text-white/70">{getCleanYouTubeUrl(article.url) ? new URL(getCleanYouTubeUrl(article.url)).pathname.substring(1) : 'Video'}</div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : article.imageUrl && !hasFailedThumbnail ? (
                         <div className="mb-4">

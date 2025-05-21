@@ -1,135 +1,143 @@
-import React, { useState, useEffect } from 'react';
 
-const YouTubeEmbed = ({ url, width = '100%', height = '315', className = '' }) => {
-  const [videoId, setVideoId] = useState('');
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
+import React, { useState, useEffect, useRef } from 'react';
 
-  useEffect(() => {
-    if (!url) {
-      setError(true);
-      setLoading(false);
-      return;
-    }
-
-    // Extract video ID from various YouTube URL formats
-    try {
-      let extractedId = '';
-
-      if (url.includes('youtube.com/watch')) {
-        const urlObj = new URL(url);
-        extractedId = urlObj.searchParams.get('v');
-      } else if (url.includes('youtu.be/')) {
-        extractedId = url.split('youtu.be/')[1];
-        // Remove any parameters
-        if (extractedId.includes('?')) {
-          extractedId = extractedId.split('?')[0];
-        }
-      } else if (url.includes('youtube.com/embed/')) {
-        extractedId = url.split('embed/')[1];
-        // Remove any parameters
-        if (extractedId.includes('?')) {
-          extractedId = extractedId.split('?')[0];
-        }
-      }
-
-      // Check for mock data urls and replace with a valid video ID
-      if (extractedId && extractedId.includes('mock')) {
-        console.log('Detected mock video ID, replacing with fallback video');
-        extractedId = 'dQw4w9WgXcQ'; // Use a fallback video ID
-      }
-
-      if (extractedId) {
-        setVideoId(extractedId);
-        setError(false);
-      } else {
-        console.error('Could not extract video ID from URL:', url);
-        setError(true);
-      }
-    } catch (err) {
-      console.error('Error parsing YouTube URL:', err);
-      setError(true);
-    }
-
-    setLoading(false);
-  }, [url]);
-
-  // Function to check if the YouTube thumbnail exists
-  const checkThumbnailExists = (id, callback) => {
-    if (!id) return callback(false);
-
-    const img = new Image();
-    img.onload = () => callback(true);
-    img.onerror = () => callback(false);
-    img.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
-  };
-
-  // Component to display the thumbnail with play button
-  const ThumbnailWithPlayButton = ({ id }) => {
-    const [thumbnailExists, setThumbnailExists] = useState(true);
+const YouTubeEmbed = ({ url }) => {
+    const [videoId, setVideoId] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [thumbnailUrl, setThumbnailUrl] = useState(null);
+    const embedContainerRef = useRef(null);
 
     useEffect(() => {
-      checkThumbnailExists(id, (exists) => {
-        setThumbnailExists(exists);
-      });
-    }, [id]);
+        const parseVideoId = (url) => {
+            try {
+                const cleanUrl = url.trim();
+                let id = null;
 
-    if (!thumbnailExists) {
-      return (
-        <div className="bg-gray-300 flex items-center justify-center" style={{ width, height }}>
-          <span>Video unavailable</span>
-        </div>
-      );
+                if (cleanUrl.includes('youtu.be/')) {
+                    id = cleanUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+                } else if (cleanUrl.includes('youtube.com/watch')) {
+                    id = new URL(cleanUrl).searchParams.get('v');
+                } else if (cleanUrl.includes('youtube.com/embed/')) {
+                    id = cleanUrl.split('embed/')[1]?.split(/[?#]/)[0];
+                } else if (cleanUrl.includes('youtube.com/shorts/')) {
+                    id = cleanUrl.split('shorts/')[1]?.split(/[?#]/)[0];
+                }
+
+                if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+                    throw new Error('Invalid YouTube URL');
+                }
+
+                setVideoId(id);
+                // Set the thumbnail URL directly based on the video ID
+                setThumbnailUrl(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`);
+                setError(null);
+            } catch (err) {
+                console.error('YouTube URL parsing error:', err);
+                setError('Invalid YouTube URL');
+                setVideoId(null);
+                setThumbnailUrl(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        setIsLoading(true);
+        parseVideoId(url);
+    }, [url]);
+
+    // For checking if the thumbnail image loaded properly
+    const handleThumbnailError = () => {
+        console.error('YouTube thumbnail failed to load:', thumbnailUrl);
+        setError('Failed to load video thumbnail');
+    };
+
+    const handleThumbnailLoad = () => {
+        setIsLoading(false);
+    };
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="youtube-embed my-2">
+                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
+                    <div className="flex justify-between items-center">
+                        <div className="text-gray-500">Loading video...</div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
+    // Error state
+    if (error) {
+        return (
+            <div className="youtube-embed my-2">
+                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
+                    <div className="text-red-500 mb-2">{error}</div>
+                    <a 
+                        href={url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-red-500 hover:underline"
+                    >
+                        View on YouTube
+                    </a>
+                </div>
+            </div>
+        );
+    }
+
+    // Main embed with thumbnail preview 
     return (
-      <div className="relative" style={{ width, height: typeof height === 'number' ? `${height}px` : height }}>
-        <img 
-          src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`} 
-          alt="YouTube Thumbnail"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-red-600 rounded-full p-3 opacity-80 hover:opacity-100 transition-opacity">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
+        <div className="youtube-embed my-2">
+            <div className="bg-red-500/10 rounded-lg border border-red-500/20 overflow-hidden">
+                {/* YouTube branding header */}
+                <div className="p-3 flex items-center justify-between border-b border-red-500/20">
+                    <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                        </svg>
+                        <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-red-500 hover:underline"
+                        >
+                            Watch on YouTube
+                        </a>
+                    </div>
+                </div>
+
+                {/* Thumbnail with play button overlay that links to YouTube */}
+                <div className="relative pt-[56.25%] w-full bg-black">
+                    {thumbnailUrl && (
+                        <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="absolute inset-0 flex items-center justify-center"
+                        >
+                            <img 
+                                src={thumbnailUrl} 
+                                alt="YouTube Video Thumbnail" 
+                                className="absolute inset-0 w-full h-full object-cover"
+                                onError={handleThumbnailError}
+                                onLoad={handleThumbnailLoad}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
+                                    <svg className="w-8 h-8 text-white ml-1" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </a>
+                    )}
+                </div>
+            </div>
         </div>
-      </div>
     );
-  };
-
-  // Function to create embed URL with parameters
-  const createEmbedUrl = (id) => {
-    return `https://www.youtube.com/embed/${id}?autoplay=0&origin=${window.location.origin}`;
-  };
-
-  if (loading) {
-    return <div className="bg-gray-200 animate-pulse" style={{ width, height }}></div>;
-  }
-
-  if (error || !videoId) {
-    return (
-      <div className={`bg-gray-200 flex items-center justify-center ${className}`} style={{ width, height }}>
-        <span className="text-gray-500">Video unavailable</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`youtube-embed ${className}`}>
-      <iframe
-        width={width}
-        height={height}
-        src={createEmbedUrl(videoId)}
-        title="YouTube video player"
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      ></iframe>
-    </div>
-  );
 };
 
 export default YouTubeEmbed;
