@@ -733,9 +733,6 @@ const NewsPage = () => {
                 >
                     Create New Bot
                 </button>
-                <p className="text-gray-500 text-sm mt-2">
-                    Note: New bots will take time to collect articles. Please be patient after creating a new bot.
-                </p>
             </div>
 
             <div className="grid grid-cols-1 gap-8 mb-8">

@@ -137,8 +137,7 @@ class NewsBotService {
             console.log('[NewsBotService] Starting updateBotArticles:', {
                 botId,
                 forceUpdate,
-                timestamp: new Date().toISOString(),
-                isNewBot: !bot?.lastUpdate
+                timestamp: new Date().toISOString()
             });
 
             // Check if enough time has passed since last update based on updateInterval
@@ -150,10 +149,9 @@ class NewsBotService {
             const now = new Date();
             const lastUpdate = bot.lastUpdate || new Date(0);
             const minutesSinceLastUpdate = (now - lastUpdate) / (1000 * 60);
-            const isNewBot = !bot.lastUpdate; // Check if this is a brand new bot without any updates
-            
-            // Force update can be passed from parameter, from bot settings, or if this is a new bot
-            const shouldForceUpdate = forceUpdate || bot.forceUpdate || isNewBot;
+
+            // Force update can be passed from parameter or from bot settings
+            const shouldForceUpdate = forceUpdate || bot.forceUpdate;
 
             if (minutesSinceLastUpdate < bot.updateInterval && !shouldForceUpdate) {
                 console.log(`[NewsBotService] Skipping update - ${minutesSinceLastUpdate} minutes since last update`);
@@ -169,11 +167,6 @@ class NewsBotService {
                         articles: []
                     }
                 };
-            }
-            
-            // If this is a new bot, log that we're doing the initial scrape
-            if (isNewBot) {
-                console.log('[NewsBotService] Performing initial scrape for new bot');
             }
 
             // Reset forceUpdate flag
