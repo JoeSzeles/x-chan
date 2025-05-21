@@ -325,15 +325,12 @@ const NewsPage = () => {
             }
         },
         onSuccess: (data) => {
-            // Ensure we have valid data before accessing properties
-            const newArticlesCount = data?.data?.newArticles || 0;
-            const totalArticles = data?.data?.totalArticles || 0;
+            // Invalidate queries to refresh the data
+            queryClient.invalidateQueries(["botArticles", selectedBot?._id]);
 
-            console.log('Update mutation success:', {
-                newArticlesCount,
-                totalArticles,
-                data
-            });
+            // Get article counts safely
+            const newArticlesCount = data?.data?.newArticles?.length || 0;
+            const totalArticles = data?.data?.totalArticles || 0;
 
             if (newArticlesCount > 0) {
                 toast.success(`Found ${newArticlesCount} new articles!`, {
@@ -356,17 +353,9 @@ const NewsPage = () => {
                     }
                 });
             }
-
-            // Invalidate queries to refresh the data
-            queryClient.invalidateQueries(["newsBots"]);
         },
         onError: (error) => {
-            console.error('Update mutation error:', {
-                error: error,
-                message: error.message,
-                stack: error.stack
-            });
-
+            console.error('Update articles error:', error);
             toast.error(error.message || "Failed to update articles", {
                 duration: 3000,
                 position: "bottom-right",
