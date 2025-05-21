@@ -110,7 +110,7 @@ const YouTubeEmbed = ({ url }) => {
                 </div>
 
                 {/* Thumbnail with play button overlay that links to YouTube */}
-                <div className="relative pt-[56.25%] w-full bg-black">
+                <div className="relative w-full bg-black" style={{ paddingBottom: '56.25%' }}>
                     {thumbnailUrl && (
                         <a 
                             href={url} 

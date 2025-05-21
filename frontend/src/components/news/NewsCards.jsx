@@ -98,20 +98,28 @@ const NewsCards = ({ viewMode }) => {
                 >
                     {isVideoUrl(article.url) ? (
                         <div className={`${viewMode === "grid" ? "h-48" : "h-64"} relative`}>
-                            <img
-                                src={getVideoThumbnail(article.url)}
-                                alt={article.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = 'https://via.placeholder.com/400x300?text=Video+Preview';
+                            <div 
+                                className="video-thumbnail cursor-pointer relative w-full h-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(article.url, '_blank');
                                 }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
-                                    </svg>
+                            >
+                                <img
+                                    src={getVideoThumbnail(article.url)}
+                                    alt={article.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://via.placeholder.com/400x300?text=Video+Preview';
+                                    }}
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center hover:bg-black hover:bg-opacity-30 transition-all">
+                                    <div className="w-12 h-12 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-white">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                             {article.duration && (

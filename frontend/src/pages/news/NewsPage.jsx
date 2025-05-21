@@ -570,31 +570,8 @@ const NewsPage = () => {
         },
         onSuccess: () => {
             toast.success("Bot created successfully!");
-            // Show a more detailed toast about article scraping
-            toast.info('Initial article search started. This may take a few minutes...', {
-                duration: 8000,
-                position: "bottom-right",
-                style: {
-                    background: '#1a1a1a',
-                    color: '#fff',
-                    border: '1px solid #333'
-                }
-            });
-
             setShowCreateBot(false);
-            setNewBot({
-                name: "",
-                websites: [{ url: "", selector: "", type: "news" }],
-                updateInterval: 5
-            });
             queryClient.invalidateQueries(["newsBots"]);
-
-            // Set a timeout to automatically refresh the list after a delay
-            // to show the new content being scraped
-            setTimeout(() => {
-                queryClient.invalidateQueries(["newsBots"]);
-                toast.success('Refreshing bot list to check for new articles');
-            }, 15000);
         },
         onError: (error) => {
             console.error('Create bot error:', error);
@@ -756,6 +733,9 @@ const NewsPage = () => {
                 >
                     Create New Bot
                 </button>
+                <p className="text-gray-500 text-sm mt-2">
+                    Note: New bots will take time to collect articles. Please be patient after creating a new bot.
+                </p>
             </div>
 
             <div className="grid grid-cols-1 gap-8 mb-8">
@@ -779,7 +759,7 @@ const NewsPage = () => {
                                         }}
                                         className="p-2 text-blue-500 hover:text-blue-400 rounded-full hover:bg-blue-500/10"
                                         title="Copy Video Link"
-                                                                        >
+                                    >
                                         <ShareIcon />
                                     </button>
                                 )}

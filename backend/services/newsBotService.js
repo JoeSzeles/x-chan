@@ -137,7 +137,8 @@ class NewsBotService {
             console.log('[NewsBotService] Starting updateBotArticles:', {
                 botId,
                 forceUpdate,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                isNewBot: !bot?.lastUpdate
             });
 
             // Check if enough time has passed since last update based on updateInterval

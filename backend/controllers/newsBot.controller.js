@@ -38,22 +38,9 @@ export const createBot = async (req, res) => {
         const bot = await newsBotService.createBot(req.user._id, req.body);
         console.log('Bot created successfully:', bot);
 
-        // Start immediate scraping in the background
-        // We don't wait for this to complete before responding to the client
-        setTimeout(async () => {
-            try {
-                console.log(`[NewsBotController] Starting initial scraping for new bot: ${bot._id}`);
-                await newsBotService.updateBotArticles(bot._id, true); // Force update for new bot
-                console.log(`[NewsBotController] Initial scraping complete for bot: ${bot._id}`);
-            } catch (err) {
-                console.error(`[NewsBotController] Error during initial scraping: ${err.message}`);
-            }
-        }, 100);
-
         res.status(201).json({
             success: true,
-            data: bot,
-            message: "Bot created successfully. Initial article search started in background."
+            data: bot
         });
     } catch (error) {
         console.error('Error creating bot:', error);
