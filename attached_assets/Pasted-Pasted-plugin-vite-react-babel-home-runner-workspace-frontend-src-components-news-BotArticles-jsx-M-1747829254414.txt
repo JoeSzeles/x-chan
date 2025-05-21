@@ -1,0 +1,48 @@
+Pasted--plugin-vite-react-babel-home-runner-workspace-frontend-src-components-news-BotArticles-jsx-Missi-1747829198637.txt[plugin:vite:react-babel] /home/runner/workspace/frontend/src/components/news/BotArticles.jsx: Missing semicolon. (848:29)
+  851 |                 event.target.src = nextThumbnail;
+
+/home/runner/workspace/frontend/src/components/news/BotArticles.jsx:848:29/home/runner/workspace/frontend/src/components/news/BotArticles.jsx:848:29
+
+846|                  const nextIndex = currentIndex + 1;
+847|                  const nextThumbnail = thumbnails[nextIndex];
+848|                  console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
+   |                               ^
+849|  
+850|                  // Set new source and update the index attribute
+
+    at constructor (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:353:19)
+    at JSXParserMixin.raise (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:3277:19)
+    at JSXParserMixin.semicolon (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:3598:10)
+    at JSXParserMixin.parseExpressionStatement (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12765:10)
+    at JSXParserMixin.parseStatementContent (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12376:19)
+    at JSXParserMixin.parseStatementLike (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12239:17)
+    at JSXParserMixin.parseStatementListItem (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12219:17)
+    at JSXParserMixin.parseBlockOrModuleBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12796:61)
+    at JSXParserMixin.parseBlockBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12789:10)
+    at JSXParserMixin.parseBlock (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:12777:10)
+    at JSXParserMixin.parseFunctionBody (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:11616:24)
+    at JSXParserMixin.parseArrowExpression (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:11591:10)
+    at JSXParserMixin.parseExprAtom (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10970:25)
+    at JSXParserMixin.parseExprAtom (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:6821:20)
+    at JSXParserMixin.parseExprSubscripts (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10590:23)
+    at JSXParserMixin.parseUpdate (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10573:21)
+    at JSXParserMixin.parseMaybeUnary (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10551:23)
+    at JSXParserMixin.parseMaybeUnaryOrPrivate (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10405:61)
+    at JSXParserMixin.parseExprOps (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10410:23)
+    at JSXParserMixin.parseMaybeConditional (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10387:23)
+    at JSXParserMixin.parseMaybeAssign (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10348:21)
+    at /home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10318:39
+    at JSXParserMixin.allowInAnd (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:11936:12)
+    at JSXParserMixin.parseMaybeAssignAllowIn (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10318:17)
+    at JSXParserMixin.parseExprListItem (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:11696:18)
+    at JSXParserMixin.parseCallExpressionArguments (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10776:22)
+    at JSXParserMixin.parseCoverCallAndAsyncArrowHead (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10693:29)
+    at JSXParserMixin.parseSubscript (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10630:19)
+    at JSXParserMixin.parseSubscripts (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10603:19)
+    at JSXParserMixin.parseExprSubscripts (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10594:17)
+    at JSXParserMixin.parseUpdate (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10573:21)
+    at JSXParserMixin.parseMaybeUnary (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10551:23)
+    at JSXParserMixin.parseMaybeUnaryOrPrivate (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10405:61)
+    at JSXParserMixin.parseExprOps (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10410:23)
+    at JSXParserMixin.parseMaybeConditional (/home/runner/workspace/frontend/node_modules/@babel/parser/lib/index.js:10387:23)
+    at JSXParserMixin.parseMaybeAssign (/home/runner/work...
