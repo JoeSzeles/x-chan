@@ -9,8 +9,8 @@ class SocketService {
   connect() {
     if (!this.socket) {
       const socketUrl = window.location.hostname.includes('replit.dev') 
-        ? `https://${window.location.host}`
-        : 'https://0.0.0.0:5000';
+        ? `wss://${window.location.host}`
+        : 'http://0.0.0.0:5000';
       
       this.socket = io(socketUrl, {
         transports: ['websocket', 'polling'],
