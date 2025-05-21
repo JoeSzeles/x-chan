@@ -18,6 +18,12 @@ const NewsCards = ({ viewMode }) => {
             }
 
             // Get articles from each bot
+
+            // Shuffle and limit to 24 articles (increased from 12 for better horizontal fill)
+            return allArticles
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 24);
+
             const allArticles = [];
             for (const bot of botsData.data) {
                 const articlesRes = await fetch(`/api/newsbot/${bot._id}/articles?limit=10`, {
@@ -88,7 +94,7 @@ const NewsCards = ({ viewMode }) => {
     }
 
     return (
-        <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "flex flex-col gap-4"}>
+        <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 auto-rows-fr gap-4" : "flex flex-col gap-4"}>
             {botArticles.map((article) => (
                 <div
                     key={article._id}

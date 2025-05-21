@@ -713,7 +713,7 @@ const NewsPage = () => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4">
+        <div className="container-fluid mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-4">News Bots</h1>
                 <button

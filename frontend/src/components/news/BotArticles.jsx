@@ -828,10 +828,10 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         };
 
         return (
-            <div key={article._id} className="bg-gray-700 rounded-lg p-4">
+            <div key={article._id} className="bg-gray-700 rounded-lg p-4 h-full">
                 <div className="flex flex-col h-full">
                     {isYouTube ? (
-                        <div className="mb-4 relative aspect-video" onClick={(e) => e.stopPropagation()}>
+                        <div className="mb-4 relative aspect-video w-full" onClick={(e) => e.stopPropagation()}>
                             {!hasFailedThumbnail && (
                                 <img 
                                     src={Array.isArray(thumbnailUrls) ? thumbnailUrls[0] : thumbnailUrls}
