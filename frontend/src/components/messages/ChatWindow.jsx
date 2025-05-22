@@ -10,6 +10,7 @@ const ChatWindow = ({ conversation }) => {
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
   const currentUserId = localStorage.getItem('userId');
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -25,23 +26,30 @@ const ChatWindow = ({ conversation }) => {
       }
     };
 
-    if (conversation?._id) {
+    if (conversation?._id && currentUserId) {
       fetchMessages();
-      socketService.connect();
-      socketService.joinConversation(conversation._id);
-
-      const handleNewMessage = (message) => {
-        setMessages((prev) => [...prev, message]);
-      };
-
-      socketService.onNewMessage(handleNewMessage);
+      
+      // Initialize socket connection
+      const socketInstance = initializeSocket(currentUserId);
+      setSocket(socketInstance);
+      
+      if (socketInstance) {
+        socketInstance.emit('joinConversation', conversation._id);
+        
+        // Listen for new messages
+        socketInstance.on('newMessage', (message) => {
+          setMessages((prev) => [...prev, message]);
+        });
+      }
 
       return () => {
-        socketService.leaveConversation(conversation._id);
-        socketService.offNewMessage(handleNewMessage);
+        if (socketInstance) {
+          socketInstance.emit('leaveConversation', conversation._id);
+          socketInstance.off('newMessage');
+        }
       };
     }
-  }, [conversation?._id]);
+  }, [conversation?._id, currentUserId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,7 +66,16 @@ const ChatWindow = ({ conversation }) => {
         { withCredentials: true }
       );
 
-      socketService.sendMessage(response.data);
+      // If we have a socket connection, emit the message
+      if (socket) {
+        socket.emit('sendMessage', {
+          conversationId: conversation._id,
+          message: response.data
+        });
+      }
+      
+      // Add the message to our local state
+      setMessages(prev => [...prev, response.data]);
       setNewMessage('');
     } catch (err) {
       setError('Failed to send message');

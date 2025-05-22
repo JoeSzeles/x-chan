@@ -11,13 +11,20 @@ export const initializeSocket = (userId) => {
     return null;
   }
 
+  // If we already have a socket instance, return it
+  if (socket) {
+    return socket;
+  }
+
   try {
     // Determine the correct socket URL based on the environment
     const host = window.location.hostname;
-    const port = '5000'; // Fixed port for the backend
-    const socketUrl = `${window.location.protocol}//${host}:${port}`;
+    const protocol = window.location.protocol;
+    
+    // For development in Replit, use a relative URL to leverage the Vite proxy
+    const socketUrl = '/';
 
-    console.log(`Attempting to connect socket to: ${socketUrl}`);
+    console.log(`Attempting to connect socket to: ${socketUrl} (will be proxied)`);
 
     // Create socket connection with more robust configuration
     socket = io(socketUrl, {
@@ -77,5 +84,25 @@ export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
+  }
+};
+
+// Add helper methods for the chat functionality
+export const socketService = {
+  connect: (userId) => initializeSocket(userId),
+  joinConversation: (conversationId) => {
+    if (socket) socket.emit('joinConversation', conversationId);
+  },
+  leaveConversation: (conversationId) => {
+    if (socket) socket.emit('leaveConversation', conversationId);
+  },
+  sendMessage: (message) => {
+    if (socket) socket.emit('sendMessage', message);
+  },
+  onNewMessage: (callback) => {
+    if (socket) socket.on('newMessage', callback);
+  },
+  offNewMessage: (callback) => {
+    if (socket) socket.off('newMessage', callback);
   }
 };
