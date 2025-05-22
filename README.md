@@ -11,6 +11,7 @@ A full-stack Twitter clone application built with modern web technologies. This 
 - Follow/unfollow users
 - Real-time feed updates
 - Responsive design for mobile and desktop
+- Custom favicon and branding (X-Chan)
 
 ## Tech Stack
 
@@ -66,13 +67,13 @@ Before you begin, ensure you have the following installed:
 1. Start the backend server:
    ```
    cd backend
-   npm start
+   npm run dev
    ```
 
 2. In a new terminal, start the frontend development server:
    ```
    cd frontend
-   npm start
+   npm run dev
    ```
 
 3. Open your browser and navigate to `http://localhost:3000` to view the application.
