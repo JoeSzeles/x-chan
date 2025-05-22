@@ -63,9 +63,14 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             ctx.closePath();
             ctx.clip();
 
+            // Calculate the center of the canvas
+            const centerX = finalSize / 2;
+            const centerY = finalSize / 2;
+            
             // Apply transformations matching the editor's view
             ctx.save();
-            ctx.translate(finalSize / 2 + position.x, finalSize / 2 + position.y); // Center and apply user translation
+            ctx.translate(centerX, centerY); // Move to center
+            ctx.translate(position.x, position.y); // Apply user position offset
             ctx.scale(scale, scale); // Apply user scale
             ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
             ctx.restore();
