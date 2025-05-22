@@ -86,6 +86,12 @@ const ProfilePage = () => {
 
 	const handleCoverUpdate = async (data) => {
         try {
+            // Prevent unnecessary updates by checking if this is a background update
+            if (data.timestamp && !data.file) {
+                console.log('ProfilePage: Skipping background update');
+                return;
+            }
+            
             console.log('ProfilePage: handleCoverUpdate called with data:', data);
             setCoverData(data);
 
@@ -137,9 +143,10 @@ const ProfilePage = () => {
 
             if (responseData.user) {
                 queryClient.setQueryData(['user', username], responseData.user);
+                // Only refetch if necessary to avoid loops
+                // await refetch();
             }
 
-            await refetch();
             toast.success('Cover photo updated successfully');
 
         } catch (error) {

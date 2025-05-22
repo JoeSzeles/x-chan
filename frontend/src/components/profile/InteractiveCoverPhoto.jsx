@@ -85,12 +85,11 @@ const InteractiveCoverPhoto = ({ user, isMyProfile, onUpdate }) => {
                 timestamp: Date.now()
             };
 
+            // Just save to localStorage, don't trigger backend update
             localStorage.setItem(COVER_PHOTO_STORAGE_KEY, JSON.stringify(dataToSave));
             
-            // Also update the backend
-            if (onUpdate) {
-                onUpdate(dataToSave);
-            }
+            // We're removing the automatic backend update to prevent loops
+            // The backend should only be updated on explicit user actions
         } catch (error) {
             console.error('Error saving cover photo to localStorage:', error);
         }
