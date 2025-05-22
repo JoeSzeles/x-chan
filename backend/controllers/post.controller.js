@@ -476,7 +476,18 @@ export const repostPost = async (req, res) => {
 
 		// Check if user has already reposted the post
 		const user = await User.findById(userId);
-		const hasReposted = user.reposts.includes(postId);
+		if (!user) {
+			return res.status(404).json({ error: 'User not found' });
+		}
+
+		// Ensure reposts array exists
+		if (!user.reposts) {
+			// Initialize reposts array if it doesn't exist
+			await User.findByIdAndUpdate(userId, { reposts: [] });
+			user.reposts = [];
+		}
+
+		const hasReposted = user.reposts && user.reposts.includes(postId);
 
 		if (hasReposted) {
 			// Unrepost

@@ -89,7 +89,8 @@ const io = new Server(httpServer, {
     cors: {
         origin: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
     },
     transports: ['polling', 'websocket'],
     allowEIO3: true,
@@ -97,8 +98,8 @@ const io = new Server(httpServer, {
     pingInterval: 10000,
     connectTimeout: 30000,
     upgradeTimeout: 30000,
-    forcePolling: true,
-    allowUpgrades: false
+    forcePolling: false,
+    allowUpgrades: true
 });
 
 // Enable detailed debug logging

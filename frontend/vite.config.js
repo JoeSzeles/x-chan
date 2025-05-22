@@ -35,18 +35,52 @@ export default defineConfig({
         secure: false,
         rewrite: path => path,
         configure: (proxy, options) => {
+          // Log all proxy requests for debugging
           proxy.on('proxyReq', (proxyReq, req, res) => {
-            proxyReq.setHeader('Origin', 'http://0.0.0.0:3000');
-            console.log('Proxying Socket.IO request:', req.method, req.url);
+            const origin = req.headers.origin || 'http://0.0.0.0:3000';
+            proxyReq.setHeader('Origin', origin);
+            
+            // Add additional debugging
+            console.log('Proxying Socket.IO request:', {
+              method: req.method,
+              url: req.url,
+              headers: {
+                origin: req.headers.origin,
+                host: req.headers.host,
+                referer: req.headers.referer
+              }
+            });
           });
+          
+          // Ensure CORS headers are properly set
           proxy.on('proxyRes', (proxyRes, req, res) => {
-            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
-            proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
+            // Get the origin from the request or use a wildcard
+            const origin = req.headers.origin || '*';
+            
+            proxyRes.headers['Access-Control-Allow-Origin'] = origin;
+            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, PATCH, DELETE';
+            proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
             proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
+            
+            // Log response headers for debugging
+            console.log('Socket.IO proxy response headers:', proxyRes.headers);
           });
+          
+          // Better error handling
           proxy.on('error', (err, req, res) => {
-            console.error('Socket.IO proxy error:', err);
+            console.error('Socket.IO proxy error:', {
+              error: err.message,
+              stack: err.stack,
+              url: req?.url,
+              method: req?.method,
+              headers: req?.headers
+            });
+            
+            // Try to send a response if possible
+            if (!res.headersSent && res.writeHead) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Proxy error', message: err.message }));
+            }
           });
         }
       }

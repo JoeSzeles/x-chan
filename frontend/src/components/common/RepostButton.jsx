@@ -149,7 +149,8 @@ const RepostButton = ({
             if (onRepost) onRepost(data);
         },
         onError: (error) => {
-            toast.error(error.message || `Failed to repost ${type}`);
+            console.error('Repost error:', error);
+            toast.error(error.response?.data?.error || error.message || `Failed to repost ${type}`);
             setShowRepostOptions(false);
         }
     });

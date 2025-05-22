@@ -66,6 +66,27 @@ const NotificationPage = () => {
 				console.log("Notifications API response:", res.data);
 				const notifications = Array.isArray(res.data.notifications) ? res.data.notifications : [];
 				console.log("Processed notifications:", notifications);
+				
+				// Debug notification types
+				if (notifications.length > 0) {
+					const types = {};
+					notifications.forEach(notification => {
+						types[notification.type] = (types[notification.type] || 0) + 1;
+					});
+					console.log("Notification types count:", types);
+					
+					// Debug a few notifications of each type
+					const samplesByType = {};
+					notifications.forEach(notification => {
+						if (!samplesByType[notification.type]) {
+							samplesByType[notification.type] = [notification];
+						} else if (samplesByType[notification.type].length < 2) {
+							samplesByType[notification.type].push(notification);
+						}
+					});
+					console.log("Sample notifications by type:", samplesByType);
+				}
+				
 				return notifications;
 			} catch (error) {
 				console.error("Error fetching notifications:", error);
@@ -86,13 +107,23 @@ const NotificationPage = () => {
 				socket.disconnect();
 			}
 
-			socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+			// Use window.location.origin to ensure we connect to the same domain
+			const baseUrl = window.location.origin.includes('localhost') ? 
+				'http://0.0.0.0:5000' : 
+				window.location.origin.replace(/:\d+$/, '');
+				
+			console.log('Connecting to socket server at:', baseUrl);
+			
+			socket = io(baseUrl, {
 				path: '/socket.io',
-				transports: ['polling'],
-				reconnection: false,
+				transports: ['polling', 'websocket'],
+				reconnection: true,
+				reconnectionAttempts: 10,
+				reconnectionDelay: 1000,
 				timeout: 10000,
 				withCredentials: true,
-				forceNew: true
+				forceNew: true,
+				autoConnect: true
 			});
 
 			socket.on('connect', () => {
