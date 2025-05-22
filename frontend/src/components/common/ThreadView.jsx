@@ -296,7 +296,7 @@ const ThreadView = () => {
 		setExpandedComments(new Set());
 		setFocusedComment(clickedCommentId);
 		setHighlightedComment(clickedCommentId);
-		
+
 		// Expand all parent comments in the path
 		const newExpanded = new Set();
 		let current = getFocusedComment(comments, clickedCommentId);
@@ -336,7 +336,7 @@ const ThreadView = () => {
 		setExpandedComments((prevExpanded) => {
 			const newExpanded = new Set();
 			const newComment = getFocusedComment(comments, commentId);
-			
+
 			// If already expanded, collapse it and its children
 			if (prevExpanded.has(commentId)) {
 				// Keep parent comments expanded
@@ -347,17 +347,17 @@ const ThreadView = () => {
 				}
 				return newExpanded;
 			}
-			
+
 			// Add clicked comment and all its parent comments to maintain the path
 			let current = newComment;
 			while (current) {
 				newExpanded.add(current._id);
 				current = getFocusedComment(comments, current.parentComment);
 			}
-			
+
 			return newExpanded;
 		});
-		
+
 		setFocusedComment(commentId);
 		setHighlightedComment(commentId);
 	};
@@ -368,6 +368,32 @@ const ThreadView = () => {
 		queryClient.invalidateQueries(["comments", postId]);
 		setShowReplyInput(false); // Close the popup
 	};
+
+	const handleBookmarkComment = (commentId, e) => {
+		e.stopPropagation();
+		if (!authUser) {
+			toast.error("Please login to bookmark comments");
+			return;
+		}
+		bookmarkComment(commentId);
+	};
+
+	// Ensure arrays are properly initialized
+	useEffect(() => {
+		// Make sure all comment objects have properly initialized arrays
+		if (comments && comments.length > 0) {
+			const normalizeCommentArrays = (comment) => {
+				if (!Array.isArray(comment.likes)) comment.likes = [];
+				if (!Array.isArray(comment.reposts)) comment.reposts = [];
+				if (!Array.isArray(comment.bookmarkedBy)) comment.bookmarkedBy = [];
+				if (Array.isArray(comment.replies)) {
+					comment.replies.forEach(normalizeCommentArrays);
+				}
+			};
+
+			comments.forEach(normalizeCommentArrays);
+		}
+	}, [comments]);
 
 	if (postLoading || commentsLoading) {
 		return (
@@ -516,7 +542,7 @@ const ThreadView = () => {
 						</div>
 					</div>
 
-					
+
 
 					{/* Original Post */}
 					<Post post={post} />
@@ -547,7 +573,7 @@ const ThreadView = () => {
 								/>
 								<span className="text-sm">OP</span>
 							</button>
-							
+
 							{commentPath && commentPath.length > 0 && (
 								<>
 									<span className="text-gray-500">→</span>
