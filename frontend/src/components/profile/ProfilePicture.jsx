@@ -39,9 +39,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         if (!selectedFile) return;
         
         try {
-
-        // Create a canvas to apply the transformations
-        const canvas = document.createElement('canvas');
+            // Create a canvas to apply the transformations
+            const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
 
