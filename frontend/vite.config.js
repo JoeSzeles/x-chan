@@ -35,8 +35,9 @@ export default defineConfig({
         secure: false,
         rewrite: path => path,
         configure: (proxy, options) => {
-          // Set longer timeout and buffers
-          proxy.setTimeout(60000);
+          // Set proxy options
+          proxy.options = proxy.options || {};
+          proxy.options.timeout = 60000;
           proxy.options.buffer = {
             maxRequestBodySize: '10mb'  
           };
