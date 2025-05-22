@@ -250,6 +250,111 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 	}
 };
 
+// Create repost notification
+export const createRepostNotification = async (postId, userId) => {
+	try {
+		const post = await Post.findById(postId).populate("user");
+		
+		// Skip if the post creator is the same as the reposter
+		if (post.user._id.toString() === userId.toString()) {
+			return;
+		}
+		
+		await createNotification({
+			from: userId,
+			to: post.user._id,
+			type: "repost",
+			content: "reposted your post",
+			postId,
+			referencedPost: post._id
+		});
+		
+		console.log(`Repost notification created from ${userId} to ${post.user._id} for post ${postId}`);
+	} catch (error) {
+		console.log("Error in createRepostNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create follow notification
+export const createFollowNotification = async (followerId, followedId) => {
+	try {
+		// Skip if the follower is the same as the followed user (can't follow self)
+		if (followerId.toString() === followedId.toString()) {
+			return;
+		}
+		
+		await createNotification({
+			from: followerId,
+			to: followedId,
+			type: "follow",
+			content: "started following you"
+		});
+		
+		console.log(`Follow notification created from ${followerId} to ${followedId}`);
+	} catch (error) {
+		console.log("Error in createFollowNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create newsbot activity notification
+export const createNewsBotActivityNotification = async (botId, content, articles) => {
+	try {
+		const newsBot = await NewsBot.findById(botId).populate("followers");
+		
+		// Skip if no followers
+		if (!newsBot || !newsBot.followers || newsBot.followers.length === 0) {
+			return;
+		}
+		
+		const notificationContent = content || `${newsBot.name} posted ${articles.length} new article(s)`;
+		
+		// Create notifications for all followers
+		const notifications = newsBot.followers.map(follower => ({
+			from: process.env.SYSTEM_USER_ID,
+			to: follower._id,
+			type: "newsbot_activity",
+			content: notificationContent,
+			newsId: articles.length > 0 ? articles[0]._id : null
+		}));
+		
+		if (notifications.length > 0) {
+			await Notification.insertMany(notifications);
+			console.log(`Created ${notifications.length} newsbot activity notifications`);
+		}
+	} catch (error) {
+		console.log("Error in createNewsBotActivityNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create bookmark notification
+export const createBookmarkNotification = async (postId, userId) => {
+	try {
+		const post = await Post.findById(postId).populate("user");
+		
+		// Skip if the post creator is the same as the user who bookmarked
+		if (post.user._id.toString() === userId.toString()) {
+			return;
+		}
+		
+		await createNotification({
+			from: userId,
+			to: post.user._id,
+			type: "bookmark",
+			content: "bookmarked your post",
+			postId,
+			referencedPost: post._id
+		});
+		
+		console.log(`Bookmark notification created from ${userId} to ${post.user._id} for post ${postId}`);
+	} catch (error) {
+		console.log("Error in createBookmarkNotification:", error.message);
+		throw error;
+	}
+};
+
 // Create system announcement notification
 export const createSystemAnnouncementNotification = async (title, content, linkUrl) => {
 	try {

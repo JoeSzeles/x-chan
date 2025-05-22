@@ -1,12 +1,13 @@
 import Notification from "../models/notification.model.js";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
+import Comment from "../models/comment.model.js";
+import { createRepostNotification } from "./notification.controller.js";
 import { v2 as cloudinary } from "cloudinary";
 import { handleImageUpload, getImageUrl } from "../utils/imageUpload.js";
 import path from "path";
 import fs from "fs";
 import { errorHandler } from "../utils/error.js";
-import Comment from "../models/comment.model.js";
 import Board from "../models/board.model.js";
 
 export const createPost = async (req, res) => {
@@ -190,7 +191,7 @@ export const likeComment = async (req, res) => {
 		// Find the comment in the comments array
 		const commentIndex = post.comments.findIndex(comment => comment._id.toString() === commentId);
 		console.log('Comment index:', commentIndex);
-		
+
 		if (commentIndex === -1) {
 			console.log('Comment not found:', commentId);
 			return res.status(404).json({ error: "Comment not found" });
@@ -465,96 +466,45 @@ export const getUserPosts = async (req, res) => {
 
 export const repostPost = async (req, res) => {
 	try {
-		const userId = req.user._id;
 		const { id: postId } = req.params;
-		const { repostType, targetBoard } = req.body;
+		const userId = req.user._id;
 
-		// Find the original post
-		const originalPost = await Post.findById(postId);
-		if (!originalPost) {
-			return res.status(404).json({ error: "Post not found" });
+		const post = await Post.findById(postId);
+		if (!post) {
+			return res.status(404).json({ error: 'Post not found' });
 		}
 
-		// Check if user has already reposted this post
-		const existingRepost = await Post.findOne({
-			originalPost: postId,
-			user: userId
-		});
+		// Check if user has already reposted the post
+		const user = await User.findById(userId);
+		const hasReposted = user.reposts.includes(postId);
 
-		if (existingRepost) {
-			// If already reposted, remove the repost
-			await Post.findByIdAndDelete(existingRepost._id);
-			await Post.updateOne(
-				{ _id: postId },
-				{ $pull: { reposts: userId } }
-			);
-				
-			return res.status(200).json({ 
-				message: "Repost removed successfully",
-				isReposted: false,
-				reposts: originalPost.reposts.filter(id => id.toString() !== userId.toString())
-			});
+		if (hasReposted) {
+			// Unrepost
+			await User.findByIdAndUpdate(userId, { $pull: { reposts: postId } });
+			await Post.findByIdAndUpdate(postId, { $inc: { repostCount: -1 } });
+			return res.status(200).json({ message: 'Post unreposted' });
 		}
 
-		// Create new repost with current user as the owner
-		const newRepost = new Post({
-			user: userId,
-			text: originalPost.text,
-			img: originalPost.img,
-			originalPost: postId,
-			reposts: [],
-			likes: [],
-			comments: [],
-			viewCount: 0
-		});
+		// Repost
+		await User.findByIdAndUpdate(userId, { $push: { reposts: postId } });
+		await Post.findByIdAndUpdate(postId, { $inc: { repostCount: 1 } });
 
-		// If reposting to a board, add board information
-		if (repostType === 'board' && targetBoard) {
-			newRepost.board = targetBoard;
-		}
+		// Create notification for the original post author
+		await createRepostNotification(postId, userId);
 
-		// Save the new repost
-		await newRepost.save();
-		
-		// Add current user to original post's reposts array
-		await Post.updateOne(
-			{ _id: postId },
-			{ $push: { reposts: userId } }
-		);
-
-		// Create notification if not reposting own post
-		if (originalPost.user.toString() !== userId.toString()) {
-				const notification = new Notification({
-					from: userId,
-					to: originalPost.user,
-				type: "repost",
-				post: postId
-				});
-				await notification.save();
-		}
-
-		// Get the updated original post with populated fields
-		const updatedOriginalPost = await Post.findById(postId)
-			.populate('reposts', 'username fullName profileImg')
-			.populate('user', 'username fullName profileImg');
-
-		res.status(201).json({ 
-			message: "Reposted successfully",
-			isReposted: true,
-			reposts: updatedOriginalPost.reposts
-		});
+		res.status(200).json({ message: 'Post reposted' });
 	} catch (error) {
-		console.error("Error in repostPost controller:", error);
-		res.status(500).json({ error: error.message || "Internal server error" });
+		console.log('Error in repostPost function', error.message);
+		res.status(500).json({ error: 'Internal Server Error' });
 	}
 };
 
 export const getPostById = async (req, res, next) => {
 	try {
 		const { postId } = req.params;
-		
+
 		console.log(`Fetching post with ID: ${postId}`);
-		
+
 		// First try to find in posts
 		let post = await Post.findById(postId)
 			.populate({
@@ -623,7 +573,7 @@ export const getPostById = async (req, res, next) => {
 export const incrementViewCount = async (req, res, next) => {
 	try {
 		const { postId } = req.params;
-		
+
 		const post = await Post.findById(postId);
 		if (!post) {
 			return next(errorHandler(404, "Post not found"));
@@ -645,9 +595,9 @@ export const incrementViewCount = async (req, res, next) => {
 export const getUserPostCount = async (req, res) => {
 	try {
 		const { userId } = req.params;
-		
+
 		const postCount = await Post.countDocuments({ user: userId });
-		
+
 		res.status(200).json({ postCount });
 	} catch (error) {
 		console.error("Error in getUserPostCount controller:", error);

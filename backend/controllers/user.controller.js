@@ -4,6 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 // models
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
+import { createFollowNotification } from "./notification.controller.js";
 
 export const getUserProfile = async (req, res) => {
 	const { username } = req.params;
@@ -161,7 +162,7 @@ export const updateUser = async (req, res) => {
 		user.link = link || user.link;
 		user.profileImg = profileImg || user.profileImg;
 		user.coverImg = coverImg || user.coverImg;
-		
+
 		// Update cover photo data if provided
 		if (type && content) {
 			user.coverPhoto = {
@@ -170,7 +171,7 @@ export const updateUser = async (req, res) => {
 				metadata: metadata || {}
 			};
 		}
-		
+
 		if (location) {
 			user.location = location;
 		}
@@ -217,7 +218,7 @@ export const getOnlineUsers = async (req, res) => {
 			.select("username fullName profileImg lastSeen")
 			.sort({ lastSeen: -1 })
 			.limit(5);
-			
+
 			return res.status(200).json(suggestedUsers);
 		}
 
@@ -299,5 +300,43 @@ export const getFollowing = async (req, res) => {
 	} catch (error) {
 		console.error('Error in getFollowing:', error);
 		res.status(500).json({ error: 'Internal server error' });
+	}
+};
+
+export const followUser = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const userId = req.user._id;
+
+		// Check if self
+		if (id === userId.toString()) {
+			return res.status(400).json({ error: "You cannot follow yourself" });
+		}
+
+		const user = await User.findById(id);
+		if (!user) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		const isFollowing = user.followers.includes(userId);
+
+		if (isFollowing) {
+			// Unfollow
+			await User.findByIdAndUpdate(id, { $pull: { followers: userId } });
+			await User.findByIdAndUpdate(userId, { $pull: { following: id } });
+			res.status(200).json({ message: "User unfollowed successfully" });
+		} else {
+			// Follow
+			await User.findByIdAndUpdate(id, { $push: { followers: userId } });
+			await User.findByIdAndUpdate(userId, { $push: { following: id } });
+
+			// Create notification for the followed user
+			await createFollowNotification(userId, id);
+
+			res.status(200).json({ message: "User followed successfully" });
+		}
+	} catch (error) {
+		console.log("Error in followUser function", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
