@@ -135,7 +135,7 @@ export const createMentionNotification = async (postId, mentionedUserIds, userId
 	try {
 		// Filter out the current user from mentions
 		const filteredMentions = mentionedUserIds.filter(id => id.toString() !== userId.toString());
-		
+
 		// Create notifications for each mentioned user
 		for (const mentionedUserId of filteredMentions) {
 			await createNotification({
@@ -169,7 +169,7 @@ export const createMilestoneNotification = async (userId, milestoneType, count) 
 			default:
 				content = `You've reached a new milestone: ${count} ${milestoneType}!`;
 		}
-		
+
 		await createNotification({
 			from: process.env.SYSTEM_USER_ID,
 			to: userId,
@@ -190,7 +190,7 @@ export const createTrendingTopicNotification = async (topicName, topicId) => {
 		const interestedUsers = await User.find({
 			"settings.notifications.trendingTopics": true
 		});
-		
+
 		const notifications = interestedUsers.map(user => ({
 			from: process.env.SYSTEM_USER_ID,
 			to: user._id,
@@ -198,7 +198,7 @@ export const createTrendingTopicNotification = async (topicName, topicId) => {
 			content: topicName,
 			topicId
 		}));
-		
+
 		if (notifications.length > 0) {
 			await Notification.insertMany(notifications);
 		}
@@ -212,12 +212,12 @@ export const createTrendingTopicNotification = async (topicName, topicId) => {
 export const createBoardActivityNotification = async (boardId, activityType, userId) => {
 	try {
 		const board = await Board.findById(boardId).populate("followers");
-		
+
 		// Skip if no followers
 		if (!board || !board.followers || board.followers.length === 0) {
 			return;
 		}
-		
+
 		let content = "";
 		switch (activityType) {
 			case "new_post":
@@ -229,7 +229,7 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 			default:
 				content = "New activity in a board you follow";
 		}
-		
+
 		// Notify all followers except the user who created the activity
 		const notifications = board.followers
 			.filter(follower => follower._id.toString() !== userId?.toString())
@@ -240,7 +240,7 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 				content,
 				boardId
 			}));
-		
+
 		if (notifications.length > 0) {
 			await Notification.insertMany(notifications);
 		}
@@ -253,26 +253,47 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 // Create repost notification
 export const createRepostNotification = async (postId, userId) => {
 	try {
-		const post = await Post.findById(postId).populate("user");
-		
-		// Skip if the post creator is the same as the reposter
-		if (post.user._id.toString() === userId.toString()) {
+		const post = await Post.findById(postId);
+		if (!post) {
+			console.log('Post not found when creating repost notification');
 			return;
 		}
-		
-		await createNotification({
+
+		// Don't create notification if the user is reposting their own post
+		if (post.user.toString() === userId.toString()) {
+			console.log('User reposting their own post, skipping notification');
+			return;
+		}
+
+		const notification = new Notification({
 			from: userId,
-			to: post.user._id,
+			to: post.user,
 			type: "repost",
-			content: "reposted your post",
-			postId,
-			referencedPost: post._id
+			post: postId
 		});
-		
-		console.log(`Repost notification created from ${userId} to ${post.user._id} for post ${postId}`);
+
+		await notification.save();
+		console.log('Repost notification created successfully');
+
+		try {
+			// Send real-time notification via Socket.io
+			const io = getIo();
+			if (io) {
+				io.to(`notifications_${post.user}`).emit('newNotification', {
+					message: 'Someone reposted your post',
+					notification
+				});
+				console.log('Repost notification emitted via socket');
+			} else {
+				console.log('Socket.io instance not available');
+			}
+		} catch (socketError) {
+			console.error('Error emitting socket notification:', socketError);
+		}
+
+		return notification;
 	} catch (error) {
-		console.log("Error in createRepostNotification:", error.message);
-		throw error;
+		console.error('Error creating repost notification:', error);
 	}
 };
 
@@ -283,14 +304,14 @@ export const createFollowNotification = async (followerId, followedId) => {
 		if (followerId.toString() === followedId.toString()) {
 			return;
 		}
-		
+
 		await createNotification({
 			from: followerId,
 			to: followedId,
 			type: "follow",
 			content: "started following you"
 		});
-		
+
 		console.log(`Follow notification created from ${followerId} to ${followedId}`);
 	} catch (error) {
 		console.log("Error in createFollowNotification:", error.message);
@@ -302,14 +323,14 @@ export const createFollowNotification = async (followerId, followedId) => {
 export const createNewsBotActivityNotification = async (botId, content, articles) => {
 	try {
 		const newsBot = await NewsBot.findById(botId).populate("followers");
-		
+
 		// Skip if no followers
 		if (!newsBot || !newsBot.followers || newsBot.followers.length === 0) {
 			return;
 		}
-		
+
 		const notificationContent = content || `${newsBot.name} posted ${articles.length} new article(s)`;
-		
+
 		// Create notifications for all followers
 		const notifications = newsBot.followers.map(follower => ({
 			from: process.env.SYSTEM_USER_ID,
@@ -318,7 +339,7 @@ export const createNewsBotActivityNotification = async (botId, content, articles
 			content: notificationContent,
 			newsId: articles.length > 0 ? articles[0]._id : null
 		}));
-		
+
 		if (notifications.length > 0) {
 			await Notification.insertMany(notifications);
 			console.log(`Created ${notifications.length} newsbot activity notifications`);
@@ -333,12 +354,12 @@ export const createNewsBotActivityNotification = async (botId, content, articles
 export const createBookmarkNotification = async (postId, userId) => {
 	try {
 		const post = await Post.findById(postId).populate("user");
-		
+
 		// Skip if the post creator is the same as the user who bookmarked
 		if (post.user._id.toString() === userId.toString()) {
 			return;
 		}
-		
+
 		await createNotification({
 			from: userId,
 			to: post.user._id,
@@ -347,7 +368,7 @@ export const createBookmarkNotification = async (postId, userId) => {
 			postId,
 			referencedPost: post._id
 		});
-		
+
 		console.log(`Bookmark notification created from ${userId} to ${post.user._id} for post ${postId}`);
 	} catch (error) {
 		console.log("Error in createBookmarkNotification:", error.message);
@@ -362,7 +383,7 @@ export const createSystemAnnouncementNotification = async (title, content, linkU
 		const users = await User.find({
 			"settings.notifications.systemAnnouncements": true
 		});
-		
+
 		const notifications = users.map(user => ({
 			from: process.env.SYSTEM_USER_ID,
 			to: user._id,
@@ -370,7 +391,7 @@ export const createSystemAnnouncementNotification = async (title, content, linkU
 			content: title || content,
 			linkUrl
 		}));
-		
+
 		if (notifications.length > 0) {
 			await Notification.insertMany(notifications);
 		}
