@@ -313,7 +313,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 			// Make sure we're setting an array
 			const bookmarkedBy = Array.isArray(data.bookmarkedBy) ? data.bookmarkedBy : [];
 			setLocalBookmarks(bookmarkedBy);
-			
+
 			queryClient.setQueryData(["comments"], (oldData) => {
 				if (!oldData) return oldData;
 				return oldData.map((c) => {
@@ -323,7 +323,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 					return c;
 				});
 			});
-			
+
 			toast.success(data.message || "Bookmark status updated");
 		},
 		onError: (error) => {
