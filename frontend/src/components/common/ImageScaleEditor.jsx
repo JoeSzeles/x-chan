@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
@@ -7,6 +8,9 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   const imageContainerLoaded = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const imageRef = useRef(null);
+  const dragStart = useRef({ x: 0, y: 0 });
 
   // Center the image when it first loads
   useEffect(() => {
@@ -17,9 +21,34 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
         
+        console.log("Image dimensions:", {
+          width: preloadImage.width,
+          height: preloadImage.height,
+          containerWidth,
+          containerHeight
+        });
+        
+        // Get the smallest dimension to ensure the image fits in the circle
+        const containerSize = Math.min(containerWidth, containerHeight);
+        const imageSize = Math.max(preloadImage.width, preloadImage.height);
+        
+        // Calculate proper initial scale to fit image within container
+        // Make sure the longest side of the image fits within the container
+        const initialScale = containerSize / imageSize;
+        
+        console.log("Initial scale calculation:", {
+          containerSize,
+          imageSize,
+          initialScale
+        });
+        
+        // Set a reasonable initial scale
+        setScale(initialScale);
+        
+        // Center the image in the container
         setPosition({
-          x: (containerWidth - preloadImage.width) / 2,
-          y: (containerHeight - preloadImage.height) / 2
+          x: (containerWidth - preloadImage.width * initialScale) / 2,
+          y: (containerHeight - preloadImage.height * initialScale) / 2
         });
         
         imageContainerLoaded.current = true;
@@ -31,9 +60,6 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   useEffect(() => {
     console.log("ImageScaleEditor props received:", { image, scale, position });
   }, [image, scale, position]);
-  const [isDragging, setIsDragging] = useState(false);
-  const imageRef = useRef(null);
-  const dragStart = useRef({ x: 0, y: 0 });
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -51,9 +77,12 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
       const deltaY = e.clientY - dragStart.current.y;
       
       // Update position with the delta
+      const newX = position.x + deltaX;
+      const newY = position.y + deltaY;
+      
       setPosition({
-        x: position.x + deltaX,
-        y: position.y + deltaY
+        x: newX,
+        y: newY
       });
       
       // Update drag start position for next movement
@@ -61,6 +90,9 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
         x: e.clientX,
         y: e.clientY
       };
+
+      // Prevent default to avoid text selection while dragging
+      e.preventDefault();
     }
   };
 
@@ -70,19 +102,84 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
 
   const handleWheel = (e) => {
     e.preventDefault();
-    const delta = e.deltaY * -0.01;
+    
+    // More controlled scaling factor
+    const scaleFactor = 0.05;
+    const delta = e.deltaY < 0 ? scaleFactor : -scaleFactor;
+    
+    // Get mouse position relative to the image container
+    const rect = containerRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Calculate new scale with limits
     const newScale = Math.min(Math.max(0.5, scale + delta), 3);
+    
+    // Adjust position to zoom toward mouse position
+    if (imageRef.current) {
+      const scaleChange = newScale / scale;
+      
+      // Calculate new position based on mouse position
+      const newPosition = {
+        x: mouseX - (mouseX - position.x) * scaleChange,
+        y: mouseY - (mouseY - position.y) * scaleChange
+      };
+      
+      setPosition(newPosition);
+    }
+    
     setScale(newScale);
+  };
+  
+  // Add touch support for mobile
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      // Single touch - prepare for drag
+      setIsDragging(true);
+      dragStart.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY
+      };
+    }
+  };
+  
+  const handleTouchMove = (e) => {
+    if (isDragging && e.touches.length === 1) {
+      // Handle dragging
+      const deltaX = e.touches[0].clientX - dragStart.current.x;
+      const deltaY = e.touches[0].clientY - dragStart.current.y;
+      
+      setPosition({
+        x: position.x + deltaX,
+        y: position.y + deltaY
+      });
+      
+      dragStart.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY
+      };
+      
+      e.preventDefault();
+    }
+  };
+  
+  const handleTouchEnd = () => {
+    setIsDragging(false);
   };
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+    
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isDragging]);
+  }, [isDragging, position, scale]);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -93,6 +190,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
           ref={containerRef}
           className="w-80 h-80 rounded-full overflow-hidden relative border-4 border-[#2e2e2e] mb-4"
           onWheel={handleWheel}
+          onTouchStart={handleTouchStart}
         >
           <img
             ref={imageRef}
@@ -102,9 +200,11 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
             style={{
               transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
               transformOrigin: 'center',
-              transition: isDragging ? 'none' : 'transform 0.1s'
+              transition: isDragging ? 'none' : 'transform 0.1s',
+              touchAction: 'none' // Prevent browser handling of touch events
             }}
             onMouseDown={handleMouseDown}
+            onDragStart={(e) => e.preventDefault()} // Prevent ghost drag image
             draggable="false"
           />
         </div>
@@ -123,7 +223,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
 
         <div className="flex justify-end gap-3">
           <button
-            onClick={onClose || onCancel}
+            onClick={onCancel}
             className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700 transition flex items-center gap-2"
           >
             <FaTimes /> Cancel
