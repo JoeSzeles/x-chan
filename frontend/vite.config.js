@@ -35,12 +35,8 @@ export default defineConfig({
         secure: false,
         rewrite: path => path,
         configure: (proxy, options) => {
-          // Set proxy options
-          proxy.options = proxy.options || {};
-          proxy.options.timeout = 60000;
-          proxy.options.buffer = {
-            maxRequestBodySize: '10mb'  
-          };
+          // Add detailed socket debugging
+          console.log('Configuring Socket.IO proxy to backend at http://0.0.0.0:5000');
           
           // Improve debugging
           console.log('Socket.IO proxy configured with target:', 'http://0.0.0.0:5000');
