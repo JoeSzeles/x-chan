@@ -59,7 +59,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd backend && npm run dev"
+args = "cd backend && NODE_ENV=development npm run dev"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

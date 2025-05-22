@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from 'path';
@@ -32,7 +33,8 @@ export default defineConfig({
         target: 'http://0.0.0.0:5000',
         ws: true,
         changeOrigin: true,
-        secure: false
+        secure: false,
+        rewrite: (path) => path
       }
     }
   },

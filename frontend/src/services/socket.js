@@ -5,20 +5,32 @@ let socket = null;
 
 export const initializeSocket = (userId) => {
   try {
-    if (socket) {
-      console.log('Socket already initialized');
+    if (socket && socket.connected) {
+      console.log('Socket already initialized and connected');
       return socket;
     }
+    
+    // Close existing socket if disconnected
+    if (socket) {
+      socket.close();
+      socket = null;
+    }
 
-    console.log('Initializing socket connection');
+    console.log('Initializing socket connection with backend');
+    
+    // Create socket with better error handling and reconnection logic
     socket = io({
       path: '/socket.io',
       transports: ['polling'],
-      reconnectionAttempts: 5
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      forceNew: true
     });
 
     socket.on('connect', () => {
-      console.log('Socket connected successfully');
+      console.log('Socket connected successfully', socket.id);
       if (userId) {
         socket.emit('joinNotifications', userId);
       }
@@ -26,10 +38,35 @@ export const initializeSocket = (userId) => {
 
     socket.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
+      console.log('Connection details:', {
+        readyState: socket.io?.engine?.readyState,
+        transport: socket.io?.engine?.transport?.name,
+        uri: socket.io?.uri
+      });
+    });
+
+    socket.on('reconnect_attempt', (attempt) => {
+      console.log(`Socket reconnection attempt ${attempt}`);
+    });
+
+    socket.on('reconnect_failed', () => {
+      console.error('Socket reconnection failed after all attempts');
     });
 
     socket.on('disconnect', (reason) => {
       console.log('Socket disconnected:', reason);
+      
+      if (reason === 'io server disconnect') {
+        // Server initiated disconnect - try reconnect manually
+        setTimeout(() => {
+          console.log('Attempting manual reconnection after server disconnect');
+          socket.connect();
+        }, 3000);
+      }
+    });
+
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
     });
 
     return socket;
@@ -45,6 +82,7 @@ export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();
     socket = null;
+    console.log('Socket disconnected by user action');
   }
 };
 
