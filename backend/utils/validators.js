@@ -33,13 +33,33 @@ export const isValidImageUrl = (url) => {
     return url.startsWith('http://') || url.startsWith('https://');
 };
 
+// Validate cover photo data
 export const validateCoverPhotoData = (data) => {
-    if (!data || typeof data !== 'object') return false;
-    if (!['image', 'video', 'content'].includes(data.type)) return false;
-    if (!data.content) return false;
-    
-    if (data.type === 'video' && !isValidVideoId(data.content)) return false;
-    if (data.type === 'image' && !isValidImageUrl(data.content)) return false;
-    
+    if (!data) return false;
+
+    // Check if type is provided and is either 'image' or 'video'
+    if (!data.type || !['image', 'video'].includes(data.type)) {
+        console.log('Invalid cover photo type:', data.type);
+        return false;
+    }
+
+    // Check if content is provided
+    if (!data.content) {
+        console.log('Missing cover photo content');
+        return false;
+    }
+
+    // For videos, ensure it's a valid YouTube ID or URL
+    if (data.type === 'video') {
+        // Basic validation for YouTube ID format
+        const youtubeIdRegex = /^[a-zA-Z0-9_-]{11}$/;
+        const youtubeUrlRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+
+        if (!youtubeIdRegex.test(data.content) && !youtubeUrlRegex.test(data.content)) {
+            console.log('Invalid YouTube video ID or URL:', data.content);
+            return false;
+        }
+    }
+
     return true;
-}; 
+};

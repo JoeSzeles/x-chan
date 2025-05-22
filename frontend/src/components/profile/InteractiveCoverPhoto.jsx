@@ -400,32 +400,50 @@ const InteractiveCoverPhoto = ({ user, isMyProfile, onUpdate }) => {
         try {
             console.log('InteractiveCoverPhoto: handleCoverUpdate called with data:', data);
             
-            const response = await fetch(`/api/users/${user?._id}/cover-photo`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+            // Create form data for multipart request if needed
+            let requestBody;
+            let headers = {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            };
+            
+            if (data.type === 'image' && data.file) {
+                // If we have a file, use FormData
+                requestBody = new FormData();
+                requestBody.append('coverImage', data.file);
+                requestBody.append('type', data.type);
+                if (data.metadata) {
+                    requestBody.append('metadata', JSON.stringify(data.metadata));
+                }
+            } else {
+                // Otherwise use JSON
+                requestBody = JSON.stringify({
                     type: data.type,
                     content: data.content,
                     metadata: data.metadata
-                })
+                });
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            const response = await fetch('/api/cover-photo/update', {
+                method: 'PUT',
+                headers: headers,
+                body: requestBody
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'Failed to update cover photo' }));
-                throw new Error(errorData.message || 'Failed to update cover photo');
+                const errorData = await response.json().catch(() => ({ error: 'Failed to update cover photo' }));
+                throw new Error(errorData.error || 'Failed to update cover photo');
             }
 
             const responseData = await response.json();
             
             if (responseData.success) {
                 // Update local state with new cover photo data
-            setCoverContent(data.content);
-            setCoverType(data.type);
+                setCoverContent(data.content);
+                setCoverType(data.type);
                 toast.success('Cover photo updated successfully');
             } else {
-                throw new Error(responseData.message || 'Failed to update cover photo');
+                throw new Error(responseData.error || 'Failed to update cover photo');
             }
         } catch (error) {
             console.error('InteractiveCoverPhoto: Error updating cover photo:', error);

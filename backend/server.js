@@ -34,6 +34,7 @@ import leechRoutes from './routes/leech.js';
 import serviceRoutes from './routes/service.route.js';
 import liveBoardRoutes from './routes/liveBoard.js';
 import connectMongoDB from "./db/connectMongoDB.js";
+import coverPhotoRoutes from './routes/coverPhoto.route.js'; // Import cover photo route
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -83,6 +84,7 @@ app.use('/api/upload', uploadRoutes);
 app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
+app.use('/api/cover-photo', coverPhotoRoutes);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

@@ -89,24 +89,41 @@ const ProfilePage = () => {
             console.log('ProfilePage: handleCoverUpdate called with data:', data);
             setCoverData(data);
 
-            const requestBody = {
-                type: data.type,
-                content: data.content,
-                metadata: {
-                    videoId: data.type === 'video' ? data.content : undefined,
-                    source: data.type === 'video' ? 'youtube' : 'upload'
-                }
+            // Create the metadata object properly
+            const metadata = {
+                videoId: data.type === 'video' ? data.content : undefined,
+                source: data.type === 'video' ? 'youtube' : 'upload'
             };
+
+            // Create either FormData or JSON body based on content type
+            let requestBody;
+            let headers = {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            };
+
+            if (data.type === 'image' && data.file) {
+                // If we have a file, use FormData
+                requestBody = new FormData();
+                requestBody.append('coverImage', data.file);
+                requestBody.append('type', data.type);
+                requestBody.append('metadata', JSON.stringify(metadata));
+            } else {
+                // Otherwise use JSON
+                requestBody = JSON.stringify({
+                    type: data.type,
+                    content: data.content,
+                    metadata: metadata
+                });
+                headers['Content-Type'] = 'application/json';
+            }
 
             const response = await fetch('/api/cover-photo/update', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(requestBody)
+                headers: headers,
+                body: requestBody
             });
 
+            // Check response type
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('Invalid response format from server');
