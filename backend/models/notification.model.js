@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
@@ -13,7 +14,14 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['like', 'comment', 'repost', 'follow', 'mention'],
+    enum: [
+      'like', 'comment', 'repost', 'follow', 'mention', 'post_reply', 
+      'news_update', 'service_update', 'thread_activity', 'comment_reply', 
+      'milestone', 'trending_topic', 'board_activity', 'system_announcement',
+      'post_rating', 'achievement', 'content_recommendation', 'user_mention_reaction',
+      'scheduled_reminder', 'bookmark_activity', 'user_joined', 'post_featured',
+      'news_bot_activity', 'user_board_activity'
+    ],
     required: true
   },
   content: {
@@ -21,6 +29,26 @@ const notificationSchema = new mongoose.Schema({
     default: ''
   },
   post: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
+  },
+  postId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post'
+  },
+  newsId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'News'
+  },
+  serviceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service'
+  },
+  threadId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Thread'
+  },
+  referencedPost: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Post'
   },

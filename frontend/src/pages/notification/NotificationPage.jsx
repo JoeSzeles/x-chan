@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-import { FaList, FaTh, FaEye, FaNewspaper, FaCog, FaComments, FaTimes, FaShare, FaLink } from "react-icons/fa";
+import { FaList, FaTh, FaEye, FaNewspaper, FaCog, FaComments, FaTimes, FaShare, FaLink, FaStar, FaTrophy, FaLightbulb, FaSmile, FaClock, FaBookmark, FaUserPlus } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaUser, FaHeart, FaRetweet, FaReply, FaQuoteRight, FaAt } from "react-icons/fa";
 import axios from "axios";
@@ -217,6 +217,37 @@ const NotificationPage = () => {
 				return <FaCog className='w-7 h-7 text-orange-500' />;
 			case "thread_activity":
 				return <FaComments className='w-7 h-7 text-indigo-500' />;
+			case "mention":
+				return <FaAt className='w-7 h-7 text-cyan-500' />;
+			case "comment_reply":
+				return <FaReply className='w-7 h-7 text-violet-500' />;
+			case "milestone":
+				return <FaQuoteRight className='w-7 h-7 text-amber-500' />;
+			case "trending_topic":
+				return <FaShare className='w-7 h-7 text-rose-500' />;
+			case "board_activity":
+			case "user_board_activity":
+				return <FaList className='w-7 h-7 text-emerald-500' />;
+			case "system_announcement":
+				return <FaCog className='w-7 h-7 text-gray-500' />;
+			case "post_rating":
+				return <FaStar className='w-7 h-7 text-yellow-400' />;
+			case "achievement":
+				return <FaTrophy className='w-7 h-7 text-amber-400' />;
+			case "content_recommendation":
+				return <FaLightbulb className='w-7 h-7 text-blue-400' />;
+			case "user_mention_reaction":
+				return <FaSmile className='w-7 h-7 text-green-400' />;
+			case "scheduled_reminder":
+				return <FaClock className='w-7 h-7 text-purple-400' />;
+			case "bookmark_activity":
+				return <FaBookmark className='w-7 h-7 text-teal-500' />;
+			case "user_joined":
+				return <FaUserPlus className='w-7 h-7 text-lime-500' />;
+			case "post_featured":
+				return <FaStar className='w-7 h-7 text-amber-500' />;
+			case "news_bot_activity":
+				return <FaNewspaper className='w-7 h-7 text-blue-300' />;
 			default:
 				return null;
 		}
@@ -239,6 +270,38 @@ const NotificationPage = () => {
 				return "Service update: " + notification.content;
 			case "thread_activity":
 				return "New activity in thread: " + notification.content;
+			case "mention":
+				return "mentioned you in a post";
+			case "comment_reply":
+				return "replied to your comment";
+			case "milestone":
+				return "Congratulations! " + notification.content;
+			case "trending_topic":
+				return "A topic you follow is trending: " + notification.content;
+			case "board_activity":
+				return notification.content || "New activity in a board you follow";
+			case "user_board_activity":
+				return notification.content || "New activity in your board";
+			case "system_announcement":
+				return "System announcement: " + notification.content;
+			case "post_rating":
+				return notification.content || "rated your post";
+			case "achievement":
+				return notification.content || "You earned an achievement!";
+			case "content_recommendation":
+				return notification.content || "We found content you might like";
+			case "user_mention_reaction":
+				return notification.content || "reacted to a mention of you";
+			case "scheduled_reminder":
+				return notification.content || "Here's your scheduled reminder";
+			case "bookmark_activity":
+				return notification.content || "Activity on your bookmarked content";
+			case "user_joined":
+				return notification.content || "Welcome to the platform!";
+			case "post_featured":
+				return notification.content || "Your post has been featured!";
+			case "news_bot_activity":
+				return notification.content || "News bot update";
 			default:
 				return notification.content || "";
 		}
@@ -276,14 +339,35 @@ const NotificationPage = () => {
 			case "repost":
 			case "reply":
 			case "post_reply":
-				if (notification.postId) {
-					// Open the post in a modal
+			case "mention":
+			case "post_rating":
+			case "user_mention_reaction":
+			case "post_featured":
+				// Check both post and postId fields
+				if (notification.postId?._id) {
+					setSelectedPost(notification.postId._id);
+				} else if (notification.post?._id) {
+					setSelectedPost(notification.post._id);
+				} else if (notification.postId) {
+					setSelectedPost(notification.postId);
+				} else if (notification.post) {
+					setSelectedPost(notification.post);
+				}
+				break;
+			case "comment_reply":
+				// Handle comment replies
+				if (notification.commentId) {
+					navigate(`/post/${notification.postId}?commentId=${notification.commentId}`);
+				} else if (notification.postId) {
 					setSelectedPost(notification.postId);
 				}
 				break;
 			case "news_update":
+			case "news_bot_activity":
 				if (notification.newsId) {
 					navigate(`/news/${notification.newsId}`);
+				} else {
+					navigate('/news');
 				}
 				break;
 			case "service_update":
@@ -296,10 +380,69 @@ const NotificationPage = () => {
 					navigate(`/threads/${notification.threadId}`);
 				}
 				break;
-			default:
-				// If there's a postId, show the post
+			case "milestone":
+			case "achievement":
+				navigate(`/profile/${notification.to.username}`);
+				break;
+			case "trending_topic":
+				if (notification.topicId) {
+					navigate(`/topics/${notification.topicId}`);
+				} else {
+					navigate(`/search?q=${encodeURIComponent(notification.content)}`);
+				}
+				break;
+			case "board_activity":
+			case "user_board_activity":
+				if (notification.boardId) {
+					navigate(`/boards/${notification.boardId}`);
+				}
 				if (notification.postId) {
 					setSelectedPost(notification.postId);
+				}
+				break;
+			case "system_announcement":
+			case "user_joined":
+				// System announcements may not have a specific destination
+				if (notification.linkUrl) {
+					window.open(notification.linkUrl, '_blank');
+				}
+				break;
+			case "content_recommendation":
+				// Handle different content types
+				if (notification.postId) {
+					setSelectedPost(notification.postId);
+				} else if (notification.newsId) {
+					navigate(`/news/${notification.newsId}`);
+				} else if (notification.serviceId) {
+					navigate(`/services/${notification.serviceId}`);
+				} else if (notification.threadId) {
+					navigate(`/threads/${notification.threadId}`);
+				}
+				break;
+			case "scheduled_reminder":
+				// If there's a relevant post, show it
+				if (notification.postId) {
+					setSelectedPost(notification.postId);
+				}
+				break;
+			case "bookmark_activity":
+				// Navigate to the bookmarked post
+				if (notification.postId) {
+					setSelectedPost(notification.postId);
+				} else {
+					navigate('/bookmarks');
+				}
+				break;
+			default:
+				// If there's any post reference, show the post
+				if (notification.postId?._id) {
+					setSelectedPost(notification.postId._id);
+				} else if (notification.post?._id) {
+					setSelectedPost(notification.post._id);
+				} else if (notification.postId) {
+					setSelectedPost(notification.postId);
+				} else if (notification.post) {
+					setSelectedPost(notification.post);
 				}
 				break;
 		}

@@ -233,41 +233,6 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
     const handleRefresh = async () => {
         setIsRefreshing(true);
         try {
-            // First force an update by calling the API with force=true
-            const updateResponse = await fetch(`/api/newsbot/${botId}/update?force=true`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const updateData = await updateResponse.json();
-            console.log('Force update response:', updateData);
-
-            // Show feedback to the user
-            if (updateData.message?.includes("Articles updated successfully")) {
-                toast.success("Refreshing articles...", {
-                    duration: 3000,
-                    position: "bottom-right",
-                    style: {
-                        background: '#1a1a1a',
-                        color: '#fff',
-                        border: '1px solid #333'
-                    }
-                });
-            } else if (updateData.data?.skipped) {
-                toast.info("Update interval not reached. Forcing refresh anyway...", {
-                    duration: 3000,
-                    position: "bottom-right",
-                    style: {
-                        background: '#1a1a1a',
-                        color: '#fff',
-                        border: '1px solid #333'
-                    }
-                });
-            }
-
             // Force refetch by invalidating all queries
             await queryClient.invalidateQueries(["botArticles", botId]);
 
@@ -297,7 +262,7 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 
             console.log(`Found ${validArticles.length} valid articles after filtering`);
-
+            
             // Add debug info in development
             console.log(`Article data sample:`, validArticles.length > 0 ? {
                 first: validArticles[0],
@@ -845,11 +810,11 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 const nextIndex = currentIndex + 1;
                 const nextThumbnail = thumbnails[nextIndex];
                 console.log(`Trying next thumbnail (${nextIndex}/${thumbnails.length-1}): ${nextThumbnail}`);
-
+                
                 // Set new source and update the index attribute
                 event.target.src = nextThumbnail;
                 event.target.dataset.index = nextIndex;
-
+                
                 // Preload the next thumbnail in the sequence for faster fallback
                 if (nextIndex < thumbnails.length - 1) {
                     const preloadImage = new Image();
@@ -863,17 +828,21 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
         };
 
         return (
-            <div key={article._id} className="bg-gray-700 rounded-lg p-4">
+            <div key={article._id} className="bg-gray-700 rounded-lg p-4 h-full">
                 <div className="flex flex-col h-full">
                     {isYouTube ? (
-                        <div className="mb-4 relative aspect-video" onClick={(e) => e.stopPropagation()}>
+                        <div className="mb-4 relative aspect-video w-full" onClick={(e) => e.stopPropagation()}>
                             {!hasFailedThumbnail && (
                                 <img 
                                     src={Array.isArray(thumbnailUrls) ? thumbnailUrls[0] : thumbnailUrls}
                                     alt={article.title}
                                     className="w-full h-full object-cover rounded-lg cursor-pointer"
                                     data-index="0"
-                                    onClick={() => handleViewDetails(article)}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleViewDetails(article);
+                                    }}
                                     onError={(e) => {
                                         // Try next thumbnail in the array if available
                                         if (Array.isArray(thumbnailUrls)) {
@@ -886,10 +855,17 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                     loading="lazy"
                                 />
                             )}
-
+                            
                             {/* YouTube-specific fallback for thumbnail error */}
                             {isYouTube && hasFailedThumbnail && (
-                                <div className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg">
+                                <div 
+                                    className="aspect-video bg-gradient-to-br from-red-700 to-red-900 flex items-center justify-center rounded-lg cursor-pointer"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleViewDetails(article);
+                                    }}
+                                >
                                     <div className="text-center">
                                         <svg className="w-16 h-16 text-white mx-auto mb-2" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z" />
@@ -906,13 +882,26 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                                 src={article.imageUrl}
                                 alt={article.title}
                                 className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleViewDetails(article);
+                                }}
                                 onError={() => handleImageError(article._id)}
                                 loading="lazy"
-                                onClick={() => handleViewDetails(article)}
                             />
                         </div>
                     ) : (
-                        getPlaceholderImage()
+                        <div 
+                            className="cursor-pointer"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleViewDetails(article);
+                            }}
+                        >
+                            {getPlaceholderImage()}
+                        </div>
                     )}
                     <h3 className="text-lg font-semibold text-white mb-2">
                         {article.title}
@@ -1154,6 +1143,8 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
                 </div>
             )}
 
+
+
             {/* Article Details Modal */}
             {selectedArticle && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
@@ -1170,36 +1161,33 @@ const BotArticles = ({ botId, isOpen, onClose }) => {
 
                         {isYouTubeUrl(selectedArticle.url) ? (
                             embedError ? (
-                                <div className="mb-4 relative rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
-                                    <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center">
-                                        <div className="text-center p-4">
-                                            <svg className="w-16 h-16 text-white mx-auto mb-4" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-                                            </svg>
-                                            <p className="text-white text-lg mb-2">Unable to play video</p>
-                                            <p className="text-white/80 text-sm mb-4">This video cannot be played in the embed player.</p>
-                                            <a
-                                                href={selectedArticle.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-block px-4 py-2 bg-white text-red-600 rounded hover:bg-gray-100 transition-colors"
-                                            >
-                                                Watch on YouTube
-                                            </a>
-                                        </div>
+                                <div className="mb-4 aspect-video bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
+                                    <div className="text-center p-4">
+                                        <svg className="w-16 h-16 text-white mx-auto mb-4" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                                        </svg>
+                                        <p className="text-white text-lg mb-2">Unable to play video</p>
+                                        <p className="text-white/80 text-sm mb-4">This video cannot be played in the embed player.</p>
+                                        <a
+                                            href={selectedArticle.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-block px-4 py-2 bg-white text-red-600 rounded hover:bg-gray-100 transition-colors"
+                                        >
+                                            Watch on YouTube
+                                        </a>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="mb-4 aspect-video">
                                     <div className="video-container">
-                                        <YouTubeEmbed 
-                                            url={selectedArticle.url} 
-                                            onError={handleEmbedError}
-                                        />
-                                    </div>
+                                <YouTubeEmbed 
+                                    url={selectedArticle.url} 
+                                    onError={handleEmbedError}
+                                />
+                            </div>
                                 </div>
                             )
-                        )
                         ) : selectedArticle.imageUrl && !failedThumbnails.has(selectedArticle._id) ? (
                             <div className="mb-4">
                                 <img
@@ -1287,17 +1275,15 @@ const YouTubeEmbed = ({ url, onError }) => {
             onError();
         }
         return (
-         <div className="mb-4 relative rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
-                            <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center">
-                                <div className="text-center p-4">
-                                    <svg className="w-16 h-16 text-white mx-auto mb-4" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-                                    </svg>
-                                    <p className="text-white text-lg mb-2">Unable to play video</p>
-                                    <p className="text-white/80 text-sm mb-4">There was an issue loading the video.</p>
-                                </div>
-                            </div>
-                        </div>
+            <div className="aspect-video bg-gradient-to-br from-red-600 to-red-800 rounded-lg flex items-center justify-center">
+                <div className="text-center p-4">
+                    <svg className="w-16 h-16 text-white mx-auto mb-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                    </svg>
+                    <p className="text-white text-lg mb-2">Unable to play video</p>
+                    <p className="text-white/80 text-sm mb-4">There was an issue loading the video.</p>
+                </div>
+            </div>
         );
     }
 
