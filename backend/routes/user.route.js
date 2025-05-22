@@ -105,7 +105,12 @@ router.post('/upload/profile', protectRoute, upload.single('profileImg'), async 
             { new: true }
         ).select('-password');
 
-        res.json({ success: true, user: updatedUser });
+        // Add proper error handling and response
+        res.json({ 
+            success: true, 
+            user: updatedUser,
+            message: 'Profile picture updated successfully' 
+        });
     } catch (error) {
         console.error('Error uploading profile picture:', error);
         res.status(500).json({ error: 'Failed to upload profile picture' });
