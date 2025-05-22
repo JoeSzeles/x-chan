@@ -2,6 +2,8 @@ import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
 import Thread from "../models/thread.model.js";
 import Post from "../models/post.model.js";
+import Comment from "../models/comment.model.js";
+import Board from "../models/board.model.js";
 import { io } from "../server.js";
 
 // Helper function to create notifications
@@ -244,6 +246,146 @@ export const createFollowNotification = async (followerId, followedUserId) => {
 	}
 };
 
+// Create comment reply notification
+export const createCommentReplyNotification = async (commentId, postId, userId, commentText) => {
+	try {
+		const comment = await Comment.findById(commentId).populate("user");
+		if (comment && comment.user._id.toString() !== userId.toString()) {
+			await createNotification({
+				from: userId,
+				to: comment.user._id,
+				type: "comment_reply",
+				content: "replied to your comment",
+				postId
+			});
+		}
+	} catch (error) {
+		console.log("Error in createCommentReplyNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create board activity notification 
+export const createBoardActivityNotification = async (boardId, activityType, userId, postId = null) => {
+	try {
+		const board = await Board.findById(boardId).populate("followers");
+		
+		// Skip if no followers
+		if (!board || !board.followers || board.followers.length === 0) {
+			return;
+		}
+		
+		let content = "";
+		switch (activityType) {
+			case "new_post":
+				content = `New post in "${board.name}"`;
+				break;
+			case "update":
+				content = `"${board.name}" board has been updated`;
+				break;
+			case "comment":
+				content = `New comment in "${board.name}" board`;
+				break;
+			default:
+				content = `New activity in "${board.name}" board`;
+		}
+		
+		// Notify all followers except the user who created the activity
+		const notifications = board.followers
+			.filter(follower => follower._id.toString() !== userId?.toString())
+			.map(follower => ({
+				from: userId || process.env.SYSTEM_USER_ID,
+				to: follower._id,
+				type: "board_activity",
+				content,
+				boardId,
+				postId
+			}));
+		
+		if (notifications.length > 0) {
+			await Notification.insertMany(notifications);
+		}
+	} catch (error) {
+		console.log("Error in createBoardActivityNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create repost notification
+export const createRepostNotification = async (originalPostId, reposterId) => {
+	try {
+		const post = await Post.findById(originalPostId).populate("user");
+		if (post && post.user._id.toString() !== reposterId.toString()) {
+			await createNotification({
+				from: reposterId,
+				to: post.user._id,
+				type: "repost",
+				content: "reposted your post",
+				postId: originalPostId
+			});
+		}
+	} catch (error) {
+		console.log("Error in createRepostNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create news bot activity notification
+export const createNewsBotActivityNotification = async (botId, articleId, headline) => {
+	try {
+		// Find users who have news notifications enabled
+		const users = await User.find({ "settings.notifications.news": true });
+		
+		if (users.length === 0) return;
+		
+		const notifications = users.map(user => ({
+			from: process.env.SYSTEM_USER_ID,
+			to: user._id,
+			type: "news_bot_activity",
+			content: headline,
+			newsId: articleId
+		}));
+		
+		await Notification.insertMany(notifications);
+	} catch (error) {
+		console.log("Error in createNewsBotActivityNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create thread activity notification
+export const createThreadActivityNotification = async (threadId, userId, action) => {
+	try {
+		const thread = await Thread.findById(threadId);
+		if (!thread) return;
+		
+		// Find thread followers
+		const threadFollowers = thread.followers || [];
+		
+		// Filter out the user who performed the action
+		const recipients = threadFollowers.filter(
+			followerId => followerId.toString() !== userId.toString()
+		);
+		
+		if (recipients.length === 0) return;
+		
+		const content = `New ${action} in thread "${thread.title || 'Untitled thread'}"`;
+		
+		const notifications = recipients.map(recipientId => ({
+			from: userId,
+			to: recipientId,
+			type: "thread_activity",
+			content,
+			threadId
+		}));
+		
+		await Notification.insertMany(notifications);
+	} catch (error) {
+		console.log("Error in createThreadActivityNotification:", error.message);
+		throw error;
+	}
+};
+
 // Create trending topic notification
 export const createTrendingTopicNotification = async (topicName, topicId) => {
 	try {
@@ -441,8 +583,15 @@ export const getNotifications = async (req, res) => {
 		res.status(200).json({
 			notifications,
 			total,
+			pages: Math.ceil(total / limit),
+			currentPage: parseInt(page)
+		});
+	} catch (error) {
+		console.log("Error in getNotifications function", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
 
-// Create post rating notification
 // Create post rating notification
 export const createPostRatingNotification = async (postId, raterUserId, rating) => {
   try {
