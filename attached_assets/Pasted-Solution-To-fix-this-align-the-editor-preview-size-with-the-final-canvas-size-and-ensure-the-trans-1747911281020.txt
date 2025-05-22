@@ -1,0 +1,107 @@
+Solution
+
+To fix this, align the editor preview size with the final canvas size and ensure the transformations (scale and position) are applied consistently. Here’s how:
+
+    Set the Editor Container to 400x400 Pixels
+        Change the editor’s container size to match the final canvas size (finalSize = 400). This ensures the user adjusts the image in the same dimensions as the final output, making the preview accurate.
+    Adjust the Saving Logic to Match Editor Transformations
+        Use canvas transformation methods in handleEditorSave to apply the same scale and position as seen in the editor, accounting for the transformOrigin: 'center' used in the editor’s CSS.
+
+Implementation
+1. Update ImageScaleEditor Container Size
+
+Modify the container’s className to use a fixed 400x400 pixel size instead of w-80 h-80:
+javascript
+<div 
+  ref={containerRef}
+  className="w-[400px] h-[400px] rounded-full overflow-hidden relative border-4 border-[#2e2e2e] mb-4"
+  onWheel={handleWheel}
+  onTouchStart={handleTouchStart}
+>
+
+    Effect: In the useEffect hook, containerWidth and containerHeight will now be 400px, so initialScale = 400 / Math.max(imageWidth, imageHeight). The image is scaled to fit within 400px initially, matching the final canvas size.
+
+2. Revise handleEditorSave in ProfilePicture
+
+Update the saving logic to use canvas transformations that replicate the editor’s translate(${position.x}px, ${position.y}px) scale(${scale}) with transformOrigin: 'center':
+javascript
+const handleEditorSave = async ({ scale, position }) => {
+  if (!selectedFile) return;
+
+  try {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = selectedImage;
+    });
+
+    // Set canvas size to final dimensions
+    const finalSize = 400;
+    canvas.width = finalSize;
+    canvas.height = finalSize;
+
+    // Create circular clipping path
+    ctx.beginPath();
+    ctx.arc(finalSize / 2, finalSize / 2, finalSize / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+
+    // Apply transformations matching the editor
+    ctx.save();
+    ctx.translate(finalSize / 2 + position.x, finalSize / 2 + position.y); // Center and apply user translation
+    ctx.scale(scale, scale); // Apply user scale
+    ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
+    ctx.restore();
+
+    // Convert to blob with proper mime type
+    const mimeType = selectedFile.type || 'image/jpeg';
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, 0.9));
+    const transformedFile = new File([blob], `profile.${mimeType.split('/')[1] || 'jpg'}`, { type: mimeType });
+
+    // Upload the processed image
+    const formData = new FormData();
+    formData.append('profileImg', transformedFile);
+
+    const response = await fetch('/api/users/upload/profile', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: formData
+    });
+
+    const contentType = response.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      throw new Error(`Invalid response format: ${text}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to update profile picture');
+    }
+
+    if (data.user?.profileImg) {
+      setProfileImg(data.user.profileImg);
+      if (onUpdate) {
+        onUpdate({ type: 'image', content: data.user.profileImg });
+      }
+    }
+    setShowEditor(false);
+    setSelectedImage(null);
+    setSelectedFile(null);
+
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    toast.error(error.message || 'Failed to update profile picture');
+    setShowEditor(false);
+    setSelectedImage(null);
+    setSelectedFile(null);
+  }
+};
