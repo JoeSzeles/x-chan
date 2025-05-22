@@ -1,75 +1,114 @@
-
 import { io } from 'socket.io-client';
 
-let socket = null;
-let reconnectAttempts = 0;
-const MAX_RECONNECT_ATTEMPTS = 10;
+class SocketService {
+  constructor() {
+    this.socket = null;
+  }
+
+  connect() {
+    if (!this.socket) {
+      this.socket = io('/', {
+        path: '/socket.io/',
+        transports: ['polling'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 30000,
+        forceNew: true,
+        withCredentials: true,
+        upgrade: false
+      });
+
+      this.socket.on('connect_error', (error) => {
+        console.error('[Socket] Connection error:', error);
+      });
+
+      this.socket.on('disconnect', (reason) => {
+        console.log('[Socket] Disconnected:', reason);
+        if (reason === 'io server disconnect') {
+          this.socket.connect();
+        }
+      });
+    }
+    return this.socket;
+  }
+
+  disconnect() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+  }
+}
+
+export const socketService = new SocketService();
 
 export const initializeSocket = (userId) => {
-  if (!userId) {
-    console.error('Cannot initialize socket without userId');
-    return null;
-  }
-
-  // If we already have a socket instance, return it
-  if (socket) {
-    return socket;
-  }
-
   try {
-    // Determine the correct socket URL based on the environment
-    const host = window.location.hostname;
-    const protocol = window.location.protocol;
-    
-    // For development in Replit, use a relative URL to leverage the Vite proxy
-    const socketUrl = '/';
+    if (socket && socket.connected) {
+      console.log('Socket already initialized and connected');
+      if (userId) {
+        // Make sure we're joined to the right notification room even if socket is already connected
+        socket.emit('joinNotifications', userId);
+      }
+      return socket;
+    }
 
-    console.log(`Attempting to connect socket to: ${socketUrl} (will be proxied)`);
+    // Close existing socket if disconnected
+    if (socket) {
+      socket.close();
+      socket = null;
+    }
 
-    // Create socket connection with more robust configuration
-    socket = io(socketUrl, {
-      transports: ['polling', 'websocket'], // Start with polling then upgrade
-      reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
-      reconnectionDelay: 2000,
-      timeout: 20000,
+    console.log('Initializing socket connection with backend');
+
+    // Create socket with better error handling and reconnection logic
+    socket = io({
       path: '/socket.io',
-      withCredentials: true
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      forceNew: true
     });
 
     socket.on('connect', () => {
-      console.log('Socket connected successfully');
-      reconnectAttempts = 0;
+      console.log('Socket connected successfully', socket.id);
       if (userId) {
         socket.emit('joinNotifications', userId);
+        console.log(`Joined notification room for user: ${userId}`);
       }
-    });
-
-    socket.on('connect_error', (error) => {
-      console.error('[Socket] Connection error details:', error);
-      reconnectAttempts++;
-      
-      console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
-      
-      if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-        console.log('Max reconnection attempts reached');
-      }
-    });
-
-    socket.on('reconnect_failed', () => {
-      console.error('[Socket] Reconnection failed after maximum attempts');
-    });
-
-    socket.on('error', (error) => {
-      console.error('[Socket] Socket error:', error);
     });
 
     socket.on('disconnect', (reason) => {
-      console.log('[Socket] Socket disconnected:', reason);
-      
-      if (reason === 'io server disconnect' || reason === 'transport close' || reason === 'transport error') {
-        console.log('[Socket] Polling error detected, attempting reconnect...');
+      console.log(`Socket disconnected: ${reason}`);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log(`Socket reconnected after ${attemptNumber} attempts.`);
+      if (userId) {
+        socket.emit('joinNotifications', userId);
+        console.log(`Rejoined notification room for user: ${userId}`);
       }
     });
+
+    socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log(`Attempting to reconnect socket: attempt ${attemptNumber}`);
+    });
+
+    socket.on('reconnect_error', (error) => {
+      console.error('Socket reconnection error:', error);
+    });
+
+    socket.on('reconnect_failed', () => {
+      console.error('Socket reconnection failed.');
+    });
+
 
     return socket;
   } catch (error) {
@@ -78,39 +117,4 @@ export const initializeSocket = (userId) => {
   }
 };
 
-export const getSocket = () => socket;
-
-export const disconnectSocket = () => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
-};
-
-// Add helper methods for the chat functionality
-export const socketService = {
-  connect: (userId) => initializeSocket(userId),
-  joinConversation: (conversationId) => {
-    if (socket) socket.emit('joinConversation', conversationId);
-  },
-  leaveConversation: (conversationId) => {
-    if (socket) socket.emit('leaveConversation', conversationId);
-  },
-  sendMessage: (message) => {
-    if (socket) socket.emit('sendMessage', message);
-  },
-  onNewMessage: (callback) => {
-    if (socket) socket.on('newMessage', callback);
-  },
-  offNewMessage: (callback) => {
-    if (socket) socket.off('newMessage', callback);
-  }
-};
-
-// Make sure we export the default object for older imports
-export default {
-  initializeSocket,
-  getSocket,
-  disconnectSocket,
-  socketService
-};
+let socket;

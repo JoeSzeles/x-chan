@@ -1,7 +1,8 @@
 import newsBotService from "../services/newsBotService.js";
 import NewsBot from "../models/NewsBot.js";
 import NewsArticle from "../models/NewsArticle.js";
-import Post from "../models/post.model.js";
+import axios from "axios";
+import { createNewsBotActivityNotification } from "./notification.controller.js";
 
 export const createBot = async (req, res) => {
     try {
@@ -515,4 +516,66 @@ export const clearBotArticles = async (req, res) => {
             error: "Failed to clear bot feed"
         });
     }
+};
+
+export const fetchNewArticles = async (req, res) => {
+  try {
+    const { botId } = req.params;
+    const bot = await NewsBot.findById(botId);
+
+    if (!bot) {
+      return res.status(404).json({ error: "Bot not found" });
+    }
+
+    // Call the scrape function with the bot configuration
+    const { success, articles } = await scrapeArticles(bot.sourceUrl, bot.selectors);
+
+    if (!success) {
+      return res.status(500).json({ error: "Failed to fetch articles" });
+    }
+
+    // Save new articles to database
+    const savedArticles = [];
+    for (const article of articles) {
+      const exists = await NewsArticle.findOne({ url: article.url, botId });
+
+      if (!exists) {
+        const newArticle = new NewsArticle({
+          title: article.title,
+          content: article.content,
+          url: article.url,
+          imageUrl: article.imageUrl,
+          botId,
+          publishedAt: article.publishedAt || new Date()
+        });
+
+        await newArticle.save();
+        savedArticles.push(newArticle);
+      }
+    }
+
+    // Emit socket event for real-time updates
+    io.to(`bot_${botId}`).emit('newArticles', {
+      botId,
+      articles: savedArticles
+    });
+
+    // Create notifications if there are new articles
+    if (savedArticles.length > 0) {
+      const notificationContent = `${bot.name} posted ${savedArticles.length} new article${savedArticles.length > 1 ? 's' : ''}`;
+      await createNewsBotActivityNotification(botId, notificationContent, savedArticles);
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: "Articles updated successfully",
+      data: {
+        newArticlesCount: savedArticles.length,
+        articles: savedArticles
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching new articles:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };

@@ -89,23 +89,16 @@ const io = new Server(httpServer, {
     cors: {
         origin: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true,
-        allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+        credentials: true
     },
     transports: ['polling', 'websocket'],
     allowEIO3: true,
-    pingTimeout: 60000,
-    pingInterval: 15000,
-    connectTimeout: 45000,
-    upgradeTimeout: 45000,
+    pingTimeout: 30000,
+    pingInterval: 10000,
+    connectTimeout: 30000,
+    upgradeTimeout: 30000,
     forcePolling: true,
-    allowUpgrades: true,
-    cookie: {
-        name: "socket-io",
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production"
-    },
-    maxHttpBufferSize: 1e8 // 100MB
+    allowUpgrades: false
 });
 
 // Enable detailed debug logging
@@ -176,11 +169,32 @@ io.on('connection', socket => {
     });
 
     socket.conn.on('packet', (packet) => {
-        console.log('[Socket.io] Packet:', {
-            type: packet.type,
-            data: packet.data,
-            timestamp: new Date().toISOString()
-        });
+        if (packet.type !== 2) { // Skip logging ping packets (type 2) to reduce noise
+            console.log('[Socket.io] Packet:', {
+                type: packet.type,
+                data: packet.data,
+                timestamp: new Date().toISOString()
+            });
+        }
+    });
+
+    // Join notification room specific to a user
+    socket.on('joinNotifications', (userId) => {
+        if (!userId) {
+            console.log('[Socket.io] Invalid userId for notifications');
+            return;
+        }
+        const roomName = `notifications_${userId}`;
+        socket.join(roomName);
+        console.log(`[Socket.io] User ${userId} joined notification room ${roomName}`);
+    });
+
+    // Leave notification room
+    socket.on('leaveNotifications', (userId) => {
+        if (!userId) return;
+        const roomName = `notifications_${userId}`;
+        socket.leave(roomName);
+        console.log(`[Socket.io] User ${userId} left notification room ${roomName}`);
     });
 
     socket.on('joinBotRoom', (botId) => {

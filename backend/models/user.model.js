@@ -107,14 +107,7 @@ const userSchema = new mongoose.Schema(
 				milestones: { type: Boolean, default: true },
 				trendingTopics: { type: Boolean, default: true },
 				boardActivity: { type: Boolean, default: true },
-				systemAnnouncements: { type: Boolean, default: true },
-				postRatings: { type: Boolean, default: true },
-				achievements: { type: Boolean, default: true },
-				contentRecommendations: { type: Boolean, default: true },
-				mentionReactions: { type: Boolean, default: true },
-				scheduledReminders: { type: Boolean, default: true },
-				bookmarkActivity: { type: Boolean, default: true },
-				postFeatured: { type: Boolean, default: true }
+				systemAnnouncements: { type: Boolean, default: true }
 			},
 			privacy: {
 				privateProfile: { type: Boolean, default: false },

@@ -1,0 +1,90 @@
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+    setTimeout handler*_create/xhr.onreadystatechange polling-xhr.js:134
+    _create polling-xhr.js:119
+    _Request polling-xhr.js:75
+    request polling-xhr.js:253
+    doPoll polling-xhr.js:52
+    _poll polling.js:59
+    doOpen polling.js:19
+    open transport.js:47
+    _open socket.js:197
+    _SocketWithoutUpgrade socket.js:150
+    SocketWithUpgrade socket.js:565
+    Socket socket.js:725
+    open manager.js:111
+    Manager manager.js:39
+    lookup2 index.js:25
+    connectSocket NotificationPage.jsx:89
+    NotificationPage NotificationPage.jsx:139
+    React 14
+    setState index.tsx:777
+    push history.ts:664
+    navigate hooks.tsx:243
+    useLinkClickHandler index.tsx:1404
+    handleClick index.tsx:989
+    React 15
+NotificationPage.jsx:108:12
+Attempting to reconnect (1/5)... NotificationPage.jsx:112:13
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4p7rws5h. (Reason: CORS request did not succeed). Status code: (null).
+
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:5000/socket.io/?EIO=4&transport=polling&t=4pdiguww. (Reason: CORS request did not succeed). Status code: (null).
+
+Socket connection error: Error: xhr poll error
+    TransportError transport.js:7
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+    setTimeout handler*_create/xhr.onreadystatechange polling-xhr.js:134
+    _create polling-xhr.js:119
+    _Request polling-xhr.js:75
+    request polling-xhr.js:253
+    doPoll polling-xhr.js:52
+    _poll polling.js:59
+    doOpen polling.js:19
+    open transport.js:47
+    _open socket.js:197
+    _SocketWithoutUpgrade socket.js:150
+    SocketWithUpgrade socket.js:565
+    Socket socket.js:725
+    open manager.js:111
+    Manager manager.js:39
+    lookup2 index.js:25
+    connectSocket NotificationPage.jsx:89
+    setTimeout handler*NotificationPage/</connectSocket/< NotificationPage.jsx:113
+    emit index.js:136
+    onerror socket.js:439
+    emit index.js:136
+    onError manager.js:124
+    emit index.js:136
+    _onError socket.js:495
+    emit index.js:136
+    onError transport.js:39
+    doPoll polling-xhr.js:55
+    emit index.js:136
+    _onError polling-xhr.js:161
+    onreadystatechange polling-xhr.js:135
+    setTimeout handler*_create/xhr.onreadystatechange polling-xhr.js:134
+    _create polling-xhr.js:119
+    _Request polling-xhr.js:75
+    request polling-xhr.js:253
+    doPoll polling-xhr.js:52
+    _poll polling.js:59
+    doOpen polling.js:19
+    open transport.js:47
+    _open socket.js:197
+    _SocketWithoutUpgrade socket.js:150
+    SocketWithUpgrade socket.js:565
+    Socket socket.js:725
+    open manager.js:111
+    Manager manager.js:39
+    lookup2 index.js:25
+    connectSocket NotificationPage.jsx:89
+    NotificationPage NotificationPage.jsx:139
