@@ -1,6 +1,8 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { MdEdit } from "react-icons/md";
 import ImageScaleEditor from '../common/ImageScaleEditor';
+import { toast } from 'react-hot-toast';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [profileImg, setProfileImg] = useState(null);
