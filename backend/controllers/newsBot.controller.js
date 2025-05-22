@@ -170,96 +170,67 @@ export const getBotArticles = async (req, res) => {
 };
 
 export const updateBotArticles = async (req, res) => {
-    try {
-        const { force, debug } = req.query;
-        const botId = req.params.botId;
+  const { botId } = req.params;
 
-        console.log('[NewsBotController] Starting update:', {
-            botId,
-            force: !!force,
-            debug: !!debug,
-            userId: req.user._id,
-            timestamp: new Date().toISOString()
-        });
-
-        // First verify the bot exists and user has access
-        const bot = await NewsBot.findOne({ _id: botId, owner: req.user._id });
-        if (!bot) {
-            console.error('[NewsBotController] Bot not found or unauthorized:', {
-                botId,
-                userId: req.user._id
-            });
-            return res.status(404).json({
-                success: false,
-                error: "Bot not found or unauthorized"
-            });
-        }
-
-        console.log('[NewsBotController] Bot found:', {
-            name: bot.name,
-            websiteCount: bot.websites.length,
-            lastUpdate: bot.lastUpdate,
-            websites: bot.websites.map(w => ({
-                url: w.url,
-                type: w.type,
-                searchTerms: w.searchTerms,
-                active: w.active
-            }))
-        });
-
-        // Set force update flag if requested (we'll pass it directly now)
-        const forceUpdate = force === 'true' || force === '1';
-
-        try {
-            // Pass the force flag directly to the service
-            const result = await newsBotService.updateBotArticles(req.params.botId, forceUpdate);
-
-            // Check if the result has expected properties
-            if (!result || !result.success) {
-                console.error('[NewsBotController] Update failed with error:', result?.error);
-                return res.status(400).json({ 
-                    success: false, 
-                    error: result?.error || "Update failed" 
-                });
-            }
-
-            // Ensure data structure is valid
-            const data = result.data || {};
-
-            // Ensure all properties exist and have default values to prevent "cannot read property of undefined" errors
-            const safeData = {
-                newArticles: Array.isArray(data.newArticles) ? data.newArticles : [],
-                totalArticles: data.totalArticles || 0,
-                errorCount: data.errorCount || 0,
-                articles: Array.isArray(data.articles) ? data.articles : [],
-                skipped: data.skipped || false
-            };
-
-            // Log the successful result with safe property access
-            console.log('[NewsBotController] Update result:', {
-                skipped: safeData.skipped,
-                newArticles: safeData.newArticles.length,
-                errorCount: safeData.errorCount,
-                totalArticles: safeData.totalArticles
-            });
-
-            // Return success response with safe data
-            return res.status(200).json({ 
-                success: true, 
-                message: safeData.skipped ? "Update skipped due to interval" : "Articles updated successfully", 
-                data: safeData
-            });
-        } catch (serviceError) {
-            console.error('[NewsBotController] Service error updating articles:', serviceError);
-            return res.status(400).json({ 
-                success: false, 
-                error: serviceError.message || "Error in update service" 
-            });
-        }
-    } catch (error) {
-        console.error('[NewsBotController] Error updating articles:', error);
-        return res.status(400).json({ success: false, error: error.message });
+  try {
+    const bot = await NewsBot.findById(botId);
+    if (!bot) {
+      return res.status(404).json({ error: "News bot not found" });
     }
+
+    // Check if user has permission to update this bot
+    if (bot.creator.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ error: "You don't have permission to update this bot's articles" });
+    }
+
+    const articles = await getArticlesForBot(bot);
+
+    if (!articles || articles.length === 0) {
+      return res.status(200).json({ message: "No new articles found" });
+    }
+
+    // Save the articles to the database
+    const newArticles = [];
+    for (const article of articles) {
+      const existingArticle = await NewsArticle.findOne({ 
+        url: article.url,
+        newsBot: botId
+      });
+
+      if (!existingArticle) {
+        const newArticle = new NewsArticle({
+          ...article,
+          newsBot: botId
+        });
+        await newArticle.save();
+        newArticles.push(newArticle);
+      }
+    }
+
+    // Create notifications for bot followers if new articles were added
+    if (newArticles.length > 0) {
+      try {
+        const { createNewsBotActivityNotification } = await import('./notification.controller.js');
+        await createNewsBotActivityNotification(
+          botId, 
+          `${bot.name} posted ${newArticles.length} new article(s)`,
+          newArticles
+        );
+        console.log(`NewsBot notification created for ${botId}`);
+      } catch (notifError) {
+        console.error("Error creating newsbot notification:", notifError);
+      }
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      message: "Articles updated successfully",
+      data: { newArticlesCount: articles.length }
+    });
+  } catch (error) {
+    console.error("Error updating bot articles:", error);
+    return res.status(500).json({ error: "Error updating bot articles" });
+  }
 };
 
 export const getBotPosts = async (req, res) => {

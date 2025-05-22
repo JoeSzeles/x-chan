@@ -46,6 +46,19 @@ export const bookmarkPost = async (req, res, next) => {
 			const bookmarkedPost = await Post.findById(postId)
 				.populate('bookmarkedBy', 'username fullName profileImg');
 
+			// Create bookmark notification
+			try {
+				const currentPost = await Post.findById(postId);
+				if (currentPost.user.toString() !== userId.toString()) {
+					const { createBookmarkNotification } = await import('./notification.controller.js');
+					await createBookmarkNotification(postId, userId);
+					console.log(`Bookmark notification created from ${userId} to ${currentPost.user}`);
+				}
+			} catch (notifError) {
+				console.error("Error creating bookmark notification:", notifError);
+				// Don't fail the bookmark if notification creation fails
+			}
+
 			return res.status(200).json(bookmarkedPost.bookmarkedBy || []);
 		}
 	} catch (error) {

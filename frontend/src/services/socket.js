@@ -1,82 +1,84 @@
 import { io } from 'socket.io-client';
 
-// Create a singleton socket instance
-let socket = null;
+let socket;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
-// Initialize the socket connection
-export const initializeSocket = (userId) => {
-  if (socket && socket.connected) {
-    // If already connected and authenticated, just join rooms
-    if (userId) {
-      socket.emit('joinNotifications', userId);
-    }
-    return socket;
-  }
+export const initSocket = () => {
+  if (socket && socket.connected) return socket;
 
-  // Create new socket connection with better error handling
-  socket = io({
+  // Use window.location.origin to ensure we connect to the same domain
+  const baseUrl = window.location.origin.includes('localhost') ? 
+    'http://0.0.0.0:5000' : 
+    window.location.origin;
+
+  console.log('Connecting to socket server at:', baseUrl);
+
+  socket = io(baseUrl, {
     path: '/socket.io',
-    transports: ['websocket', 'polling'],
-    reconnectionAttempts: 5,
+    transports: ['polling', 'websocket'],
+    reconnection: true,
+    reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
     reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000,
-    timeout: 20000,
-    autoConnect: true,
-    withCredentials: true
+    timeout: 10000,
+    withCredentials: true,
+    forceNew: true,
+    autoConnect: true
   });
 
-  // Set up connection handlers
   socket.on('connect', () => {
-    console.log('[Socket] Connected successfully');
+    console.log('Socket connected successfully');
+    reconnectAttempts = 0;
+    const userId = localStorage.getItem('userId');
     if (userId) {
       socket.emit('joinNotifications', userId);
+      console.log(`Joined notification room for user ${userId}`);
     }
   });
 
   socket.on('connect_error', (error) => {
-    console.error('[Socket] Connection error:', error.message);
+    console.error('Socket connection error:', error);
+    reconnectAttempts++;
+
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+      console.error('Max reconnection attempts reached');
+    }
   });
 
   socket.on('disconnect', (reason) => {
-    console.log('[Socket] Disconnected:', reason);
-  });
-
-  socket.on('error', (error) => {
-    console.error('[Socket] Error:', error);
+    console.log('Socket disconnected:', reason);
   });
 
   return socket;
 };
 
-// Get the current socket instance
-export const getSocket = () => {
-  return socket;
+export const getSocketInstance = () => {
+  return socket || initSocket();
 };
 
-// Close the socket connection
-export const closeSocket = () => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
-  }
-};
-
-// Helper functions for notification-related events
 export const joinNotificationRoom = (userId) => {
-  if (socket && userId) {
+  if (!socket || !socket.connected) initSocket();
+  if (userId && socket) {
     socket.emit('joinNotifications', userId);
+    console.log(`Manually joined notification room for user ${userId}`);
   }
 };
 
 export const leaveNotificationRoom = (userId) => {
-  if (socket && userId) {
+  if (userId && socket && socket.connected) {
     socket.emit('leaveNotifications', userId);
+    console.log(`Left notification room for user ${userId}`);
   }
 };
 
-// Helper for bot-related events
-export const joinBotRoom = (botId) => {
-  if (socket && botId) {
-    socket.emit('joinBotRoom', botId);
+export const disconnectSocket = () => {
+  if (socket) {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      socket.emit('leaveNotifications', userId);
+    }
+    socket.disconnect();
+    socket = null;
+    console.log('Socket disconnected');
   }
 };

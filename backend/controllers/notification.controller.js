@@ -269,7 +269,7 @@ export const createRepostNotification = async (postId, userId) => {
 			from: userId,
 			to: post.user,
 			type: "repost",
-			post: postId
+			referencedPost: postId
 		});
 
 		await notification.save();
@@ -277,16 +277,8 @@ export const createRepostNotification = async (postId, userId) => {
 
 		try {
 			// Send real-time notification via Socket.io
-			const io = getIo();
-			if (io) {
-				io.to(`notifications_${post.user}`).emit('newNotification', {
-					message: 'Someone reposted your post',
-					notification
-				});
-				console.log('Repost notification emitted via socket');
-			} else {
-				console.log('Socket.io instance not available');
-			}
+			io.to(`notifications_${post.user}`).emit('newNotification', notification);
+			console.log('Repost notification emitted via socket');
 		} catch (socketError) {
 			console.error('Error emitting socket notification:', socketError);
 		}
@@ -354,22 +346,38 @@ export const createNewsBotActivityNotification = async (botId, content, articles
 export const createBookmarkNotification = async (postId, userId) => {
 	try {
 		const post = await Post.findById(postId).populate("user");
-
-		// Skip if the post creator is the same as the user who bookmarked
-		if (post.user._id.toString() === userId.toString()) {
+		if (!post) {
+			console.log('Post not found when creating bookmark notification');
 			return;
 		}
 
-		await createNotification({
+		// Skip if the post creator is the same as the user who bookmarked
+		if (post.user._id.toString() === userId.toString()) {
+			console.log('User bookmarking their own post, skipping notification');
+			return;
+		}
+
+		const notification = new Notification({
 			from: userId,
 			to: post.user._id,
 			type: "bookmark",
 			content: "bookmarked your post",
-			postId,
 			referencedPost: post._id
 		});
 
+		await notification.save();
+		console.log('Bookmark notification created successfully');
+
+		try {
+			// Send real-time notification via Socket.io
+			io.to(`notifications_${post.user._id}`).emit('newNotification', notification);
+			console.log(`Bookmark notification emitted to ${post.user._id}`);
+		} catch (socketError) {
+			console.error('Error emitting socket notification:', socketError);
+		}
+
 		console.log(`Bookmark notification created from ${userId} to ${post.user._id} for post ${postId}`);
+		return notification;
 	} catch (error) {
 		console.log("Error in createBookmarkNotification:", error.message);
 		throw error;
