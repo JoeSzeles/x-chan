@@ -1,6 +1,8 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { MdEdit } from "react-icons/md";
 import ImageScaleEditor from '../common/ImageScaleEditor';
+import { toast } from 'react-hot-toast';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [profileImg, setProfileImg] = useState(null);
@@ -61,25 +63,17 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             ctx.closePath();
             ctx.clip();
 
-            // Calculate dimensions while maintaining aspect ratio
-            const baseScaleFactor = Math.max(
-                finalSize / img.width,
-                finalSize / img.height
-            );
-
-            // Apply user's custom scaling
-            const scaleFactor = baseScaleFactor * scale;
-
-            const scaledWidth = img.width * scaleFactor;
-            const scaledHeight = img.height * scaleFactor;
-
-            // Apply position directly without scaling it
-            // This matches how the position is displayed in the editor
-            const x = (finalSize - scaledWidth) / 2 + position.x;
-            const y = (finalSize - scaledHeight) / 2 + position.y;
-
-            // Draw the image with the corrected scaling and position
-            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+            // Calculate the center of the canvas
+            const centerX = finalSize / 2;
+            const centerY = finalSize / 2;
+            
+            // Apply transformations matching the editor's view
+            ctx.save();
+            ctx.translate(centerX, centerY); // Move to center
+            ctx.translate(position.x, position.y); // Apply user position offset
+            ctx.scale(scale, scale); // Apply user scale
+            ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
+            ctx.restore();
 
             // Convert canvas to blob with proper mime type (preserving original type if possible)
             const mimeType = selectedFile.type || 'image/jpeg';
