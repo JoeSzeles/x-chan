@@ -5,8 +5,7 @@ run = "npm run dev"
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "cd backend && node server.js"]
-build = ["sh", "-c", "cd frontend && npm run build"]
+run = ["sh", "-c", "npm run dev"]
 
 [[ports]]
 localPort = 3000

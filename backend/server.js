@@ -59,25 +59,6 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
-// Add CSP headers for deployment
-app.use((req, res, next) => {
-    // Set Content Security Policy headers
-    res.setHeader(
-        'Content-Security-Policy',
-        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "style-src * 'unsafe-inline' data: blob:; " + 
-        "img-src * data: blob:; " + 
-        "font-src * data:; " +
-        "connect-src * ws: wss:; " +
-        "frame-src *; " +
-        "media-src *; " +
-        "object-src 'none'; " +
-        "worker-src * blob:;"
-    );
-    next();
-});
-
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -85,20 +66,6 @@ if (!fs.existsSync(uploadsDir)) {
 
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
-
-// Serve frontend static files with proper MIME types
-const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
-if (fs.existsSync(frontendDistPath)) {
-    app.use(express.static(frontendDistPath, {
-        setHeaders: (res, path) => {
-            if (path.endsWith('.js')) {
-                res.setHeader('Content-Type', 'application/javascript');
-            } else if (path.endsWith('.css')) {
-                res.setHeader('Content-Type', 'text/css');
-            }
-        }
-    }));
-}
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -118,34 +85,6 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 app.use('/api/cover-photo', coverPhotoRoutes);
-
-// Serve static frontend files with correct MIME types
-const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
-if (fs.existsSync(frontendDistPath)) {
-    console.log('Serving frontend from', frontendDistPath);
-    // This will be handled by the middleware we added above
-}
-
-// Import index routes at the top level - dynamic import
-// This needs to be after the other routes but before starting the server
-app.use(async (req, res, next) => {
-    // Skip API and asset routes
-    if (req.url.startsWith('/api') || 
-        req.url.startsWith('/uploads') || 
-        req.url.startsWith('/public')) {
-        return next();
-    }
-    
-    try {
-        // Import the router dynamically
-        const { default: indexRoutes } = await import('./routes/index.js');
-        // Forward the request to the index routes
-        return indexRoutes(req, res, next);
-    } catch (err) {
-        console.error('Error importing index routes:', err);
-        return res.status(500).send('Server error loading frontend routes');
-    }
-});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
