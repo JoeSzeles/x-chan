@@ -37,6 +37,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     const handleEditorSave = async ({ scale, position }) => {
         if (!selectedFile) return;
+        
+        try {
 
         // Create a canvas to apply the transformations
         const canvas = document.createElement('canvas');
@@ -81,12 +83,19 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             // Draw the image with the corrected scaling and position
             ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
 
-            // Convert canvas to blob
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
-            const transformedFile = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+            // Convert canvas to blob with proper mime type (preserving original type if possible)
+            const mimeType = selectedFile.type || 'image/jpeg';
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, 0.9));
+            const transformedFile = new File([blob], `profile.${mimeType.split('/')[1] || 'jpg'}`, { type: mimeType });
 
             const formData = new FormData();
             formData.append('profileImg', transformedFile);
+
+            console.log('Uploading processed image:', {
+                originalSize: selectedFile.size,
+                processedSize: transformedFile.size,
+                type: transformedFile.type
+            });
 
             const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
@@ -96,12 +105,18 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
+            // Check for non-JSON responses
             const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
+            let data;
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
                 throw new Error('Invalid response format from server');
             }
 
-            const data = await response.json();
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to update profile picture');
             }
@@ -119,6 +134,11 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         } catch (error) {
             console.error('Error updating profile picture:', error);
             toast.error(error.message || 'Failed to update profile picture');
+            
+            // Clean up on error too
+            setShowEditor(false);
+            setSelectedImage(null);
+            setSelectedFile(null);
         }
     };
 

@@ -21,18 +21,34 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
         
+        console.log("Image dimensions:", {
+          width: preloadImage.width,
+          height: preloadImage.height,
+          containerWidth,
+          containerHeight
+        });
+        
+        // Get the smallest dimension to ensure the image fits in the circle
+        const containerSize = Math.min(containerWidth, containerHeight);
+        const imageSize = Math.max(preloadImage.width, preloadImage.height);
+        
         // Calculate proper initial scale to fit image within container
-        const scaleX = containerWidth / preloadImage.width;
-        const scaleY = containerHeight / preloadImage.height;
-        const initialScale = Math.min(scaleX, scaleY);
+        // Make sure the longest side of the image fits within the container
+        const initialScale = containerSize / imageSize;
         
-        // Set initial scale between 0.8 and 1.2 for better visibility
-        setScale(Math.max(0.8, Math.min(1.2, initialScale)));
+        console.log("Initial scale calculation:", {
+          containerSize,
+          imageSize,
+          initialScale
+        });
         
-        // Center the image
+        // Set a reasonable initial scale
+        setScale(initialScale);
+        
+        // Center the image in the container
         setPosition({
-          x: (containerWidth - preloadImage.width) / 2,
-          y: (containerHeight - preloadImage.height) / 2
+          x: (containerWidth - preloadImage.width * initialScale) / 2,
+          y: (containerHeight - preloadImage.height * initialScale) / 2
         });
         
         imageContainerLoaded.current = true;
