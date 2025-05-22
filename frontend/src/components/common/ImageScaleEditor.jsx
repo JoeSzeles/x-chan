@@ -13,6 +13,15 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
     if (image && containerRef.current && !imageContainerLoaded.current) {
       const preloadImage = new Image();
       preloadImage.onload = () => {
+        // Center the image when first loaded
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+        
+        setPosition({
+          x: (containerWidth - preloadImage.width) / 2,
+          y: (containerHeight - preloadImage.height) / 2
+        });
+        
         imageContainerLoaded.current = true;
       };
       preloadImage.src = image;
@@ -27,26 +36,27 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   const dragStart = useRef({ x: 0, y: 0 });
 
   const handleMouseDown = (e) => {
+    e.preventDefault();
     setIsDragging(true);
     dragStart.current = {
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
+      x: e.clientX,
+      y: e.clientY
     };
   };
 
   const handleMouseMove = (e) => {
     if (isDragging && imageRef.current) {
-      // Get raw pixel movement
-      const rawDeltaX = e.clientX - dragStart.current.x;
-      const rawDeltaY = e.clientY - dragStart.current.y;
+      // Calculate movement since last position
+      const deltaX = e.clientX - dragStart.current.x;
+      const deltaY = e.clientY - dragStart.current.y;
       
-      // Update position directly (no scale adjustment needed here)
+      // Update position with the delta
       setPosition({
-        x: position.x + rawDeltaX,
-        y: position.y + rawDeltaY
+        x: position.x + deltaX,
+        y: position.y + deltaY
       });
       
-      // Update drag start for next movement
+      // Update drag start position for next movement
       dragStart.current = {
         x: e.clientX,
         y: e.clientY
@@ -113,7 +123,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
 
         <div className="flex justify-end gap-3">
           <button
-            onClick={onCancel}
+            onClick={onClose || onCancel}
             className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700 transition flex items-center gap-2"
           >
             <FaTimes /> Cancel

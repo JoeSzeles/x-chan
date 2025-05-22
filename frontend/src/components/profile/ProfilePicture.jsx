@@ -66,7 +66,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 finalSize / img.width,
                 finalSize / img.height
             );
-            
+
             // Apply user's custom scaling
             const scaleFactor = baseScaleFactor * scale;
 
@@ -155,13 +155,13 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
-            
+
             {showEditor && selectedImage && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
                     <ImageScaleEditor 
                         image={selectedImage}
                         onSave={handleEditorSave}
-                        onClose={() => {
+                        onCancel={() => {
                             setShowEditor(false);
                             setSelectedImage(null);
                             setSelectedFile(null);
