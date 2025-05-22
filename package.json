@@ -8,7 +8,8 @@
 		"client": "cd frontend && npm run dev",
 		"dev": "concurrently \"npm run server\" \"npm run client\"",
 		"ngrok": "ngrok start --all --config=ngrok.yml",
-		"install-all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+		"install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd frontend && npm run build"
 	},
 	"keywords": [],
 	"author": "",

@@ -15,6 +15,11 @@ import { v2 as cloudinary } from "cloudinary";
 global.USE_MOCK_DATA = false;
 console.log('Mock data DISABLED - system will attempt real scraping');
 
+// Serve frontend files in production
+const frontendBuildPath = path.join(__dirname, '../frontend/dist');
+console.log('Serving frontend from', frontendBuildPath);
+app.use(express.static(frontendBuildPath));
+
 // Import routes
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
@@ -85,6 +90,16 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 app.use('/api/cover-photo', coverPhotoRoutes);
+
+// Catch-all route to serve the frontend for any non-API routes
+app.get('*', (req, res) => {
+    // Exclude API routes from the catch-all
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/socket.io')) {
+        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    } else {
+        res.status(404).json({ error: 'API endpoint not found' });
+    }
+});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
