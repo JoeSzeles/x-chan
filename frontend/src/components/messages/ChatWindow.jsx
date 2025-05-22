@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
-import { socketService } from '../../services/socket';
+import { initSocket, getSocketInstance } from '../../services/socket';
 
 const ChatWindow = ({ conversation }) => {
   const [messages, setMessages] = useState([]);
