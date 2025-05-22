@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
-import { getSocket, initializeSocket } from '../../services/socket';
+import { initializeSocket } from '../../services/socket';
 
 const ChatWindow = ({ conversation }) => {
   const [messages, setMessages] = useState([]);
@@ -28,14 +28,14 @@ const ChatWindow = ({ conversation }) => {
 
     if (conversation?._id && currentUserId) {
       fetchMessages();
-      
+
       // Initialize socket connection
       const socketInstance = initializeSocket(currentUserId);
       setSocket(socketInstance);
-      
+
       if (socketInstance) {
         socketInstance.emit('joinConversation', conversation._id);
-        
+
         // Listen for new messages
         socketInstance.on('newMessage', (message) => {
           setMessages((prev) => [...prev, message]);
@@ -73,7 +73,7 @@ const ChatWindow = ({ conversation }) => {
           message: response.data
         });
       }
-      
+
       // Add the message to our local state
       setMessages(prev => [...prev, response.data]);
       setNewMessage('');
@@ -158,4 +158,4 @@ const ChatWindow = ({ conversation }) => {
   );
 };
 
-export default ChatWindow; 
+export default ChatWindow;

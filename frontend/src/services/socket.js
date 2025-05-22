@@ -106,3 +106,11 @@ export const socketService = {
     if (socket) socket.off('newMessage', callback);
   }
 };
+
+// Make sure we export the default object for older imports
+export default {
+  initializeSocket,
+  getSocket,
+  disconnectSocket,
+  socketService
+};

@@ -35,6 +35,15 @@ export default defineConfig({
         secure: false,
         rewrite: path => path,
         configure: (proxy, options) => {
+          // Set longer timeout and buffers
+          proxy.setTimeout(60000);
+          proxy.options.buffer = {
+            maxRequestBodySize: '10mb'  
+          };
+          
+          // Improve debugging
+          console.log('Socket.IO proxy configured with target:', 'http://0.0.0.0:5000');
+          
           // Increase timeout for socket.io connections
           proxy.on('proxyReq', (proxyReq, req, res) => {
             proxyReq.setHeader('Origin', 'http://0.0.0.0:3000');
@@ -66,9 +75,6 @@ export default defineConfig({
               }
             }
           });
-          
-          // Set longer timeout
-          proxy.setTimeout(30000);
         }
       }
     }
