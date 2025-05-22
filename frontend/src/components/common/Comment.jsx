@@ -632,11 +632,14 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 							<RepostButton
 								itemId={comment._id}
 								type="comment"
-								repostCount={comment.reposts?.length || 0}
+								repostCount={localReposts?.length || 0}
 								isReposted={isReposted}
 								onRepost={(data) => {
-									// Update local state if needed
+									// Ensure data is an array and update local state
+									const repostsArray = Array.isArray(data) ? data : [];
+									setLocalReposts(repostsArray);
 								}}
+								userData={authUser}
 							/>
 						</div>
 						<div 
@@ -662,7 +665,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 								<FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />
 							)}
 							<span className={`text-sm group-hover:text-pink-500 ${isLiked ? "text-pink-500" : "text-slate-500"}`}>
-								{comment.likes.length}
+								{localLikes?.length || 0}
 							</span>
 						</div>
 					</div>

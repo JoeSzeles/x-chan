@@ -171,7 +171,7 @@ const RepostButton = ({
     const handleRepostClick = (e) => {
         e.preventDefault(); // Prevent any default behavior
         e.stopPropagation(); // Stop event propagation
-        if (!userData?._id) {
+        if (!userData || !userData._id) {
             toast.error('Please log in to repost');
             return;
         }

@@ -301,6 +301,12 @@ export const bookmarkComment = async (req, res) => {
 export const repostComment = async (req, res) => {
 	try {
 		const { commentId } = req.params;
+		
+		// Verify user is authenticated
+		if (!req.user || !req.user._id) {
+			return res.status(401).json({ error: "You must be logged in to repost" });
+		}
+		
 		const userId = req.user._id;
 		const { repostType, targetBoard } = req.body;
 
