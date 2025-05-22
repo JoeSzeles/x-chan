@@ -1,27 +1,93 @@
-
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MdEdit } from "react-icons/md";
-import { toast } from 'react-hot-toast';
+import ImageScaleEditor from '../common/ImageScaleEditor';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
-    const [isUploading, setIsUploading] = useState(false);
+    const [profileImg, setProfileImg] = useState(null);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
-    // Use a state to force image refresh when updated
-    const [imageVersion, setImageVersion] = useState(Date.now());
+    const [showEditor, setShowEditor] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
+        console.log("File input change detected");
         const file = e.target.files[0];
-        if (!file) return;
+        if (file) {
+            console.log("File selected:", file.name);
+            setSelectedFile(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                console.log("File loaded successfully");
+                setSelectedImage(e.target.result);
+                setShowEditor(true);
+                console.log("Show editor state set to true");
+            };
+            reader.onerror = (error) => {
+                console.error("Error reading file:", error);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    useEffect(() => {
+        console.log("Editor visibility state:", showEditor);
+        console.log("Selected image state:", !!selectedImage);
+    }, [showEditor, selectedImage]);
+
+    const handleEditorSave = async ({ scale, position }) => {
+        if (!selectedFile) return;
+
+        // Create a canvas to apply the transformations
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
 
         try {
-            setIsUploading(true);
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = selectedImage;
+            });
 
-            // Create FormData to send the file
+            // Set canvas size to final dimensions (circle size)
+            const finalSize = 400;
+            canvas.width = finalSize;
+            canvas.height = finalSize;
+
+            // Create circular clipping path
+            ctx.beginPath();
+            ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+
+            // Calculate dimensions while maintaining aspect ratio
+            const baseScaleFactor = Math.max(
+                finalSize / img.width,
+                finalSize / img.height
+            );
+            
+            // Apply user's custom scaling
+            const scaleFactor = baseScaleFactor * scale;
+
+            const scaledWidth = img.width * scaleFactor;
+            const scaledHeight = img.height * scaleFactor;
+
+            // Calculate the centered position and apply the user's position offset
+            // Multiply position by proper scale factor to ensure consistent movement
+            const x = (finalSize - scaledWidth) / 2 + position.x * baseScaleFactor;
+            const y = (finalSize - scaledHeight) / 2 + position.y * baseScaleFactor;
+
+            // Draw the image with the corrected scaling and position
+            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+
+            // Convert canvas to blob
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+            const transformedFile = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+
             const formData = new FormData();
-            formData.append('profileImg', file);
+            formData.append('profileImg', transformedFile);
 
-            // Upload the image
             const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
@@ -30,47 +96,30 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
-            // Check for non-JSON responses
             const contentType = response.headers.get('content-type');
-            let data;
-
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                const text = await response.text();
-                console.error('Non-JSON response:', text);
+            if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('Invalid response format from server');
             }
 
+            const data = await response.json();
             if (!response.ok) {
                 throw new Error(data.error || 'Failed to update profile picture');
             }
 
             if (data.user?.profileImg) {
-                // Force a reload of the image by updating the version
-                setImageVersion(Date.now());
-                
+                setProfileImg(data.user.profileImg);
                 if (onUpdate) {
                     onUpdate({ type: 'image', content: data.user.profileImg });
                 }
             }
-
-            toast.success('Profile picture updated successfully');
+            setShowEditor(false);
+            setSelectedImage(null);
+            setSelectedFile(null);
 
         } catch (error) {
             console.error('Error updating profile picture:', error);
             toast.error(error.message || 'Failed to update profile picture');
-        } finally {
-            setIsUploading(false);
         }
-    };
-
-    // Get the profile image URL with cache busting
-    const getProfileImageUrl = () => {
-        const baseUrl = user?.profileImg || "/avatar-placeholder.png";
-        return baseUrl.includes('?') 
-            ? `${baseUrl}&v=${imageVersion}` 
-            : `${baseUrl}?v=${imageVersion}`;
     };
 
     return (
@@ -81,14 +130,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         >
             <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
-                    src={getProfileImageUrl()}
+                    src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
                     alt="Profile"
-                    className="w-full h-full object-cover object-center"
-                    style={{
-                        objectFit: 'cover',
-                        width: '100%',
-                        height: '100%'
-                    }}
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
@@ -111,10 +155,18 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
-
-            {isUploading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-                    <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+            
+            {showEditor && selectedImage && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+                    <ImageScaleEditor 
+                        image={selectedImage}
+                        onSave={handleEditorSave}
+                        onClose={() => {
+                            setShowEditor(false);
+                            setSelectedImage(null);
+                            setSelectedFile(null);
+                        }}
+                    />
                 </div>
             )}
         </div>
