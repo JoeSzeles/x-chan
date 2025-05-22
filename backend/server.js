@@ -59,6 +59,25 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
+// Add CSP headers for deployment
+app.use((req, res, next) => {
+    // Set Content Security Policy headers
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+        "script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+        "style-src * 'unsafe-inline' data: blob:; " + 
+        "img-src * data: blob:; " + 
+        "font-src * data:; " +
+        "connect-src * ws: wss:; " +
+        "frame-src *; " +
+        "media-src *; " +
+        "object-src 'none'; " +
+        "worker-src * blob:;"
+    );
+    next();
+});
+
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -85,6 +104,17 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 app.use('/api/cover-photo', coverPhotoRoutes);
+
+// Serve static frontend files
+const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+    console.log('Serving frontend from', frontendDistPath);
+    app.use(express.static(frontendDistPath));
+    
+    // Import and use the index routes (should be last)
+    import indexRoutes from './routes/index.js';
+    app.use(indexRoutes);
+}
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
