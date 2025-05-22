@@ -47,11 +47,30 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 data = { success: true };
             }
 
-            // Force refresh of the image by updating timestamp
-            setImageVersion(Date.now());
-            
-            if (onUpdate && data.user?.profileImg) {
-                onUpdate({ type: 'image', content: data.user.profileImg });
+            // Update profile picture in the database
+            if (data.url) {
+                // Now call the user profile update endpoint to save the URL
+                const updateResponse = await fetch('/api/users/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ profileImg: data.url })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to update user profile with new image');
+                }
+                
+                const updateData = await updateResponse.json();
+                
+                // Force refresh of the image by updating timestamp
+                setImageVersion(Date.now());
+                
+                if (onUpdate && updateData.user?.profileImg) {
+                    onUpdate({ type: 'image', content: updateData.user.profileImg });
+                }
             }
 
             toast.success('Profile picture updated successfully');
