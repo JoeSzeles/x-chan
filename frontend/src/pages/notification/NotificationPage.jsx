@@ -217,6 +217,18 @@ const NotificationPage = () => {
 				return <FaCog className='w-7 h-7 text-orange-500' />;
 			case "thread_activity":
 				return <FaComments className='w-7 h-7 text-indigo-500' />;
+			case "mention":
+				return <FaAt className='w-7 h-7 text-cyan-500' />;
+			case "comment_reply":
+				return <FaReply className='w-7 h-7 text-violet-500' />;
+			case "milestone":
+				return <FaQuoteRight className='w-7 h-7 text-amber-500' />;
+			case "trending_topic":
+				return <FaShare className='w-7 h-7 text-rose-500' />;
+			case "board_activity":
+				return <FaList className='w-7 h-7 text-emerald-500' />;
+			case "system_announcement":
+				return <FaCog className='w-7 h-7 text-gray-500' />;
 			default:
 				return null;
 		}
@@ -239,6 +251,18 @@ const NotificationPage = () => {
 				return "Service update: " + notification.content;
 			case "thread_activity":
 				return "New activity in thread: " + notification.content;
+			case "mention":
+				return "mentioned you in a post";
+			case "comment_reply":
+				return "replied to your comment";
+			case "milestone":
+				return "Congratulations! " + notification.content;
+			case "trending_topic":
+				return "A topic you follow is trending: " + notification.content;
+			case "board_activity":
+				return "New activity in board: " + notification.content;
+			case "system_announcement":
+				return "System announcement: " + notification.content;
 			default:
 				return notification.content || "";
 		}
@@ -276,6 +300,7 @@ const NotificationPage = () => {
 			case "repost":
 			case "reply":
 			case "post_reply":
+			case "mention":
 				// Check both post and postId fields
 				if (notification.postId?._id) {
 					setSelectedPost(notification.postId._id);
@@ -285,6 +310,14 @@ const NotificationPage = () => {
 					setSelectedPost(notification.postId);
 				} else if (notification.post) {
 					setSelectedPost(notification.post);
+				}
+				break;
+			case "comment_reply":
+				// Handle comment replies
+				if (notification.commentId) {
+					navigate(`/post/${notification.postId}?commentId=${notification.commentId}`);
+				} else if (notification.postId) {
+					setSelectedPost(notification.postId);
 				}
 				break;
 			case "news_update":
@@ -300,6 +333,27 @@ const NotificationPage = () => {
 			case "thread_activity":
 				if (notification.threadId) {
 					navigate(`/threads/${notification.threadId}`);
+				}
+				break;
+			case "milestone":
+				navigate(`/profile/${notification.to.username}`);
+				break;
+			case "trending_topic":
+				if (notification.topicId) {
+					navigate(`/topics/${notification.topicId}`);
+				} else {
+					navigate(`/search?q=${encodeURIComponent(notification.content)}`);
+				}
+				break;
+			case "board_activity":
+				if (notification.boardId) {
+					navigate(`/boards/${notification.boardId}`);
+				}
+				break;
+			case "system_announcement":
+				// System announcements may not have a specific destination
+				if (notification.linkUrl) {
+					window.open(notification.linkUrl, '_blank');
 				}
 				break;
 			default:

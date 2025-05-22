@@ -110,6 +110,171 @@ export const createPostReplyNotification = async (postId, userId, content) => {
 	}
 };
 
+// Create comment reply notification
+export const createCommentReplyNotification = async (commentId, postId, userId, content) => {
+	try {
+		const comment = await Comment.findById(commentId);
+		if (comment && comment.user.toString() !== userId.toString()) {
+			await createNotification({
+				from: userId,
+				to: comment.user,
+				type: "comment_reply",
+				content,
+				postId,
+				commentId
+			});
+		}
+	} catch (error) {
+		console.log("Error in createCommentReplyNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create mention notification
+export const createMentionNotification = async (postId, mentionedUserIds, userId, content) => {
+	try {
+		// Filter out the current user from mentions
+		const filteredMentions = mentionedUserIds.filter(id => id.toString() !== userId.toString());
+		
+		// Create notifications for each mentioned user
+		for (const mentionedUserId of filteredMentions) {
+			await createNotification({
+				from: userId,
+				to: mentionedUserId,
+				type: "mention",
+				content,
+				postId
+			});
+		}
+	} catch (error) {
+		console.log("Error in createMentionNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create milestone notification
+export const createMilestoneNotification = async (userId, milestoneType, count) => {
+	try {
+		let content = "";
+		switch (milestoneType) {
+			case "followers":
+				content = `You've reached ${count} followers!`;
+				break;
+			case "posts":
+				content = `You've created ${count} posts!`;
+				break;
+			case "likes":
+				content = `Your posts have received ${count} likes!`;
+				break;
+			default:
+				content = `You've reached a new milestone: ${count} ${milestoneType}!`;
+		}
+		
+		await createNotification({
+			from: process.env.SYSTEM_USER_ID,
+			to: userId,
+			type: "milestone",
+			content
+		});
+	} catch (error) {
+		console.log("Error in createMilestoneNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create trending topic notification
+export const createTrendingTopicNotification = async (topicName, topicId) => {
+	try {
+		// Find users who might be interested in this topic
+		// This could be based on user interests, past activity, etc.
+		const interestedUsers = await User.find({
+			"settings.notifications.trendingTopics": true
+		});
+		
+		const notifications = interestedUsers.map(user => ({
+			from: process.env.SYSTEM_USER_ID,
+			to: user._id,
+			type: "trending_topic",
+			content: topicName,
+			topicId
+		}));
+		
+		if (notifications.length > 0) {
+			await Notification.insertMany(notifications);
+		}
+	} catch (error) {
+		console.log("Error in createTrendingTopicNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create board activity notification
+export const createBoardActivityNotification = async (boardId, activityType, userId) => {
+	try {
+		const board = await Board.findById(boardId).populate("followers");
+		
+		// Skip if no followers
+		if (!board || !board.followers || board.followers.length === 0) {
+			return;
+		}
+		
+		let content = "";
+		switch (activityType) {
+			case "new_post":
+				content = "New post in a board you follow";
+				break;
+			case "update":
+				content = "A board you follow has been updated";
+				break;
+			default:
+				content = "New activity in a board you follow";
+		}
+		
+		// Notify all followers except the user who created the activity
+		const notifications = board.followers
+			.filter(follower => follower._id.toString() !== userId?.toString())
+			.map(follower => ({
+				from: userId || process.env.SYSTEM_USER_ID,
+				to: follower._id,
+				type: "board_activity",
+				content,
+				boardId
+			}));
+		
+		if (notifications.length > 0) {
+			await Notification.insertMany(notifications);
+		}
+	} catch (error) {
+		console.log("Error in createBoardActivityNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create system announcement notification
+export const createSystemAnnouncementNotification = async (title, content, linkUrl) => {
+	try {
+		// Find all active users
+		const users = await User.find({
+			"settings.notifications.systemAnnouncements": true
+		});
+		
+		const notifications = users.map(user => ({
+			from: process.env.SYSTEM_USER_ID,
+			to: user._id,
+			type: "system_announcement",
+			content: title || content,
+			linkUrl
+		}));
+		
+		if (notifications.length > 0) {
+			await Notification.insertMany(notifications);
+		}
+	} catch (error) {
+		console.log("Error in createSystemAnnouncementNotification:", error.message);
+		throw error;
+	}
+};
+
 export const getNotifications = async (req, res) => {
 	try {
 		const userId = req.user._id;

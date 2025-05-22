@@ -101,7 +101,13 @@ const userSchema = new mongoose.Schema(
 		settings: {
 			notifications: {
 				email: { type: Boolean, default: true },
-				push: { type: Boolean, default: true }
+				push: { type: Boolean, default: true },
+				mentions: { type: Boolean, default: true },
+				commentReplies: { type: Boolean, default: true },
+				milestones: { type: Boolean, default: true },
+				trendingTopics: { type: Boolean, default: true },
+				boardActivity: { type: Boolean, default: true },
+				systemAnnouncements: { type: Boolean, default: true }
 			},
 			privacy: {
 				privateProfile: { type: Boolean, default: false },
