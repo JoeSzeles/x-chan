@@ -105,13 +105,18 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
       const imgWidth = imageRef.current.naturalWidth;
       const imgHeight = imageRef.current.naturalHeight;
       
-      // Calculate initial scale to fit the image within the container
+      // Calculate initial scale to fit the image within the circular container
+      // Use the smallest dimension to ensure proper fit
       const initialScale = Math.min(
         containerWidth / imgWidth,
         containerHeight / imgHeight
-      );
+      ) * 0.9; // Apply 90% of calculated scale for better visibility of edges
       
-      setScale(Math.min(initialScale, 1)); // Don't scale up images that are already small enough
+      // Set initial scale (don't scale up tiny images)
+      setScale(Math.min(initialScale, 1));
+      
+      // Reset position to center
+      setPosition({ x: 0, y: 0 });
     }
   }, [imageLoaded]);
 

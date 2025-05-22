@@ -63,16 +63,27 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             ctx.closePath();
             ctx.clip();
 
-            // Calculate center point
+            // Clear the canvas first
+            ctx.clearRect(0, 0, finalSize, finalSize);
+            
+            // Calculate the dimensions
             const centerX = finalSize / 2;
             const centerY = finalSize / 2;
             
-            // Apply transformations in the correct order
+            // Apply transformations to match what user sees in editor
             ctx.save();
-            ctx.translate(centerX, centerY); // First translate to center of canvas
-            ctx.scale(scale, scale); // Then apply scaling
-            ctx.translate(position.x / scale, position.y / scale); // Apply position adjusted for scale
-            ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
+            ctx.translate(centerX, centerY); // Translate to center of canvas
+            ctx.scale(scale, scale); // Apply user's scaling
+            ctx.translate(position.x / scale, position.y / scale); // Apply position with scale compensation
+            
+            // Draw the image centered
+            ctx.drawImage(
+                img, 
+                -img.width / 2,  // Center the image horizontally 
+                -img.height / 2, // Center the image vertically
+                img.width, 
+                img.height
+            );
             ctx.restore();
 
             // Convert canvas to blob with proper mime type (preserving original type if possible)
@@ -148,6 +159,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
+                    key={profileImg || user?.profileImg} // Force reload when image changes
                 />
             </div>
 
