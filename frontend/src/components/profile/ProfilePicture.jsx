@@ -73,10 +73,10 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             const scaledWidth = img.width * scaleFactor;
             const scaledHeight = img.height * scaleFactor;
 
-            // Calculate the centered position and apply the user's position offset
-            // Multiply position by proper scale factor to ensure consistent movement
-            const x = (finalSize - scaledWidth) / 2 + position.x * baseScaleFactor;
-            const y = (finalSize - scaledHeight) / 2 + position.y * baseScaleFactor;
+            // Apply position directly without scaling it
+            // This matches how the position is displayed in the editor
+            const x = (finalSize - scaledWidth) / 2 + position.x;
+            const y = (finalSize - scaledHeight) / 2 + position.y;
 
             // Draw the image with the corrected scaling and position
             ctx.drawImage(img, x, y, scaledWidth, scaledHeight);

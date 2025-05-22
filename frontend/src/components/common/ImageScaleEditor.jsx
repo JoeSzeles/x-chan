@@ -5,6 +5,19 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   console.log("ImageScaleEditor mounted", { image });
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+  const imageContainerLoaded = useRef(false);
+
+  // Center the image when it first loads
+  useEffect(() => {
+    if (image && containerRef.current && !imageContainerLoaded.current) {
+      const preloadImage = new Image();
+      preloadImage.onload = () => {
+        imageContainerLoaded.current = true;
+      };
+      preloadImage.src = image;
+    }
+  }, [image]);
 
   useEffect(() => {
     console.log("ImageScaleEditor props received:", { image, scale, position });
@@ -23,15 +36,17 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
 
   const handleMouseMove = (e) => {
     if (isDragging && imageRef.current) {
-      // Calculate delta movement, adjusted for current scale to make movement consistent
-      const deltaX = (e.clientX - dragStart.current.x) / scale;
-      const deltaY = (e.clientY - dragStart.current.y) / scale;
-
+      // Get raw pixel movement
+      const rawDeltaX = e.clientX - dragStart.current.x;
+      const rawDeltaY = e.clientY - dragStart.current.y;
+      
+      // Update position directly (no scale adjustment needed here)
       setPosition({
-        x: position.x + deltaX,
-        y: position.y + deltaY
+        x: position.x + rawDeltaX,
+        y: position.y + rawDeltaY
       });
-
+      
+      // Update drag start for next movement
       dragStart.current = {
         x: e.clientX,
         y: e.clientY
@@ -65,6 +80,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
         <h3 className="text-xl font-semibold text-center mb-4">Adjust Profile Picture</h3>
 
         <div 
+          ref={containerRef}
           className="w-80 h-80 rounded-full overflow-hidden relative border-4 border-[#2e2e2e] mb-4"
           onWheel={handleWheel}
         >
@@ -74,7 +90,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
             alt="Profile"
             className="absolute cursor-move select-none"
             style={{
-              transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
               transformOrigin: 'center',
               transition: isDragging ? 'none' : 'transform 0.1s'
             }}
