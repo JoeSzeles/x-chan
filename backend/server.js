@@ -64,13 +64,16 @@ app.use((req, res, next) => {
     // Set Content Security Policy headers
     res.setHeader(
         'Content-Security-Policy',
-        "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cloudinary.com https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev https://replit.com https://events.launchdarkly.com https://beacon.replit.com https://clientstream.launchdarkly.com https://m.stripe.network https://www.youtube.com https://platform.twitter.com; " +
-        "style-src 'self' 'unsafe-inline' data: blob:; " +
-        "img-src 'self' data: blob: https: https://*.cloudinary.com https://i.ytimg.com https://img.youtube.com https://*.ytimg.com https://youtube.com https://yt3.ggpht.com https://yt3.googleusercontent.com; " + 
-        "font-src 'self' data:; " +
-        "connect-src 'self' http://* https://* ws://* wss://* https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev:* wss://*.worf.replit.dev:* https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com https://clientstream.launchdarkly.com https://m.stripe.network; " +
-        "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://*.stripe.network https://youtu.be https://platform.twitter.com https://twitter.com https://x.com;"
+        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+        "script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+        "style-src * 'unsafe-inline' data: blob:; " + 
+        "img-src * data: blob:; " + 
+        "font-src * data:; " +
+        "connect-src * ws: wss:; " +
+        "frame-src *; " +
+        "media-src *; " +
+        "object-src 'none'; " +
+        "worker-src * blob:;"
     );
     next();
 });
@@ -101,6 +104,17 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 app.use('/api/cover-photo', coverPhotoRoutes);
+
+// Serve static frontend files
+const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+    console.log('Serving frontend from', frontendDistPath);
+    app.use(express.static(frontendDistPath));
+    
+    // Import and use the index routes (should be last)
+    import indexRoutes from './routes/index.js';
+    app.use(indexRoutes);
+}
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
