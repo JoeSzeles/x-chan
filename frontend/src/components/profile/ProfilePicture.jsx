@@ -61,25 +61,12 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             ctx.closePath();
             ctx.clip();
 
-            // Calculate dimensions while maintaining aspect ratio
-            const baseScaleFactor = Math.max(
-                finalSize / img.width,
-                finalSize / img.height
-            );
-
-            // Apply user's custom scaling
-            const scaleFactor = baseScaleFactor * scale;
-
-            const scaledWidth = img.width * scaleFactor;
-            const scaledHeight = img.height * scaleFactor;
-
-            // Apply position directly without scaling it
-            // This matches how the position is displayed in the editor
-            const x = (finalSize - scaledWidth) / 2 + position.x;
-            const y = (finalSize - scaledHeight) / 2 + position.y;
-
-            // Draw the image with the corrected scaling and position
-            ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+            // Apply transformations matching the editor's view
+            ctx.save();
+            ctx.translate(finalSize / 2 + position.x, finalSize / 2 + position.y); // Center and apply user translation
+            ctx.scale(scale, scale); // Apply user scale
+            ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
+            ctx.restore();
 
             // Convert canvas to blob with proper mime type (preserving original type if possible)
             const mimeType = selectedFile.type || 'image/jpeg';
