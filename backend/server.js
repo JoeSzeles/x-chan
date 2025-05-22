@@ -15,6 +15,10 @@ import { v2 as cloudinary } from "cloudinary";
 global.USE_MOCK_DATA = false;
 console.log('Mock data DISABLED - system will attempt real scraping');
 
+// Get the directory path in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Serve frontend files in production
 const frontendBuildPath = path.join(__dirname, '../frontend/dist');
 console.log('Serving frontend from', frontendBuildPath);
