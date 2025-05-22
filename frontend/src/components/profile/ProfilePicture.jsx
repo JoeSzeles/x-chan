@@ -22,8 +22,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             formData.append('profileImg', file);
 
             // Upload the image
-            const response = await fetch('/api/users/update-profile', {
-                method: 'PUT',
+            const response = await fetch('/api/upload/profile', {
+                method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
