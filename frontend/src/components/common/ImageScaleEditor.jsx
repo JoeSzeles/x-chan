@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef(null);
   const imageRef = useRef(null);
   const dragStart = useRef(null);
