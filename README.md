@@ -1,25 +1,31 @@
+
 # X-CHAN
 
-A full-stack Twitter - 4chan mesh up application built with modern web technologies. This project aims to replicate core features of Twitter, providing users with a familiar microblogging experience.
+A full-stack Twitter-4chan mashup application built with modern web technologies. This project combines the microblogging experience of Twitter with the unique thread-based discussion format of 4chan.
 
 ## Features
 
 - User authentication (signup, login, logout)
-- Create, read, update, and delete tweets
-- Like and retweet functionality
-- User profiles
+- Create, read, update, and delete posts
+- Like, comment, and repost functionality
+- 4chan-style post numbers and quotes
+- Thread-based discussions
+- User profiles with customizable cover photos
 - Follow/unfollow users
 - Real-time feed updates
+- Bookmarks and notifications
+- News bots for content aggregation
+- Board system similar to 4chan
 - Responsive design for mobile and desktop
-- Custom favicon and branding (X-Chan)
+- Custom favicon and branding
 
 ## Tech Stack
 
 - **Frontend:**
-  - React.js
-  - Redux for state management
-  - Styled-components for styling
+  - React.js with Vite
+  - Tailwind CSS for styling
   - Axios for API requests
+  - Socket.io client for real-time features
 
 - **Backend:**
   - Node.js
@@ -27,9 +33,8 @@ A full-stack Twitter - 4chan mesh up application built with modern web technolog
   - MongoDB for database
   - Mongoose as ODM
   - JSON Web Tokens (JWT) for authentication
-
-- **Real-time Updates:**
-  - Socket.io
+  - Socket.io for real-time updates
+  - Cloudinary for image storage
 
 ## Prerequisites
 
@@ -42,8 +47,8 @@ Before you begin, ensure you have the following installed:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/twitter-clone.git
-   cd twitter-clone
+   git clone https://github.com/yourusername/x-chan.git
+   cd x-chan
    ```
 
 2. Install dependencies for the backend:
@@ -60,7 +65,7 @@ Before you begin, ensure you have the following installed:
 
 4. Set up environment variables:
    - Create a `.env` file in the `backend` directory
-   - Add necessary environment variables (e.g., MongoDB URI, JWT secret, PORT)
+   - Add necessary environment variables (e.g., MongoDB URI, JWT secret, PORT, Cloudinary credentials)
 
 ## Running the Application
 
@@ -78,33 +83,30 @@ Before you begin, ensure you have the following installed:
 
 3. Open your browser and navigate to `http://localhost:3000` to view the application.
 
-## API Documentation
+## Project Structure
 
-For detailed API documentation, please refer to the [API_DOCS.md](API_DOCS.md) file.
+- `frontend/` - React frontend application
+  - `src/components/` - Reusable UI components
+  - `src/pages/` - Page components
+  - `src/hooks/` - Custom React hooks
+  - `src/services/` - API services
+  - `src/utils/` - Utility functions
 
-## Contributing
+- `backend/` - Express backend server
+  - `controllers/` - Request handlers
+  - `routes/` - API routes
+  - `models/` - Mongoose data models
+  - `middleware/` - Express middleware
+  - `public/` - Static files and uploads
 
-We welcome contributions to our Twitter Clone! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+- `docs/` - Project documentation
 
-## Testing
+## Documentation
 
-To run the test suite:
-
-1. For backend tests:
-   ```
-   cd backend
-   npm test
-   ```
-
-2. For frontend tests:
-   ```
-   cd frontend
-   npm test
-   ```
-
-## Deployment
-
-For instructions on how to deploy this application to a production environment, please see our [Deployment Guide](DEPLOYMENT.md).
+For detailed documentation on the application architecture and components, refer to the files in the `docs/` directory, particularly:
+- `application_map.txt` - Overall application structure
+- `post_number_system.md` - 4chan-style post numbering
+- `board_and_threads_system.md` - Board system details
 
 ## License
 
@@ -112,9 +114,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Twitter for inspiration
+- Twitter and 4chan for inspiration
 - All open-source libraries used in this project
 
 ---
 
-Happy coding and happy tweeting with your new Twitter clone!
+X-Chan: Where microblogging meets anonymous thread-based discussions.
