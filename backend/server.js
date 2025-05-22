@@ -19,11 +19,6 @@ console.log('Mock data DISABLED - system will attempt real scraping');
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Serve frontend files in production
-const frontendBuildPath = path.join(__dirname, '../frontend/dist');
-console.log('Serving frontend from', frontendBuildPath);
-app.use(express.static(frontendBuildPath));
-
 // Import routes
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
@@ -56,6 +51,11 @@ cloudinary.config({
 const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
+
+// Serve frontend files in production
+const frontendBuildPath = path.join(__dirname, '../frontend/dist');
+console.log('Serving frontend from', frontendBuildPath);
+app.use(express.static(frontendBuildPath));
 
 app.use(cors({
     origin: true,
