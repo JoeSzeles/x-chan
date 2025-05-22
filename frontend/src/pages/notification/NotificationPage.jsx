@@ -276,9 +276,15 @@ const NotificationPage = () => {
 			case "repost":
 			case "reply":
 			case "post_reply":
-				if (notification.postId) {
-					// Open the post in a modal
+				// Check both post and postId fields
+				if (notification.postId?._id) {
+					setSelectedPost(notification.postId._id);
+				} else if (notification.post?._id) {
+					setSelectedPost(notification.post._id);
+				} else if (notification.postId) {
 					setSelectedPost(notification.postId);
+				} else if (notification.post) {
+					setSelectedPost(notification.post);
 				}
 				break;
 			case "news_update":
@@ -297,9 +303,15 @@ const NotificationPage = () => {
 				}
 				break;
 			default:
-				// If there's a postId, show the post
-				if (notification.postId) {
+				// If there's any post reference, show the post
+				if (notification.postId?._id) {
+					setSelectedPost(notification.postId._id);
+				} else if (notification.post?._id) {
+					setSelectedPost(notification.post._id);
+				} else if (notification.postId) {
 					setSelectedPost(notification.postId);
+				} else if (notification.post) {
+					setSelectedPost(notification.post);
 				}
 				break;
 		}

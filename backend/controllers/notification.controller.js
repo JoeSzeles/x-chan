@@ -121,7 +121,23 @@ export const getNotifications = async (req, res) => {
 				select: "username profileImg",
 			})
 			.populate({
+				path: "post",
+				select: "text user",
+				populate: {
+					path: "user",
+					select: "username profileImg"
+				}
+			})
+			.populate({
 				path: "postId",
+				select: "text user",
+				populate: {
+					path: "user",
+					select: "username profileImg"
+				}
+			})
+			.populate({
+				path: "referencedPost",
 				select: "text user",
 				populate: {
 					path: "user",
