@@ -94,7 +94,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 	const [quotedBy, setQuotedBy] = useState([]);
 	const [showPreview, setShowPreview] = useState(false);
 	const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
-	const [localLikes, setLocalLikes] = useState(comment.likes || []);
+	const [localLikes, setLocalLikes] = useState(Array.isArray(comment?.likes) ? comment?.likes : []);
 	const [localReposts, setLocalReposts] = useState(comment.reposts || []);
 	const [localBookmarks, setLocalBookmarks] = useState(comment.bookmarkedBy || []);
 	const location = useLocation();
@@ -111,7 +111,8 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 
 	// Safely access user data with defensive code
 	const commentOwner = typeof comment.user === 'object' ? comment.user : { username: 'unknown', fullName: 'Unknown User' };
-	const isLiked = localLikes?.includes(authUser?._id);
+	const userId = authUser?._id;
+	const isLiked = Array.isArray(localLikes) && localLikes.includes(userId);
 	const isReposted = localReposts?.includes(authUser?._id);
 	const isBookmarked = localBookmarks?.includes(authUser?._id);
 	const isMyComment = authUser?._id === (typeof comment.user === 'object' ? comment.user._id : comment.user);
