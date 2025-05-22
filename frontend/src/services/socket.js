@@ -1,4 +1,3 @@
-
 import { io } from 'socket.io-client';
 
 let socket = null;
@@ -9,7 +8,7 @@ export const initializeSocket = (userId) => {
       console.log('Socket already initialized and connected');
       return socket;
     }
-    
+
     // Close existing socket if disconnected
     if (socket) {
       socket.close();
@@ -17,7 +16,17 @@ export const initializeSocket = (userId) => {
     }
 
     console.log('Initializing socket connection with backend');
-    
+
+    // Get auth token from localStorage
+    const token = localStorage.getItem('token');
+    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+    console.log('Socket initialization with user:', { 
+      userId, 
+      hasToken: !!token,
+      userDataId: userData?._id 
+    });
+
     // Create socket with better error handling and reconnection logic
     socket = io({
       path: '/socket.io',
@@ -26,7 +35,9 @@ export const initializeSocket = (userId) => {
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
+      withCredentials: true,
+      auth: { token }
     });
 
     socket.on('connect', () => {
@@ -55,7 +66,7 @@ export const initializeSocket = (userId) => {
 
     socket.on('disconnect', (reason) => {
       console.log('Socket disconnected:', reason);
-      
+
       if (reason === 'io server disconnect') {
         // Server initiated disconnect - try reconnect manually
         setTimeout(() => {
