@@ -7,6 +7,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   const containerRef = useRef(null);
   const imageRef = useRef(null);
   const dragStart = useRef(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Scale control with mouse wheel
   const handleWheel = (e) => {
@@ -96,6 +97,24 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
     };
   }, [isDragging, position, scale]);
 
+  // Center image when it's loaded
+  useEffect(() => {
+    if (imageLoaded && imageRef.current && containerRef.current) {
+      const containerWidth = containerRef.current.offsetWidth;
+      const containerHeight = containerRef.current.offsetHeight;
+      const imgWidth = imageRef.current.naturalWidth;
+      const imgHeight = imageRef.current.naturalHeight;
+      
+      // Calculate initial scale to fit the image within the container
+      const initialScale = Math.min(
+        containerWidth / imgWidth,
+        containerHeight / imgHeight
+      );
+      
+      setScale(Math.min(initialScale, 1)); // Don't scale up images that are already small enough
+    }
+  }, [imageLoaded]);
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-[#1e1e1e] p-6 rounded-lg shadow-xl">
@@ -117,6 +136,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
               transformOrigin: 'center',
               cursor: isDragging ? 'grabbing' : 'grab'
             }}
+            onLoad={() => setImageLoaded(true)}
             onMouseDown={handleMouseDown}
             draggable="false"
           />
