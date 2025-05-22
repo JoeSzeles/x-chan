@@ -59,6 +59,22 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
+// Add CSP headers for deployment
+app.use((req, res, next) => {
+    // Set Content Security Policy headers
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.cloudinary.com https://*.launchdarkly.com https://*.stripe.network https://*.replit.dev https://*.worf.replit.dev https://replit.com https://events.launchdarkly.com https://beacon.replit.com https://clientstream.launchdarkly.com https://m.stripe.network https://www.youtube.com https://platform.twitter.com; " +
+        "style-src 'self' 'unsafe-inline' data: blob:; " +
+        "img-src 'self' data: blob: https: https://*.cloudinary.com https://i.ytimg.com https://img.youtube.com https://*.ytimg.com https://youtube.com https://yt3.ggpht.com https://yt3.googleusercontent.com; " + 
+        "font-src 'self' data:; " +
+        "connect-src 'self' http://* https://* ws://* wss://* https://*.replit.dev wss://*.replit.dev https://*.worf.replit.dev:* wss://*.worf.replit.dev:* https://*.launchdarkly.com https://*.stripe.network https://events.launchdarkly.com https://*.cloudinary.com https://clientstream.launchdarkly.com https://m.stripe.network; " +
+        "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://*.stripe.network https://youtu.be https://platform.twitter.com https://twitter.com https://x.com;"
+    );
+    next();
+});
+
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
