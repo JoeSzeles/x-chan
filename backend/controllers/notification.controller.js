@@ -49,6 +49,33 @@ export const createNewsNotification = async (newsId, content) => {
 	}
 };
 
+// Create news bot activity notification
+export const createNewsBotActivityNotification = async (botId, articleId, headline) => {
+	try {
+		// Find the bot
+		const bot = await NewsBot.findById(botId);
+		if (!bot) return;
+		
+		// Find users who follow this bot
+		const followers = await User.find({ following: botId });
+		
+		if (followers.length === 0) return;
+		
+		const notifications = followers.map(user => ({
+			from: process.env.SYSTEM_USER_ID,
+			to: user._id,
+			type: "news_bot_activity",
+			content: `${bot.name} posted: ${headline}`,
+			newsId: articleId
+		}));
+		
+		await Notification.insertMany(notifications);
+	} catch (error) {
+		console.log("Error in createNewsBotActivityNotification:", error.message);
+		throw error;
+	}
+};
+
 // Create service update notification
 export const createServiceNotification = async (serviceId, content) => {
 	try {
@@ -110,6 +137,26 @@ export const createPostReplyNotification = async (postId, userId, content) => {
 	}
 };
 
+// Create repost notification
+export const createRepostNotification = async (originalPostId, reposterId) => {
+	try {
+		const post = await Post.findById(originalPostId).populate("user");
+		if (post.user._id.toString() !== reposterId.toString()) {
+			await createNotification({
+				from: reposterId,
+				to: post.user._id,
+				type: "repost",
+				content: "reposted your post",
+				postId: originalPostId,
+				referencedPost: originalPostId
+			});
+		}
+	} catch (error) {
+		console.log("Error in createRepostNotification:", error.message);
+		throw error;
+	}
+};
+
 // Create comment reply notification
 export const createCommentReplyNotification = async (commentId, postId, userId, content) => {
 	try {
@@ -119,7 +166,7 @@ export const createCommentReplyNotification = async (commentId, postId, userId, 
 				from: userId,
 				to: comment.user,
 				type: "comment_reply",
-				content,
+				content: "replied to your comment",
 				postId,
 				commentId
 			});
@@ -182,6 +229,21 @@ export const createMilestoneNotification = async (userId, milestoneType, count) 
 	}
 };
 
+// Create follow notification
+export const createFollowNotification = async (followerId, followedUserId) => {
+	try {
+		await createNotification({
+			from: followerId,
+			to: followedUserId,
+			type: "follow",
+			content: "started following you"
+		});
+	} catch (error) {
+		console.log("Error in createFollowNotification:", error.message);
+		throw error;
+	}
+};
+
 // Create trending topic notification
 export const createTrendingTopicNotification = async (topicName, topicId) => {
 	try {
@@ -209,7 +271,7 @@ export const createTrendingTopicNotification = async (topicName, topicId) => {
 };
 
 // Create board activity notification
-export const createBoardActivityNotification = async (boardId, activityType, userId) => {
+export const createBoardActivityNotification = async (boardId, activityType, userId, postId = null) => {
 	try {
 		const board = await Board.findById(boardId).populate("followers");
 		
@@ -221,13 +283,16 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 		let content = "";
 		switch (activityType) {
 			case "new_post":
-				content = "New post in a board you follow";
+				content = `New post in "${board.name}"`;
 				break;
 			case "update":
-				content = "A board you follow has been updated";
+				content = `"${board.name}" board has been updated`;
+				break;
+			case "comment":
+				content = `New comment in "${board.name}" board`;
 				break;
 			default:
-				content = "New activity in a board you follow";
+				content = `New activity in "${board.name}" board`;
 		}
 		
 		// Notify all followers except the user who created the activity
@@ -238,7 +303,8 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 				to: follower._id,
 				type: "board_activity",
 				content,
-				boardId
+				boardId,
+				postId
 			}));
 		
 		if (notifications.length > 0) {
@@ -246,6 +312,43 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 		}
 	} catch (error) {
 		console.log("Error in createBoardActivityNotification:", error.message);
+		throw error;
+	}
+};
+
+// Create user board activity notification
+export const createUserBoardActivityNotification = async (boardId, activityType, userId, postId = null) => {
+	try {
+		const board = await Board.findById(boardId);
+		
+		// Skip if board doesn't exist
+		if (!board) return;
+		
+		// Only notify the board owner if different from the action user
+		if (board.creator.toString() === userId.toString()) return;
+		
+		let content = "";
+		switch (activityType) {
+			case "new_post":
+				content = `New post in your board "${board.name}"`;
+				break;
+			case "comment":
+				content = `New comment in your board "${board.name}"`;
+				break;
+			default:
+				content = `New activity in your board "${board.name}"`;
+		}
+		
+		await createNotification({
+			from: userId,
+			to: board.creator,
+			type: "user_board_activity",
+			content,
+			boardId,
+			postId
+		});
+	} catch (error) {
+		console.log("Error in createUserBoardActivityNotification:", error.message);
 		throw error;
 	}
 };
@@ -339,6 +442,7 @@ export const getNotifications = async (req, res) => {
 			notifications,
 			total,
 
+// Create post rating notification
 // Create post rating notification
 export const createPostRatingNotification = async (postId, raterUserId, rating) => {
   try {

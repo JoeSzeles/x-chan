@@ -226,6 +226,7 @@ const NotificationPage = () => {
 			case "trending_topic":
 				return <FaShare className='w-7 h-7 text-rose-500' />;
 			case "board_activity":
+			case "user_board_activity":
 				return <FaList className='w-7 h-7 text-emerald-500' />;
 			case "system_announcement":
 				return <FaCog className='w-7 h-7 text-gray-500' />;
@@ -245,6 +246,8 @@ const NotificationPage = () => {
 				return <FaUserPlus className='w-7 h-7 text-lime-500' />;
 			case "post_featured":
 				return <FaStar className='w-7 h-7 text-amber-500' />;
+			case "news_bot_activity":
+				return <FaNewspaper className='w-7 h-7 text-blue-300' />;
 			default:
 				return null;
 		}
@@ -276,7 +279,9 @@ const NotificationPage = () => {
 			case "trending_topic":
 				return "A topic you follow is trending: " + notification.content;
 			case "board_activity":
-				return "New activity in board: " + notification.content;
+				return notification.content || "New activity in a board you follow";
+			case "user_board_activity":
+				return notification.content || "New activity in your board";
 			case "system_announcement":
 				return "System announcement: " + notification.content;
 			case "post_rating":
@@ -295,6 +300,8 @@ const NotificationPage = () => {
 				return notification.content || "Welcome to the platform!";
 			case "post_featured":
 				return notification.content || "Your post has been featured!";
+			case "news_bot_activity":
+				return notification.content || "News bot update";
 			default:
 				return notification.content || "";
 		}
@@ -356,8 +363,11 @@ const NotificationPage = () => {
 				}
 				break;
 			case "news_update":
+			case "news_bot_activity":
 				if (notification.newsId) {
 					navigate(`/news/${notification.newsId}`);
+				} else {
+					navigate('/news');
 				}
 				break;
 			case "service_update":
@@ -382,8 +392,12 @@ const NotificationPage = () => {
 				}
 				break;
 			case "board_activity":
+			case "user_board_activity":
 				if (notification.boardId) {
 					navigate(`/boards/${notification.boardId}`);
+				}
+				if (notification.postId) {
+					setSelectedPost(notification.postId);
 				}
 				break;
 			case "system_announcement":
