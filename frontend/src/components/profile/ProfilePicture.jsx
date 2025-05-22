@@ -1,12 +1,14 @@
+
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
-    const [profileImg, setProfileImg] = useState(null);
-    const [isHovered, setIsHovered] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
+    // Use a state to force image refresh when updated
+    const [imageVersion, setImageVersion] = useState(Date.now());
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -45,10 +47,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             }
 
             if (data.user?.profileImg) {
-                // Add a cache-busting parameter to force reload
-                const cacheBust = `?t=${Date.now()}`;
-                setProfileImg(data.user.profileImg + cacheBust);
-
+                // Force a reload of the image by updating the version
+                setImageVersion(Date.now());
+                
                 if (onUpdate) {
                     onUpdate({ type: 'image', content: data.user.profileImg });
                 }
@@ -64,6 +65,14 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         }
     };
 
+    // Get the profile image URL with cache busting
+    const getProfileImageUrl = () => {
+        const baseUrl = user?.profileImg || "/avatar-placeholder.png";
+        return baseUrl.includes('?') 
+            ? `${baseUrl}&v=${imageVersion}` 
+            : `${baseUrl}?v=${imageVersion}`;
+    };
+
     return (
         <div 
             className="relative -mt-16 ml-4 group"
@@ -72,13 +81,12 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         >
             <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
-                    src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
+                    src={getProfileImageUrl()}
                     alt="Profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
-                    key={profileImg || user?.profileImg} // Force reload when image changes
                 />
             </div>
 
