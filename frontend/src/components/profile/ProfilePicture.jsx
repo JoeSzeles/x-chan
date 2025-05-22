@@ -1,90 +1,33 @@
-
 import { useState, useRef } from 'react';
-import { MdEdit } from "react-icons/md";
-import { toast } from 'react-hot-toast';
+import { MdEdit } from 'react-icons/md';
+import { useQueryClient } from '@tanstack/react-query';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
-    const [isUploading, setIsUploading] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
+    const [profileImg, setProfileImg] = useState(null);
     const fileInputRef = useRef(null);
-    // Use a state to force image refresh when updated
-    const [imageVersion, setImageVersion] = useState(Date.now());
+    const queryClient = useQueryClient();
 
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
-        if (!file) return;
-
-        try {
-            setIsUploading(true);
-
-            // Create FormData to send the file
-            const formData = new FormData();
-            formData.append('profileImg', file);
-
-            // Upload the image
-            const response = await fetch('/api/users/upload/profile', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: formData
-            });
-
-            // Check for non-JSON responses
-            const contentType = response.headers.get('content-type');
-            let data;
-
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                const text = await response.text();
-                console.error('Non-JSON response:', text);
-                throw new Error('Invalid response format from server');
-            }
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to update profile picture');
-            }
-
-            if (data.user?.profileImg) {
-                // Force a reload of the image by updating the version
-                setImageVersion(Date.now());
-                
-                if (onUpdate) {
-                    onUpdate({ type: 'image', content: data.user.profileImg });
-                }
-            }
-
-            toast.success('Profile picture updated successfully');
-
-        } catch (error) {
-            console.error('Error updating profile picture:', error);
-            toast.error(error.message || 'Failed to update profile picture');
-        } finally {
-            setIsUploading(false);
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                setProfileImg(reader.result);
+                onUpdate({ type: 'image', content: reader.result });
+            };
+            reader.readAsDataURL(file);
         }
     };
 
-    // Get the profile image URL with cache busting
-    const getProfileImageUrl = () => {
-        const baseUrl = user?.profileImg || "/avatar-placeholder.png";
-        return baseUrl.includes('?') 
-            ? `${baseUrl}&v=${imageVersion}` 
-            : `${baseUrl}?v=${imageVersion}`;
-    };
-
     return (
-        <div 
-            className="relative -mt-16 ml-4 group"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
+        <div className="relative -mt-16 ml-4">
             <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
-                    src={getProfileImageUrl()}
+                    src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
                     alt="Profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {
+                        console.error('Error loading profile image:', e);
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
@@ -92,7 +35,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
             {isMyProfile && (
                 <div
-                    className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                    className="absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer opacity-0 group-hover:opacity-100 transition duration-200"
                     onClick={() => fileInputRef.current.click()}
                 >
                     <MdEdit className="w-5 h-5 text-white" />
@@ -106,14 +49,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
-
-            {isUploading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-                    <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
-                </div>
-            )}
         </div>
     );
 };
 
-export default ProfilePicture;
+export default ProfilePicture; 
