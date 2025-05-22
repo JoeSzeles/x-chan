@@ -13,29 +13,22 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [selectedFile, setSelectedFile] = useState(null);
 
     const handleFileChange = (e) => {
-        console.log("File input change detected");
         const file = e.target.files[0];
         if (file) {
             console.log("File selected:", file.name);
             setSelectedFile(file);
             const reader = new FileReader();
             reader.onload = (e) => {
-                console.log("File loaded successfully");
                 setSelectedImage(e.target.result);
                 setShowEditor(true);
-                console.log("Show editor state set to true");
             };
             reader.onerror = (error) => {
                 console.error("Error reading file:", error);
+                toast.error("Failed to read image file");
             };
             reader.readAsDataURL(file);
         }
     };
-
-    useEffect(() => {
-        console.log("Editor visibility state:", showEditor);
-        console.log("Selected image state:", !!selectedImage);
-    }, [showEditor, selectedImage]);
 
     const handleEditorSave = async ({ scale, position }) => {
         if (!selectedFile) return;
@@ -52,53 +45,49 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 img.src = selectedImage;
             });
 
-            // Set canvas size to final dimensions (circle size)
-            const finalSize = 400;
-            canvas.width = finalSize;
-            canvas.height = finalSize;
+            // Fixed dimensions for the final output
+            const OUTPUT_SIZE = 400;
+            canvas.width = OUTPUT_SIZE;
+            canvas.height = OUTPUT_SIZE;
 
             // Create circular clipping path
             ctx.beginPath();
-            ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
+            ctx.arc(OUTPUT_SIZE/2, OUTPUT_SIZE/2, OUTPUT_SIZE/2, 0, Math.PI * 2);
             ctx.closePath();
             ctx.clip();
-
-            // Clear the canvas first
-            ctx.clearRect(0, 0, finalSize, finalSize);
             
-            // Calculate the dimensions
-            const centerX = finalSize / 2;
-            const centerY = finalSize / 2;
+            // Fill with background color to ensure transparency is handled properly
+            ctx.fillStyle = '#1e1e1e';
+            ctx.fillRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
             
-            // Apply transformations to match what user sees in editor
+            // Apply the exact same transformations as in the editor preview
+            const centerX = OUTPUT_SIZE / 2;
+            const centerY = OUTPUT_SIZE / 2;
+            
             ctx.save();
-            ctx.translate(centerX, centerY); // Translate to center of canvas
-            ctx.scale(scale, scale); // Apply user's scaling
-            ctx.translate(position.x / scale, position.y / scale); // Apply position with scale compensation
-            
-            // Draw the image centered
+            // First translate to the center of the canvas
+            ctx.translate(centerX, centerY);
+            // Apply the user's position offset
+            ctx.translate(position.x, position.y);
+            // Apply the user's scale
+            ctx.scale(scale, scale);
+            // Draw the image centered at the origin (0,0)
             ctx.drawImage(
                 img, 
-                -img.width / 2,  // Center the image horizontally 
-                -img.height / 2, // Center the image vertically
-                img.width, 
+                -img.width / 2,
+                -img.height / 2,
+                img.width,
                 img.height
             );
             ctx.restore();
 
-            // Convert canvas to blob with proper mime type (preserving original type if possible)
+            // Convert canvas to blob with proper mime type
             const mimeType = selectedFile.type || 'image/jpeg';
             const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, 0.9));
             const transformedFile = new File([blob], `profile.${mimeType.split('/')[1] || 'jpg'}`, { type: mimeType });
 
             const formData = new FormData();
             formData.append('profileImg', transformedFile);
-
-            console.log('Uploading processed image:', {
-                originalSize: selectedFile.size,
-                processedSize: transformedFile.size,
-                type: transformedFile.type
-            });
 
             const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
@@ -125,14 +114,21 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             }
 
             if (data.user?.profileImg) {
-                setProfileImg(data.user.profileImg);
+                // Add a cache-busting parameter to force reload
+                const cacheBust = `?t=${Date.now()}`;
+                setProfileImg(data.user.profileImg + cacheBust);
+                
                 if (onUpdate) {
                     onUpdate({ type: 'image', content: data.user.profileImg });
                 }
             }
+            
+            // Clean up
             setShowEditor(false);
             setSelectedImage(null);
             setSelectedFile(null);
+            
+            toast.success('Profile picture updated successfully');
 
         } catch (error) {
             console.error('Error updating profile picture:', error);
@@ -181,7 +177,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             />
 
             {showEditor && selectedImage && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[9999]">
                     <ImageScaleEditor 
                         image={selectedImage}
                         onSave={handleEditorSave}

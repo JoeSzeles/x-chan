@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 
 const ImageScaleEditor = ({ image, onSave, onCancel }) => {
@@ -8,12 +9,16 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   const imageRef = useRef(null);
   const dragStart = useRef(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  
+  // Fixed container size to match the final output size
+  const CONTAINER_SIZE = 400;
 
   // Scale control with mouse wheel
   const handleWheel = (e) => {
     e.preventDefault();
     const delta = e.deltaY * -0.01;
-    const newScale = Math.max(0.5, Math.min(3, scale + delta));
+    // More controlled scaling with tighter min/max bounds
+    const newScale = Math.max(0.8, Math.min(3, scale + delta));
     setScale(newScale);
   };
 
@@ -32,7 +37,8 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
     if (isDragging) {
       const deltaX = e.clientX - dragStart.current.x;
       const deltaY = e.clientY - dragStart.current.y;
-
+      
+      // Apply movement relative to current scale
       setPosition({
         x: position.x + deltaX,
         y: position.y + deltaY
@@ -97,37 +103,39 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
     };
   }, [isDragging, position, scale]);
 
-  // Center image when it's loaded
+  // Initialize image properly when loaded
   useEffect(() => {
-    if (imageLoaded && imageRef.current && containerRef.current) {
-      const containerWidth = containerRef.current.offsetWidth;
-      const containerHeight = containerRef.current.offsetHeight;
+    if (imageLoaded && imageRef.current) {
       const imgWidth = imageRef.current.naturalWidth;
       const imgHeight = imageRef.current.naturalHeight;
       
-      // Calculate initial scale to fit the image within the circular container
-      // Use the smallest dimension to ensure proper fit
-      const initialScale = Math.min(
-        containerWidth / imgWidth,
-        containerHeight / imgHeight
-      ) * 0.9; // Apply 90% of calculated scale for better visibility of edges
+      // Calculate initial scale to ensure the image fills the circular container
+      const initialScale = Math.max(
+        CONTAINER_SIZE / imgWidth,
+        CONTAINER_SIZE / imgHeight
+      );
       
-      // Set initial scale (don't scale up tiny images)
-      setScale(Math.min(initialScale, 1));
+      // Set initial scale to ensure the image covers the circle
+      setScale(initialScale);
       
       // Reset position to center
       setPosition({ x: 0, y: 0 });
     }
   }, [imageLoaded]);
 
+  const handleSave = () => {
+    // Directly pass the current scale and position to the parent component
+    onSave({ scale, position });
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-[#1e1e1e] p-6 rounded-lg shadow-xl">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div className="bg-[#1e1e1e] p-6 rounded-lg shadow-xl max-w-[90vw]">
         <h3 className="text-xl font-semibold text-center mb-4">Adjust Profile Picture</h3>
 
         <div 
           ref={containerRef}
-          className="w-[400px] h-[400px] rounded-full overflow-hidden relative border-4 border-[#2e2e2e] mb-4"
+          className="w-[400px] h-[400px] rounded-full overflow-hidden relative border-4 border-[#2e2e2e] mb-4 mx-auto"
           onWheel={handleWheel}
           onTouchStart={handleTouchStart}
         >
@@ -151,7 +159,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
           <label className="text-sm text-gray-300">Zoom: {scale.toFixed(2)}x</label>
           <input
             type="range"
-            min="0.5"
+            min="0.8"
             max="3"
             step="0.01"
             value={scale}
@@ -168,7 +176,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
             Cancel
           </button>
           <button
-            onClick={() => onSave({ scale, position })}
+            onClick={handleSave}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors"
           >
             Save
