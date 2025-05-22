@@ -48,4 +48,26 @@ router.post('/', protectRoute, upload.single('file'), async (req, res) => {
     }
 });
 
+// Upload profile image
+router.post('/profile', protectRoute, upload.single('profileImg'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Please upload an image' });
+        }
+
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: "profile_images",
+            transformation: [
+                { width: 400, height: 400, gravity: "face", crop: "fill", quality: "auto" },
+                { radius: "max" }
+            ]
+        });
+
+        res.status(200).json({ success: true, url: result.secure_url });
+    } catch (error) {
+        console.error('Profile image upload error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router; 
