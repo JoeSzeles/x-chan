@@ -70,6 +70,11 @@ const RepostButton = ({
                 throw new Error('User must be logged in to repost');
             }
 
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication token is required');
+            }
+
             const endpoint = type === 'post' 
                 ? `/api/posts/repost/${itemId}`
                 : `/api/comments/repost/${itemId}`;
@@ -79,6 +84,7 @@ const RepostButton = ({
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     repostType,

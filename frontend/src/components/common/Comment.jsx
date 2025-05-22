@@ -255,11 +255,17 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 	const { mutate: repostComment, isPending: isReposting } = useMutation({
 		mutationFn: async () => {
 			try {
+				const token = localStorage.getItem("token");
+				if (!token) {
+					throw new Error("Authentication token is required");
+				}
+				
 				const res = await fetch(`/api/comments/repost/${comment._id}`, {
 					method: "POST",
 					credentials: "include",
 					headers: {
-						"Authorization": `Bearer ${localStorage.getItem("token")}`
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${token}`
 					}
 				});
 				const data = await res.json();
