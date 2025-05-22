@@ -1,94 +1,27 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
-import ImageScaleEditor from '../common/ImageScaleEditor';
 import { toast } from 'react-hot-toast';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
-    const [profileImg, setProfileImg] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
-    const [showEditor, setShowEditor] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [selectedFile, setSelectedFile] = useState(null);
+    // Use a state to force image refresh when updated
+    const [imageVersion, setImageVersion] = useState(Date.now());
 
-    const handleFileChange = (e) => {
-        console.log("File input change detected");
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            console.log("File selected:", file.name);
-            setSelectedFile(file);
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                console.log("File loaded successfully");
-                setSelectedImage(e.target.result);
-                setShowEditor(true);
-                console.log("Show editor state set to true");
-            };
-            reader.onerror = (error) => {
-                console.error("Error reading file:", error);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    useEffect(() => {
-        console.log("Editor visibility state:", showEditor);
-        console.log("Selected image state:", !!selectedImage);
-    }, [showEditor, selectedImage]);
-
-    const handleEditorSave = async ({ scale, position }) => {
-        if (!selectedFile) return;
+        if (!file) return;
 
         try {
-            // Create a canvas to apply the transformations
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
+            setIsUploading(true);
 
-            await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = selectedImage;
-            });
-
-            // Set canvas size to final dimensions (circle size)
-            const finalSize = 400;
-            canvas.width = finalSize;
-            canvas.height = finalSize;
-
-            // Create circular clipping path
-            ctx.beginPath();
-            ctx.arc(finalSize/2, finalSize/2, finalSize/2, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.clip();
-
-            // Calculate the center of the canvas
-            const centerX = finalSize / 2;
-            const centerY = finalSize / 2;
-            
-            // Apply transformations matching the editor's view
-            ctx.save();
-            ctx.translate(centerX, centerY); // Move to center
-            ctx.translate(position.x, position.y); // Apply user position offset
-            ctx.scale(scale, scale); // Apply user scale
-            ctx.drawImage(img, -img.width / 2, -img.height / 2); // Draw image centered
-            ctx.restore();
-
-            // Convert canvas to blob with proper mime type (preserving original type if possible)
-            const mimeType = selectedFile.type || 'image/jpeg';
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, mimeType, 0.9));
-            const transformedFile = new File([blob], `profile.${mimeType.split('/')[1] || 'jpg'}`, { type: mimeType });
-
+            // Create FormData to send the file
             const formData = new FormData();
-            formData.append('profileImg', transformedFile);
+            formData.append('profileImg', file);
 
-            console.log('Uploading processed image:', {
-                originalSize: selectedFile.size,
-                processedSize: transformedFile.size,
-                type: transformedFile.type
-            });
-
+            // Upload the image
             const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
@@ -114,24 +47,30 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             }
 
             if (data.user?.profileImg) {
-                setProfileImg(data.user.profileImg);
+                // Force a reload of the image by updating the version
+                setImageVersion(Date.now());
+                
                 if (onUpdate) {
                     onUpdate({ type: 'image', content: data.user.profileImg });
                 }
             }
-            setShowEditor(false);
-            setSelectedImage(null);
-            setSelectedFile(null);
+
+            toast.success('Profile picture updated successfully');
 
         } catch (error) {
             console.error('Error updating profile picture:', error);
             toast.error(error.message || 'Failed to update profile picture');
-
-            // Clean up on error too
-            setShowEditor(false);
-            setSelectedImage(null);
-            setSelectedFile(null);
+        } finally {
+            setIsUploading(false);
         }
+    };
+
+    // Get the profile image URL with cache busting
+    const getProfileImageUrl = () => {
+        const baseUrl = user?.profileImg || "/avatar-placeholder.png";
+        return baseUrl.includes('?') 
+            ? `${baseUrl}&v=${imageVersion}` 
+            : `${baseUrl}?v=${imageVersion}`;
     };
 
     return (
@@ -142,7 +81,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         >
             <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
-                    src={profileImg || user?.profileImg || "/avatar-placeholder.png"}
+                    src={getProfileImageUrl()}
                     alt="Profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -168,17 +107,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 onChange={handleFileChange}
             />
 
-            {showEditor && selectedImage && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-                    <ImageScaleEditor 
-                        image={selectedImage}
-                        onSave={handleEditorSave}
-                        onCancel={() => {
-                            setShowEditor(false);
-                            setSelectedImage(null);
-                            setSelectedFile(null);
-                        }}
-                    />
+            {isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                    <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
                 </div>
             )}
         </div>
