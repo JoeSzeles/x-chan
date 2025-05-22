@@ -37,14 +37,13 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     const handleEditorSave = async ({ scale, position }) => {
         if (!selectedFile) return;
-        
+
         try {
             // Create a canvas to apply the transformations
             const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
 
-        try {
             await new Promise((resolve, reject) => {
                 img.onload = resolve;
                 img.onerror = reject;
@@ -107,7 +106,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             // Check for non-JSON responses
             const contentType = response.headers.get('content-type');
             let data;
-            
+
             if (contentType && contentType.includes('application/json')) {
                 data = await response.json();
             } else {
@@ -133,7 +132,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         } catch (error) {
             console.error('Error updating profile picture:', error);
             toast.error(error.message || 'Failed to update profile picture');
-            
+
             // Clean up on error too
             setShowEditor(false);
             setSelectedImage(null);
