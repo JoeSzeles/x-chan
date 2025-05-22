@@ -123,7 +123,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
 
         <div className="flex justify-end gap-3">
           <button
-            onClick={onClose || onCancel}
+            onClick={onCancel}
             className="px-4 py-2 rounded bg-gray-600 hover:bg-gray-700 transition flex items-center gap-2"
           >
             <FaTimes /> Cancel
