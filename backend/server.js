@@ -110,11 +110,28 @@ const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
 if (fs.existsSync(frontendDistPath)) {
     console.log('Serving frontend from', frontendDistPath);
     app.use(express.static(frontendDistPath));
-    
-    // Import and use the index routes (should be last)
-    import indexRoutes from './routes/index.js';
-    app.use(indexRoutes);
 }
+
+// Import index routes at the top level - dynamic import
+// This needs to be after the other routes but before starting the server
+app.use(async (req, res, next) => {
+    // Skip API and asset routes
+    if (req.url.startsWith('/api') || 
+        req.url.startsWith('/uploads') || 
+        req.url.startsWith('/public')) {
+        return next();
+    }
+    
+    try {
+        // Import the router dynamically
+        const { default: indexRoutes } = await import('./routes/index.js');
+        // Forward the request to the index routes
+        return indexRoutes(req, res, next);
+    } catch (err) {
+        console.error('Error importing index routes:', err);
+        return res.status(500).send('Server error loading frontend routes');
+    }
+});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
