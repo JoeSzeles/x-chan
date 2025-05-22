@@ -260,6 +260,11 @@ export const bookmarkComment = async (req, res) => {
 			return res.status(404).json({ error: "Comment not found" });
 		}
 
+		// Ensure bookmarkedBy is an array
+		if (!Array.isArray(comment.bookmarkedBy)) {
+			comment.bookmarkedBy = [];
+		}
+
 		const isBookmarked = comment.bookmarkedBy.includes(userId);
 
 		if (isBookmarked) {
@@ -279,8 +284,11 @@ export const bookmarkComment = async (req, res) => {
 			.populate("user", "username fullName profileImg")
 			.populate("replies");
 
+		// Ensure we always return an array even if population failed
+		const bookmarkedByArray = Array.isArray(updatedComment.bookmarkedBy) ? updatedComment.bookmarkedBy : [];
+
 		res.status(200).json({ 
-			bookmarkedBy: updatedComment.bookmarkedBy,
+			bookmarkedBy: bookmarkedByArray,
 			isBookmarked: !isBookmarked,
 			message: isBookmarked ? "Comment unbookmarked successfully" : "Comment bookmarked successfully"
 		});
@@ -293,6 +301,12 @@ export const bookmarkComment = async (req, res) => {
 export const repostComment = async (req, res) => {
 	try {
 		const { commentId } = req.params;
+		
+		// Verify user is authenticated
+		if (!req.user || !req.user._id) {
+			return res.status(401).json({ error: "You must be logged in to repost" });
+		}
+		
 		const userId = req.user._id;
 		const { repostType, targetBoard } = req.body;
 

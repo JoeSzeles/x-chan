@@ -62,17 +62,21 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             ctx.clip();
 
             // Calculate dimensions while maintaining aspect ratio
-            const scaleFactor = Math.max(
+            const baseScaleFactor = Math.max(
                 finalSize / img.width,
                 finalSize / img.height
-            ) * scale;
+            );
+
+            // Apply user's custom scaling
+            const scaleFactor = baseScaleFactor * scale;
 
             const scaledWidth = img.width * scaleFactor;
             const scaledHeight = img.height * scaleFactor;
 
-            // Center the image
-            const x = (finalSize - scaledWidth) / 2 + position.x * scale;
-            const y = (finalSize - scaledHeight) / 2 + position.y * scale;
+            // Apply position directly without scaling it
+            // This matches how the position is displayed in the editor
+            const x = (finalSize - scaledWidth) / 2 + position.x;
+            const y = (finalSize - scaledHeight) / 2 + position.y;
 
             // Draw the image with the corrected scaling and position
             ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
@@ -151,13 +155,13 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
-            
+
             {showEditor && selectedImage && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
                     <ImageScaleEditor 
                         image={selectedImage}
                         onSave={handleEditorSave}
-                        onClose={() => {
+                        onCancel={() => {
                             setShowEditor(false);
                             setSelectedImage(null);
                             setSelectedFile(null);

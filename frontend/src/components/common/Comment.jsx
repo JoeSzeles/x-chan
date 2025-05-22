@@ -95,8 +95,8 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 	const [showPreview, setShowPreview] = useState(false);
 	const [previewPosition, setPreviewPosition] = useState({ x: 0, y: 0 });
 	const [localLikes, setLocalLikes] = useState(Array.isArray(comment?.likes) ? comment?.likes : []);
-	const [localReposts, setLocalReposts] = useState(comment.reposts || []);
-	const [localBookmarks, setLocalBookmarks] = useState(comment.bookmarkedBy || []);
+	const [localReposts, setLocalReposts] = useState(Array.isArray(comment?.reposts) ? comment?.reposts : []);
+	const [localBookmarks, setLocalBookmarks] = useState(Array.isArray(comment?.bookmarkedBy) ? comment?.bookmarkedBy : []);
 	const location = useLocation();
 	const isPostPage = location.pathname.includes("/post/");
 	const navigate = useNavigate();
@@ -113,8 +113,8 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 	const commentOwner = typeof comment.user === 'object' ? comment.user : { username: 'unknown', fullName: 'Unknown User' };
 	const userId = authUser?._id;
 	const isLiked = Array.isArray(localLikes) && localLikes.includes(userId);
-	const isReposted = localReposts?.includes(authUser?._id);
-	const isBookmarked = localBookmarks?.includes(authUser?._id);
+	const isReposted = Array.isArray(localReposts) && localReposts.includes(userId);
+	const isBookmarked = Array.isArray(localBookmarks) && localBookmarks.includes(userId);
 	const isMyComment = authUser?._id === (typeof comment.user === 'object' ? comment.user._id : comment.user);
 
 	const formattedDate = formatPostDate(comment.createdAt);
@@ -198,12 +198,14 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 			}
 		},
 		onSuccess: (updatedLikes) => {
-			setLocalLikes(updatedLikes);
+			// Ensure we're working with an array
+			const likesArray = Array.isArray(updatedLikes) ? updatedLikes : [];
+			setLocalLikes(likesArray);
 			queryClient.setQueryData(["comments"], (oldData) => {
 				if (!oldData) return oldData;
 				return oldData.map((c) => {
 					if (c._id === comment._id) {
-						return { ...c, likes: updatedLikes };
+						return { ...c, likes: likesArray };
 					}
 					return c;
 				});
@@ -253,11 +255,17 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 	const { mutate: repostComment, isPending: isReposting } = useMutation({
 		mutationFn: async () => {
 			try {
+				const token = localStorage.getItem("token");
+				if (!token) {
+					throw new Error("Authentication token is required");
+				}
+				
 				const res = await fetch(`/api/comments/repost/${comment._id}`, {
 					method: "POST",
 					credentials: "include",
 					headers: {
-						"Authorization": `Bearer ${localStorage.getItem("token")}`
+						"Content-Type": "application/json",
+						"Authorization": `Bearer ${token}`
 					}
 				});
 				const data = await res.json();
@@ -270,12 +278,14 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 			}
 		},
 		onSuccess: (updatedReposts) => {
-			setLocalReposts(updatedReposts);
+			// Ensure we're working with an array
+			const repostsArray = Array.isArray(updatedReposts) ? updatedReposts : [];
+			setLocalReposts(repostsArray);
 			queryClient.setQueryData(["comments"], (oldData) => {
 				if (!oldData) return oldData;
 				return oldData.map((c) => {
 					if (c._id === comment._id) {
-						return { ...c, reposts: updatedReposts };
+						return { ...c, reposts: repostsArray };
 					}
 					return c;
 				});
@@ -302,23 +312,28 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 				}
 				return data;
 			} catch (error) {
-				throw new Error(error);
+				throw new Error(error.message || "Error bookmarking comment");
 			}
 		},
-		onSuccess: (updatedBookmarks) => {
-			setLocalBookmarks(updatedBookmarks);
+		onSuccess: (data) => {
+			// Make sure we're setting an array
+			const bookmarkedBy = Array.isArray(data.bookmarkedBy) ? data.bookmarkedBy : [];
+			setLocalBookmarks(bookmarkedBy);
+
 			queryClient.setQueryData(["comments"], (oldData) => {
 				if (!oldData) return oldData;
 				return oldData.map((c) => {
 					if (c._id === comment._id) {
-						return { ...c, bookmarkedBy: updatedBookmarks };
+						return { ...c, bookmarkedBy };
 					}
 					return c;
 				});
 			});
+
+			toast.success(data.message || "Bookmark status updated");
 		},
 		onError: (error) => {
-			toast.error(error.message);
+			toast.error(error.message || "Failed to update bookmark");
 		},
 	});
 
@@ -623,11 +638,14 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 							<RepostButton
 								itemId={comment._id}
 								type="comment"
-								repostCount={comment.reposts?.length || 0}
+								repostCount={localReposts?.length || 0}
 								isReposted={isReposted}
 								onRepost={(data) => {
-									// Update local state if needed
+									// Ensure data is an array and update local state
+									const repostsArray = Array.isArray(data) ? data : [];
+									setLocalReposts(repostsArray);
 								}}
+								userData={authUser}
 							/>
 						</div>
 						<div 
@@ -653,7 +671,7 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 								<FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />
 							)}
 							<span className={`text-sm group-hover:text-pink-500 ${isLiked ? "text-pink-500" : "text-slate-500"}`}>
-								{comment.likes.length}
+								{localLikes?.length || 0}
 							</span>
 						</div>
 					</div>
