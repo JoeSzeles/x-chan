@@ -55,24 +55,7 @@ args = "cd frontend && npm run dev"
 [[workflows.workflow]]
 name = "Dev Servers"
 author = 41107035
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd backend && npm run dev"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd frontend && npm run dev"
-
-[[workflows.workflow]]
-name = "Dev Server"
-author = 41107035
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd backend && npm run dev"
+mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
