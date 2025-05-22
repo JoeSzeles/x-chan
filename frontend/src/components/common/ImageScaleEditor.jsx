@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
@@ -23,10 +22,21 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   };
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    const newX = e.clientX - dragStart.current.x;
-    const newY = e.clientY - dragStart.current.y;
-    setPosition({ x: newX, y: newY });
+    if (isDragging && imageRef.current) {
+      // Calculate delta movement, adjusted for current scale to make movement consistent
+      const deltaX = (e.clientX - dragStart.current.x) / scale;
+      const deltaY = (e.clientY - dragStart.current.y) / scale;
+
+      setPosition({
+        x: position.x + deltaX,
+        y: position.y + deltaY
+      });
+
+      dragStart.current = {
+        x: e.clientX,
+        y: e.clientY
+      };
+    }
   };
 
   const handleMouseUp = () => {
@@ -53,7 +63,7 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-[#1e1e1e] p-6 rounded-lg shadow-xl">
         <h3 className="text-xl font-semibold text-center mb-4">Adjust Profile Picture</h3>
-        
+
         <div 
           className="w-80 h-80 rounded-full overflow-hidden relative border-4 border-[#2e2e2e] mb-4"
           onWheel={handleWheel}

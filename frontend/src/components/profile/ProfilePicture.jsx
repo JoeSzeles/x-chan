@@ -62,17 +62,21 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             ctx.clip();
 
             // Calculate dimensions while maintaining aspect ratio
-            const scaleFactor = Math.max(
+            const baseScaleFactor = Math.max(
                 finalSize / img.width,
                 finalSize / img.height
-            ) * scale;
+            );
+            
+            // Apply user's custom scaling
+            const scaleFactor = baseScaleFactor * scale;
 
             const scaledWidth = img.width * scaleFactor;
             const scaledHeight = img.height * scaleFactor;
 
-            // Center the image
-            const x = (finalSize - scaledWidth) / 2 + position.x * scale;
-            const y = (finalSize - scaledHeight) / 2 + position.y * scale;
+            // Calculate the centered position and apply the user's position offset
+            // Multiply position by proper scale factor to ensure consistent movement
+            const x = (finalSize - scaledWidth) / 2 + position.x * baseScaleFactor;
+            const y = (finalSize - scaledHeight) / 2 + position.y * baseScaleFactor;
 
             // Draw the image with the corrected scaling and position
             ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
