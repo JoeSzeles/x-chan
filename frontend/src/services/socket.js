@@ -1,33 +1,35 @@
+
 import { io } from 'socket.io-client';
 
 let socket = null;
 
 export const initializeSocket = (userId) => {
   try {
-    // Always create a fresh connection
     if (socket) {
-      socket.disconnect();
-      socket = null;
+      console.log('Socket already initialized');
+      return socket;
     }
 
-    // Create socket with simpler configuration
-    socket = io('/', {
+    console.log('Initializing socket connection');
+    socket = io({
       path: '/socket.io',
       transports: ['polling'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 20000,
-      forceNew: true,
-      withCredentials: true
+      reconnectionAttempts: 5
     });
 
     socket.on('connect', () => {
-      console.log('Connected to Socket.IO server');
+      console.log('Socket connected successfully');
+      if (userId) {
+        socket.emit('joinNotifications', userId);
+      }
     });
 
     socket.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
     });
 
     return socket;
@@ -46,21 +48,24 @@ export const disconnectSocket = () => {
   }
 };
 
-// Create functions to subscribe/unsubscribe to events
-const subscribeToEvent = (eventName, callback) => {
-  if (socket) socket.on(eventName, callback);
-};
-
-const unsubscribeFromEvent = (eventName, callback) => {
-  if (socket) socket.off(eventName, callback);
-};
-
 export const socketService = {
-  subscribeToNewMessage: (callback) => subscribeToEvent('newMessage', callback),
-  unsubscribeFromNewMessage: (callback) => unsubscribeFromEvent('newMessage', callback)
+  subscribeToNewMessage: (callback) => {
+    if (socket) socket.on('newMessage', callback);
+  },
+  unsubscribeFromNewMessage: (callback) => {
+    if (socket) socket.off('newMessage', callback);
+  },
+  joinConversation: (conversationId) => {
+    if (socket) socket.emit('joinConversation', conversationId);
+  },
+  leaveConversation: (conversationId) => {
+    if (socket) socket.emit('leaveConversation', conversationId);
+  },
+  sendMessage: (message) => {
+    if (socket) socket.emit('sendMessage', message);
+  }
 };
 
-// Export a default object for compatibility
 export default {
   initializeSocket,
   getSocket,

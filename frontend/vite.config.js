@@ -32,47 +32,7 @@ export default defineConfig({
         target: 'http://0.0.0.0:5000',
         ws: true,
         changeOrigin: true,
-        secure: false,
-        rewrite: path => path,
-        configure: (proxy, options) => {
-          // Add detailed socket debugging
-          console.log('Configuring Socket.IO proxy to backend at http://0.0.0.0:5000');
-          
-          // Improve debugging
-          console.log('Socket.IO proxy configured with target:', 'http://0.0.0.0:5000');
-          
-          // Increase timeout for socket.io connections
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            proxyReq.setHeader('Origin', 'http://0.0.0.0:3000');
-            proxyReq.setHeader('X-Debug-Socket-Proxy', 'true');
-            console.log('Proxying Socket.IO request:', req.method, req.url);
-          });
-          
-          // Enhance CORS headers
-          proxy.on('proxyRes', (proxyRes, req, res) => {
-            proxyRes.headers['Access-Control-Allow-Origin'] = req.headers.origin || '*';
-            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS, PUT, PATCH, DELETE';
-            proxyRes.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
-            proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
-            proxyRes.headers['Access-Control-Max-Age'] = '86400'; // 24 hours
-          });
-          
-          // Improve error handling
-          proxy.on('error', (err, req, res) => {
-            console.error('Socket.IO proxy error:', err);
-            if (!res.headersSent && res.writeHead) {
-              try {
-                res.writeHead(500, {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*'
-                });
-                res.end(JSON.stringify({ error: 'Socket proxy error', details: err.message }));
-              } catch (writeError) {
-                console.error('Failed to write error response:', writeError);
-              }
-            }
-          });
-        }
+        secure: false
       }
     }
   },
