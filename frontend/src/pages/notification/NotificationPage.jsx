@@ -76,79 +76,54 @@ const NotificationPage = () => {
 
 	// Socket.IO setup
 	useEffect(() => {
-		let socket;
-		let reconnectAttempts = 0;
-		const maxReconnectAttempts = 5;
-		const reconnectDelay = 1000;
+		// Import the centralized socket service
+		import('../../services/socket').then(({ initializeSocket, disconnectSocket }) => {
+			const userId = localStorage.getItem('userId');
+			const socket = initializeSocket(userId);
 
-		const connectSocket = () => {
 			if (socket) {
-				socket.disconnect();
-			}
-
-			socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
-				path: '/socket.io',
-				transports: ['polling'],
-				reconnection: false,
-				timeout: 10000,
-				withCredentials: true,
-				forceNew: true
-			});
-
-			socket.on('connect', () => {
-				console.log('Socket connected successfully');
-				reconnectAttempts = 0;
-				const userId = localStorage.getItem('userId');
+				console.log('NotificationPage: Socket initialized with ID:', socket.id);
+				
+				// Join notifications room with user ID
 				if (userId) {
 					socket.emit('joinNotifications', userId);
+					console.log('NotificationPage: Joined notifications for user:', userId);
 				}
-			});
 
-			socket.on('connect_error', (error) => {
-				console.error('Socket connection error:', error);
-				reconnectAttempts++;
-				
-				if (reconnectAttempts < maxReconnectAttempts) {
-					console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`);
-					setTimeout(connectSocket, reconnectDelay * reconnectAttempts);
-				} else {
-					console.error('Max reconnection attempts reached');
-					toast.error('Failed to connect to real-time updates. Please refresh the page.');
-				}
-			});
-
-			socket.on('disconnect', (reason) => {
-				console.log('Socket disconnected:', reason);
-				if (reason === 'io server disconnect') {
-					// Server initiated disconnect, try to reconnect
-					connectSocket();
-				}
-			});
-
-			// Listen for new notifications
-			socket.on('newNotification', (notification) => {
-				console.log('Received new notification:', notification);
-				queryClient.setQueryData(["notifications"], (oldData) => {
-					if (!oldData) return [notification];
-					return [notification, ...oldData];
+				// Listen for new notifications
+				socket.on('newNotification', (notification) => {
+					console.log('NotificationPage: Received new notification:', notification);
+					queryClient.setQueryData(["notifications"], (oldData) => {
+						if (!oldData) return [notification];
+						return [notification, ...oldData];
+					});
+					
+					// Show toast notification
+					toast.success(`New notification from @${notification.from?.username || 'user'}`, {
+						duration: 4000,
+					});
 				});
-			});
-		};
-
-		// Initial connection
-		connectSocket();
-
-		// Cleanup
-		return () => {
-			if (socket) {
-				const userId = localStorage.getItem('userId');
-				if (userId) {
-					socket.emit('leaveNotifications', userId);
-				}
-				socket.off('newNotification');
-				socket.disconnect();
+			} else {
+				console.error('NotificationPage: Failed to initialize socket');
+				toast.error('Unable to connect to notification service');
 			}
-		};
+
+			// Cleanup
+			return () => {
+				if (socket) {
+					console.log('NotificationPage: Cleaning up socket listeners');
+					socket.off('newNotification');
+					
+					if (userId) {
+						socket.emit('leaveNotifications', userId);
+						console.log('NotificationPage: Left notifications for user:', userId);
+					}
+				}
+			};
+		}).catch(error => {
+			console.error('NotificationPage: Error importing socket service:', error);
+			toast.error('Failed to initialize notification service');
+		});
 	}, [queryClient]);
 
 	// Ensure notifications is always an array
