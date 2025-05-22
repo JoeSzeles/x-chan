@@ -1,2 +1,3 @@
-// This component has been removed as requested
-// The profile picture now uploads directly without scaling/cropping
+
+// This component has been removed
+// Profile picture uploads are now handled directly without scaling/cropping
