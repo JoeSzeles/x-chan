@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-import { FaList, FaTh, FaEye, FaNewspaper, FaCog, FaComments, FaTimes, FaShare, FaLink } from "react-icons/fa";
+import { FaList, FaTh, FaEye, FaNewspaper, FaCog, FaComments, FaTimes, FaShare, FaLink, FaStar, FaTrophy, FaLightbulb, FaSmile, FaClock, FaBookmark, FaUserPlus } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaUser, FaHeart, FaRetweet, FaReply, FaQuoteRight, FaAt } from "react-icons/fa";
 import axios from "axios";
@@ -229,6 +229,22 @@ const NotificationPage = () => {
 				return <FaList className='w-7 h-7 text-emerald-500' />;
 			case "system_announcement":
 				return <FaCog className='w-7 h-7 text-gray-500' />;
+			case "post_rating":
+				return <FaStar className='w-7 h-7 text-yellow-400' />;
+			case "achievement":
+				return <FaTrophy className='w-7 h-7 text-amber-400' />;
+			case "content_recommendation":
+				return <FaLightbulb className='w-7 h-7 text-blue-400' />;
+			case "user_mention_reaction":
+				return <FaSmile className='w-7 h-7 text-green-400' />;
+			case "scheduled_reminder":
+				return <FaClock className='w-7 h-7 text-purple-400' />;
+			case "bookmark_activity":
+				return <FaBookmark className='w-7 h-7 text-teal-500' />;
+			case "user_joined":
+				return <FaUserPlus className='w-7 h-7 text-lime-500' />;
+			case "post_featured":
+				return <FaStar className='w-7 h-7 text-amber-500' />;
 			default:
 				return null;
 		}
@@ -263,6 +279,22 @@ const NotificationPage = () => {
 				return "New activity in board: " + notification.content;
 			case "system_announcement":
 				return "System announcement: " + notification.content;
+			case "post_rating":
+				return notification.content || "rated your post";
+			case "achievement":
+				return notification.content || "You earned an achievement!";
+			case "content_recommendation":
+				return notification.content || "We found content you might like";
+			case "user_mention_reaction":
+				return notification.content || "reacted to a mention of you";
+			case "scheduled_reminder":
+				return notification.content || "Here's your scheduled reminder";
+			case "bookmark_activity":
+				return notification.content || "Activity on your bookmarked content";
+			case "user_joined":
+				return notification.content || "Welcome to the platform!";
+			case "post_featured":
+				return notification.content || "Your post has been featured!";
 			default:
 				return notification.content || "";
 		}
@@ -301,6 +333,9 @@ const NotificationPage = () => {
 			case "reply":
 			case "post_reply":
 			case "mention":
+			case "post_rating":
+			case "user_mention_reaction":
+			case "post_featured":
 				// Check both post and postId fields
 				if (notification.postId?._id) {
 					setSelectedPost(notification.postId._id);
@@ -336,6 +371,7 @@ const NotificationPage = () => {
 				}
 				break;
 			case "milestone":
+			case "achievement":
 				navigate(`/profile/${notification.to.username}`);
 				break;
 			case "trending_topic":
@@ -351,9 +387,36 @@ const NotificationPage = () => {
 				}
 				break;
 			case "system_announcement":
+			case "user_joined":
 				// System announcements may not have a specific destination
 				if (notification.linkUrl) {
 					window.open(notification.linkUrl, '_blank');
+				}
+				break;
+			case "content_recommendation":
+				// Handle different content types
+				if (notification.postId) {
+					setSelectedPost(notification.postId);
+				} else if (notification.newsId) {
+					navigate(`/news/${notification.newsId}`);
+				} else if (notification.serviceId) {
+					navigate(`/services/${notification.serviceId}`);
+				} else if (notification.threadId) {
+					navigate(`/threads/${notification.threadId}`);
+				}
+				break;
+			case "scheduled_reminder":
+				// If there's a relevant post, show it
+				if (notification.postId) {
+					setSelectedPost(notification.postId);
+				}
+				break;
+			case "bookmark_activity":
+				// Navigate to the bookmarked post
+				if (notification.postId) {
+					setSelectedPost(notification.postId);
+				} else {
+					navigate('/bookmarks');
 				}
 				break;
 			default:

@@ -338,6 +338,182 @@ export const getNotifications = async (req, res) => {
 		res.status(200).json({
 			notifications,
 			total,
+
+// Create post rating notification
+export const createPostRatingNotification = async (postId, raterUserId, rating) => {
+  try {
+    const post = await Post.findById(postId).populate("user");
+    if (post.user._id.toString() !== raterUserId.toString()) {
+      await createNotification({
+        from: raterUserId,
+        to: post.user._id,
+        type: "post_rating",
+        content: `rated your post ${rating} stars`,
+        postId
+      });
+    }
+  } catch (error) {
+    console.log("Error in createPostRatingNotification:", error.message);
+    throw error;
+  }
+};
+
+// Create achievement notification
+export const createAchievementNotification = async (userId, achievementName, description) => {
+  try {
+    await createNotification({
+      from: process.env.SYSTEM_USER_ID,
+      to: userId,
+      type: "achievement",
+      content: `You earned the "${achievementName}" achievement! ${description}`
+    });
+  } catch (error) {
+    console.log("Error in createAchievementNotification:", error.message);
+    throw error;
+  }
+};
+
+// Create content recommendation notification
+export const createContentRecommendationNotification = async (userId, contentType, contentId, reason) => {
+  try {
+    let contentField = {};
+    
+    switch (contentType) {
+      case 'post':
+        contentField = { postId: contentId };
+        break;
+      case 'news':
+        contentField = { newsId: contentId };
+        break;
+      case 'service':
+        contentField = { serviceId: contentId };
+        break;
+      case 'thread':
+        contentField = { threadId: contentId };
+        break;
+    }
+    
+    await createNotification({
+      from: process.env.SYSTEM_USER_ID,
+      to: userId,
+      type: "content_recommendation",
+      content: `We thought you might like this ${contentType}: ${reason}`,
+      ...contentField
+    });
+  } catch (error) {
+    console.log("Error in createContentRecommendationNotification:", error.message);
+    throw error;
+  }
+};
+
+// Create user mention reaction notification
+export const createMentionReactionNotification = async (mentionId, postId, reactorId, reactionType) => {
+  try {
+    const post = await Post.findById(postId).populate("user");
+    
+    await createNotification({
+      from: reactorId,
+      to: post.user._id,
+      type: "user_mention_reaction",
+      content: `reacted with "${reactionType}" to their mention of you`,
+      postId
+    });
+  } catch (error) {
+    console.log("Error in createMentionReactionNotification:", error.message);
+    throw error;
+  }
+};
+
+// Create scheduled reminder notification
+export const createScheduledReminderNotification = async (userId, reminderContent, relevantPostId = null) => {
+  try {
+    const notification = {
+      from: process.env.SYSTEM_USER_ID,
+      to: userId,
+      type: "scheduled_reminder",
+      content: reminderContent
+    };
+    
+    if (relevantPostId) {
+      notification.postId = relevantPostId;
+    }
+    
+    await createNotification(notification);
+  } catch (error) {
+    console.log("Error in createScheduledReminderNotification:", error.message);
+    throw error;
+  }
+};
+
+// Create bookmark activity notification
+export const createBookmarkActivityNotification = async (userId, bookmarkId, activityType) => {
+  try {
+    const bookmark = await Bookmark.findById(bookmarkId).populate('post');
+    
+    if (!bookmark) return;
+    
+    let content = "";
+    switch (activityType) {
+      case "update":
+        content = "A post you bookmarked has been updated";
+        break;
+      case "comment":
+        content = "Someone commented on a post you bookmarked";
+        break;
+      case "trending":
+        content = "A post you bookmarked is trending";
+        break;
+    }
+    
+    await createNotification({
+      from: process.env.SYSTEM_USER_ID,
+      to: userId,
+      type: "bookmark_activity",
+      content,
+      postId: bookmark.post._id
+    });
+  } catch (error) {
+    console.log("Error in createBookmarkActivityNotification:", error.message);
+    throw error;
+  }
+};
+
+// Create user joined notification
+export const createUserJoinedNotification = async (newUserId) => {
+  try {
+    // Get system admin or a designated welcoming user
+    const adminId = process.env.SYSTEM_USER_ID || process.env.ADMIN_USER_ID;
+    
+    await createNotification({
+      from: adminId,
+      to: newUserId,
+      type: "user_joined",
+      content: "Welcome to our community! Here are some tips to get started..."
+    });
+  } catch (error) {
+    console.log("Error in createUserJoinedNotification:", error.message);
+    throw error;
+  }
+};
+
+// Create post featured notification
+export const createPostFeaturedNotification = async (postId, reason) => {
+  try {
+    const post = await Post.findById(postId).populate("user");
+    
+    await createNotification({
+      from: process.env.SYSTEM_USER_ID,
+      to: post.user._id,
+      type: "post_featured",
+      content: `Your post has been featured ${reason ? `for ${reason}` : 'on our platform'}!`,
+      postId
+    });
+  } catch (error) {
+    console.log("Error in createPostFeaturedNotification:", error.message);
+    throw error;
+  }
+};
+
 			pages: Math.ceil(total / limit),
 			currentPage: parseInt(page)
 		});
