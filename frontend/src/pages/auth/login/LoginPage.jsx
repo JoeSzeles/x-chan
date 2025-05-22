@@ -14,8 +14,6 @@ const LoginPage = () => {
 	const { mutate: login, isPending } = useMutation({
 		mutationFn: async () => {
 			try {
-				console.log('[LoginPage] Attempting login with:', { username: inputs.username });
-				
 				const res = await fetch("/api/auth/login", {
 					method: "POST",
 					headers: {
@@ -24,44 +22,27 @@ const LoginPage = () => {
 					credentials: 'include',
 					body: JSON.stringify(inputs),
 				});
-				
 				const data = await res.json();
-				console.log('[LoginPage] Login response:', { status: res.status, ok: res.ok });
-				
 				if (!res.ok) {
 					throw new Error(data.error || "Something went wrong");
 				}
-				
 				// Store the token and user data in localStorage
 				if (data.token) {
-					localStorage.setItem("token", data.token);
+				localStorage.setItem("token", data.token);
 					localStorage.setItem("userData", JSON.stringify(data));
-					console.log('[LoginPage] Stored token and user data', { userId: data._id });
-					
-					// Set token in cookie as well (belt and suspenders approach)
-					document.cookie = `jwt=${data.token}; path=/; max-age=604800; SameSite=Lax`;
-				} else {
-					console.warn('[LoginPage] No token received in login response');
+					console.log('[LoginPage] Stored token and user data');
 				}
-				
 				return data;
 			} catch (error) {
-				console.error('[LoginPage] Login error:', error);
-				throw new Error(error.message || "Authentication failed");
+				throw new Error(error);
 			}
 		},
-		onSuccess: (data) => {
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["authUser"] });
 			toast.success("Login successful!");
-			
-			// Force page reload to ensure all components recognize the authentication
-			setTimeout(() => {
-				window.location.href = '/';
-			}, 300);
 		},
 		onError: (error) => {
-			console.error('[LoginPage] Login mutation error:', error);
-			toast.error(error.message || "Failed to log in");
+			toast.error(error.message);
 		},
 	});
 

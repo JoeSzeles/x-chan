@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
-import { initializeSocket, getSocket } from '../../services/socket';
+import { socketService } from '../../services/socket';
 
 const ChatWindow = ({ conversation }) => {
   const [messages, setMessages] = useState([]);
@@ -10,7 +10,6 @@ const ChatWindow = ({ conversation }) => {
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
   const currentUserId = localStorage.getItem('userId');
-  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -26,30 +25,23 @@ const ChatWindow = ({ conversation }) => {
       }
     };
 
-    if (conversation?._id && currentUserId) {
+    if (conversation?._id) {
       fetchMessages();
+      socketService.connect();
+      socketService.joinConversation(conversation._id);
 
-      // Initialize socket connection
-      const socketInstance = initializeSocket(currentUserId);
-      setSocket(socketInstance);
+      const handleNewMessage = (message) => {
+        setMessages((prev) => [...prev, message]);
+      };
 
-      if (socketInstance) {
-        socketInstance.emit('joinConversation', conversation._id);
-
-        // Listen for new messages
-        socketInstance.on('newMessage', (message) => {
-          setMessages((prev) => [...prev, message]);
-        });
-      }
+      socketService.onNewMessage(handleNewMessage);
 
       return () => {
-        if (socketInstance) {
-          socketInstance.emit('leaveConversation', conversation._id);
-          socketInstance.off('newMessage');
-        }
+        socketService.leaveConversation(conversation._id);
+        socketService.offNewMessage(handleNewMessage);
       };
     }
-  }, [conversation?._id, currentUserId]);
+  }, [conversation?._id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -66,16 +58,7 @@ const ChatWindow = ({ conversation }) => {
         { withCredentials: true }
       );
 
-      // If we have a socket connection, emit the message
-      if (socket) {
-        socket.emit('sendMessage', {
-          conversationId: conversation._id,
-          message: response.data
-        });
-      }
-
-      // Add the message to our local state
-      setMessages(prev => [...prev, response.data]);
+      socketService.sendMessage(response.data);
       setNewMessage('');
     } catch (err) {
       setError('Failed to send message');
@@ -158,4 +141,4 @@ const ChatWindow = ({ conversation }) => {
   );
 };
 
-export default ChatWindow;
+export default ChatWindow; 

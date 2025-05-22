@@ -87,24 +87,18 @@ app.use('/api/liveboard', liveBoardRoutes);
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: ["http://0.0.0.0:3000", "https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev", process.env.FRONTEND_URL || "*"],
+        origin: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true,
-        allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
+        credentials: true
     },
-    transports: ['polling'],
+    transports: ['polling', 'websocket'],
     allowEIO3: true,
     pingTimeout: 30000,
     pingInterval: 10000,
     connectTimeout: 30000,
-    maxHttpBufferSize: 1e7, // 10MB
-    path: '/socket.io/',
-    cookie: {
-        name: "io",
-        path: "/",
-        httpOnly: false,
-        sameSite: "lax"
-    }
+    upgradeTimeout: 30000,
+    forcePolling: true,
+    allowUpgrades: false
 });
 
 // Enable detailed debug logging
@@ -180,39 +174,6 @@ io.on('connection', socket => {
             data: packet.data,
             timestamp: new Date().toISOString()
         });
-    });
-
-    // Notification room handling
-    socket.on('joinNotifications', (userId) => {
-        if (!userId) {
-            console.error('[Socket.io] Invalid userId for notifications:', userId);
-            return;
-        }
-        
-        console.log('[Socket.io] User joined notification room:', {
-            socketId: socket.id,
-            userId
-        });
-        
-        // Join a room specific to this user's notifications
-        socket.join(`notifications_${userId}`);
-        
-        // Send acknowledgment
-        socket.emit('notificationRoomJoined', { 
-            userId,
-            timestamp: new Date().toISOString() 
-        });
-    });
-    
-    socket.on('leaveNotifications', (userId) => {
-        if (!userId) return;
-        
-        console.log('[Socket.io] User left notification room:', {
-            socketId: socket.id,
-            userId
-        });
-        
-        socket.leave(`notifications_${userId}`);
     });
 
     socket.on('joinBotRoom', (botId) => {
