@@ -61,16 +61,25 @@ export const initializeSocket = (userId) => {
     }
 
     console.log('Initializing socket connection with backend');
+    
+    // Determine base URL correctly - use current origin but adjust if needed
+    // This prevents CORS issues by ensuring we connect to the same domain
+    const baseUrl = window.location.origin.includes('localhost') ? 
+      'http://0.0.0.0:5000' : 
+      window.location.origin.replace(/:\d+$/, '');
+      
+    console.log('Socket connecting to:', baseUrl);
 
     // Create socket with better error handling and reconnection logic
-    socket = io({
+    socket = io(baseUrl, {
       path: '/socket.io',
       transports: ['polling', 'websocket'],
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
+      autoConnect: true
     });
 
     socket.on('connect', () => {
@@ -87,6 +96,13 @@ export const initializeSocket = (userId) => {
 
     socket.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
+      console.log('Socket connection details:', {
+        url: baseUrl,
+        id: socket.id,
+        connected: socket.connected,
+        transport: socket.io?.engine?.transport?.name,
+        readyState: socket.io?.engine?.readyState
+      });
     });
 
     socket.on('reconnect', (attemptNumber) => {
@@ -94,6 +110,17 @@ export const initializeSocket = (userId) => {
       if (userId) {
         socket.emit('joinNotifications', userId);
         console.log(`Rejoined notification room for user: ${userId}`);
+      }
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket connected successfully!', {
+        id: socket.id,
+        transport: socket.io?.engine?.transport?.name
+      });
+      if (userId) {
+        socket.emit('joinNotifications', userId);
+        console.log('Joined notification room for user:', userId);
       }
     });
 

@@ -86,13 +86,23 @@ const NotificationPage = () => {
 				socket.disconnect();
 			}
 
-			socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+			// Use window.location.origin to ensure we connect to the same domain
+			const baseUrl = window.location.origin.includes('localhost') ? 
+				'http://0.0.0.0:5000' : 
+				window.location.origin.replace(/:\d+$/, '');
+				
+			console.log('Connecting to socket server at:', baseUrl);
+			
+			socket = io(baseUrl, {
 				path: '/socket.io',
-				transports: ['polling'],
-				reconnection: false,
+				transports: ['polling', 'websocket'],
+				reconnection: true,
+				reconnectionAttempts: 10,
+				reconnectionDelay: 1000,
 				timeout: 10000,
 				withCredentials: true,
-				forceNew: true
+				forceNew: true,
+				autoConnect: true
 			});
 
 			socket.on('connect', () => {
