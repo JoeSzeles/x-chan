@@ -45,9 +45,6 @@ import liveBoardRoutes from './routes/liveBoard.js';
 import connectMongoDB from "./db/connectMongoDB.js";
 import coverPhotoRoutes from './routes/cover-photo.route.js'; // Import cover photo route
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 dotenv.config();
 
 cloudinary.config({
