@@ -89,16 +89,23 @@ const io = new Server(httpServer, {
     cors: {
         origin: true,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
     },
     transports: ['polling', 'websocket'],
     allowEIO3: true,
-    pingTimeout: 30000,
-    pingInterval: 10000,
-    connectTimeout: 30000,
-    upgradeTimeout: 30000,
+    pingTimeout: 60000,
+    pingInterval: 15000,
+    connectTimeout: 45000,
+    upgradeTimeout: 45000,
     forcePolling: true,
-    allowUpgrades: false
+    allowUpgrades: true,
+    cookie: {
+        name: "socket-io",
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production"
+    },
+    maxHttpBufferSize: 1e8 // 100MB
 });
 
 // Enable detailed debug logging

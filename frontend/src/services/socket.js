@@ -1,44 +1,71 @@
 import { io } from 'socket.io-client';
 
-class SocketService {
-  constructor() {
-    this.socket = null;
+let socket;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 10;
+
+export const initializeSocket = (userId) => {
+  if (!userId) {
+    console.error('Cannot initialize socket without userId');
+    return null;
   }
 
-  connect() {
-    if (!this.socket) {
-      this.socket = io('/', {
-        path: '/socket.io/',
-        transports: ['polling'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        timeout: 30000,
-        forceNew: true,
-        withCredentials: true,
-        upgrade: false
-      });
+  try {
+    // Determine the correct socket URL based on the environment
+    const protocol = window.location.protocol === 'https:' ? 'https' : 'http';
+    const host = window.location.hostname;
+    const port = process.env.NODE_ENV === 'production' ? '' : ':5000';
+    const socketUrl = `${protocol}://${host}${port}`;
 
-      this.socket.on('connect_error', (error) => {
-        console.error('[Socket] Connection error:', error);
-      });
+    console.log(`Attempting to connect socket to: ${socketUrl}`);
 
-      this.socket.on('disconnect', (reason) => {
-        console.log('[Socket] Disconnected:', reason);
-        if (reason === 'io server disconnect') {
-          this.socket.connect();
-        }
-      });
-    }
-    return this.socket;
+    // Create socket connection with more robust configuration
+    socket = io(socketUrl, {
+      transports: ['polling'], // Start with polling only for reliability
+      forceNew: true,
+      reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+      reconnectionDelay: 1000,
+      timeout: 30000,
+      path: '/socket.io',
+      withCredentials: true
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket connected successfully');
+      reconnectAttempts = 0;
+      socket.emit('joinNotifications', userId);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      reconnectAttempts++;
+
+      console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+
+      if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        console.log('Max reconnection attempts reached');
+      }
+    });
+
+    socket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+    });
+
+    return socket;
+  } catch (error) {
+    console.error('Error initializing socket:', error);
+    return null;
   }
+};
 
-  disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-    }
+export const getSocket = () => socket;
+
+export const disconnectSocket = () => {
+  if (socket) {
+    socket.disconnect();
   }
-}
-
-export const socketService = new SocketService();
+};
