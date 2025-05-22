@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
@@ -7,6 +8,9 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   const imageContainerLoaded = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const imageRef = useRef(null);
+  const dragStart = useRef({ x: 0, y: 0 });
 
   // Center the image when it first loads
   useEffect(() => {
@@ -40,9 +44,6 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
   useEffect(() => {
     console.log("ImageScaleEditor props received:", { image, scale, position });
   }, [image, scale, position]);
-  const [isDragging, setIsDragging] = useState(false);
-  const imageRef = useRef(null);
-  const dragStart = useRef({ x: 0, y: 0 });
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -53,30 +54,6 @@ const ImageScaleEditor = ({ image, onSave, onCancel }) => {
     };
   };
 
-  const handleMouseMove = (e) => {
-    if (isDragging && imageRef.current) {
-      // Calculate movement since last position
-      const deltaX = e.clientX - dragStart.current.x;
-      const deltaY = e.clientY - dragStart.current.y;
-      
-      // Update position with the delta
-      const newX = position.x + deltaX;
-      const newY = position.y + deltaY;
-      
-      setPosition({
-        x: newX,
-        y: newY
-      });
-      
-      // Update drag start position for next movement
-      dragStart.current = {
-        x: e.clientX,
-        y: e.clientY
-      };
-    }
-  };
-</old_str>
-<new_str>
   const handleMouseMove = (e) => {
     if (isDragging && imageRef.current) {
       // Calculate movement since last position
