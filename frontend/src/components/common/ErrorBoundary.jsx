@@ -11,10 +11,32 @@ class ErrorBoundary extends React.Component {
     };
     
     // Ensure React is globally available in case of errors
-    if (window.React && !window.g?.React) {
+    // Use non-configurable property to prevent deletion
+    if (window.React) {
       try {
-        if (!window.g) window.g = {};
-        window.g.React = window.React;
+        if (!window.g) {
+          Object.defineProperty(window, 'g', {
+            value: {},
+            writable: true,
+            enumerable: true,
+            configurable: false
+          });
+        }
+        
+        // Set React on global object as non-configurable property
+        if (!window.g.React) {
+          Object.defineProperty(window.g, 'React', {
+            value: window.React,
+            writable: true,
+            enumerable: true,
+            configurable: false
+          });
+        }
+        
+        // Also create backup copy
+        window._React = window.React;
+        window.g._React = window.React;
+        
         console.log('React exposed to g from ErrorBoundary');
       } catch (e) {
         console.error('Failed to expose React in ErrorBoundary:', e);
@@ -33,6 +55,23 @@ class ErrorBoundary extends React.Component {
       errorInfo: errorInfo
     });
     
+    // Fix potential React reference issues
+    if (error && error.message && error.message.includes('React is undefined')) {
+      try {
+        // Try to restore React reference
+        if (window.React && !window.g.React) {
+          Object.defineProperty(window.g, 'React', {
+            value: window.React,
+            writable: true,
+            enumerable: true,
+            configurable: false
+          });
+        }
+      } catch (e) {
+        console.error('Failed to fix React reference in error handler:', e);
+      }
+    }
+    
     // Log to analytics/monitoring service if available
     if (process.env.NODE_ENV === 'production') {
       // Example to log error to server (implement this endpoint)
@@ -48,7 +87,7 @@ class ErrorBoundary extends React.Component {
             url: window.location.href,
             timestamp: new Date().toISOString()
           }),
-        });
+        }).catch(e => console.error('Failed to send error log:', e));
       } catch (e) {
         console.error('Failed to log error to server:', e);
       }
@@ -57,6 +96,16 @@ class ErrorBoundary extends React.Component {
 
   handleRetry = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
+    
+    // Ensure React is properly defined before reload
+    if (window.React && !window.g.React) {
+      try {
+        window.g.React = window.React;
+      } catch (e) {
+        console.error('Failed to restore React before reload:', e);
+      }
+    }
+    
     // Force refresh the page content
     window.location.reload();
   }
