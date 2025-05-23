@@ -88,7 +88,8 @@ app.get('/xchan_small.png', (req, res) => {
     const paths = [
         path.join(frontendPublicPath, 'xchan_small.png'),
         path.join(frontendBuildPath, 'xchan_small.png'),
-        path.join(imagesPath, 'xchan_small.png')
+        path.join(imagesPath, 'xchan_small.png'),
+        path.join(__dirname, '../frontend/src/components/images/xchan_small.png')
     ];
     
     for (const filePath of paths) {
@@ -96,7 +97,9 @@ app.get('/xchan_small.png', (req, res) => {
         if (fs.existsSync(filePath)) {
             console.log('Logo found at:', filePath);
             // Set cache headers
-            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
             return res.sendFile(filePath);
         }
     }
@@ -104,10 +107,22 @@ app.get('/xchan_small.png', (req, res) => {
     console.log('Logo not found in any path, sending placeholder');
     const placeholderPath = path.join(frontendPublicPath, 'avatar-placeholder.png');
     if (fs.existsSync(placeholderPath)) {
+        res.setHeader('Cache-Control', 'no-cache');
         return res.sendFile(placeholderPath);
     }
     
     res.status(404).send('Logo not found');
+});
+
+// Also serve the logo directly from the components/images directory
+app.use('/images/xchan_small.png', (req, res) => {
+    const logoPath = path.join(__dirname, '../frontend/src/components/images/xchan_small.png');
+    if (fs.existsSync(logoPath)) {
+        console.log('Serving logo from images path:', logoPath);
+        res.sendFile(logoPath);
+    } else {
+        res.status(404).send('Logo not found');
+    }
 });
 
 // Also serve content from the components/images directory at the root
