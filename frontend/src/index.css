@@ -2,38 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Force scrollbar to always show */
+/* Force scrollbar visibility */
+html, body {
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 #1a202c;
+}
+
 ::-webkit-scrollbar {
-  width: 8px !important;
-  height: 8px !important;
+  width: 8px;
+  height: 8px;
   display: block !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a202c;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #4a5568 !important;
-  border-radius: 4px !important;
+  background-color: #4a5568;
+  border-radius: 4px;
 }
 
-* {
-  scrollbar-width: thin !important;
-  scrollbar-color: #4a5568 #1a202c !important;
+.right-panel-scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 #1a202c;
+  max-height: 100vh;
 }
 
-.right-panel-scrollable::-webkit-scrollbar,
-.right-panel-content::-webkit-scrollbar {
-  width: 8px !important;
-  background-color: #1a202c !important;
+.right-panel-scrollable::-webkit-scrollbar {
+  width: 8px;
   display: block !important;
 }
 
-.right-panel-scrollable::-webkit-scrollbar-thumb,
-.right-panel-content::-webkit-scrollbar-thumb {
-  background-color: #4a5568 !important;
-  border-radius: 4px !important;
-}
-
-html {
-  overflow-y: scroll;
+.right-panel-scrollable::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+  border-radius: 4px;
 }
 
 /* Thread connector styles */
