@@ -1,6 +1,7 @@
 
 import React, { Component } from "react";
 import { injectReactGlobally, logReactGlobalState } from '../../utils/reactErrorRecovery';
+import { useQueryClient } from '@tanstack/react-query';
 
 class ErrorBoundary extends Component {
   constructor(props) {
