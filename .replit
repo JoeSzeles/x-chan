@@ -69,7 +69,7 @@ localPort = 5000
 externalPort = 5000
 
 [workflows]
-runButton = "Backend Server"
+runButton = "Clean Start"
 
 [[workflows.workflow]]
 name = "Backend Server"
@@ -127,3 +127,33 @@ args = "npm run build"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd backend && npm start"
+
+[[workflows.workflow]]
+name = "Dev Servers (Fixed)"
+author = 41107035
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && pkill -f \"node server.js\" || true && npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run dev"
+
+[[workflows.workflow]]
+name = "Clean Start"
+author = 41107035
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pkill -f \"node server.js\" || true"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm run dev & "
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run dev"

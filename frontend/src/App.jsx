@@ -15,6 +15,32 @@ import PostPage from "./pages/PostPage";
 import ThreadView from "./components/common/ThreadView";
 import NewsPage from "./pages/news/NewsPage";
 import BookmarksPage from "./pages/BookmarksPage";
+
+// Force scroll redraw when app loads
+useEffect(() => {
+  const fixScrollbars = () => {
+    document.querySelectorAll('.right-panel-scrollable, .right-panel-content').forEach(el => {
+      if (el) {
+        el.style.overflowY = 'hidden';
+        setTimeout(() => {
+          el.style.overflowY = 'scroll';
+        }, 10);
+      }
+    });
+  };
+  
+  window.addEventListener('load', fixScrollbars);
+  // Run it once after component mounts
+  setTimeout(fixScrollbars, 500);
+  
+  // Also periodically check and fix scrollbars
+  const interval = setInterval(fixScrollbars, 2000);
+  
+  return () => {
+    window.removeEventListener('load', fixScrollbars);
+    clearInterval(interval);
+  };
+}, []);
 import BoardsPage from './pages/BoardsPage';
 import BoardDetailPage from './pages/BoardDetailPage';
 import ThreadPage from './pages/ThreadPage';
