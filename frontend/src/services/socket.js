@@ -2,6 +2,8 @@
 import { io } from 'socket.io-client';
 
 let socket;
+const MAX_RECONNECT_ATTEMPTS = 5;
+let reconnectAttempts = 0;
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 

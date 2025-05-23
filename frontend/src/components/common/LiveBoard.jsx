@@ -316,7 +316,7 @@ const LiveBoard = () => {
             </form>
 
             {/* Posts List */}
-            <div ref={boardRef} className="space-y-4 max-h-[500px] overflow-y-auto">
+            <div ref={boardRef} className="space-y-4 max-h-[400px] overflow-y-auto" style={{ overflow: 'auto', scrollbarWidth: 'thin' }}>
                 {isLoading ? (
                     <div className="text-center">Loading...</div>
                 ) : posts?.length > 0 ? (
