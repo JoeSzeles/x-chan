@@ -1,0 +1,30 @@
+SES The 'dateTaming' option is deprecated and does nothing. In the future specifying it will be an error. lockdown-install.js:1:194912
+SES The 'mathTaming' option is deprecated and does nothing. In the future specifying it will be an error. lockdown-install.js:1:194912
+Cleared SES-related localStorage items index-vr26Ygl1.js:1020:74611
+Global error handlers set up successfully index-vr26Ygl1.js:1020:75910
+TypeError: g.React is undefined
+    Q8 https://x-chan.replit.app/assets/index-vr26Ygl1.js:977
+    W1 https://x-chan.replit.app/assets/index-vr26Ygl1.js:30
+    k2 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    y2 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    O4 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    Zl https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    pu https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    a0 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    Wi https://x-chan.replit.app/assets/index-vr26Ygl1.js:30
+    Rn https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+index-vr26Ygl1.js:32:161
+React Error Boundary caught an error: TypeError: g.React is undefined
+    Q8 https://x-chan.replit.app/assets/index-vr26Ygl1.js:977
+    W1 https://x-chan.replit.app/assets/index-vr26Ygl1.js:30
+    k2 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    y2 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    O4 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    Zl https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    pu https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    a0 https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+    Wi https://x-chan.replit.app/assets/index-vr26Ygl1.js:30
+    Rn https://x-chan.replit.app/assets/index-vr26Ygl1.js:32
+ 
+Object { componentStack: "\nQ8@https://x-chan.replit.app/assets/index-vr26Ygl1.js:977:51566\nE3@https://x-chan.replit.app/assets/index-vr26Ygl1.js:50:3937\nI3@https://x-chan.replit.app/assets/index-vr26Ygl1.js:50:7713\ndiv\ndiv\nex@https://x-chan.replit.app/assets/index-vr26Ygl1.js:67:645\nnF@https://x-chan.replit.app/assets/index-vr26Ygl1.js:1020:70113\n$3@https://x-chan.replit.app/assets/index-vr26Ygl1.js:50:7174\nU3@https://x-chan.replit.app/assets/index-vr26Ygl1.js:59:779\ne6@https://x-chan.replit.app/assets/index-vr26Ygl1.js:67:74110\ntF@https://x-chan.replit.app/assets/index-vr26Ygl1.js:1020:72906" }
+index-vr26Ygl1.js:1020:73161
