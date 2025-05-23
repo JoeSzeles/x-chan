@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
 
 // Configure multer with local storage
 const upload = multer({ 
-    storage: coverStorage,
+    storage,
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB limit
     }
@@ -498,20 +498,17 @@ router.put('/:boardId/follow', protectRoute, async (req, res) => {
     }
 });
 
-// Configure upload with size and file type limits
-const upload = multer({
-    storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
-    },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!allowedTypes.includes(file.mimetype)) {
-            return cb(new Error('Only JPEG, PNG and GIF are allowed'), false);
-        }
-        cb(null, true);
+// Update multer configuration with size and file type limits
+upload.limits = {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+};
+upload.fileFilter = (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error('Only JPEG, PNG and GIF are allowed'), false);
     }
-});
+    cb(null, true);
+};
 
 // Update board cover photo
 router.put('/:boardName/cover', protectRoute, upload.single('coverPhoto'), async (req, res) => {
