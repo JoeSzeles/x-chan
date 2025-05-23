@@ -1,54 +1,55 @@
 @tailwind base;
 @tailwind components;
 
-/* Fix scrollbar conflicts */
+/* ===== GLOBAL SCROLLBARS ===== */
+/* Force scrollbars to always show */
+html, body {
+  overflow-y: scroll !important;
+  height: 100% !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #4a5568 #1a202c !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Force WebKit scrollbars to always show */
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  background-color: #1a202c !important;
+  display: block !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #4a5568 !important;
+  border-radius: 4px !important;
+  border: 2px solid #1a202c !important;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #1a202c !important;
+}
+
+/* ===== MAIN CONTENT SCROLLBAR ===== */
 .main-content {
-  scrollbar-width: thin;
-  scrollbar-color: #4a5568 #1a202c;
+  scrollbar-width: thin !important;
+  scrollbar-color: #4a5568 #1a202c !important;
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
-.main-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.main-content::-webkit-scrollbar-track {
-  background: #1a202c;
-}
-
-.main-content::-webkit-scrollbar-thumb {
-  background-color: #4a5568;
-  border-radius: 20px;
-}
-
-/* Ensure right panel scrolls properly */
+/* ===== RIGHT PANEL SCROLLBAR ===== */
 .right-panel-content, 
 .right-panel-scrollable {
   overflow-y: scroll !important;
   overflow-x: hidden !important;
   height: 100vh !important;
   -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #4a5568 #1a202c !important;
 }
 
-/* Force scrollbar to always show on right panel */
-.right-panel-scrollable::-webkit-scrollbar {
-  width: 8px !important;
-  background-color: #1a202c !important;
-  display: block !important;
-}
-
-.right-panel-scrollable::-webkit-scrollbar-thumb {
-  background-color: #4a5568 !important;
-  border-radius: 4px !important;
-}
-
-/* Fix scrollbar disappearing issue after page load */
-html {
-  overflow-y: scroll;
-}
-
-@tailwind utilities;
-
-/* Thread connector styles */
+/* ===== THREAD CONNECTOR STYLES ===== */
 .thread-connector {
   background: linear-gradient(to bottom, transparent, #4b5563 20%, #4b5563 80%, transparent);
   opacity: 0.7;
@@ -100,3 +101,6 @@ html {
 .highlight-post {
     animation: highlight-post 2s ease-in-out;
 }
+
+/* ===== TAILWIND UTILITIES ===== */
+@tailwind utilities;

@@ -8,6 +8,7 @@ import { BsChatDots } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../redux/slices/authSlice';
 import axios from 'axios';
+import Logo from "./Logo";
 
 const Sidebar = ({ isWideMode }) => {
     const location = useLocation();
@@ -57,16 +58,19 @@ const Sidebar = ({ isWideMode }) => {
     return (
         <div className={`${isWideMode ? 'w-64' : 'w-20'} bg-[#1e1e1e] h-screen fixed left-0 z-50 transition-all duration-200 ease-in-out px-2 py-3 overflow-y-auto border-r border-[#333] scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-[#1e1e1e]`}>
             <div className="mb-5 flex justify-center">
-                <Link to="/" className="flex items-center justify-center p-2">
-                    <img 
-                        src="/avatar-placeholder.png" 
-                        alt="XChan" 
-                        className={`${isWideMode ? 'w-10 h-10' : 'w-8 h-8'} rounded-full border-2 border-gray-700`}
-                    />
-                    {isWideMode && (
-                        <span className="ml-2 text-xl font-bold text-white">XChan</span>
-                    )}
-                </Link>
+                <Link
+					to='/'
+					className='flex items-center justify-center lg:justify-start lg:gap-4 w-full px-3'
+				>
+					<div className='relative h-10 w-10 flex items-center justify-center'>
+						<Logo size="normal" />
+					</div>
+					{isWideMode && (
+						<span className='font-bold text-xl hidden lg:block'>
+							XChan
+						</span>
+					)}
+				</Link>
             </div>
 
             <div className="flex flex-col space-y-1">

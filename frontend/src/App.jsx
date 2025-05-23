@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from './components/ThemeProvider';
 import { ThemeToggle } from './components/ThemeToggle';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaExpand, FaCompress } from 'react-icons/fa';
 
 import HomePage from "./pages/home/HomePage";
@@ -24,14 +24,14 @@ import PostPage from "./pages/PostPage";
         }, 10);
       });
     };
-    
+
     window.addEventListener('load', fixScrollbars);
     // Run it once after component mounts
     setTimeout(fixScrollbars, 1000);
-    
+
     // Also periodically check and fix scrollbars
     const interval = setInterval(fixScrollbars, 5000);
-    
+
     return () => {
       window.removeEventListener('load', fixScrollbars);
       clearInterval(interval);
@@ -83,6 +83,40 @@ function App() {
 	});
 
 	const [isWideMode, setIsWideMode] = useState(false);
+	const scrollFixInterval = useRef(null);
+
+	// Super aggressive scroll fix that runs periodically
+	useEffect(() => {
+		// Helper to force scrollbars to be visible
+		const forceScrollbars = () => {
+			document.documentElement.style.overflowY = 'scroll';
+			document.body.style.overflowY = 'scroll';
+
+			const scrollableElements = document.querySelectorAll('.right-panel-scrollable, .right-panel-content, .main-content');
+			scrollableElements.forEach(el => {
+				if (el) {
+					el.style.overflowY = 'scroll';
+					el.style.scrollbarWidth = 'thin';
+				}
+			});
+		};
+
+		// Run immediately
+		forceScrollbars();
+
+		// Run on window resize
+		window.addEventListener('resize', forceScrollbars);
+
+		// Run periodically to ensure scrollbars stay visible
+		scrollFixInterval.current = setInterval(forceScrollbars, 2000);
+
+		return () => {
+			window.removeEventListener('resize', forceScrollbars);
+			if (scrollFixInterval.current) {
+				clearInterval(scrollFixInterval.current);
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		if (authUser?.settings?.appearance?.wideMode !== undefined) {

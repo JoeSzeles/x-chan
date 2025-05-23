@@ -59,13 +59,12 @@ const RightPanel = ({ isWideMode }) => {
 		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'} h-screen`}>
 			<div 
 				className={`bg-[#15202b] p-4 rounded-md ${isWideMode ? 'border-l border-gray-700' : ''}`} 
-				style={{ 
-					maxHeight: '100vh', 
+				style={{
 					height: '100vh',
-					scrollbarWidth: 'thin',
-					scrollbarColor: '#4a5568 #1a202c',
-					overflowY: 'scroll',
-					overflowX: 'hidden',
+					scrollbarWidth: 'thin !important',
+					scrollbarColor: '#4a5568 #1a202c !important',
+					overflowY: 'scroll !important',
+					overflowX: 'hidden !important',
 					position: 'fixed',
 					width: isWideMode ? '320px' : '256px',
 					right: '0',
