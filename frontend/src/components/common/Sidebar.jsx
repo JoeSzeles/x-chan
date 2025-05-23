@@ -54,8 +54,18 @@ const Sidebar = ({ isWideMode }) => {
 							alt="XChan Logo" 
 							className='w-12 h-12'
 							onError={(e) => {
-								console.error("Logo failed to load, trying fallback");
-								e.target.src = "/avatar-placeholder.png";
+								console.error("Logo failed to load from path:", e.target.src);
+								// Try different paths as fallbacks
+								if (e.target.src.includes('/xchan_small.png')) {
+									console.log("Trying relative path to components/images...");
+									e.target.src = "./src/components/images/xchan_small.png";
+								} else if (e.target.src.includes('./src/components/images/xchan_small.png')) {
+									console.log("Trying direct path with origin...");
+									e.target.src = `${window.location.origin}/avatar-placeholder.png`;
+								} else {
+									console.log("Using placeholder as final fallback");
+									e.target.src = "/avatar-placeholder.png";
+								}
 							}}
 						/>
 					</div>

@@ -57,15 +57,16 @@ const RightPanel = ({ isWideMode }) => {
 	};
 
 	return (
-		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'} h-screen`}>
+		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'} h-screen relative`}>
 			<div 
-				className={`bg-[#15202b] p-4 rounded-md sticky top-2 ${isWideMode ? 'border-l border-gray-700' : ''}`} 
+				className={`bg-[#15202b] p-4 rounded-md sticky top-2 overflow-y-auto ${isWideMode ? 'border-l border-gray-700' : ''}`} 
 				style={{ 
 					maxHeight: 'calc(100vh - 16px)', 
-					overflowY: 'auto', 
 					height: 'calc(100vh - 16px)',
 					scrollbarWidth: 'thin',
-					scrollbarColor: '#4a5568 #1a202c'
+					scrollbarColor: '#4a5568 #1a202c',
+					overflowY: 'scroll', /* Force scrollbar to always be visible */
+					overflowX: 'hidden'
 				}}
 			>
 				{/* Search Bar */}

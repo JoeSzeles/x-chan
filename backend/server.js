@@ -61,6 +61,7 @@ console.log('Serving public assets from', frontendPublicPath);
 // Make sure the directories exist before serving
 if (fs.existsSync(frontendBuildPath)) {
     app.use(express.static(frontendBuildPath));
+    console.log('Static files from build directory available at root path');
 } else {
     console.warn(`Warning: Frontend build path not found at ${frontendBuildPath}`);
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
@@ -71,6 +72,41 @@ if (fs.existsSync(frontendPublicPath)) {
     app.use(express.static(frontendPublicPath));
     console.log('Serving public assets from frontend/public directory');
 }
+
+// Also serve from src/components/images as fallback for development
+const imagesPath = path.join(__dirname, '../frontend/src/components/images');
+if (fs.existsSync(imagesPath)) {
+    app.use('/images', express.static(imagesPath));
+    console.log('Serving images from', imagesPath);
+}
+
+// Add specific route for the logo file with detailed logging
+app.get('/xchan_small.png', (req, res) => {
+    console.log('Logo requested, checking paths...');
+    
+    // Check multiple paths in order
+    const paths = [
+        path.join(frontendPublicPath, 'xchan_small.png'),
+        path.join(frontendBuildPath, 'xchan_small.png'),
+        path.join(imagesPath, 'xchan_small.png')
+    ];
+    
+    for (const filePath of paths) {
+        console.log('Checking path:', filePath);
+        if (fs.existsSync(filePath)) {
+            console.log('Logo found at:', filePath);
+            return res.sendFile(filePath);
+        }
+    }
+    
+    console.log('Logo not found in any path, sending placeholder');
+    const placeholderPath = path.join(frontendPublicPath, 'avatar-placeholder.png');
+    if (fs.existsSync(placeholderPath)) {
+        return res.sendFile(placeholderPath);
+    }
+    
+    res.status(404).send('Logo not found');
+});
 
 app.use(cors({
     origin: true,
