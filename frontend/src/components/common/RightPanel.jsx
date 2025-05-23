@@ -72,7 +72,9 @@ const RightPanel = ({ isWideMode }) => {
 					top: '0',
 					bottom: '0',
 					zIndex: 10,
-					paddingBottom: '80px'
+					paddingBottom: '80px',
+					maxHeight: '100vh',
+					overscrollBehavior: 'contain'
 				}}
 			>
 				{/* Search Bar */}

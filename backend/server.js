@@ -82,25 +82,37 @@ if (fs.existsSync(imagesPath)) {
 
 // Add specific route for the logo file with detailed logging
 app.get('/xchan_small.png', (req, res) => {
-    console.log('Logo requested, checking paths...');
+    console.log('LOGO DEBUG: Logo requested, checking paths...');
     
     // Check multiple paths in order
     const paths = [
         path.join(frontendPublicPath, 'xchan_small.png'),
         path.join(frontendBuildPath, 'xchan_small.png'),
         path.join(imagesPath, 'xchan_small.png'),
-        path.join(__dirname, '../frontend/src/components/images/xchan_small.png')
+        path.join(__dirname, '../frontend/src/components/images/xchan_small.png'),
+        path.join(__dirname, '../frontend/public/xchan_small.png')
     ];
     
+    // Check if files exist first
+    console.log('LOGO DEBUG: Checking if these paths exist:');
+    paths.forEach(p => {
+        const exists = fs.existsSync(p);
+        console.log(`LOGO DEBUG: ${p} exists: ${exists}`);
+    });
+    
     for (const filePath of paths) {
-        console.log('Checking path:', filePath);
+        console.log('LOGO DEBUG: Trying to serve from path:', filePath);
         if (fs.existsSync(filePath)) {
-            console.log('Logo found at:', filePath);
+            console.log('LOGO DEBUG: Logo found at:', filePath);
             // Set cache headers
             res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
-            return res.sendFile(filePath);
+            try {
+                return res.sendFile(filePath);
+            } catch (error) {
+                console.error('LOGO DEBUG: Error sending file:', error);
+            }
         }
     }
     
