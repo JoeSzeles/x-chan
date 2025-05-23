@@ -80,11 +80,19 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
-// Set proper Content-Type for all API responses
+// Set proper Content-Type for all API responses and static files
 app.use((req, res, next) => {
     // For API routes, ensure proper JSON content type
     if (req.path.startsWith('/api')) {
         res.setHeader('Content-Type', 'application/json');
+    }
+    // Ensure JavaScript files get the correct MIME type
+    else if (req.path.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+    }
+    // Ensure CSS files get the correct MIME type
+    else if (req.path.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
     }
     next();
 });

@@ -11,6 +11,16 @@ path = "/assets/*.js"
 name = "Content-Type"
 value = "application/javascript"
 
+[[deployment.responseHeaders]]
+path = "/*-*.js"
+name = "Content-Type"
+value = "application/javascript"
+
+[[deployment.responseHeaders]]
+path = "/assets/*-*.js"
+name = "Content-Type"
+value = "application/javascript"
+
 [[deployment.rewrites]]
 from = "/*"
 to = "/index.html"
