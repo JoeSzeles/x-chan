@@ -55,12 +55,19 @@ const BoardDetailPage = ({ isWideMode }) => {
                 credentials: 'include'
             });
             
-            // Parse response as JSON
-            const data = await res.json();
-            
             if (!res.ok) {
-                throw new Error(data.error || 'Failed to update cover photo');
+                // Try to parse error from response
+                try {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || `Failed to update cover photo: ${res.status} ${res.statusText}`);
+                } catch (jsonError) {
+                    // If parsing fails, throw generic error with status
+                    throw new Error(`Failed to update cover photo: ${res.status} ${res.statusText}`);
+                }
             }
+            
+            // Parse successful response as JSON
+            const data = await res.json();
             
             // Update the query cache and show success message
             queryClient.invalidateQueries(['board', boardName]);
