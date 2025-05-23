@@ -53,6 +53,7 @@ const Sidebar = ({ isWideMode }) => {
 							src="/avatar-placeholder.png" 
 							alt="XChan Logo" 
 							className='w-12 h-12'
+							style={{ display: 'block' }}
 						/>
 					</div>
 				</Link>
