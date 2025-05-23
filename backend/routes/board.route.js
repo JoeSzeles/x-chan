@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
 
 // Configure multer with local storage
 const upload = multer({ 
-    storage: coverStorage,
+    storage: storage,
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB limit
     }
@@ -498,20 +498,14 @@ router.put('/:boardId/follow', protectRoute, async (req, res) => {
     }
 });
 
-// Configure upload with size and file type limits
-const upload = multer({
-    storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
-    },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!allowedTypes.includes(file.mimetype)) {
-            return cb(new Error('Only JPEG, PNG and GIF are allowed'), false);
-        }
-        cb(null, true);
+// Update the multer configuration with file type validation
+upload.fileFilter = (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error('Only JPEG, PNG and GIF are allowed'), false);
     }
-});
+    cb(null, true);
+};
 
 // Update board cover photo
 router.put('/:boardName/cover', protectRoute, upload.single('coverPhoto'), async (req, res) => {
@@ -629,17 +623,7 @@ router.put('/:boardName/cover', protectRoute, upload.single('coverPhoto'), async
             coverPhoto: secureUrl
         };
 
-        // Prepare response object
-            const response = {
-                success: true,
-                message: 'Cover photo updated successfully',
-                board: {
-                    ...board.toObject(),
-                    coverPhoto: secureUrl
-                }
-            };
-            
-            console.log('Sending response:', response);
+        console.log('Sending response:', response);
             res.status(200).json(response);
         } catch (cloudinaryError) {
             console.error('Error uploading to Cloudinary:', cloudinaryError);
