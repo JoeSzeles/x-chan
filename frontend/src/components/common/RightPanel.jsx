@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
@@ -71,8 +70,7 @@ const RightPanel = ({ isWideMode }) => {
 					width: isWideMode ? '320px' : '256px',
 					right: '0',
 					top: '0',
-					bottom: '0',
-					boxSizing: 'border-box'
+					zIndex: 10
 				}}
 			>
 				{/* Search Bar */}
