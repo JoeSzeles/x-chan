@@ -21,24 +21,13 @@ export const getUserProfile = async (req, res) => {
 };
 
 export const followUnfollowUser = async (req, res) => {
+  const { username } = req.params;
+  const userId = req.user._id;
+
   try {
-    // Handle both username and id params
-    const { username, id } = req.params;
-    const userId = req.user._id;
-    
-    let userToModify;
-    
-    // Try to find by username first if provided
-    if (username) {
-      userToModify = await User.findOne({ username });
-    } 
-    // Then try by ID if provided or username not found
-    else if (id) {
-      userToModify = await User.findById(id);
-    }
+    const userToModify = await User.findOne({ username });
 
     if (!userToModify) {
-      console.log(`User not found with ${username ? 'username: ' + username : 'id: ' + id}`);
       return res.status(404).json({ error: "User not found" });
     }
 
@@ -65,12 +54,8 @@ export const followUnfollowUser = async (req, res) => {
       await User.findByIdAndUpdate(userToModify._id, {
         $pull: { followers: userId },
       });
-      
-      console.log(`User ${userId} unfollowed ${userToModify._id}`);
       res.status(200).json({
         message: `You have unfollowed ${userToModify.username}`,
-        followers: userToModify.followers.filter(id => id.toString() !== userId.toString()),
-        isFollowing: false
       });
     } else {
       // Follow
@@ -83,6 +68,7 @@ export const followUnfollowUser = async (req, res) => {
 
       // Create follow notification
       try {
+        const { createFollowNotification } = await import('./notification.controller.js');
         await createFollowNotification(userId, userToModify._id);
         console.log(`Follow notification created from ${userId} to ${userToModify._id}`);
       } catch (notifError) {
@@ -90,15 +76,11 @@ export const followUnfollowUser = async (req, res) => {
         // Don't fail the follow if notification creation fails
       }
 
-      console.log(`User ${userId} followed ${userToModify._id}`);
       res.status(200).json({
         message: `You are now following ${userToModify.username}`,
-        followers: [...userToModify.followers, userId],
-        isFollowing: true
       });
     }
   } catch (error) {
-    console.error("Error in followUnfollowUser:", error);
     res.status(500).json({ error: error.message });
   }
 };
