@@ -80,6 +80,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/assets', express.static(path.join(__dirname, '../frontend/public/assets')));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
