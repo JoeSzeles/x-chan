@@ -117,7 +117,7 @@ const EditProfileModal = ({ authUser, onClose }) => {
 				<div className="flex justify-between items-center mb-6">
 					<div className="flex items-center gap-4">
 						<img 
-							src="/assets/xchan.png" 
+							src="/src/components/images/xchan.png" 
 							alt="X Logo" 
 							className="w-8 h-8 object-contain"
 						/>

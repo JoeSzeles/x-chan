@@ -46,11 +46,11 @@ const Sidebar = ({ isWideMode }) => {
 
 	return (
 		<div className={`${isWideMode ? 'w-64' : 'md:flex-[2_2_0] w-18 max-w-52'}`}>
-			<div className={`sticky top-0 left-0 h-screen overflow-y-auto flex flex-col ${isWideMode ? 'border-r border-gray-700' : ''} ${isWideMode ? 'w-64' : 'w-20 md:w-full'}`}>
+			<div className={`sticky top-0 left-0 h-screen flex flex-col ${isWideMode ? 'border-r border-gray-700' : ''} ${isWideMode ? 'w-64' : 'w-20 md:w-full'}`}>
 				<Link to='/' className='flex justify-center md:justify-start p-6'>
 					<div className='w-16 h-16 rounded-full hover:bg-stone-900 transition-all duration-200 flex items-center justify-center'>
 						<img 
-							src="/assets/xchan_small.png" 
+							src="/src/components/images/xchan_small.png" 
 							alt="XChan Logo" 
 							className='w-12 h-12'
 						/>

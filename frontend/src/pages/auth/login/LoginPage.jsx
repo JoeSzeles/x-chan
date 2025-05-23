@@ -55,8 +55,8 @@ const LoginPage = () => {
 		<div className='flex flex-col items-center justify-center min-h-screen'>
 			<div className='flex flex-col items-center gap-8 w-full max-w-md p-8 rounded-lg bg-[#1e1e1e]'>
 				<img 
-					src="/assets/xchan.png" 
-					alt="XChan Logo" 
+					src="/src/components/images/xchan.png" 
+					alt="4Chan Logo" 
 					className='w-32 h-32 object-contain'
 				/>
 				<h1 className='text-3xl font-bold'>Sign in to XChan</h1>

@@ -1,43 +1,64 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
-export const protect = async (req, res, next) => {
-  let token;
+const userCache = new Map();
 
-  // Check if token exists in cookies
-  if (req.cookies && req.cookies.jwt) {
-    token = req.cookies.jwt;
-  }
-  // Check if token exists in authorization header
-  else if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
-  }
+export const verifyToken = async (req, res, next) => {
+    try {
+        // Check cookies first
+        let token = req.cookies.jwt;
+        
+        // If no cookie, check Authorization header as fallback
+        if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+            token = req.headers.authorization.split(' ')[1];
+        }
+        
+        if (!token) {
+            console.log('[Auth] No token found in cookies or headers');
+            return res.status(401).json({ error: "Unauthorized - No Token Provided" });
+        }
 
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Not authorized, no token" });
-  }
+        console.log('[Auth] Token found:', token.substring(0, 20) + '...');
+        
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            
+            if (!decoded || !decoded.userId) {
+                console.log('[Auth] Invalid token payload');
+                return res.status(401).json({ error: "Unauthorized - Invalid Token" });
+            }
+            
+            console.log('[Auth] Token decoded successfully for user:', decoded.userId);
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
+            // Check cache first for performance
+            if (userCache.has(decoded.userId)) {
+                req.user = userCache.get(decoded.userId);
+                console.log('[Auth] User retrieved from cache');
+                return next();
+            }
 
-    if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" });
+            // Fetch user from database
+            const user = await User.findById(decoded.userId).select("-password");
+            
+            if (!user) {
+                console.log('[Auth] User not found for ID:', decoded.userId);
+                return res.status(404).json({ error: "User not found" });
+            }
+
+            console.log('[Auth] User authenticated successfully');
+
+            // Cache user for 5 minutes
+            userCache.set(decoded.userId, user);
+            setTimeout(() => userCache.delete(decoded.userId), 5 * 60 * 1000);
+
+            req.user = user;
+            next();
+        } catch (jwtError) {
+            console.error('[Auth] JWT verification failed:', jwtError.message);
+            return res.status(401).json({ error: "Unauthorized - Invalid Token" });
+        }
+    } catch (error) {
+        console.error("[Auth] Error in verifyToken middleware:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
-
-    req.user = user;
-    next();
-  } catch (error) {
-    console.error("Auth error:", error.message);
-
-    // Return a proper JSON response 
-    return res.status(401).json({ 
-      success: false, 
-      message: "Authentication failed",
-      error: error.name === 'JsonWebTokenError' ? 'Invalid token' : error.message
-    });
-  }
 };

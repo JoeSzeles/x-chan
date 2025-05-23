@@ -57,16 +57,7 @@ const frontendBuildPath = path.join(__dirname, '../frontend/dist');
 console.log('Serving frontend from', frontendBuildPath);
 // Make sure the directory exists before serving
 if (fs.existsSync(frontendBuildPath)) {
-    // Set proper MIME types for JavaScript files
-    app.use(express.static(frontendBuildPath, {
-        setHeaders: (res, path) => {
-            if (path.endsWith('.js')) {
-                res.setHeader('Content-Type', 'application/javascript');
-            } else if (path.endsWith('.css')) {
-                res.setHeader('Content-Type', 'text/css');
-            }
-        }
-    }));
+    app.use(express.static(frontendBuildPath));
 } else {
     console.warn(`Warning: Frontend build path not found at ${frontendBuildPath}`);
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
@@ -79,23 +70,6 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
-
-// Set proper Content-Type for all API responses and static files
-app.use((req, res, next) => {
-    // For API routes, ensure proper JSON content type
-    if (req.path.startsWith('/api')) {
-        res.setHeader('Content-Type', 'application/json');
-    }
-    // Ensure JavaScript files get the correct MIME type
-    else if (req.path.endsWith('.js')) {
-        res.setHeader('Content-Type', 'application/javascript');
-    }
-    // Ensure CSS files get the correct MIME type
-    else if (req.path.endsWith('.css')) {
-        res.setHeader('Content-Type', 'text/css');
-    }
-    next();
-});
 
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
