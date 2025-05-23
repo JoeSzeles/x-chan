@@ -93,7 +93,7 @@ localPort = 5000
 externalPort = 5000
 
 [workflows]
-runButton = "Dev Server"
+runButton = "Deep Clean and Rebuild"
 
 [[workflows.workflow]]
 name = "Backend Server"
@@ -198,6 +198,31 @@ args = "cd frontend && rm -rf node_modules/.cache"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd frontend && rm -rf node_modules/.vite"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run build"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm run dev"
+
+[[workflows.workflow]]
+name = "Deep Clean and Rebuild"
+author = 41107035
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && rm -rf node_modules/.vite"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && rm -rf node_modules/.cache"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && rm -rf dist"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
