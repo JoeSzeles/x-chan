@@ -67,26 +67,6 @@ const WhosOnline = () => {
                                 <span className='text-sm text-slate-500'>@{user.username}</span>
                             </div>
                         </div>
-                        {authUser && authUser._id !== user._id && (
-                            <button
-                                className='bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white rounded-full px-3 py-1 text-sm font-semibold transition-all'
-                                onClick={async () => {
-                                    try {
-                                        const res = await fetch(`/api/users/follow/${user._id}`, {
-                                            method: 'POST',
-                                        });
-                                        if (!res.ok) throw new Error('Failed to follow user');
-                                        // Force refetch
-                                        await queryClient.invalidateQueries(["onlineUsers"]);
-                                        await queryClient.invalidateQueries(["authUser"]);
-                                    } catch (error) {
-                                        console.error('Error following user:', error);
-                                    }
-                                }}
-                            >
-                                {authUser.following?.includes(user._id) ? 'Unfollow' : 'Follow'}
-                            </button>
-                        )}
                     </div>
                 ))}
                 {!isLoading && (!onlineUsers || onlineUsers.length === 0) && (
