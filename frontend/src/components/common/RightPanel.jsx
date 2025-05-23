@@ -64,13 +64,15 @@ const RightPanel = ({ isWideMode }) => {
 					height: '100vh',
 					scrollbarWidth: 'thin',
 					scrollbarColor: '#4a5568 #1a202c',
-					overflowY: 'scroll',
+					overflowY: 'auto',
 					overflowX: 'hidden',
 					position: 'fixed',
 					width: isWideMode ? '320px' : '256px',
 					right: '0',
 					top: '0',
-					zIndex: 10
+					bottom: '0',
+					zIndex: 10,
+					paddingBottom: '60px'
 				}}
 			>
 				{/* Search Bar */}
