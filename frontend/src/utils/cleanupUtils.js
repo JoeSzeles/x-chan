@@ -61,6 +61,28 @@ export const setupGlobalErrorHandlers = () => {
   // Handle SES warnings
   fixSESWarnings();
   
+  // Ensure React is properly exposed globally to prevent "g.React is undefined" errors
+  try {
+    // Import React dynamically to ensure it's available
+    import('react').then(React => {
+      // Make React available on window/global for libraries that might look for it there
+      window.React = React;
+      
+      // Also ensure it's available on 'g' which appears in the error message
+      if (typeof window.g === 'object') {
+        window.g.React = React;
+      } else {
+        window.g = { React };
+      }
+      
+      console.log('React exposed globally to prevent reference errors');
+    }).catch(err => {
+      console.error('Failed to expose React globally:', err);
+    });
+  } catch (error) {
+    console.error('Error setting up global React reference:', error);
+  }
+  
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled Promise Rejection:', event.reason);
@@ -83,6 +105,22 @@ export const setupGlobalErrorHandlers = () => {
         event.error.message.includes('JSON.parse')) {
       console.warn('Caught JSON parsing error, attempting recovery...');
       fixJsonParsingErrors();
+    }
+    
+    // Handle React undefined errors
+    if (event.error instanceof TypeError && 
+        event.error.message.includes('React is undefined')) {
+      console.warn('React undefined error detected, attempting recovery...');
+      // Try to re-expose React
+      try {
+        import('react').then(React => {
+          window.React = React;
+          if (typeof window.g === 'object') window.g.React = React;
+          console.log('Re-exposed React globally after error');
+        });
+      } catch (e) {
+        console.error('Failed to recover from React undefined error:', e);
+      }
     }
   });
   

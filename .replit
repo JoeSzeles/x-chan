@@ -168,3 +168,20 @@ args = "cd frontend && npm run build"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd backend && npm run dev"
+
+[[workflows.workflow]]
+name = "Clear Cache and Rebuild"
+author = 41107035
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && rm -rf node_modules/.vite"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd frontend && npm run build"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && npm run dev"
