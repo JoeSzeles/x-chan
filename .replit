@@ -1,6 +1,20 @@
 modules = ["nodejs-20", "web", "postgresql-16"]
 run = "npm run dev"
 
+[[deployment.responseHeaders]]
+path = "/*.js"
+name = "Content-Type"
+value = "application/javascript"
+
+[[deployment.responseHeaders]]
+path = "/assets/*.js"
+name = "Content-Type"
+value = "application/javascript"
+
+[[deployment.rewrites]]
+from = "/*"
+to = "/index.html"
+
 [nix]
 channel = "stable-24_05"
 
