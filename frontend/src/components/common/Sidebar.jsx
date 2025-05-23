@@ -127,7 +127,7 @@ const Sidebar = ({ isWideMode }) => {
 						>
 							<BsGrid3X3 className='w-6 h-6' />
 							<span className='text-lg hidden md:block'>Boards</span>
-						</Link>
+						Link>
 					</li>
 					<li className='flex justify-center md:justify-start'>
 						<Link
