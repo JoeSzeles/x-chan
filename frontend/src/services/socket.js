@@ -1,3 +1,4 @@
+
 import { io } from 'socket.io-client';
 
 let socket;
@@ -7,27 +8,25 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 export const initSocket = () => {
   if (socket && socket.connected) return socket;
 
-  // Use window.location.origin to ensure we connect to the same domain
-  const baseUrl = window.location.origin.includes('localhost') ? 
-    'http://0.0.0.0:5000' : 
-    window.location.origin;
-
+  // Use window.location.origin to connect to the current domain
+  // This ensures proper connection in both development and production
+  const baseUrl = window.location.origin;
+  
   console.log('Connecting to socket server at:', baseUrl);
 
   socket = io(baseUrl, {
     path: '/socket.io',
-    transports: ['polling', 'websocket'],
+    transports: ['websocket', 'polling'],
     reconnection: true,
     reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
     reconnectionDelay: 1000,
-    timeout: 10000,
+    timeout: 20000,
     withCredentials: true,
-    forceNew: true,
     autoConnect: true
   });
 
   socket.on('connect', () => {
-    console.log('Socket connected successfully');
+    console.log('Socket connected successfully:', socket.id);
     reconnectAttempts = 0;
     const userId = localStorage.getItem('userId');
     if (userId) {
@@ -37,16 +36,31 @@ export const initSocket = () => {
   });
 
   socket.on('connect_error', (error) => {
-    console.error('Socket connection error:', error);
+    console.error('Socket connection error:', error.message);
     reconnectAttempts++;
 
     if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
       console.error('Max reconnection attempts reached');
+    } else {
+      console.log(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+      // If websocket fails, try polling
+      if (socket.io.opts.transports[0] === 'websocket') {
+        console.log('Switching to polling transport');
+        socket.io.opts.transports = ['polling', 'websocket'];
+      }
     }
   });
 
   socket.on('disconnect', (reason) => {
     console.log('Socket disconnected:', reason);
+    if (reason === 'io server disconnect') {
+      // Server initiated disconnect, try to reconnect
+      socket.connect();
+    }
+  });
+
+  socket.io.on("error", (error) => {
+    console.error('Socket IO error:', error);
   });
 
   return socket;

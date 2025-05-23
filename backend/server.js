@@ -15,6 +15,10 @@ import { v2 as cloudinary } from "cloudinary";
 global.USE_MOCK_DATA = false;
 console.log('Mock data DISABLED - system will attempt real scraping');
 
+// Get the directory path in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Import routes
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
@@ -36,9 +40,6 @@ import liveBoardRoutes from './routes/liveBoard.js';
 import connectMongoDB from "./db/connectMongoDB.js";
 import coverPhotoRoutes from './routes/cover-photo.route.js'; // Import cover photo route
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 dotenv.config();
 
 cloudinary.config({
@@ -51,6 +52,17 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = '0.0.0.0';
 
+// Serve frontend files in production
+const frontendBuildPath = path.join(__dirname, '../frontend/dist');
+console.log('Serving frontend from', frontendBuildPath);
+// Make sure the directory exists before serving
+if (fs.existsSync(frontendBuildPath)) {
+    app.use(express.static(frontendBuildPath));
+} else {
+    console.warn(`Warning: Frontend build path not found at ${frontendBuildPath}`);
+    console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
+}
+
 app.use(cors({
     origin: true,
     credentials: true
@@ -58,25 +70,6 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
-
-// Add CSP headers for deployment
-app.use((req, res, next) => {
-    // Set Content Security Policy headers
-    res.setHeader(
-        'Content-Security-Policy',
-        "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; " +
-        "style-src * 'unsafe-inline' data: blob:; " + 
-        "img-src * data: blob:; " + 
-        "font-src * data:; " +
-        "connect-src * ws: wss:; " +
-        "frame-src *; " +
-        "media-src *; " +
-        "object-src 'none'; " +
-        "worker-src * blob:;"
-    );
-    next();
-});
 
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -105,16 +98,15 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 app.use('/api/cover-photo', coverPhotoRoutes);
 
-// Serve static frontend files
-const frontendDistPath = path.resolve(__dirname, '../frontend/dist');
-if (fs.existsSync(frontendDistPath)) {
-    console.log('Serving frontend from', frontendDistPath);
-    app.use(express.static(frontendDistPath));
-    
-    // Import and use the index routes (should be last)
-    import indexRoutes from './routes/index.js';
-    app.use(indexRoutes);
-}
+// Catch-all route to serve the frontend for any non-API routes
+app.get('*', (req, res) => {
+    // Exclude API routes from the catch-all
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/socket.io')) {
+        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    } else {
+        res.status(404).json({ error: 'API endpoint not found' });
+    }
+});
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {

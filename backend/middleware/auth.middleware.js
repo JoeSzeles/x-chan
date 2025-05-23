@@ -20,11 +20,6 @@ export const verifyToken = async (req, res, next) => {
 
         console.log('[Auth] Token found:', token.substring(0, 20) + '...');
         
-        if (!process.env.JWT_SECRET) {
-            console.error('[Auth] JWT_SECRET is not defined in environment variables');
-            return res.status(500).json({ error: "Server configuration error" });
-        }
-        
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             
@@ -64,6 +59,6 @@ export const verifyToken = async (req, res, next) => {
         }
     } catch (error) {
         console.error("[Auth] Error in verifyToken middleware:", error);
-        return res.status(500).json({ error: "Internal server error", message: error.message });
+        res.status(500).json({ error: "Internal server error" });
     }
 };

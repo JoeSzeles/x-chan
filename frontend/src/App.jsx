@@ -35,51 +35,23 @@ function App() {
 		queryKey: ["authUser"],
 		queryFn: async () => {
 			try {
-				const token = localStorage.getItem("token");
-				console.log("Auth token available:", !!token);
-				
 				const res = await fetch("/api/auth/me", {
 					credentials: 'include',
 					headers: {
-						"Authorization": token ? `Bearer ${token}` : '',
-						"Accept": "application/json",
-						"Content-Type": "application/json"
+						"Authorization": `Bearer ${localStorage.getItem("token")}`,
 					},
 				});
-				
-				if (!res.ok) {
-					// Try to parse error response
-					let errorData;
-					try {
-						errorData = await res.json();
-					} catch (e) {
-						console.error("Failed to parse error response:", e);
-						errorData = { error: `HTTP error ${res.status}` };
-					}
-					
-					console.error("Auth API error:", {
-						status: res.status,
-						statusText: res.statusText,
-						data: errorData
-					});
-					
-					throw new Error(errorData.error || "Authentication failed");
-				}
-				
 				const data = await res.json();
+				if (!res.ok) {
+					throw new Error(data.error || "Something went wrong");
+				}
 				return data;
 			} catch (error) {
 				console.error("Error fetching user:", error);
-				// Clear token if we get authentication errors
-				if (error.message?.includes("Unauthorized") || 
-					error.message?.includes("Invalid Token")) {
-					localStorage.removeItem("token");
-				}
 				return null;
 			}
 		},
-		retry: 1,
-		retryDelay: 1000
+		retry: false,
 	});
 
 	const [isWideMode, setIsWideMode] = useState(false);
