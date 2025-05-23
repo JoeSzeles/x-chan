@@ -100,20 +100,54 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
 	try {
-		res.cookie("jwt", "", { maxAge: 0 });
+		// Clear the JWT cookie
+		res.cookie("jwt", "", {
+			maxAge: 0,
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'lax',
+			path: '/'
+		});
+		
+		console.log('[Auth] User logged out successfully');
 		res.status(200).json({ message: "Logged out successfully" });
 	} catch (error) {
-		console.log("Error in logout controller", error.message);
+		console.error("Error in logout controller", error.message);
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
 
 export const getMe = async (req, res) => {
 	try {
+		if (!req.user || !req.user._id) {
+			console.log('[Auth] getMe called without valid user in request');
+			return res.status(401).json({ error: "Not authenticated" });
+		}
+		
 		const user = await User.findById(req.user._id).select("-password");
+		
+		if (!user) {
+			console.log('[Auth] User not found in database:', req.user._id);
+			return res.status(404).json({ error: "User not found" });
+		}
+		
+		// Refresh the JWT token to extend session
+		const token = req.cookies.jwt;
+		if (token) {
+			// Refresh the cookie with the same token but reset expiry
+			res.cookie("jwt", token, {
+				maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				path: '/'
+			});
+		}
+		
+		console.log('[Auth] User data retrieved successfully for ID:', user._id);
 		res.status(200).json(user);
 	} catch (error) {
-		console.log("Error in getMe controller", error.message);
+		console.error("Error in getMe controller", error.message);
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
