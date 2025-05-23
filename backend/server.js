@@ -54,13 +54,22 @@ const HOST = '0.0.0.0';
 
 // Serve frontend files in production
 const frontendBuildPath = path.join(__dirname, '../frontend/dist');
+const frontendPublicPath = path.join(__dirname, '../frontend/public');
 console.log('Serving frontend from', frontendBuildPath);
-// Make sure the directory exists before serving
+console.log('Serving public assets from', frontendPublicPath);
+
+// Make sure the directories exist before serving
 if (fs.existsSync(frontendBuildPath)) {
     app.use(express.static(frontendBuildPath));
 } else {
     console.warn(`Warning: Frontend build path not found at ${frontendBuildPath}`);
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
+}
+
+// Serve files from frontend/public directory even in development mode
+if (fs.existsSync(frontendPublicPath)) {
+    app.use(express.static(frontendPublicPath));
+    console.log('Serving public assets from frontend/public directory');
 }
 
 app.use(cors({

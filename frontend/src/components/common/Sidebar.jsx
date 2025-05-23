@@ -53,6 +53,10 @@ const Sidebar = ({ isWideMode }) => {
 							src="/xchan_small.png" 
 							alt="XChan Logo" 
 							className='w-12 h-12'
+							onError={(e) => {
+								console.log("Logo failed to load, trying fallback");
+								e.target.src = "/avatar-placeholder.png";
+							}}
 						/>
 					</div>
 				</Link>
