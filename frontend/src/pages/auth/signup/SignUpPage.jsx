@@ -48,8 +48,8 @@ const SignUpPage = () => {
 		<div className='flex flex-col items-center justify-center min-h-screen'>
 			<div className='flex flex-col items-center gap-8 w-full max-w-md p-8 rounded-lg bg-[#1e1e1e]'>
 				<img 
-					src="/src/components/images/xchan.png" 
-					alt="4Chan Logo" 
+					src="/assets/xchan.png" 
+					alt="XChan Logo" 
 					className='w-32 h-32 object-contain'
 				/>
 				<h1 className='text-3xl font-bold'>Create your account</h1>

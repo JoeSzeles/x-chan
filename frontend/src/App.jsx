@@ -12,33 +12,6 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import SharedPost from "./pages/SharedPost";
 import PostPage from "./pages/PostPage";
-
-  // Force scroll redraw when app loads
-  useEffect(() => {
-    const fixScrollbars = () => {
-      const scrollElements = document.querySelectorAll('.right-panel-scrollable, .main-content-scrollable');
-      scrollElements.forEach(el => {
-        el.style.overflowY = 'hidden';
-        setTimeout(() => {
-          el.style.overflowY = 'scroll';
-        }, 10);
-      });
-    };
-    
-    window.addEventListener('load', fixScrollbars);
-    // Run it once after component mounts
-    setTimeout(fixScrollbars, 1000);
-    
-    // Also periodically check and fix scrollbars
-    const interval = setInterval(fixScrollbars, 5000);
-    
-    return () => {
-      window.removeEventListener('load', fixScrollbars);
-      clearInterval(interval);
-    };
-  }, []);
-
-
 import ThreadView from "./components/common/ThreadView";
 import NewsPage from "./pages/news/NewsPage";
 import BookmarksPage from "./pages/BookmarksPage";
@@ -56,7 +29,6 @@ import RightPanel from "./components/common/RightPanel";
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner";
-import LogoDebugger from './components/common/LogoDebugger';
 
 function App() {
 	const { data: authUser } = useQuery({
@@ -100,8 +72,8 @@ function App() {
 
 	return (
 		<ThemeProvider>
-			<div className="min-h-screen bg-background-main text-text-primary font-primary overflow-hidden">
-				<div className={`flex ${isWideMode ? 'justify-between' : 'max-w-6xl mx-auto'} relative`}>
+			<div className="min-h-screen bg-background-main text-text-primary font-primary">
+				<div className={`flex ${isWideMode ? 'justify-between' : 'max-w-6xl mx-auto'}`}>
 					{/* Common component, bc it's not wrapped with Routes */}
 					{authUser && <Sidebar isWideMode={isWideMode} />}
 					<Routes>

@@ -54,68 +54,14 @@ const HOST = '0.0.0.0';
 
 // Serve frontend files in production
 const frontendBuildPath = path.join(__dirname, '../frontend/dist');
-const frontendPublicPath = path.join(__dirname, '../frontend/public');
 console.log('Serving frontend from', frontendBuildPath);
-console.log('Serving public assets from', frontendPublicPath);
-
-// Make sure the directories exist before serving
+// Make sure the directory exists before serving
 if (fs.existsSync(frontendBuildPath)) {
     app.use(express.static(frontendBuildPath));
-    console.log('Static files from build directory available at root path');
 } else {
     console.warn(`Warning: Frontend build path not found at ${frontendBuildPath}`);
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
 }
-
-// Serve files from frontend/public directory even in development mode
-if (fs.existsSync(frontendPublicPath)) {
-    app.use(express.static(frontendPublicPath));
-    console.log('Serving public assets from frontend/public directory');
-}
-
-// Also serve from src/components/images as fallback for development
-const imagesPath = path.join(__dirname, '../frontend/src/components/images');
-if (fs.existsSync(imagesPath)) {
-    app.use('/images', express.static(imagesPath));
-    console.log('Serving images from', imagesPath);
-}
-
-// Simple fallback for logo file with placeholder
-app.get('/xchan_small.png', (req, res) => {
-    const logoPath = path.join(frontendPublicPath, 'xchan_small.png');
-    const placeholderPath = path.join(frontendPublicPath, 'avatar-placeholder.png');
-    
-    // Try to serve the logo first
-    if (fs.existsSync(logoPath)) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        return res.sendFile(logoPath);
-    }
-    
-    // Fall back to placeholder if logo not found
-    if (fs.existsSync(placeholderPath)) {
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        return res.sendFile(placeholderPath);
-    }
-    
-    res.status(404).send('Logo not found');
-});
-
-// Also make logo available at images path
-app.use('/images/xchan_small.png', (req, res) => {
-    const logoPath = path.join(frontendPublicPath, 'xchan_small.png');
-    const placeholderPath = path.join(frontendPublicPath, 'avatar-placeholder.png');
-    
-    if (fs.existsSync(logoPath)) {
-        res.sendFile(logoPath);
-    } else if (fs.existsSync(placeholderPath)) {
-        res.sendFile(placeholderPath);
-    } else {
-        res.status(404).send('Logo not found');
-    }
-});
-
-// Also serve content from the components/images directory at the root
-app.use('/images', express.static(path.join(__dirname, '../frontend/src/components/images')));
 
 app.use(cors({
     origin: true,
