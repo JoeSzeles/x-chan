@@ -38,7 +38,16 @@ const getCachedTweet = (url) => {
         const cachedData = localStorage.getItem(CACHE_PREFIX + url);
         if (!cachedData) return null;
 
-        const { data, timestamp } = JSON.parse(cachedData);
+        let parsedData;
+        try {
+            parsedData = JSON.parse(cachedData);
+        } catch (parseError) {
+            console.error('Error parsing cached data, clearing invalid cache:', parseError);
+            localStorage.removeItem(CACHE_PREFIX + url);
+            return null;
+        }
+
+        const { data, timestamp } = parsedData;
         const now = Date.now();
 
         // Check if cache is expired
@@ -50,6 +59,7 @@ const getCachedTweet = (url) => {
         return data;
     } catch (error) {
         console.error('Error reading from cache:', error);
+        localStorage.removeItem(CACHE_PREFIX + url);
         return null;
     }
 };

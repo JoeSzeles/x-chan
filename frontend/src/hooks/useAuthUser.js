@@ -258,3 +258,25 @@ export const useAuthUser = () => {
 
     return { user, isLoading, error, login, logout, register, updateProfile, refreshUser };
 };
+// Define query options
+const queryOptions = {
+  retry: (failureCount, error) => {
+    // Only retry for network errors, not auth errors
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      return false;
+    }
+    return failureCount < 3; // Retry up to 3 times for other errors
+  },
+  refetchOnWindowFocus: false,
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  onError: (error) => {
+    console.error("Authentication error:", error);
+    // Only clear user if it's an auth error
+    if (error?.response?.status === 401 || error?.response?.status === 403) {
+      setUser(null);
+      // Clear any invalid tokens
+      localStorage.removeItem('token');
+      document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+  }
+};

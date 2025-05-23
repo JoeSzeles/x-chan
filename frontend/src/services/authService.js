@@ -19,7 +19,7 @@ let failedRequests = [];
 
 const handleAuthError = (error) => {
     console.error('[AuthService] Auth error:', error);
-    
+
     // Handle 401 unauthorized errors
     if (error.response?.status === 401) {
         // Don't immediately logout - try to refresh the session first
@@ -31,7 +31,7 @@ const handleAuthError = (error) => {
             window.location.href = '/login';
         });
     }
-    
+
     // Handle 502 bad gateway errors (server errors)
     if (error.response?.status === 502 || error.status === 502) {
         console.log('[AuthService] Server error, waiting before retry');
@@ -40,7 +40,7 @@ const handleAuthError = (error) => {
             setTimeout(() => reject(error), 2000);
         });
     }
-    
+
     throw error;
 };
 
@@ -50,10 +50,10 @@ const refreshSession = () => {
     if (isRefreshing) {
         return refreshPromise;
     }
-    
+
     console.log('[AuthService] Refreshing auth session');
     isRefreshing = true;
-    
+
     refreshPromise = fetch('/api/auth/me', {
         credentials: 'include'
     })
@@ -74,7 +74,7 @@ const refreshSession = () => {
         isRefreshing = false;
         refreshPromise = null;
     });
-    
+
     return refreshPromise;
 };
 
@@ -97,10 +97,10 @@ export const login = async (credentials) => {
         const data = await response.json();
         localStorage.setItem('token', data.token);
         localStorage.setItem('userData', JSON.stringify(data.user));
-        
+
         // Set session refresh interval
         startSessionKeepAlive();
-        
+
         return data;
     } catch (error) {
         console.error('[AuthService] Login error:', error);
@@ -116,7 +116,7 @@ const startSessionKeepAlive = () => {
     if (keepAliveInterval) {
         clearInterval(keepAliveInterval);
     }
-    
+
     // Refresh session every 10 minutes
     keepAliveInterval = setInterval(() => {
         console.log('[AuthService] Performing session keep-alive');
@@ -132,7 +132,7 @@ export const logout = async () => {
         clearInterval(keepAliveInterval);
         keepAliveInterval = null;
     }
-    
+
     try {
         // Call logout API to clear server-side session
         await fetch('/api/auth/logout', {
@@ -164,7 +164,7 @@ export const getCurrentUser = async () => {
                 // Continue with fetch if parsing fails
             }
         }
-        
+
         const response = await fetch('/api/auth/me', {
             headers: getAuthHeaders(),
             credentials: 'include'
@@ -176,13 +176,19 @@ export const getCurrentUser = async () => {
 
         const data = await response.json();
         localStorage.setItem('userData', JSON.stringify(data));
-        
+
         // Start session keep-alive
         startSessionKeepAlive();
-        
+
         return data;
     } catch (error) {
-        return handleAuthError(error);
+        console.error('[AuthService] Error fetching current user:', error);
+        // Clear any invalid tokens to prevent repeated failed requests
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+        }
+        throw error;
     }
 };
 

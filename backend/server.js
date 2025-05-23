@@ -77,6 +77,26 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Global error handler for unhandled exceptions
+app.use((err, req, res, next) => {
+    console.error('Unhandled exception:', err);
+    res.status(500).json({ 
+        error: 'Server error', 
+        message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : err.message
+    });
+});
+
+// Handle uncaught exceptions to prevent server crashes
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception:', err);
+    // Keep the server running despite errors
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Keep the server running despite promise rejections
+});
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
