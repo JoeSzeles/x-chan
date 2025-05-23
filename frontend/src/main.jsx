@@ -1,4 +1,12 @@
+// Exposing React globally must happen at the very top, before any imports
 import React from "react";
+// Set React globally immediately
+window.React = React;
+// Create global object if it doesn't exist
+if (!window.g) window.g = {};
+// Set React on global object
+window.g.React = React;
+
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
@@ -7,11 +15,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 
-// Ensure React is globally available for debugging and compatibility
-window.React = React;
-
 // Handle SES and JSON parsing errors
-import { setupGlobalErrorHandlers } from './utils/cleanupUtils';
+import { setupGlobalErrorHandlers, exposeReactGlobally } from './utils/cleanupUtils';
+// Run the setup functions for error handling
+exposeReactGlobally();
 setupGlobalErrorHandlers();
 
 // Configure React Query with better error handling

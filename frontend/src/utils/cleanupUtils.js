@@ -57,31 +57,78 @@ export const fixJsonParsingErrors = () => {
 /**
  * Sets up global error handlers to manage common errors
  */
+/**
+ * Exposes React globally to prevent 'g.React is undefined' errors
+ * This makes React available early and adds getter protection
+ */
+export const exposeReactGlobally = () => {
+  try {
+    // Import React synchronously if possible (for faster access)
+    const React = window.React || require('react');
+    
+    // Set React on window
+    window.React = React;
+    
+    // Set React on g (global) which appears in error messages
+    if (!window.g) {
+      // Define window.g with getter for React that ensures it's always available
+      Object.defineProperty(window, 'g', {
+        value: {},
+        writable: true,
+        configurable: true
+      });
+    }
+    
+    // Add React to g with a getter that always returns the current window.React
+    Object.defineProperty(window.g, 'React', {
+      get: function() {
+        return window.React;
+      },
+      configurable: true
+    });
+    
+    // Also define window.g.React directly to ensure it's immediately available
+    window.g.React = React;
+    
+    console.log('React exposed globally with getter protection');
+    return true;
+  } catch (err) {
+    console.error('Failed to expose React synchronously, trying async approach');
+    
+    // Define a proxy getter for g.React to handle asynchronous loading
+    if (!window.g) {
+      window.g = {};
+    }
+    
+    // If synchronous approach fails, try dynamic import
+    import('react').then(React => {
+      window.React = React;
+      window.g.React = React;
+      console.log('React exposed globally via async import');
+    }).catch(err => {
+      console.error('Both sync and async React exposure failed:', err);
+    });
+    
+    return false;
+  }
+};
+
 export const setupGlobalErrorHandlers = () => {
   // Handle SES warnings
   fixSESWarnings();
   
-  // Ensure React is properly exposed globally to prevent "g.React is undefined" errors
-  try {
-    // Import React dynamically to ensure it's available
-    import('react').then(React => {
-      // Make React available on window/global for libraries that might look for it there
-      window.React = React;
-      
-      // Also ensure it's available on 'g' which appears in the error message
-      if (typeof window.g === 'object') {
-        window.g.React = React;
-      } else {
-        window.g = { React };
-      }
-      
-      console.log('React exposed globally to prevent reference errors');
-    }).catch(err => {
-      console.error('Failed to expose React globally:', err);
-    });
-  } catch (error) {
-    console.error('Error setting up global React reference:', error);
-  }
+  // Expose React globally - do this first before any other operations
+  exposeReactGlobally();
+  
+  // Add a safety mechanism to catch React not found errors early and fix them
+  const originalCreateElement = document.createElement;
+  document.createElement = function(tagName) {
+    // Every time a script element is created, ensure React is globally available
+    if (tagName.toLowerCase() === 'script') {
+      exposeReactGlobally();
+    }
+    return originalCreateElement.apply(document, arguments);
+  };
   
   // Handle unhandled promise rejections
   window.addEventListener('unhandledrejection', (event) => {
