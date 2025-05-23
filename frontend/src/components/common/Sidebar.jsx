@@ -50,7 +50,7 @@ const Sidebar = ({ isWideMode }) => {
 				<Link to='/' className='flex justify-center md:justify-start p-6'>
 					<div className='w-16 h-16 rounded-full hover:bg-stone-900 transition-all duration-200 flex items-center justify-center'>
 						<img 
-							src="/src/components/images/xchan_small.png" 
+							src="/avatar-placeholder.png" 
 							alt="XChan Logo" 
 							className='w-12 h-12'
 						/>
