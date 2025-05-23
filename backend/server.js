@@ -80,6 +80,15 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
+// Set proper Content-Type for all API responses
+app.use((req, res, next) => {
+    // For API routes, ensure proper JSON content type
+    if (req.path.startsWith('/api')) {
+        res.setHeader('Content-Type', 'application/json');
+    }
+    next();
+});
+
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });

@@ -1,38 +1,41 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
+import App from "./App";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
-// Make React available globally to prevent 'React is undefined' errors
-window.React = React;
-
-// Add global error handler
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('Unhandled promise rejection:', event.reason);
-});
-
-// Configure query client with logging
+// Configure React Query with better error handling
 const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
 			refetchOnWindowFocus: false,
-			retry: 1,
-			staleTime: 5 * 60 * 1000, // 5 minutes
-		},
-		mutations: {
-			retry: 1,
+			retry: (failureCount, error) => {
+				// Don't retry on 401/403 auth errors
+				if (error?.response?.status === 401 || error?.response?.status === 403) {
+					return false;
+				}
+				// Retry other errors up to 3 times
+				return failureCount < 3;
+			},
+			onError: (error) => {
+				console.error("Query error:", error);
+			}
 		},
 	},
 });
 
 ReactDOM.createRoot(document.getElementById("root")).render(
 	<React.StrictMode>
-		<QueryClientProvider client={queryClient}>
-			<BrowserRouter>
-				<App />
-			</BrowserRouter>
-		</QueryClientProvider>
+		<ErrorBoundary>
+			<QueryClientProvider client={queryClient}>
+				<BrowserRouter>
+					<App />
+					<Toaster position="top-center" />
+				</BrowserRouter>
+			</QueryClientProvider>
+		</ErrorBoundary>
 	</React.StrictMode>
 );
