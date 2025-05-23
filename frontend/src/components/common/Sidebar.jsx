@@ -55,20 +55,8 @@ const Sidebar = ({ isWideMode }) => {
 							className='w-12 h-12'
 							onError={(e) => {
 								console.error("Logo failed to load from path:", e.target.src);
-								// Use direct absolute URL
-								e.target.src = `${window.location.origin}/xchan_small.png`;
-								
-								// If that fails, try the images folder path
-								e.target.onerror = () => {
-									console.log("Trying images folder path");
-									e.target.src = "/images/xchan_small.png";
-									
-									// If that also fails, use the placeholder
-									e.target.onerror = () => {
-										console.log("Using placeholder as final fallback");
-										e.target.src = "/avatar-placeholder.png";
-									};
-								};
+								// Try direct hardcoded URL with no origin
+								e.target.src = "/avatar-placeholder.png";
 							}}
 						/>
 					</div>
