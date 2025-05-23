@@ -109,14 +109,52 @@ class ErrorBoundary extends React.Component {
   }
 
   handleRetry = () => {
-    // First restore React references
-    this.exposeReactGlobally();
-    
-    // Then clear error state
-    this.setState({ hasError: false, error: null, errorInfo: null });
-    
-    // Force refresh the page content
-    window.location.reload();
+    try {
+      // First restore React references
+      this.exposeReactGlobally();
+      
+      console.log("Error boundary attempting recovery");
+      
+      // Explicitly ensure React is available globally
+      if (!window.g) window.g = {};
+      if (window.React && !window.g.React) {
+        window.g.React = window.React;
+      } else if (window.ReactModule) {
+        window.React = window.ReactModule;
+        window.g.React = window.ReactModule;
+      }
+      
+      // Then clear error state
+      this.setState({ hasError: false, error: null, errorInfo: null });
+      
+      // Force refresh the page content if we couldn't recover
+      if (!window.g.React) {
+        console.warn("Could not recover React instance, reloading page");
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error("Error in recovery process:", e);
+      window.location.reload();
+    }
+  }
+  
+  // Add a new method to attempt React recovery
+  exposeReactGlobally = () => {
+    try {
+      // Try to find React from any available source
+      const possibleReact = window.React || window.ReactModule || window._React;
+      
+      if (possibleReact) {
+        window.React = possibleReact;
+        if (!window.g) window.g = {};
+        window.g.React = possibleReact;
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error("Failed to expose React globally:", e);
+      return false;
+    }
   }
 
   render() {

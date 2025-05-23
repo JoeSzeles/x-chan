@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { initSocket, getSocketInstance } from '../../services/socket';
+import { initSocket, getSocket } from '../../services/socket';
 
 const MessageContacts = ({ onStartConversation }) => {
   const [followers, setFollowers] = useState([]);

@@ -136,22 +136,67 @@ export const monitorReactAvailability = () => {
 // Force React injection - use this as a recovery mechanism
 export const injectReactGlobally = () => {
   try {
-    // Get React from any available source
-    const React = getReactInstance();
+    // Get React from multiple possible sources
+    let React = getReactInstance();
+    
+    // If not available from our cache, try window or imports
+    if (!React) {
+      React = window.React || window.ReactModule;
+      if (!React && typeof require === 'function') {
+        try {
+          React = require('react');
+        } catch (e) {
+          console.error("Could not require React:", e);
+        }
+      }
+    }
 
     if (!React) {
       console.error("No React instance available for injection");
       return false;
     }
 
-    // Ensure g exists
-    if (!window.g) window.g = {};
+    // Create g object if it doesn't exist
+    if (typeof window.g === 'undefined') {
+      Object.defineProperty(window, 'g', {
+        value: {},
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+    }
 
-    // Set React on both window and g
-    window.React = React;
-    window.g.React = React;
-    window._React = React;
-    window.g._React = React;
+    // Define React globally with maximum robustness
+    try {
+      Object.defineProperty(window, 'React', {
+        value: React,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+      
+      Object.defineProperty(window.g, 'React', {
+        value: React,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
+      
+      // Backup references
+      window._React = React;
+      if (window.g) window.g._React = React;
+      
+      console.log("Successfully injected React globally");
+      return true;
+    } catch (e) {
+      // Direct assignment as fallback
+      window.React = React;
+      window.g.React = React;
+      window._React = React;
+      window.g._React = React;
+      console.warn("Used fallback method to inject React globally:", e);
+      return true;
+    }
 
     // Also make a permanent backup
     window.ReactBackup = React;
