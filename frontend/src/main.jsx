@@ -17,8 +17,16 @@ import {
   setupGlobalErrorHandlers
 } from './utils/cleanupUtils';
 
+// Import new React error recovery utilities
+import {
+  cacheReactReference,
+  injectReactGlobally as forceReactGlobal,
+  setupReactReferenceProtection
+} from './utils/reactErrorRecovery';
+
 // Cache and make React globally available immediately 
 const React = cacheReactInstance(ReactModule);
+cacheReactReference(ReactModule);
 const ReactDOM = ReactDOMModule;
 
 // Store modules globally as a fallback
@@ -89,16 +97,21 @@ clearSESLocalStorage();
 // Create a React-aware render function that verifies React is available
 const renderWithReactCheck = () => {
   try {
-    // Check React availability again just before rendering
+    // Check React availability again just before rendering with multiple recovery methods
     if (!window.React) {
       console.warn("React not available on window, reinjecting...");
       window.React = React;
+      forceReactGlobal(); // Use the new more robust method
     }
     
     if (!window.g.React) {
       console.warn("React not available on g, reinjecting...");
       window.g.React = React;
+      forceReactGlobal(); // Use the new more robust method
     }
+    
+    // Apply additional protection
+    setupReactReferenceProtection();
     
     // Log React availability
     console.log(`React global status:`, {
