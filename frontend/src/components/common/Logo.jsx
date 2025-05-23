@@ -14,8 +14,7 @@ const Logo = ({ size = 'medium', className = '' }) => {
       <img 
         src="/xchan_small.png" 
         alt="XChan" 
-        className={sizeClass} 
-        style={{ objectFit: 'contain' }}
+        className={`${sizeClass} object-contain`}
       />
     </Link>
   );
