@@ -45,29 +45,64 @@ if (!window.g) {
 
 // Force React global availability on both window and g
 try {
-  // Using Object.defineProperty for more robust definitions
-  Object.defineProperty(window, 'React', {
-    value: React,
-    writable: true,
-    enumerable: true,
-    configurable: true
-  });
-  
-  Object.defineProperty(window.g, 'React', {
-    value: React,
-    writable: true,
-    enumerable: true,
-    configurable: true
-  });
-  
-  // Backup references
+  // First do direct assignment for immediate availability
+  window.React = React;
+  window.g.React = React;
   window._React = React;
   window.g._React = React;
   
-  console.log("React successfully defined with Object.defineProperty");
+  // Then try to make it more robust with defineProperty
+  try {
+    // Using Object.defineProperty for more robust definitions
+    Object.defineProperty(window, 'React', {
+      value: React,
+      writable: true,
+      enumerable: true,
+      configurable: false // Make it non-configurable for better persistence
+    });
+    
+    Object.defineProperty(window.g, 'React', {
+      value: React,
+      writable: true,
+      enumerable: true,
+      configurable: false
+    });
+    
+    // Add additional React references to survive variable shadowing
+    Object.defineProperty(window, '__REACT_INSTANCE', {
+      value: React,
+      writable: false,
+      enumerable: false,
+      configurable: false
+    });
+    
+    window.__getReact = () => window.__REACT_INSTANCE || React;
+    window.g.__getReact = () => window.__REACT_INSTANCE || React;
+    
+    console.log("React successfully defined with Object.defineProperty");
+  } catch (propError) {
+    console.warn("defineProperty failed, but direct assignment succeeded", propError);
+  }
+  
+  // Store the React instance in variables shadowed from normal scope
+  try {
+    const storeReactGlobally = new Function('reactInstance', `
+      try {
+        window.__REACT_GLOBAL = reactInstance;
+        window.g.__REACT_GLOBAL = reactInstance;
+        return true;
+      } catch(e) {
+        return false;
+      }
+    `);
+    storeReactGlobally(React);
+  } catch (funcError) {
+    console.warn("Failed to store React with Function constructor", funcError);
+  }
+  
 } catch (e) {
   console.warn("Fallback to direct assignment for React global", e);
-  // Direct assignment as fallback
+  // Direct assignment as ultimate fallback
   window.React = React;
   window.g.React = React;
   window._React = React; 
