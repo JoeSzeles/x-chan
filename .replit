@@ -93,7 +93,7 @@ localPort = 5000
 externalPort = 5000
 
 [workflows]
-runButton = "Full Reset and Rebuild"
+runButton = "Production Build"
 
 [[workflows.workflow]]
 name = "Backend Server"
