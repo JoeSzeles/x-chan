@@ -76,6 +76,16 @@ export const setupGlobalErrorHandlers = () => {
     event.preventDefault();
   });
   
+  // Handle general errors
+  window.addEventListener('error', (event) => {
+    // Check for specific JSON parse errors
+    if (event.error instanceof SyntaxError && 
+        event.error.message.includes('JSON.parse')) {
+      console.warn('Caught JSON parsing error, attempting recovery...');
+      fixJsonParsingErrors();
+    }
+  });
+  
   // Override fetch to handle MIME type issues
   const originalFetch = window.fetch;
   window.fetch = async function(...args) {
@@ -102,18 +112,4 @@ export const setupGlobalErrorHandlers = () => {
   };
   
   console.log('Global error handlers set up successfully');
-};
-
-/**
- * Global error helper to add to your app
- */
-export const setupGlobalErrorHandlers = () => {
-  window.addEventListener('error', (event) => {
-    // Check for specific JSON parse errors
-    if (event.error instanceof SyntaxError && 
-        event.error.message.includes('JSON.parse')) {
-      console.warn('Caught JSON parsing error, attempting recovery...');
-      fixJsonParsingErrors();
-    }
-  });
 };
