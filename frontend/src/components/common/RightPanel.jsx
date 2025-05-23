@@ -57,7 +57,7 @@ const RightPanel = ({ isWideMode }) => {
 
 	return (
 		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'}`}>
-			<div className={`bg-[#15202b] p-4 rounded-md sticky top-2 max-h-screen overflow-y-auto ${isWideMode ? 'border-l border-gray-700' : ''}`} style={{ maxHeight: 'calc(100vh - 20px)' }}>
+			<div className={`bg-[#15202b] p-4 rounded-md sticky top-2 ${isWideMode ? 'border-l border-gray-700' : ''}`} style={{ maxHeight: 'calc(100vh - 20px)', overflowY: 'auto', height: 'calc(100vh - 20px)' }}>
 				{/* Search Bar */}
 				<div className="relative mb-4" ref={searchRef}>
 					<FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
