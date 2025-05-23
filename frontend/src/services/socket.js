@@ -1,3 +1,4 @@
+
 import { io } from 'socket.io-client';
 
 let socket = null;
@@ -59,6 +60,9 @@ export const getSocket = () => {
   }
   return socket;
 };
+
+// For backward compatibility
+export const getSocketInstance = getSocket;
 
 export const closeSocket = () => {
   if (socket) {

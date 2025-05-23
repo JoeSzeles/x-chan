@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { cacheReactInstance, injectReactGlobally } from '../../utils/cleanupUtils';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,6 +14,7 @@ class ErrorBoundary extends React.Component {
     
     // Store React reference for recovery
     this._React = React;
+    cacheReactInstance(React);
     
     // Ensure React is globally available in case of errors
     this.exposeReactGlobally();
@@ -80,6 +82,7 @@ class ErrorBoundary extends React.Component {
         
         // Force re-expose to make sure
         this.exposeReactGlobally();
+        injectReactGlobally();
         
         console.log('React reference restored in error handler');
       } catch (e) {
@@ -112,6 +115,7 @@ class ErrorBoundary extends React.Component {
     try {
       // First restore React references
       this.exposeReactGlobally();
+      injectReactGlobally();
       
       console.log("Error boundary attempting recovery");
       
@@ -137,25 +141,6 @@ class ErrorBoundary extends React.Component {
       window.location.reload();
     }
   }
-  
-  // Add a new method to attempt React recovery
-  exposeReactGlobally = () => {
-    try {
-      // Try to find React from any available source
-      const possibleReact = window.React || window.ReactModule || window._React;
-      
-      if (possibleReact) {
-        window.React = possibleReact;
-        if (!window.g) window.g = {};
-        window.g.React = possibleReact;
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.error("Failed to expose React globally:", e);
-      return false;
-    }
-  }
 
   render() {
     // Check if React is still accessible
@@ -164,6 +149,7 @@ class ErrorBoundary extends React.Component {
     // If we lost React references but our internal copy is still good, restore it
     if (reactLost && this._React) {
       this.exposeReactGlobally();
+      injectReactGlobally();
     }
     
     if (this.state.hasError) {
