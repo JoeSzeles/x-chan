@@ -101,7 +101,6 @@ function App() {
 	return (
 		<ThemeProvider>
 			<div className="min-h-screen bg-background-main text-text-primary font-primary overflow-hidden">
-				<LogoDebugger />
 				<div className={`flex ${isWideMode ? 'justify-between' : 'max-w-6xl mx-auto'} relative`}>
 					{/* Common component, bc it's not wrapped with Routes */}
 					{authUser && <Sidebar isWideMode={isWideMode} />}
