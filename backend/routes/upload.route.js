@@ -7,11 +7,8 @@ import multer from 'multer';
 const router = express.Router();
 
 // Configure Cloudinary
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Configuration is already done in server.js, no need to duplicate here
+// This prevents configuration conflicts in different parts of the app
 
 // Configure Cloudinary storage
 const storage = new CloudinaryStorage({

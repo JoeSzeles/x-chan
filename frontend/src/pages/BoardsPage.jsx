@@ -294,6 +294,9 @@ const BoardsPage = () => {
             const formData = new FormData();
             formData.append('file', file);
             
+            // Show loading toast
+            const loadingToast = toast.loading('Uploading image...');
+            
             console.log('Sending upload request to /api/upload');
             const res = await fetch('/api/upload', {
                 method: 'POST',
@@ -304,15 +307,27 @@ const BoardsPage = () => {
                 }
             });
             
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Failed to upload image');
+            // Handle non-JSON responses or network errors
+            let data;
+            try {
+                const textData = await res.text();
+                data = JSON.parse(textData);
+            } catch (parseError) {
+                console.error('Error parsing JSON response:', parseError);
+                toast.dismiss(loadingToast);
+                toast.error('Server response error. Please try again.');
+                return;
             }
             
-            const data = await res.json();
+            if (!res.ok) {
+                toast.dismiss(loadingToast);
+                throw new Error(data.error || 'Failed to upload image');
+            }
+            
             console.log('Upload response:', data);
             
             if (!data.url) {
+                toast.dismiss(loadingToast);
                 throw new Error('No image URL received from server');
             }
             
@@ -329,6 +344,7 @@ const BoardsPage = () => {
                 }));
             }
             
+            toast.dismiss(loadingToast);
             toast.success('Image uploaded successfully');
         } catch (error) {
             console.error('Image upload error:', error);

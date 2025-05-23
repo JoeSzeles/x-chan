@@ -34,6 +34,15 @@ export const verifyToken = async (req, res, next) => {
             if (userCache.has(decoded.userId)) {
                 req.user = userCache.get(decoded.userId);
                 console.log('[Auth] User retrieved from cache');
+                
+                // Set token in response to refresh expiration
+                res.cookie('jwt', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'strict',
+                    maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+                });
+                
                 return next();
             }
 
@@ -51,10 +60,21 @@ export const verifyToken = async (req, res, next) => {
             userCache.set(decoded.userId, user);
             setTimeout(() => userCache.delete(decoded.userId), 5 * 60 * 1000);
 
+            // Refresh token in response
+            res.cookie('jwt', token, {
+                httpOnly: true, 
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+            });
+
             req.user = user;
             next();
         } catch (jwtError) {
             console.error('[Auth] JWT verification failed:', jwtError.message);
+            
+            // Clear invalid token
+            res.clearCookie('jwt');
             return res.status(401).json({ error: "Unauthorized - Invalid Token" });
         }
     } catch (error) {
