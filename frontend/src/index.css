@@ -2,44 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Force scrollbar visibility */
-html, body {
-  overflow-y: auto !important;
-  scrollbar-width: thin;
-  scrollbar-color: #4a5568 #1a202c;
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  display: block !important;
-}
-
-::-webkit-scrollbar-track {
-  background: #1a202c;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #4a5568;
-  border-radius: 4px;
-}
-
-.right-panel-scrollable {
-  scrollbar-width: thin;
-  scrollbar-color: #4a5568 #1a202c;
-  max-height: 100vh;
-}
-
-.right-panel-scrollable::-webkit-scrollbar {
-  width: 8px;
-  display: block !important;
-}
-
-.right-panel-scrollable::-webkit-scrollbar-thumb {
-  background-color: #4a5568;
-  border-radius: 4px;
-}
-
 /* Thread connector styles */
 .thread-connector {
   background: linear-gradient(to bottom, transparent, #4b5563 20%, #4b5563 80%, transparent);
@@ -91,40 +53,4 @@ html, body {
 
 .highlight-post {
     animation: highlight-post 2s ease-in-out;
-}
-
-/* Force scrollbar to always show on right panel */
-.right-panel-scrollable::-webkit-scrollbar,
-.right-panel-content::-webkit-scrollbar {
-  width: 8px !important;
-  background-color: #1a202c !important;
-  display: block !important;
-}
-
-.right-panel-scrollable::-webkit-scrollbar-thumb,
-.right-panel-content::-webkit-scrollbar-thumb {
-  background-color: #4a5568 !important;
-  border-radius: 4px !important;
-}
-
-/* Fix scrollbar disappearing issue after page load */
-html {
-  overflow-y: scroll;
-}
-
-/* Force scrollbars to be visible */
-::-webkit-scrollbar {
-  width: 8px !important;
-  height: 8px !important;
-  display: block !important;
-}
-
-::-webkit-scrollbar-thumb {
-  background-color: #4a5568 !important;
-  border-radius: 4px !important;
-}
-
-* {
-  scrollbar-width: thin !important;
-  scrollbar-color: #4a5568 #1a202c !important;
 }

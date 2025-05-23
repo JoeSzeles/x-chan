@@ -1,7 +1,3 @@
-The logo in the sidebar is updated with a new image source and error handling.
-```
-
-```replit_final_file
 import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
 import { FaUser, FaFeather, FaBookmark, FaList, FaCog } from "react-icons/fa";
@@ -54,14 +50,9 @@ const Sidebar = ({ isWideMode }) => {
 				<Link to='/' className='flex justify-center md:justify-start p-6'>
 					<div className='w-16 h-16 rounded-full hover:bg-stone-900 transition-all duration-200 flex items-center justify-center'>
 						<img 
-							src="/xchan_small.png" 
+							src="/src/components/images/xchan_small.png" 
 							alt="XChan Logo" 
 							className='w-12 h-12'
-							onError={(e) => {
-								console.error("Logo image failed to load");
-								e.target.onerror = null;
-								e.target.src = "/vite.svg"; // Fallback image
-							}}
 						/>
 					</div>
 				</Link>
