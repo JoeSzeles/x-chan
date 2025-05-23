@@ -80,58 +80,35 @@ if (fs.existsSync(imagesPath)) {
     console.log('Serving images from', imagesPath);
 }
 
-// Add specific route for the logo file with detailed logging
+// Simple fallback for logo file with placeholder
 app.get('/xchan_small.png', (req, res) => {
-    console.log('LOGO DEBUG: Logo requested, checking paths...');
+    const logoPath = path.join(frontendPublicPath, 'xchan_small.png');
+    const placeholderPath = path.join(frontendPublicPath, 'avatar-placeholder.png');
     
-    // Check multiple paths in order
-    const paths = [
-        path.join(frontendPublicPath, 'xchan_small.png'),
-        path.join(frontendBuildPath, 'xchan_small.png'),
-        path.join(imagesPath, 'xchan_small.png'),
-        path.join(__dirname, '../frontend/src/components/images/xchan_small.png'),
-        path.join(__dirname, '../frontend/public/xchan_small.png')
-    ];
-    
-    // Check if files exist first
-    console.log('LOGO DEBUG: Checking if these paths exist:');
-    paths.forEach(p => {
-        const exists = fs.existsSync(p);
-        console.log(`LOGO DEBUG: ${p} exists: ${exists}`);
-    });
-    
-    for (const filePath of paths) {
-        console.log('LOGO DEBUG: Trying to serve from path:', filePath);
-        if (fs.existsSync(filePath)) {
-            console.log('LOGO DEBUG: Logo found at:', filePath);
-            // Set cache headers
-            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-            res.setHeader('Pragma', 'no-cache');
-            res.setHeader('Expires', '0');
-            try {
-                return res.sendFile(filePath);
-            } catch (error) {
-                console.error('LOGO DEBUG: Error sending file:', error);
-            }
-        }
+    // Try to serve the logo first
+    if (fs.existsSync(logoPath)) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return res.sendFile(logoPath);
     }
     
-    console.log('Logo not found in any path, sending placeholder');
-    const placeholderPath = path.join(frontendPublicPath, 'avatar-placeholder.png');
+    // Fall back to placeholder if logo not found
     if (fs.existsSync(placeholderPath)) {
-        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         return res.sendFile(placeholderPath);
     }
     
     res.status(404).send('Logo not found');
 });
 
-// Also serve the logo directly from the components/images directory
+// Also make logo available at images path
 app.use('/images/xchan_small.png', (req, res) => {
-    const logoPath = path.join(__dirname, '../frontend/src/components/images/xchan_small.png');
+    const logoPath = path.join(frontendPublicPath, 'xchan_small.png');
+    const placeholderPath = path.join(frontendPublicPath, 'avatar-placeholder.png');
+    
     if (fs.existsSync(logoPath)) {
-        console.log('Serving logo from images path:', logoPath);
         res.sendFile(logoPath);
+    } else if (fs.existsSync(placeholderPath)) {
+        res.sendFile(placeholderPath);
     } else {
         res.status(404).send('Logo not found');
     }
