@@ -73,7 +73,6 @@ const RightPanel = ({ isWideMode }) => {
 					bottom: '0',
 					zIndex: 10,
 					paddingBottom: '80px',
-					maxHeight: '100vh',
 					overscrollBehavior: 'contain'
 				}}
 			>
