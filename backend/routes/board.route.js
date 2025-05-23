@@ -3,8 +3,14 @@ import { protectRoute } from '../middleware/protectRoute.js';
 import Board from '../models/board.model.js';
 import User from '../models/user.model.js';
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const router = express.Router();
 
@@ -15,18 +21,21 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Configure Cloudinary storage for board cover photos
-const coverStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'board_covers',
-        allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
-        transformation: [{ width: 1500, height: 500, crop: 'fill' }],
-        resource_type: 'auto'
+// Configure local storage for temporary file upload
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadsDir = path.join(__dirname, '../public/uploads');
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `board-cover-${Date.now()}${path.extname(file.originalname)}`);
     }
 });
 
-// Configure multer with Cloudinary storage
+// Configure multer with local storage
 const upload = multer({ 
     storage: coverStorage,
     limits: {
@@ -489,6 +498,21 @@ router.put('/:boardId/follow', protectRoute, async (req, res) => {
     }
 });
 
+// Configure upload with size and file type limits
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return cb(new Error('Only JPEG, PNG and GIF are allowed'), false);
+        }
+        cb(null, true);
+    }
+});
+
 // Update board cover photo
 router.put('/:boardName/cover', protectRoute, upload.single('coverPhoto'), async (req, res) => {
     try {
@@ -530,23 +554,42 @@ router.put('/:boardName/cover', protectRoute, upload.single('coverPhoto'), async
         // Delete old cover photo if exists
         if (board.coverPhoto) {
             try {
-                const publicId = board.coverPhoto.split('/').pop().split('.')[0];
-                console.log('Deleting old cover photo:', publicId);
-                await cloudinary.uploader.destroy(publicId);
+                // Extract public ID from Cloudinary URL if it exists
+                if (board.coverPhoto.includes('cloudinary.com')) {
+                    const publicId = board.coverPhoto.split('/').pop().split('.')[0];
+                    console.log('Deleting old cover photo from Cloudinary:', publicId);
+                    await cloudinary.uploader.destroy(publicId);
+                }
             } catch (error) {
                 console.error('Error deleting old cover photo:', error);
                 // Continue with the update even if deletion fails
             }
         }
 
-        // Get the secure URL from Cloudinary
-        const secureUrl = req.file.path.replace('http://', 'https://');
-        console.log('Secure URL for cover photo:', secureUrl);
-
-        // Update board's cover photo
-        board.coverPhoto = secureUrl;
-        board.updatedAt = new Date();
-        await board.save();
+        try {
+            // Upload file to Cloudinary
+            console.log('Uploading to Cloudinary from path:', req.file.path);
+            const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'board_covers',
+                resource_type: 'image',
+                transformation: [{ width: 1500, height: 500, crop: 'fill' }]
+            });
+            
+            console.log('Cloudinary upload successful:', cloudinaryResult);
+            
+            // Get the secure URL from Cloudinary
+            const secureUrl = cloudinaryResult.secure_url;
+            console.log('Secure URL for cover photo:', secureUrl);
+            
+            // Update board's cover photo
+            board.coverPhoto = secureUrl;
+            board.updatedAt = new Date();
+            await board.save();
+            
+            // Delete the temporary file
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error('Error deleting temporary file:', err);
+            });
 
         // Fetch the updated board with populated fields
         const updatedBoard = await Board.findById(board._id)
@@ -586,18 +629,45 @@ router.put('/:boardName/cover', protectRoute, upload.single('coverPhoto'), async
             coverPhoto: secureUrl
         };
 
-        console.log('Sending response:', response);
-        res.status(200).json(response);
+        // Prepare response object
+            const response = {
+                success: true,
+                message: 'Cover photo updated successfully',
+                board: {
+                    ...board.toObject(),
+                    coverPhoto: secureUrl
+                }
+            };
+            
+            console.log('Sending response:', response);
+            res.status(200).json(response);
+        } catch (cloudinaryError) {
+            console.error('Error uploading to Cloudinary:', cloudinaryError);
+            
+            // Delete the temporary file on Cloudinary upload error
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error('Error deleting temporary file after upload failure:', err);
+            });
+            
+            res.status(500).json({ 
+                error: 'Failed to upload cover photo to cloud storage',
+                details: cloudinaryError.message 
+            });
+        }
     } catch (error) {
         console.error('Error updating board cover photo:', error);
+        
         // If we have a file uploaded but the update failed, try to delete it
-        if (req.file) {
+        if (req.file && req.file.path) {
             try {
-                await cloudinary.uploader.destroy(req.file.filename);
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error('Error deleting temporary file after error:', err);
+                });
             } catch (deleteError) {
                 console.error('Error cleaning up uploaded file:', deleteError);
             }
         }
+        
         res.status(500).json({ 
             error: 'Failed to update cover photo',
             details: error.message 

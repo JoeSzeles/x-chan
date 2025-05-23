@@ -23,23 +23,52 @@ const BoardDetailPage = ({ isWideMode }) => {
     const handleCoverPhotoChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file');
+            return;
+        }
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size should be less than 5MB');
+            return;
+        }
+        
+        // Show loading toast
+        const loadingToast = toast.loading('Uploading cover photo...');
+        
         const formData = new FormData();
         formData.append('coverPhoto', file);
-
+        
         try {
+            // Add authorization header
+            const token = localStorage.getItem('token');
+            
             const res = await fetch(`/api/boards/${boardName}/cover`, {
                 method: 'PUT',
                 body: formData,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
                 credentials: 'include'
             });
             
-            if (!res.ok) throw new Error('Failed to update cover photo');
+            // Parse response as JSON
+            const data = await res.json();
             
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to update cover photo');
+            }
+            
+            // Update the query cache and show success message
             queryClient.invalidateQueries(['board', boardName]);
+            toast.dismiss(loadingToast);
             toast.success('Cover photo updated successfully');
         } catch (error) {
             console.error('Error updating cover photo:', error);
+            toast.dismiss(loadingToast);
             toast.error(error.message || 'Failed to update cover photo');
         }
     };
@@ -406,10 +435,17 @@ const BoardDetailPage = ({ isWideMode }) => {
             <div className='p-4 border-b border-gray-700'>
                 <div className="w-full h-48 relative mb-4 group">
                     <img
-                        src={board.coverPhoto ? board.coverPhoto.replace(/([^:]\/)\/+/g, "$1") : '/cover.png'}
+                        src={
+                            coverPreview
+                            ? coverPreview
+                            : board.coverPhoto
+                            ? board.coverPhoto.replace(/([^:]\/)\/+/g, "$1")
+                            : '/cover.png'
+                        }
                         alt={`${board.name} cover`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
+                            console.log('Image load error, using fallback');
                             e.target.onerror = null;
                             e.target.src = '/cover.png';
                         }}
