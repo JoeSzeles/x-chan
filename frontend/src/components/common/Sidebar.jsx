@@ -47,27 +47,15 @@ const Sidebar = ({ isWideMode }) => {
 	return (
 		<div className={`${isWideMode ? 'w-64' : 'md:flex-[2_2_0] w-18 max-w-52'}`}>
 			<div className={`sticky top-0 left-0 h-screen overflow-y-auto flex flex-col ${isWideMode ? 'border-r border-gray-700' : ''} ${isWideMode ? 'w-64' : 'w-20 md:w-full'}`} style={{ overflowY: 'auto', maxHeight: '100vh' }}>
-				<Link to='/' className='flex justify-center md:justify-start p-6'>
-					<div className='w-16 h-16 rounded-full hover:bg-stone-900 transition-all duration-200 flex items-center justify-center'>
-						<img 
-							src="/xchan_small.png" 
-							alt="XChan Logo" 
-							className='w-12 h-12'
-							onError={(e) => {
-								console.error("Logo failed to load from path:", e.target.src);
-								// Try different paths as fallbacks
-								if (e.target.src.includes('/xchan_small.png')) {
-									console.log("Trying relative path to components/images...");
-									e.target.src = "./src/components/images/xchan_small.png";
-								} else if (e.target.src.includes('./src/components/images/xchan_small.png')) {
-									console.log("Trying direct path with origin...");
-									e.target.src = `${window.location.origin}/avatar-placeholder.png`;
-								} else {
-									console.log("Using placeholder as final fallback");
-									e.target.src = "/avatar-placeholder.png";
-								}
-							}}
-						/>
+				<Link to="/" className="flex items-center p-2 px-4">
+					<div className="flex-shrink-0">
+						<div className="w-12 h-12 flex items-center justify-center bg-gray-800 rounded-full">
+							<img 
+								src="/avatar-placeholder.png" 
+								alt="XChan" 
+								className="w-10 h-10 rounded-full"
+							/>
+						</div>
 					</div>
 				</Link>
 				<ul className='flex flex-col gap-3 mt-4'>

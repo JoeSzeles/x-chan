@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
@@ -57,16 +56,24 @@ const RightPanel = ({ isWideMode }) => {
 	};
 
 	return (
-		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'} h-screen relative`}>
+		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'} h-screen`}>
 			<div 
-				className={`bg-[#15202b] p-4 rounded-md sticky top-2 overflow-y-auto ${isWideMode ? 'border-l border-gray-700' : ''}`} 
+				className={`bg-[#15202b] p-4 rounded-md ${isWideMode ? 'border-l border-gray-700' : ''}`} 
 				style={{ 
-					maxHeight: 'calc(100vh - 16px)', 
-					height: 'calc(100vh - 16px)',
+					maxHeight: '100vh', 
+					height: '100vh',
 					scrollbarWidth: 'thin',
 					scrollbarColor: '#4a5568 #1a202c',
-					overflowY: 'scroll', /* Force scrollbar to always be visible */
-					overflowX: 'hidden'
+					overflowY: 'auto',
+					overflowX: 'hidden',
+					position: 'fixed',
+					width: isWideMode ? '320px' : '256px',
+					right: '0',
+					top: '0',
+					bottom: '0',
+					zIndex: 10,
+					paddingBottom: '80px',
+					overscrollBehavior: 'contain'
 				}}
 			>
 				{/* Search Bar */}

@@ -22,8 +22,12 @@ const HomePage = ({ isWideMode }) => {
 		const mainContent = document.querySelector('.main-content');
 		if (mainContent) {
 			mainContent.classList.add('overflow-y-auto', 'max-h-screen');
+			// Set position relative to contain the scrollbar
+			mainContent.classList.add('relative');
+			// Set specific width to ensure scrollbar appears correctly
+			mainContent.style.width = isWideMode ? 'calc(100% - 384px)' : 'calc(100% - 334px)';
 		}
-	}, []);
+	}, [isWideMode]);
 
 	const categories = [
 		{ id: "myPosts", label: "My Posts", icon: <FaHome /> },

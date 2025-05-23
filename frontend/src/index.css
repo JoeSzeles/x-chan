@@ -1,5 +1,32 @@
 @tailwind base;
 @tailwind components;
+
+/* Fix scrollbar conflicts */
+.main-content {
+  scrollbar-width: thin;
+  scrollbar-color: #4a5568 #1a202c;
+}
+
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: #1a202c;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background-color: #4a5568;
+  border-radius: 20px;
+}
+
+/* Ensure right panel scrolls properly */
+.right-panel-content {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: 100vh !important;
+}
+
 @tailwind utilities;
 
 /* Thread connector styles */
