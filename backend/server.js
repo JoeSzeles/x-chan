@@ -57,7 +57,16 @@ const frontendBuildPath = path.join(__dirname, '../frontend/dist');
 console.log('Serving frontend from', frontendBuildPath);
 // Make sure the directory exists before serving
 if (fs.existsSync(frontendBuildPath)) {
-    app.use(express.static(frontendBuildPath));
+    // Set proper MIME types for JavaScript files
+    app.use(express.static(frontendBuildPath, {
+        setHeaders: (res, path) => {
+            if (path.endsWith('.js')) {
+                res.setHeader('Content-Type', 'application/javascript');
+            } else if (path.endsWith('.css')) {
+                res.setHeader('Content-Type', 'text/css');
+            }
+        }
+    }));
 } else {
     console.warn(`Warning: Frontend build path not found at ${frontendBuildPath}`);
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
