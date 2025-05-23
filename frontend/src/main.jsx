@@ -10,6 +10,10 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 // Ensure React is globally available for debugging and compatibility
 window.React = React;
 
+// Handle SES and JSON parsing errors
+import { setupGlobalErrorHandlers } from './utils/cleanupUtils';
+setupGlobalErrorHandlers();
+
 // Configure React Query with better error handling
 const queryClient = new QueryClient({
 	defaultOptions: {

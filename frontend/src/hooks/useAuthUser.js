@@ -3,33 +3,33 @@ import { useState, useEffect } from 'react';
 export const useAuthUser = () => {
     const [authUser, setAuthUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null); // Add error state
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchUser = async () => {
             console.log("Fetching user data...");
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('/api/auth/me', {
+                const res = await fetch('/api/auth/profile', { // Changed endpoint here
                     credentials: 'include',
                     headers: token ? {
                         'Authorization': `Bearer ${token}`
                     } : {}
                 });
-                const data = await res.json();
-                if (res.ok) {
-                    setAuthUser(data);
-                    setError(null); // Clear any previous error
-                } else {
-                    setAuthUser(null);
-                    localStorage.removeItem('token');
-                    setError(data?.message || 'Not authorized'); // Set error message
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData?.message || `Failed to fetch user profile (status: ${res.status})`);
                 }
-            } catch (error) {
-                console.error('Error fetching user:', error);
+
+                const data = await res.json();
+                setAuthUser(data);
+                setError(null);
+            } catch (err) {
+                console.error('Auth profile fetch error:', err.message);
                 setAuthUser(null);
                 localStorage.removeItem('token');
-                setError('Failed to fetch user data.'); // Set a general error message
+                setError(err.message || 'Failed to fetch user profile');
             } finally {
                 setLoading(false);
             }
@@ -38,5 +38,5 @@ export const useAuthUser = () => {
         fetchUser();
     }, []);
 
-    return { authUser, loading, error }; // Return the error state
+    return { authUser, loading, error };
 };
