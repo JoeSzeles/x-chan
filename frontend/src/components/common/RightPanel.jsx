@@ -64,7 +64,7 @@ const RightPanel = ({ isWideMode }) => {
 					height: '100vh',
 					scrollbarWidth: 'thin',
 					scrollbarColor: '#4a5568 #1a202c',
-					overflowY: 'auto',
+					overflowY: 'scroll',
 					overflowX: 'hidden',
 					position: 'fixed',
 					width: isWideMode ? '320px' : '256px',
@@ -75,6 +75,7 @@ const RightPanel = ({ isWideMode }) => {
 					paddingBottom: '80px',
 					overscrollBehavior: 'contain'
 				}}
+				className="right-panel-scrollable"
 			>
 				{/* Search Bar */}
 				<div className="relative mb-4" ref={searchRef}>

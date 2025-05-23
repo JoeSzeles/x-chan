@@ -21,10 +21,29 @@
 }
 
 /* Ensure right panel scrolls properly */
-.right-panel-content {
-  overflow-y: auto !important;
+.right-panel-content, 
+.right-panel-scrollable {
+  overflow-y: scroll !important;
   overflow-x: hidden !important;
   height: 100vh !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Force scrollbar to always show on right panel */
+.right-panel-scrollable::-webkit-scrollbar {
+  width: 8px !important;
+  background-color: #1a202c !important;
+  display: block !important;
+}
+
+.right-panel-scrollable::-webkit-scrollbar-thumb {
+  background-color: #4a5568 !important;
+  border-radius: 4px !important;
+}
+
+/* Fix scrollbar disappearing issue after page load */
+html {
+  overflow-y: scroll;
 }
 
 @tailwind utilities;

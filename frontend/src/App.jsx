@@ -12,6 +12,33 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import SharedPost from "./pages/SharedPost";
 import PostPage from "./pages/PostPage";
+
+  // Force scroll redraw when app loads
+  useEffect(() => {
+    const fixScrollbars = () => {
+      const scrollElements = document.querySelectorAll('.right-panel-scrollable, .main-content-scrollable');
+      scrollElements.forEach(el => {
+        el.style.overflowY = 'hidden';
+        setTimeout(() => {
+          el.style.overflowY = 'scroll';
+        }, 10);
+      });
+    };
+    
+    window.addEventListener('load', fixScrollbars);
+    // Run it once after component mounts
+    setTimeout(fixScrollbars, 1000);
+    
+    // Also periodically check and fix scrollbars
+    const interval = setInterval(fixScrollbars, 5000);
+    
+    return () => {
+      window.removeEventListener('load', fixScrollbars);
+      clearInterval(interval);
+    };
+  }, []);
+
+
 import ThreadView from "./components/common/ThreadView";
 import NewsPage from "./pages/news/NewsPage";
 import BookmarksPage from "./pages/BookmarksPage";
