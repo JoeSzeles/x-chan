@@ -1,161 +1,170 @@
 
-// Import React without assuming it's globally available
+// Import React and ReactDOM directly with namespace imports
 import * as ReactModule from "react";
 import * as ReactDOMModule from "react-dom/client";
 
-// Create global object first thing if it doesn't exist
+// Import error boundary early
+import ErrorBoundary from "./components/common/ErrorBoundary";
+
+// Import utility functions
+import { 
+  getReactInstance,
+  cacheReactInstance,
+  initializeReactGlobally,
+  injectReactGlobally,
+  monitorReactAvailability,
+  clearSESLocalStorage,
+  setupGlobalErrorHandlers
+} from './utils/cleanupUtils';
+
+// Cache and make React globally available immediately 
+const React = cacheReactInstance(ReactModule);
+const ReactDOM = ReactDOMModule;
+
+// Store modules globally as a fallback
+window.ReactModule = ReactModule;
+window.ReactDOMModule = ReactDOMModule;
+
+// Make sure window.g exists first thing
 if (!window.g) {
   Object.defineProperty(window, 'g', {
     value: {},
     writable: true,
     enumerable: true,
-    configurable: false // Make it non-deletable
+    configurable: false
   });
 }
 
-// Store the modules globally first thing
-window.ReactModule = ReactModule;
-window.ReactDOMModule = ReactDOMModule;
+// Force React global availability on both window and g
+window.React = React;
+window.g.React = React;
+window._React = React;
+window.g._React = React;
 
-// Set React globally using more stable approach
-const React = ReactModule;
-const ReactDOM = ReactDOMModule;
+// Initialize React globally with robust property definitions
+initializeReactGlobally();
 
-// Make React globally available in multiple ways with robust property definitions
-Object.defineProperty(window, 'React', {
-  value: React,
-  writable: true,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(window, '_React', {
-  value: React,
-  writable: true,
-  enumerable: true,
-  configurable: false
-});
-
-// Set React on global object with non-configurable property
-Object.defineProperty(window.g, 'React', {
-  value: React,
-  writable: true,
-  enumerable: true,
-  configurable: false
-});
-
-Object.defineProperty(window.g, '_React', {
-  value: React,
-  writable: true,
-  enumerable: true,
-  configurable: false
-});
-
-// Now import other components
+// Now we can import the rest of the application
 import App from "./App";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
-import ErrorBoundary from "./components/common/ErrorBoundary";
 
-// Import utilities
-import { 
-  setupGlobalErrorHandlers, 
-  initializeReactGlobally, 
-  getReactInstance,
-  monitorReactAvailability
-} from './utils/cleanupUtils';
+// Clear any problematic localStorage items
+clearSESLocalStorage();
 
-// Initialize and check React availability immediately
-initializeReactGlobally();
+// Create a React-aware render function that verifies React is available
+const renderWithReactCheck = () => {
+  try {
+    // Check React availability again just before rendering
+    if (!window.React) {
+      console.warn("React not available on window, reinjecting...");
+      window.React = React;
+    }
+    
+    if (!window.g.React) {
+      console.warn("React not available on g, reinjecting...");
+      window.g.React = React;
+    }
+    
+    // Log React availability
+    console.log(`React global status:`, {
+      'window.React exists': !!window.React,
+      'window.g.React exists': !!(window.g && window.g.React),
+      'cached React exists': !!getReactInstance()
+    });
+    
+    // Configure React Query with better error handling
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false,
+          retry: (failureCount, error) => {
+            // Don't retry on 401/403 auth errors
+            if (error?.response?.status === 401 || error?.response?.status === 403) {
+              return false;
+            }
+            // Retry other errors up to 3 times
+            return failureCount < 3;
+          },
+          onError: (error) => {
+            console.error("Query error:", error);
+          }
+        },
+      },
+    });
+    
+    const root = document.getElementById("root");
+    
+    if (!root) {
+      console.error("Root element not found");
+      return false;
+    }
+    
+    // Render with direct explicit references to React and ReactDOM
+    const reactRoot = ReactDOM.createRoot(root);
+    
+    reactRoot.render(
+      React.createElement(React.StrictMode, null,
+        React.createElement(ErrorBoundary, null,
+          React.createElement(QueryClientProvider, { client: queryClient },
+            React.createElement(BrowserRouter, null,
+              React.createElement(App, null),
+              React.createElement(Toaster, { position: "top-center" })
+            )
+          )
+        )
+      )
+    );
+    
+    console.log("Application successfully rendered");
+    return true;
+  } catch (e) {
+    console.error("Error in renderWithReactCheck:", e);
+    
+    // Do a last resort direct render using imported modules
+    try {
+      console.log("Attempting last-resort render");
+      
+      const root = document.getElementById("root");
+      if (!root) return false;
+      
+      const reactRoot = ReactDOMModule.createRoot(root);
+      
+      reactRoot.render(
+        ReactModule.createElement(ReactModule.StrictMode, null,
+          ReactModule.createElement(ErrorBoundary, null,
+            ReactModule.createElement("div", { className: "p-8 max-w-lg mx-auto bg-gray-800 text-white rounded-lg" },
+              ReactModule.createElement("h1", { className: "text-xl font-bold mb-4" }, "Emergency Fallback Rendering"),
+              ReactModule.createElement("p", { className: "mb-4" }, "The application encountered an error during initialization."),
+              ReactModule.createElement("button", { 
+                className: "px-4 py-2 bg-blue-600 rounded", 
+                onClick: () => window.location.reload() 
+              }, "Reload Application")
+            )
+          )
+        )
+      );
+      
+      return true;
+    } catch (lastError) {
+      console.error("Even last-resort render failed:", lastError);
+      return false;
+    }
+  }
+};
+
+// Set up global error handlers before rendering
+setupGlobalErrorHandlers();
 
 // Start monitoring React availability
 monitorReactAvailability();
 
-// Log React availability status
-console.log(`React global status:`, {
-  'window.React exists': !!window.React,
-  'window.g.React exists': !!(window.g && window.g.React),
-  'window._React exists': !!window._React,
-  'cached React exists': !!getReactInstance()
-});
-
-// Configure React Query with better error handling
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: (failureCount, error) => {
-        // Don't retry on 401/403 auth errors
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          return false;
-        }
-        // Retry other errors up to 3 times
-        return failureCount < 3;
-      },
-      onError: (error) => {
-        console.error("Query error:", error);
-      }
-    },
-  },
-});
-
-// Set up global error handlers after everything else
-setupGlobalErrorHandlers();
-
-// Double-check React is available before rendering
-if (!window.g.React && window.React) {
-  console.log("Emergency React copy to g.React");
-  window.g.React = window.React;
-}
-
-// Ensure React is definitely available before rendering
-if ((window.React || window.g.React) && window.ReactDOM && document.getElementById("root")) {
-  try {
-    ReactDOM.createRoot(document.getElementById("root")).render(
-      <React.StrictMode>
-        <ErrorBoundary>
-          <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
-              <App />
-              <Toaster position="top-center" />
-            </BrowserRouter>
-          </QueryClientProvider>
-        </ErrorBoundary>
-      </React.StrictMode>
-    );
-    console.log("Application successfully rendered");
-  } catch (e) {
-    console.error("Error rendering application:", e);
-    
-    // Last resort attempt
-    if (e.message && e.message.includes('React is undefined')) {
-      try {
-        console.log("Attempting last-resort render with direct ReactDOM access");
-        const root = ReactDOMModule.createRoot(document.getElementById("root"));
-        root.render(
-          ReactModule.createElement(ReactModule.StrictMode, null,
-            ReactModule.createElement(ErrorBoundary, null,
-              ReactModule.createElement(QueryClientProvider, { client: queryClient },
-                ReactModule.createElement(BrowserRouter, null,
-                  ReactModule.createElement(App, null),
-                  ReactModule.createElement(Toaster, { position: "top-center" })
-                )
-              )
-            )
-          )
-        );
-      } catch (lastError) {
-        console.error("Last resort render failed:", lastError);
-      }
-    }
-  }
+// Only render once the DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderWithReactCheck);
 } else {
-  console.error("Critical error: React or DOM root not available for rendering", {
-    reactAvailable: !!window.React,
-    reactGlobalAvailable: !!(window.g && window.g.React),
-    reactDOMAvailable: !!window.ReactDOM,
-    rootElement: !!document.getElementById("root")
-  });
+  // DOM already ready, render immediately
+  renderWithReactCheck();
 }

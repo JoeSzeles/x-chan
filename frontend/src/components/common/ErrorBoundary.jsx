@@ -7,40 +7,54 @@ class ErrorBoundary extends React.Component {
     this.state = { 
       hasError: false,
       error: null,
-      errorInfo: null
+      errorInfo: null,
+      reactAvailable: true
     };
     
+    // Store React reference for recovery
+    this._React = React;
+    
     // Ensure React is globally available in case of errors
+    this.exposeReactGlobally();
+  }
+  
+  // Define this method outside the constructor to ensure it's properly bound
+  exposeReactGlobally() {
     // Use non-configurable property to prevent deletion
-    if (window.React) {
-      try {
-        if (!window.g) {
-          Object.defineProperty(window, 'g', {
-            value: {},
-            writable: true,
-            enumerable: true,
-            configurable: false
-          });
-        }
-        
-        // Set React on global object as non-configurable property
-        if (!window.g.React) {
-          Object.defineProperty(window.g, 'React', {
-            value: window.React,
-            writable: true,
-            enumerable: true,
-            configurable: false
-          });
-        }
-        
-        // Also create backup copy
-        window._React = window.React;
-        window.g._React = window.React;
-        
-        console.log('React exposed to g from ErrorBoundary');
-      } catch (e) {
-        console.error('Failed to expose React in ErrorBoundary:', e);
+    try {
+      if (!window.g) {
+        Object.defineProperty(window, 'g', {
+          value: {},
+          writable: true,
+          enumerable: true,
+          configurable: false
+        });
       }
+      
+      // Set React on global object as non-configurable property
+      Object.defineProperty(window, 'React', {
+        value: this._React,
+        writable: true,
+        enumerable: true,
+        configurable: false
+      });
+      
+      Object.defineProperty(window.g, 'React', {
+        value: this._React,
+        writable: true,
+        enumerable: true,
+        configurable: false
+      });
+      
+      // Create backup
+      window._React = this._React;
+      window.g._React = this._React;
+      
+      console.log('React exposed to g from ErrorBoundary');
+      this.setState({ reactAvailable: true });
+    } catch (e) {
+      console.error('Failed to expose React in ErrorBoundary:', e);
+      this.setState({ reactAvailable: false });
     }
   }
 
@@ -56,17 +70,18 @@ class ErrorBoundary extends React.Component {
     });
     
     // Fix potential React reference issues
-    if (error && error.message && error.message.includes('React is undefined')) {
+    if (error && error.message && (
+        error.message.includes('React is undefined') || 
+        error.message.includes('g.React is undefined'))) {
       try {
-        // Try to restore React reference
-        if (window.React && !window.g.React) {
-          Object.defineProperty(window.g, 'React', {
-            value: window.React,
-            writable: true,
-            enumerable: true,
-            configurable: false
-          });
-        }
+        // Restore React reference
+        window.React = this._React;
+        window.g.React = this._React;
+        
+        // Force re-expose to make sure
+        this.exposeReactGlobally();
+        
+        console.log('React reference restored in error handler');
       } catch (e) {
         console.error('Failed to fix React reference in error handler:', e);
       }
@@ -74,7 +89,6 @@ class ErrorBoundary extends React.Component {
     
     // Log to analytics/monitoring service if available
     if (process.env.NODE_ENV === 'production') {
-      // Example to log error to server (implement this endpoint)
       try {
         fetch('/api/log-error', {
           method: 'POST',
@@ -95,22 +109,25 @@ class ErrorBoundary extends React.Component {
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+    // First restore React references
+    this.exposeReactGlobally();
     
-    // Ensure React is properly defined before reload
-    if (window.React && !window.g.React) {
-      try {
-        window.g.React = window.React;
-      } catch (e) {
-        console.error('Failed to restore React before reload:', e);
-      }
-    }
+    // Then clear error state
+    this.setState({ hasError: false, error: null, errorInfo: null });
     
     // Force refresh the page content
     window.location.reload();
   }
 
   render() {
+    // Check if React is still accessible
+    const reactLost = !window.React || !window.g.React;
+    
+    // If we lost React references but our internal copy is still good, restore it
+    if (reactLost && this._React) {
+      this.exposeReactGlobally();
+    }
+    
     if (this.state.hasError) {
       // You can render any custom fallback UI
       return (
@@ -121,7 +138,7 @@ class ErrorBoundary extends React.Component {
               We encountered an error loading this content. This might be due to a network issue or a problem with the application.
             </p>
             
-            {process.env.NODE_ENV !== 'production' && this.state.error && (
+            {this.state.error && (
               <div className="mb-6 text-left">
                 <p className="text-red-400 font-mono text-sm p-3 bg-gray-800 rounded overflow-auto mb-2">
                   {this.state.error.toString()}
