@@ -1,118 +1,204 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-    FaHome, FaUser, FaBell, FaHashtag, FaBookmark, 
-    FaCog, FaSignOutAlt, FaPlus, FaNewspaper 
-} from 'react-icons/fa';
-import { BsChatDots } from 'react-icons/bs';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../redux/slices/authSlice';
-import axios from 'axios';
-import Logo from "./Logo";
+import { MdHomeFilled } from "react-icons/md";
+import { IoNotifications } from "react-icons/io5";
+import { FaUser, FaFeather, FaBookmark, FaList, FaCog } from "react-icons/fa";
+import { BiLogOut } from "react-icons/bi";
+import { BsNewspaper, BsChatDots, BsGrid3X3 } from "react-icons/bs";
+import { RiServiceLine } from "react-icons/ri";
+import { Link, useLocation } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import PostPopup from "./PostPopup";
+import { useState } from "react";
 
 const Sidebar = ({ isWideMode }) => {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
-    const [showFullMenu, setShowFullMenu] = useState(false);
-    const { authUser } = useSelector(state => state.auth);
+	const [showPostPopup, setShowPostPopup] = useState(false);
+	const queryClient = useQueryClient();
+	const location = useLocation();
+	const { mutate: logout } = useMutation({
+		mutationFn: async () => {
+			try {
+				const res = await fetch("/api/auth/logout", {
+					method: "POST",
+				});
+				const data = await res.json();
 
-    const handleCreatePostClick = () => {
-        setIsCreatePostModalOpen(true);
-    };
+				if (!res.ok) {
+					throw new Error(data.error || "Something went wrong");
+				}
+				// Remove the token from localStorage
+				localStorage.removeItem("token");
+			} catch (error) {
+				throw new Error(error);
+			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["authUser"] });
+		},
+		onError: () => {
+			toast.error("Logout failed");
+		},
+	});
+	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
-    const handleCloseCreatePostModal = () => {
-        setIsCreatePostModalOpen(false);
-    };
+	const isActive = (path) => {
+		return location.pathname === path;
+	};
 
-    const handleLogout = async () => {
-        try {
-            await axios.post('/api/auth/logout');
-            dispatch(logout());
-            navigate('/login');
-        } catch (error) {
-            console.error('Logout failed:', error);
-        }
-    };
-
-    const isActive = (path) => {
-        return location.pathname === path;
-    };
-
-    const toggleFullMenu = () => {
-        setShowFullMenu(prev => !prev);
-    };
-
-    const menuItems = [
-        { icon: <FaHome className="text-xl" />, label: 'Home', path: '/', hideOnCollapse: false },
-        { icon: <FaBell className="text-xl" />, label: 'Notifications', path: '/notifications', hideOnCollapse: false },
-        { icon: <FaHashtag className="text-xl" />, label: 'Explore', path: '/explore', hideOnCollapse: false },
-        { icon: <FaNewspaper className="text-xl" />, label: 'News', path: '/news', hideOnCollapse: false },
-        { icon: <BsChatDots className="text-xl" />, label: 'Messages', path: '/messages', hideOnCollapse: false },
-        { icon: <FaBookmark className="text-xl" />, label: 'Bookmarks', path: '/bookmarks', hideOnCollapse: false },
-        { icon: <FaUser className="text-xl" />, label: 'Profile', path: `/profile/${authUser?.username}`, hideOnCollapse: false },
-        { icon: <FaCog className="text-xl" />, label: 'Settings', path: '/settings', hideOnCollapse: true },
-    ];
-
-    return (
-        <div className={`${isWideMode ? 'w-64' : 'w-20'} bg-[#1e1e1e] h-screen fixed left-0 z-50 transition-all duration-200 ease-in-out px-2 py-3 overflow-y-auto border-r border-[#333] scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-[#1e1e1e]`}>
-            <div className="mb-5 flex justify-center">
-                <Link
-					to='/'
-					className='flex items-center justify-center lg:justify-start lg:gap-4 w-full px-3'
-				>
-					<div className='relative h-10 w-10 flex items-center justify-center'>
-						<Logo size="normal" />
+	return (
+		<div className={`${isWideMode ? 'w-64' : 'md:flex-[2_2_0] w-18 max-w-52'}`}>
+			<div className={`sticky top-0 left-0 h-screen overflow-y-auto flex flex-col ${isWideMode ? 'border-r border-gray-700' : ''} ${isWideMode ? 'w-64' : 'w-20 md:w-full'}`}>
+				<Link to='/' className='flex justify-center md:justify-start p-6'>
+					<div className='w-16 h-16 rounded-full hover:bg-stone-900 transition-all duration-200 flex items-center justify-center'>
+						<img 
+							src="/src/components/images/xchan_small.png" 
+							alt="XChan Logo" 
+							className='w-12 h-12'
+						/>
 					</div>
-					{isWideMode && (
-						<span className='font-bold text-xl hidden lg:block'>
-							XChan
-						</span>
-					)}
 				</Link>
-            </div>
+				<ul className='flex flex-col gap-3 mt-4'>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/'
+							className={`nav-button ${isActive('/') ? 'active' : ''}`}
+						>
+							<MdHomeFilled className='w-8 h-8' />
+							<span className='text-lg hidden md:block'>Home</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/notifications'
+							className={`nav-button ${isActive('/notifications') ? 'active' : ''}`}
+						>
+							<IoNotifications className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Notifications</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/news'
+							className={`nav-button ${isActive('/news') ? 'active' : ''}`}
+						>
+							<BsNewspaper className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>News</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/bookmarks'
+							className={`nav-button ${isActive('/bookmarks') ? 'active' : ''}`}
+						>
+							<FaBookmark className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Bookmarks</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/lists'
+							className={`nav-button ${isActive('/lists') ? 'active' : ''}`}
+						>
+							<FaList className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Lists</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/messages'
+							className={`nav-button ${isActive('/messages') ? 'active' : ''}`}
+						>
+							<BsChatDots className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Messages</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/services'
+							className={`nav-button ${isActive('/services') ? 'active' : ''}`}
+						>
+							<RiServiceLine className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Services</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/boards'
+							className={`nav-button ${isActive('/boards') ? 'active' : ''}`}
+						>
+							<BsGrid3X3 className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Boards</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/settings'
+							className={`nav-button ${isActive('/settings') ? 'active' : ''}`}
+						>
+							<FaCog className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Settings</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to={`/profile/${authUser?.username}`}
+							className={`nav-button ${isActive(`/profile/${authUser?.username}`) ? 'active' : ''}`}
+						>
+							<FaUser className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Profile</span>
+						</Link>
+					</li>
+				</ul>
 
-            <div className="flex flex-col space-y-1">
-                {menuItems.map((item, index) => (
-                    (!item.hideOnCollapse || isWideMode) && (
-                        <Link
-                            key={index}
-                            to={item.path}
-                            className={`flex items-center py-3 px-3 rounded-full transition-colors duration-200 ${
-                                isActive(item.path)
-                                    ? 'bg-primary text-white'
-                                    : 'text-gray-300 hover:bg-[#333] hover:text-white'
-                            }`}
-                        >
-                            <div className="flex items-center justify-center">
-                                {item.icon}
-                            </div>
-                            {isWideMode && <span className="ml-4">{item.label}</span>}
-                        </Link>
-                    )
-                ))}
+				{authUser && (
+					<div className='mt-auto mb-10'>
+						{/* Post Button */}
+						<div className="px-4 mb-4">
+							<button
+								onClick={() => setShowPostPopup(true)}
+								className="w-full bg-blue-500 text-white rounded-full py-2.5 px-4 font-bold hover:bg-blue-600 transition-all flex items-center justify-center gap-2 text-base shadow-[0_0_10px_rgba(59,130,246,0.5)] hover:shadow-[0_0_15px_rgba(59,130,246,0.7)]"
+							>
+								<FaFeather size={20} />
+								<span className="hidden md:block">Post</span>
+							</button>
+						</div>
 
-                <button
-                    onClick={handleLogout}
-                    className="flex items-center py-3 px-3 rounded-full text-gray-300 hover:bg-[#333] hover:text-white transition-colors duration-200"
-                >
-                    <FaSignOutAlt className="text-xl" />
-                    {isWideMode && <span className="ml-4">Logout</span>}
-                </button>
-            </div>
+						<div className='flex items-center gap-2 p-2 rounded-full hover:bg-[#181818] transition-all duration-300'>
+							<div className='avatar'>
+								<div className='w-10 h-10 rounded-full overflow-hidden relative'>
+									<div className='absolute inset-0 border-2 border-gray-300 rounded-full'></div>
+									<img 
+										src={authUser?.profileImg || "/avatar-placeholder.png"} 
+										className="w-full h-full object-cover"
+									/>
+								</div>
+							</div>
+							<div className='hidden md:block flex-1'>
+								<p className='text-white font-bold text-sm'>{authUser?.fullName}</p>
+								<p className='text-slate-500 text-sm'>@{authUser?.username}</p>
+							</div>
+						</div>
+						<button 
+							className="nav-button mt-2"
+							onClick={(e) => {
+								e.preventDefault();
+								logout();
+							}}
+						>
+							<BiLogOut className='w-5 h-5' />
+							<span className='text-lg hidden md:block'>Logout</span>
+						</button>
+					</div>
+				)}
 
-            <div className="absolute bottom-5 left-0 right-0 px-2">
-                <button
-                    onClick={handleCreatePostClick}
-                    className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-3 px-4 rounded-full transition-colors duration-200 flex items-center justify-center"
-                >
-                    <FaPlus className="mr-2" />
-                    {isWideMode && <span>Post</span>}
-                </button>
-            </div>
-        </div>
-    );
+				{/* Post Popup */}
+				{showPostPopup && (
+					<PostPopup
+						onClose={() => setShowPostPopup(false)}
+					/>
+				)}
+			</div>
+		</div>
+	);
 };
 
 export default Sidebar;

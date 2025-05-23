@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from './components/ThemeProvider';
 import { ThemeToggle } from './components/ThemeToggle';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { FaExpand, FaCompress } from 'react-icons/fa';
 
 import HomePage from "./pages/home/HomePage";
@@ -12,33 +12,6 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import SharedPost from "./pages/SharedPost";
 import PostPage from "./pages/PostPage";
-
-  // Force scroll redraw when app loads
-  useEffect(() => {
-    const fixScrollbars = () => {
-      const scrollElements = document.querySelectorAll('.right-panel-scrollable, .main-content-scrollable');
-      scrollElements.forEach(el => {
-        el.style.overflowY = 'hidden';
-        setTimeout(() => {
-          el.style.overflowY = 'scroll';
-        }, 10);
-      });
-    };
-
-    window.addEventListener('load', fixScrollbars);
-    // Run it once after component mounts
-    setTimeout(fixScrollbars, 1000);
-
-    // Also periodically check and fix scrollbars
-    const interval = setInterval(fixScrollbars, 5000);
-
-    return () => {
-      window.removeEventListener('load', fixScrollbars);
-      clearInterval(interval);
-    };
-  }, []);
-
-
 import ThreadView from "./components/common/ThreadView";
 import NewsPage from "./pages/news/NewsPage";
 import BookmarksPage from "./pages/BookmarksPage";
@@ -56,7 +29,6 @@ import RightPanel from "./components/common/RightPanel";
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner";
-import LogoDebugger from './components/common/LogoDebugger';
 
 function App() {
 	const { data: authUser } = useQuery({
@@ -83,40 +55,6 @@ function App() {
 	});
 
 	const [isWideMode, setIsWideMode] = useState(false);
-	const scrollFixInterval = useRef(null);
-
-	// Super aggressive scroll fix that runs periodically
-	useEffect(() => {
-		// Helper to force scrollbars to be visible
-		const forceScrollbars = () => {
-			document.documentElement.style.overflowY = 'scroll';
-			document.body.style.overflowY = 'scroll';
-
-			const scrollableElements = document.querySelectorAll('.right-panel-scrollable, .right-panel-content, .main-content');
-			scrollableElements.forEach(el => {
-				if (el) {
-					el.style.overflowY = 'scroll';
-					el.style.scrollbarWidth = 'thin';
-				}
-			});
-		};
-
-		// Run immediately
-		forceScrollbars();
-
-		// Run on window resize
-		window.addEventListener('resize', forceScrollbars);
-
-		// Run periodically to ensure scrollbars stay visible
-		scrollFixInterval.current = setInterval(forceScrollbars, 2000);
-
-		return () => {
-			window.removeEventListener('resize', forceScrollbars);
-			if (scrollFixInterval.current) {
-				clearInterval(scrollFixInterval.current);
-			}
-		};
-	}, []);
 
 	useEffect(() => {
 		if (authUser?.settings?.appearance?.wideMode !== undefined) {
@@ -134,8 +72,8 @@ function App() {
 
 	return (
 		<ThemeProvider>
-			<div className="min-h-screen bg-background-main text-text-primary font-primary overflow-hidden">
-				<div className={`flex ${isWideMode ? 'justify-between' : 'max-w-6xl mx-auto'} relative`}>
+			<div className="min-h-screen bg-background-main text-text-primary font-primary">
+				<div className={`flex ${isWideMode ? 'justify-between' : 'max-w-6xl mx-auto'}`}>
 					{/* Common component, bc it's not wrapped with Routes */}
 					{authUser && <Sidebar isWideMode={isWideMode} />}
 					<Routes>

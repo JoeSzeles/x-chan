@@ -21,21 +21,9 @@ const HomePage = ({ isWideMode }) => {
 	React.useEffect(() => {
 		const mainContent = document.querySelector('.main-content');
 		if (mainContent) {
-			mainContent.classList.add('overflow-y-scroll', 'max-h-screen');
-			// Set position relative to contain the scrollbar
-			mainContent.classList.add('relative', 'main-content-scrollable');
-			// Set specific width to ensure scrollbar appears correctly
-			mainContent.style.width = isWideMode ? 'calc(100% - 384px)' : 'calc(100% - 334px)';
-			
-			// Force scrollbar redraw on content load
-			setTimeout(() => {
-				mainContent.style.overflowY = 'hidden';
-				setTimeout(() => {
-					mainContent.style.overflowY = 'scroll';
-				}, 10);
-			}, 100);
+			mainContent.classList.add('overflow-y-auto', 'max-h-screen');
 		}
-	}, [isWideMode]);
+	}, []);
 
 	const categories = [
 		{ id: "myPosts", label: "My Posts", icon: <FaHome /> },

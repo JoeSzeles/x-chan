@@ -56,26 +56,8 @@ const RightPanel = ({ isWideMode }) => {
 	};
 
 	return (
-		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'} h-screen`}>
-			<div 
-				className={`bg-[#15202b] p-4 rounded-md ${isWideMode ? 'border-l border-gray-700' : ''}`} 
-				style={{
-					height: '100vh',
-					scrollbarWidth: 'thin !important',
-					scrollbarColor: '#4a5568 #1a202c !important',
-					overflowY: 'scroll !important',
-					overflowX: 'hidden !important',
-					position: 'fixed',
-					width: isWideMode ? '320px' : '256px',
-					right: '0',
-					top: '0',
-					bottom: '0',
-					zIndex: 10,
-					paddingBottom: '80px',
-					overscrollBehavior: 'contain'
-				}}
-				className="right-panel-scrollable"
-			>
+		<div className={`${isWideMode ? 'w-80' : 'hidden md:block md:w-64 lg:w-80'}`}>
+			<div className={`bg-[#15202b] p-4 rounded-md sticky top-2 max-h-screen overflow-y-auto ${isWideMode ? 'border-l border-gray-700' : ''}`}>
 				{/* Search Bar */}
 				<div className="relative mb-4" ref={searchRef}>
 					<FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
