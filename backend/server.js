@@ -95,6 +95,8 @@ app.get('/xchan_small.png', (req, res) => {
         console.log('Checking path:', filePath);
         if (fs.existsSync(filePath)) {
             console.log('Logo found at:', filePath);
+            // Set cache headers
+            res.setHeader('Cache-Control', 'public, max-age=86400');
             return res.sendFile(filePath);
         }
     }
@@ -107,6 +109,9 @@ app.get('/xchan_small.png', (req, res) => {
     
     res.status(404).send('Logo not found');
 });
+
+// Also serve content from the components/images directory at the root
+app.use('/images', express.static(path.join(__dirname, '../frontend/src/components/images')));
 
 app.use(cors({
     origin: true,

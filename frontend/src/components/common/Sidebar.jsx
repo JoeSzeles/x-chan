@@ -55,17 +55,20 @@ const Sidebar = ({ isWideMode }) => {
 							className='w-12 h-12'
 							onError={(e) => {
 								console.error("Logo failed to load from path:", e.target.src);
-								// Try different paths as fallbacks
-								if (e.target.src.includes('/xchan_small.png')) {
-									console.log("Trying relative path to components/images...");
-									e.target.src = "./src/components/images/xchan_small.png";
-								} else if (e.target.src.includes('./src/components/images/xchan_small.png')) {
-									console.log("Trying direct path with origin...");
-									e.target.src = `${window.location.origin}/avatar-placeholder.png`;
-								} else {
-									console.log("Using placeholder as final fallback");
-									e.target.src = "/avatar-placeholder.png";
-								}
+								// Use direct absolute URL
+								e.target.src = `${window.location.origin}/xchan_small.png`;
+								
+								// If that fails, try the images folder path
+								e.target.onerror = () => {
+									console.log("Trying images folder path");
+									e.target.src = "/images/xchan_small.png";
+									
+									// If that also fails, use the placeholder
+									e.target.onerror = () => {
+										console.log("Using placeholder as final fallback");
+										e.target.src = "/avatar-placeholder.png";
+									};
+								};
 							}}
 						/>
 					</div>
