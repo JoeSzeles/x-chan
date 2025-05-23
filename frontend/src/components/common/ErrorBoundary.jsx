@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { toast } from 'react-hot-toast';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
