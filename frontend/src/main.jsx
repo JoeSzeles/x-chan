@@ -17,8 +17,16 @@ import {
   setupGlobalErrorHandlers
 } from './utils/cleanupUtils';
 
+// Import new React error recovery utilities
+import {
+  cacheReactReference,
+  injectReactGlobally as forceReactGlobal,
+  setupReactReferenceProtection
+} from './utils/reactErrorRecovery';
+
 // Cache and make React globally available immediately 
 const React = cacheReactInstance(ReactModule);
+cacheReactReference(ReactModule);
 const ReactDOM = ReactDOMModule;
 
 // Store modules globally as a fallback
@@ -36,13 +44,45 @@ if (!window.g) {
 }
 
 // Force React global availability on both window and g
-window.React = React;
-window.g.React = React;
-window._React = React;
-window.g._React = React;
+try {
+  // Using Object.defineProperty for more robust definitions
+  Object.defineProperty(window, 'React', {
+    value: React,
+    writable: true,
+    enumerable: true,
+    configurable: true
+  });
+  
+  Object.defineProperty(window.g, 'React', {
+    value: React,
+    writable: true,
+    enumerable: true,
+    configurable: true
+  });
+  
+  // Backup references
+  window._React = React;
+  window.g._React = React;
+  
+  console.log("React successfully defined with Object.defineProperty");
+} catch (e) {
+  console.warn("Fallback to direct assignment for React global", e);
+  // Direct assignment as fallback
+  window.React = React;
+  window.g.React = React;
+  window._React = React; 
+  window.g._React = React;
+}
 
 // Initialize React globally with robust property definitions
 initializeReactGlobally();
+
+// Double-check initialization was successful
+if (!window.g.React) {
+  console.error("React initialization failed on g object!");
+  // Last resort direct assignment
+  window.g.React = React;
+}
 
 // Now we can import the rest of the application
 import App from "./App";
@@ -57,16 +97,21 @@ clearSESLocalStorage();
 // Create a React-aware render function that verifies React is available
 const renderWithReactCheck = () => {
   try {
-    // Check React availability again just before rendering
+    // Check React availability again just before rendering with multiple recovery methods
     if (!window.React) {
       console.warn("React not available on window, reinjecting...");
       window.React = React;
+      forceReactGlobal(); // Use the new more robust method
     }
     
     if (!window.g.React) {
       console.warn("React not available on g, reinjecting...");
       window.g.React = React;
+      forceReactGlobal(); // Use the new more robust method
     }
+    
+    // Apply additional protection
+    setupReactReferenceProtection();
     
     // Log React availability
     console.log(`React global status:`, {

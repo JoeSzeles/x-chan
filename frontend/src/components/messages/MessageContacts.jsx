@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { initSocket, getSocketInstance } from '../../services/socket';
+import { getSocket } from '../../services/socket.js';
 
 const MessageContacts = ({ onStartConversation }) => {
   const [followers, setFollowers] = useState([]);
@@ -19,7 +19,7 @@ const MessageContacts = ({ onStartConversation }) => {
         ]);
         console.log('Followers response:', followersRes.data);
         console.log('Requests response:', requestsRes.data);
-        
+
         setFollowers(followersRes.data);
         setRequests(requestsRes.data);
         setLoading(false);
@@ -176,4 +176,4 @@ const MessageContacts = ({ onStartConversation }) => {
   );
 };
 
-export default MessageContacts; 
+export default MessageContacts;

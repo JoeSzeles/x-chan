@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { cacheReactInstance, injectReactGlobally } from '../../utils/cleanupUtils';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,6 +14,7 @@ class ErrorBoundary extends React.Component {
     
     // Store React reference for recovery
     this._React = React;
+    cacheReactInstance(React);
     
     // Ensure React is globally available in case of errors
     this.exposeReactGlobally();
@@ -80,6 +82,7 @@ class ErrorBoundary extends React.Component {
         
         // Force re-expose to make sure
         this.exposeReactGlobally();
+        injectReactGlobally();
         
         console.log('React reference restored in error handler');
       } catch (e) {
@@ -109,14 +112,34 @@ class ErrorBoundary extends React.Component {
   }
 
   handleRetry = () => {
-    // First restore React references
-    this.exposeReactGlobally();
-    
-    // Then clear error state
-    this.setState({ hasError: false, error: null, errorInfo: null });
-    
-    // Force refresh the page content
-    window.location.reload();
+    try {
+      // First restore React references
+      this.exposeReactGlobally();
+      injectReactGlobally();
+      
+      console.log("Error boundary attempting recovery");
+      
+      // Explicitly ensure React is available globally
+      if (!window.g) window.g = {};
+      if (window.React && !window.g.React) {
+        window.g.React = window.React;
+      } else if (window.ReactModule) {
+        window.React = window.ReactModule;
+        window.g.React = window.ReactModule;
+      }
+      
+      // Then clear error state
+      this.setState({ hasError: false, error: null, errorInfo: null });
+      
+      // Force refresh the page content if we couldn't recover
+      if (!window.g.React) {
+        console.warn("Could not recover React instance, reloading page");
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error("Error in recovery process:", e);
+      window.location.reload();
+    }
   }
 
   render() {
@@ -126,6 +149,7 @@ class ErrorBoundary extends React.Component {
     // If we lost React references but our internal copy is still good, restore it
     if (reactLost && this._React) {
       this.exposeReactGlobally();
+      injectReactGlobally();
     }
     
     if (this.state.hasError) {
