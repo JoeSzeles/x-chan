@@ -1,6 +1,8 @@
 // Import React and ReactDOM directly with namespace imports
 import * as ReactModule from "react";
 import * as ReactDOMModule from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Import App component
 import App from "./App";
@@ -18,6 +20,16 @@ import {
   setupReactReferenceProtection,
   fixSESEnvironmentIssues
 } from './utils/reactErrorRecovery';
+
+// Create QueryClient for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Cache React immediately
 console.log("Caching React reference...");
@@ -56,7 +68,11 @@ const initializeApp = () => {
 
     root.render(
       <ErrorBoundary>
-        <App />
+        <BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <App />
+          </QueryClientProvider>
+        </BrowserRouter>
       </ErrorBoundary>
     );
 
