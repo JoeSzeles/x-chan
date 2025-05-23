@@ -1,10 +1,11 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { FaCircle } from 'react-icons/fa';
 import LoadingSpinner from './LoadingSpinner';
 
 const WhosOnline = () => {
+    const queryClient = useQueryClient();
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
     
     const { data: onlineUsers, isLoading } = useQuery({
@@ -74,11 +75,20 @@ const WhosOnline = () => {
                                     try {
                                         const res = await fetch(`/api/users/follow/${user._id}`, {
                                             method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            }
                                         });
-                                        if (!res.ok) throw new Error('Failed to follow user');
+                                        
+                                        if (!res.ok) {
+                                            const errorData = await res.json();
+                                            throw new Error(errorData.error || 'Failed to follow user');
+                                        }
+                                        
                                         // Force refetch
                                         await queryClient.invalidateQueries(["onlineUsers"]);
                                         await queryClient.invalidateQueries(["authUser"]);
+                                        await queryClient.invalidateQueries(["suggestedUsers"]);
                                     } catch (error) {
                                         console.error('Error following user:', error);
                                     }

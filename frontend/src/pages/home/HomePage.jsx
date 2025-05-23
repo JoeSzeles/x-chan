@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, React } from "react";
 import { FaSync, FaList, FaTh, FaHome, FaNewspaper, FaComments, FaUserFriends, FaGlobe, FaCog, FaPlus } from "react-icons/fa";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -16,6 +16,14 @@ const HomePage = ({ isWideMode }) => {
 	const [viewMode, setViewMode] = useState("list");
 	const [isLoading, setIsLoading] = useState(false);
 	const queryClient = useQueryClient();
+
+	// Apply styles to make the main content scrollable
+	React.useEffect(() => {
+		const mainContent = document.querySelector('.main-content');
+		if (mainContent) {
+			mainContent.classList.add('overflow-y-auto', 'max-h-screen');
+		}
+	}, []);
 
 	const categories = [
 		{ id: "myPosts", label: "My Posts", icon: <FaHome /> },
@@ -87,7 +95,7 @@ const HomePage = ({ isWideMode }) => {
 							</div>
 						))}
 					</div>
-					
+
 					{/* Action Buttons */}
 					<div className='flex items-center gap-3 ml-4'>
 						<button
@@ -127,7 +135,7 @@ const HomePage = ({ isWideMode }) => {
 			</PageHeader>
 
 			{/* Content */}
-			<div className="p-4">
+			<div className="p-4 main-content overflow-y-auto max-h-screen">
 				{isLoading ? (
 					<div className="flex justify-center items-center h-64">
 						<LoadingSpinner size="lg" />
