@@ -91,7 +91,7 @@ const ProfilePage = () => {
                 console.log('ProfilePage: Skipping background update');
                 return;
             }
-
+            
             console.log('ProfilePage: handleCoverUpdate called with data:', data);
             setCoverData(data);
 
