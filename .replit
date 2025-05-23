@@ -93,7 +93,7 @@ localPort = 5000
 externalPort = 5000
 
 [workflows]
-runButton = "Rebuild with Clean Cache"
+runButton = "Dev Servers"
 
 [[workflows.workflow]]
 name = "Backend Server"
