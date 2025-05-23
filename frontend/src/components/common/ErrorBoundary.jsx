@@ -9,6 +9,17 @@ class ErrorBoundary extends React.Component {
       error: null,
       errorInfo: null
     };
+    
+    // Ensure React is globally available in case of errors
+    if (window.React && !window.g?.React) {
+      try {
+        if (!window.g) window.g = {};
+        window.g.React = window.React;
+        console.log('React exposed to g from ErrorBoundary');
+      } catch (e) {
+        console.error('Failed to expose React in ErrorBoundary:', e);
+      }
+    }
   }
 
   static getDerivedStateFromError(error) {
