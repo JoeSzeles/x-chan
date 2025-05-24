@@ -14,6 +14,7 @@ const LoginPage = () => {
 	const { mutate: login, isPending } = useMutation({
 		mutationFn: async () => {
 			try {
+				console.log('[LoginPage] Attempting login with:', inputs);
 				const res = await fetch("/api/auth/login", {
 					method: "POST",
 					headers: {
@@ -24,25 +25,32 @@ const LoginPage = () => {
 				});
 				const data = await res.json();
 				if (!res.ok) {
+					console.error('[LoginPage] Login failed:', data);
 					throw new Error(data.error || "Something went wrong");
 				}
 				// Store the token and user data in localStorage
 				if (data.token) {
-				localStorage.setItem("token", data.token);
+					localStorage.setItem("token", data.token);
 					localStorage.setItem("userData", JSON.stringify(data));
 					console.log('[LoginPage] Stored token and user data');
+				} else {
+					console.warn('[LoginPage] No token received in login response');
 				}
 				return data;
 			} catch (error) {
-				throw new Error(error);
+				console.error('[LoginPage] Login error:', error);
+				throw error;
 			}
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
+			console.log('[LoginPage] Login successful:', data);
 			queryClient.invalidateQueries({ queryKey: ["authUser"] });
+			window.location.href = '/'; // Redirect to home page after successful login
 			toast.success("Login successful!");
 		},
 		onError: (error) => {
-			toast.error(error.message);
+			console.error('[LoginPage] Login mutation error:', error);
+			toast.error(error.message || "Login failed. Please try again.");
 		},
 	});
 
