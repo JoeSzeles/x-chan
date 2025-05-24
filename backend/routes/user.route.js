@@ -82,6 +82,7 @@ router.get("/suggested", protectRoute, getSuggestedUsers);
 router.get("/online", protectRoute, getOnlineUsers);
 router.get("/:username/followers", protectRoute, getFollowers);
 router.get("/:username/following", protectRoute, getFollowing);
+// Use :id instead of :username to allow following by ID
 router.post("/follow/:id", protectRoute, followUnfollowUser);
 router.post('/upload/profile', protectRoute, upload.single('profileImg'), async (req, res) => {
     try {
