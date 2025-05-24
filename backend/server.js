@@ -71,11 +71,17 @@ if (fs.existsSync(frontendBuildPath)) {
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
 }
 
+// Configure CORS for Express
 app.use(cors({
-    origin: ['https://x-chan.replit.app', 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev', true],
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if(!origin) return callback(null, true);
+        // Otherwise allow any origin
+        return callback(null, true);
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 // Global error handler for unhandled exceptions
@@ -140,27 +146,18 @@ app.get('*', (req, res) => {
 });
 
 const httpServer = createServer(app);
+
+// Configure Socket.IO with proper CORS
 const io = new Server(httpServer, {
+    path: '/socket.io',
     cors: {
-        origin: ['https://x-chan.replit.app', 'https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev', true],
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization']
+        allowedHeaders: ["Content-Type", "Authorization"]
     },
-    path: '/socket.io/',
-    transports: ['polling', 'websocket'],
     allowEIO3: true,
-    pingTimeout: 60000,
-    pingInterval: 25000,
-    connectTimeout: 45000,
-    upgradeTimeout: 45000,
-    forcePolling: true, // Try forcing polling as fallback
-    allowUpgrades: true,
-    cookie: {
-        name: 'io',
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production'
-    }
+    transports: ['websocket', 'polling']
 });
 
 // Enable detailed debug logging
