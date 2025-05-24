@@ -48,38 +48,7 @@ const HomePage = ({ isWideMode }) => {
 			case "boards":
 				return <BoardsList viewMode={viewMode} />;
 			case "following":
-				return (
-					<div className="space-y-6">
-						<div>
-							<h2 className="text-xl font-bold mb-4">My Followers</h2>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								{isLoading ? (
-									<div className="flex justify-center items-center h-24">
-										<LoadingSpinner size="md" />
-									</div>
-								) : (
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<Posts feedType="followers" isWideMode={isWideMode} viewMode={viewMode} />
-									</div>
-								)}
-							</div>
-						</div>
-						<div>
-							<h2 className="text-xl font-bold mb-4">Following</h2>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								{isLoading ? (
-									<div className="flex justify-center items-center h-24">
-										<LoadingSpinner size="md" />
-									</div>
-								) : (
-									<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-										<Posts feedType="following" isWideMode={isWideMode} viewMode={viewMode} />
-									</div>
-								)}
-							</div>
-						</div>
-					</div>
-				);
+				return <Posts feedType="following" isWideMode={isWideMode} viewMode={viewMode} />;
 			case "public":
 				return <Posts feedType="public" isWideMode={isWideMode} viewMode={viewMode} />;
 			case "services":

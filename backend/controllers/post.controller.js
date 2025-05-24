@@ -679,32 +679,3 @@ export const getPostQuotes = async (req, res, next) => {
 		next(error);
 	}
 };
-// Get posts from followers
-export const getFollowersPosts = async (req, res) => {
-	try {
-		const userId = req.user._id;
-		
-		// Find the current user with populated followers
-		const user = await User.findById(userId);
-		if (!user) {
-			return res.status(404).json({ error: "User not found" });
-		}
-		
-		// Get all posts from followers
-		const posts = await Post.find({ user: { $in: user.followers } })
-			.sort({ createdAt: -1 })
-			.populate("user", "username fullName profileImg")
-			.populate({
-				path: "comments",
-				populate: {
-					path: "user",
-					select: "username profileImg fullName",
-				},
-			});
-			
-		res.status(200).json(posts);
-	} catch (error) {
-		console.error("Error in getFollowersPosts controller:", error);
-		res.status(500).json({ error: error.message });
-	}
-};

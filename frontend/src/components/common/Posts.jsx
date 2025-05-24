@@ -14,8 +14,6 @@ const Posts = ({ feedType, username, userId, isWideMode }) => {
 				return "/api/posts/all";
 			case "following":
 				return "/api/posts/following";
-			case "followers":
-				return "/api/posts/followers";
 			case "posts":
 				return `/api/posts/user/${username}`;
 			case "likes":
