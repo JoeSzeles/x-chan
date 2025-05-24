@@ -1,7 +1,6 @@
 import Notification from "../models/notification.model.js";
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
-import User from "../models/user.model.js";
 import Comment from "../models/comment.model.js";
 import { createRepostNotification } from "./notification.controller.js";
 import { v2 as cloudinary } from "cloudinary";

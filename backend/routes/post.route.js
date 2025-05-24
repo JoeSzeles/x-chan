@@ -22,11 +22,11 @@ import {
 const router = express.Router();
 
 router.get("/all", protectRoute, getAllPosts);
-router.get("/:postId", getPostById);
 router.get("/following", protectRoute, getFollowingPosts);
 router.get("/followers", protectRoute, getFollowersPosts);
 router.get("/likes/:id", protectRoute, getLikedPosts);
 router.get("/user/:username", protectRoute, getUserPosts);
+router.get("/:postId", getPostById);
 router.post("/create", protectRoute, createPost);
 router.post("/like/:id", protectRoute, likeUnlikePost);
 router.post("/repost/:id", protectRoute, repostPost);
