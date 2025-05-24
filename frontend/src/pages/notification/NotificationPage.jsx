@@ -107,18 +107,24 @@ const NotificationPage = () => {
 				socket.disconnect();
 			}
 
-			// Use window.location.origin to ensure we connect to the same domain
-			const baseUrl = window.location.origin.includes('localhost') ? 
-				'http://0.0.0.0:5000' : 
-				window.location.origin.replace(/:\d+$/, '');
+			// Get the base URL for socket connection
+			let baseUrl;
+			if (window.location.origin.includes('localhost')) {
+				baseUrl = 'http://0.0.0.0:5000';
+			} else if (window.location.origin.includes('replit.dev')) {
+				// For Replit deployment
+				baseUrl = window.location.origin;
+			} else {
+				baseUrl = window.location.origin;
+			}
 
 			console.log('Connecting to socket server at:', baseUrl);
 
 			socket = io(baseUrl, {
 				path: '/socket.io',
-				transports: ['polling', 'websocket'],
+				transports: ['websocket', 'polling'], // Try websocket first
 				reconnection: true,
-				reconnectionAttempts: 10,
+				reconnectionAttempts: 3, // Reduce attempts to fail faster
 				reconnectionDelay: 1000,
 				timeout: 10000,
 				withCredentials: true,
@@ -144,7 +150,20 @@ const NotificationPage = () => {
 					setTimeout(connectSocket, reconnectDelay * reconnectAttempts);
 				} else {
 					console.error('Max reconnection attempts reached');
-					toast.error('Failed to connect to real-time updates. Please refresh the page.');
+					toast.info('Using fallback update method instead of real-time notifications');
+
+					// Setup polling as fallback when socket fails
+					console.log("Setting up polling fallback for notifications");
+					const pollInterval = setInterval(() => {
+						console.log("Polling for notifications");
+						queryClient.invalidateQueries({ queryKey: ["notifications"] });
+					}, 15000); // Poll every 15 seconds
+
+					// Make sure to clean up interval on component unmount
+					return () => {
+						console.log("Clearing notification polling interval");
+						clearInterval(pollInterval);
+					};
 				}
 			});
 
