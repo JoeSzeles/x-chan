@@ -101,36 +101,33 @@ const NotificationPage = () => {
 		let reconnectAttempts = 0;
 		const maxReconnectAttempts = 5;
 		const reconnectDelay = 1000;
-		let socketConnected = false;
 
 		const connectSocket = () => {
 			if (socket) {
 				socket.disconnect();
 			}
 
-			try {
-				// Use window.location.origin to ensure we connect to the same domain
-				const baseUrl = window.location.origin.includes('localhost') ? 
-					'http://0.0.0.0:5000' : 
-					window.location.origin;
-					
-				console.log('Connecting to socket server at:', baseUrl);
+			// Use window.location.origin to ensure we connect to the same domain
+			const baseUrl = window.location.origin.includes('localhost') ? 
+				'http://0.0.0.0:5000' : 
+				window.location.origin.replace(/:\d+$/, '');
 				
-				socket = io(baseUrl, {
-					path: '/socket.io',
-					transports: ['websocket', 'polling'],
-					reconnection: true,
-					reconnectionAttempts: 5,
-					reconnectionDelay: 1000,
-					timeout: 10000,
-					withCredentials: true,
-					forceNew: true,
-					autoConnect: true
-				});
+			console.log('Connecting to socket server at:', baseUrl);
+			
+			socket = io(baseUrl, {
+				path: '/socket.io',
+				transports: ['polling', 'websocket'],
+				reconnection: true,
+				reconnectionAttempts: 10,
+				reconnectionDelay: 1000,
+				timeout: 10000,
+				withCredentials: true,
+				forceNew: true,
+				autoConnect: true
+			});
 
 			socket.on('connect', () => {
 				console.log('Socket connected successfully');
-				socketConnected = true;
 				reconnectAttempts = 0;
 				const userId = localStorage.getItem('userId');
 				if (userId) {
@@ -147,14 +144,7 @@ const NotificationPage = () => {
 					setTimeout(connectSocket, reconnectDelay * reconnectAttempts);
 				} else {
 					console.error('Max reconnection attempts reached');
-					toast.info('Using regular updates instead of real-time notifications');
-					
-					// Setup polling as fallback when socket fails
-					const pollInterval = setInterval(() => {
-						queryClient.invalidateQueries({ queryKey: ["notifications"] });
-					}, 30000); // Poll every 30 seconds
-					
-					return () => clearInterval(pollInterval);
+					toast.error('Failed to connect to real-time updates. Please refresh the page.');
 				}
 			});
 
@@ -176,37 +166,18 @@ const NotificationPage = () => {
 			});
 		};
 
-		} catch (initError) {
-				console.error('Error initializing socket:', initError);
-				// Set up polling as fallback
-				const pollInterval = setInterval(() => {
-					queryClient.invalidateQueries({ queryKey: ["notifications"] });
-				}, 30000); // Poll every 30 seconds
-				
-				return () => clearInterval(pollInterval);
-			}
-		};
-
 		// Initial connection
-		try {
-			connectSocket();
-		} catch (error) {
-			console.error('Failed to start socket connection:', error);
-		}
+		connectSocket();
 
 		// Cleanup
 		return () => {
-			try {
-				if (socket) {
-					const userId = localStorage.getItem('userId');
-					if (userId) {
-						socket.emit('leaveNotifications', userId);
-					}
-					socket.off('newNotification');
-					socket.disconnect();
+			if (socket) {
+				const userId = localStorage.getItem('userId');
+				if (userId) {
+					socket.emit('leaveNotifications', userId);
 				}
-			} catch (cleanupError) {
-				console.error('Error during socket cleanup:', cleanupError);
+				socket.off('newNotification');
+				socket.disconnect();
 			}
 		};
 	}, [queryClient]);
