@@ -56,7 +56,7 @@ const NotificationPage = () => {
 	const [hoveredPostId, setHoveredPostId] = useState(null);
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	
+
 	const { data: notificationsData, isLoading, error } = useQuery({
 		queryKey: ["notifications"],
 		queryFn: async () => {
@@ -66,7 +66,7 @@ const NotificationPage = () => {
 				console.log("Notifications API response:", res.data);
 				const notifications = Array.isArray(res.data.notifications) ? res.data.notifications : [];
 				console.log("Processed notifications:", notifications);
-				
+
 				// Debug notification types
 				if (notifications.length > 0) {
 					const types = {};
@@ -74,7 +74,7 @@ const NotificationPage = () => {
 						types[notification.type] = (types[notification.type] || 0) + 1;
 					});
 					console.log("Notification types count:", types);
-					
+
 					// Debug a few notifications of each type
 					const samplesByType = {};
 					notifications.forEach(notification => {
@@ -86,7 +86,7 @@ const NotificationPage = () => {
 					});
 					console.log("Sample notifications by type:", samplesByType);
 				}
-				
+
 				return notifications;
 			} catch (error) {
 				console.error("Error fetching notifications:", error);
@@ -111,9 +111,9 @@ const NotificationPage = () => {
 			const baseUrl = window.location.origin.includes('localhost') ? 
 				'http://0.0.0.0:5000' : 
 				window.location.origin.replace(/:\d+$/, '');
-				
+
 			console.log('Connecting to socket server at:', baseUrl);
-			
+
 			socket = io(baseUrl, {
 				path: '/socket.io',
 				transports: ['polling', 'websocket'],
@@ -138,7 +138,7 @@ const NotificationPage = () => {
 			socket.on('connect_error', (error) => {
 				console.error('Socket connection error:', error);
 				reconnectAttempts++;
-				
+
 				if (reconnectAttempts < maxReconnectAttempts) {
 					console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`);
 					setTimeout(connectSocket, reconnectDelay * reconnectAttempts);
@@ -156,7 +156,6 @@ const NotificationPage = () => {
 				}
 			});
 
-			// Listen for new notifications
 			socket.on('newNotification', (notification) => {
 				console.log('Received new notification:', notification);
 				queryClient.setQueryData(["notifications"], (oldData) => {
@@ -164,12 +163,21 @@ const NotificationPage = () => {
 					return [notification, ...oldData];
 				});
 			});
-		};
+		}
 
 		// Initial connection
-		connectSocket();
+		try {
+			connectSocket();
+		} catch (initError) {
+			console.error('Error initializing socket:', initError);
+			// Set up polling as fallback
+			const pollInterval = setInterval(() => {
+				queryClient.invalidateQueries({ queryKey: ["notifications"] });
+			}, 30000); // Poll every 30 seconds
 
-		// Cleanup
+			return () => clearInterval(pollInterval);
+		}
+		// Cleanup function for useEffect
 		return () => {
 			if (socket) {
 				const userId = localStorage.getItem('userId');
@@ -321,12 +329,12 @@ const NotificationPage = () => {
 		const date = new Date(dateString);
 		const now = new Date();
 		const diffInSeconds = Math.floor((now - date) / 1000);
-		
+
 		if (diffInSeconds < 60) return 'just now';
 		if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
 		if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
 		if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d`;
-		
+
 		return date.toLocaleDateString('en-US', { 
 			month: 'short', 
 			day: 'numeric',
@@ -435,18 +443,18 @@ const NotificationPage = () => {
 
 	const handleShare = async (e, notification) => {
 		e.stopPropagation();
-		
+
 		// Get the post ID from either the notification or its referenced post
 		const postId = notification.post?._id || notification.referencedPost?._id;
-		
+
 		if (!postId) {
 			toast.error('No post link available');
 			return;
 		}
-		
+
 		const baseUrl = window.location.origin;
 		const postUrl = `${baseUrl}/post/${postId}`;
-		
+
 		try {
 			await navigator.clipboard.writeText(postUrl);
 			toast.success('Post link copied to clipboard!');
