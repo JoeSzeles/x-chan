@@ -100,12 +100,17 @@ const UserCard = ({ user, isCompact = false }) => {
                     </div>
                 </div>
                 <button
-                    onClick={() => followUser()}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        followUser(user._id);
+                    }}
                     className={`px-4 py-2 rounded-full hover:bg-gray-700 transition-colors ${
                         user.isFollowing ? 'text-red-500' : 'text-blue-500'
                     }`}
+                    disabled={isPending}
                 >
-                    {user.isFollowing ? 'Unfollow' : 'Follow'}
+                    {isPending ? 'Processing...' : (user.isFollowing ? 'Unfollow' : 'Follow')}
                 </button>
             </div>
         </div>
