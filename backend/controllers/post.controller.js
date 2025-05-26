@@ -467,43 +467,142 @@ export const getUserPosts = async (req, res) => {
 export const repostPost = async (req, res) => {
 	try {
 		const { id: postId } = req.params;
+		const { repostType = 'personal', targetBoard } = req.body;
 		const userId = req.user._id;
 
-		const post = await Post.findById(postId);
-		if (!post) {
+		// Find the original post or comment
+		let originalPost = await Post.findById(postId);
+		let isComment = false;
+		
+		if (!originalPost) {
+			// Try finding in comments collection
+			const comment = await Comment.findById(postId);
+			if (comment) {
+				originalPost = comment;
+				isComment = true;
+			}
+		}
+
+		if (!originalPost) {
 			return res.status(404).json({ error: 'Post not found' });
 		}
 
-		// Check if user has already reposted the post
 		const user = await User.findById(userId);
 		if (!user) {
 			return res.status(404).json({ error: 'User not found' });
 		}
 
-		// Ensure reposts array exists
-		if (!user.reposts) {
-			// Initialize reposts array if it doesn't exist
-			await User.findByIdAndUpdate(userId, { reposts: [] });
-			user.reposts = [];
-		}
+		// Check if user has already reposted this content
+		const existingRepost = await Post.findOne({
+			user: userId,
+			$or: [
+				{ originalPost: postId },
+				{ originalComment: postId }
+			]
+		});
 
-		const hasReposted = user.reposts && user.reposts.includes(postId);
-
-		if (hasReposted) {
-			// Unrepost
+		if (existingRepost) {
+			// Remove existing repost
+			await Post.findByIdAndDelete(existingRepost._id);
+			
+			// Update user's reposts array
 			await User.findByIdAndUpdate(userId, { $pull: { reposts: postId } });
-			await Post.findByIdAndUpdate(postId, { $inc: { repostCount: -1 } });
-			return res.status(200).json({ message: 'Post unreposted' });
+			
+			// Decrease repost count on original
+			if (isComment) {
+				await Comment.findByIdAndUpdate(postId, { $inc: { repostCount: -1 } });
+			} else {
+				await Post.findByIdAndUpdate(postId, { $inc: { repostCount: -1 } });
+			}
+			
+			return res.status(200).json({ 
+				message: 'Post unreposted',
+				reposts: []
+			});
 		}
 
-		// Repost
-		await User.findByIdAndUpdate(userId, { $push: { reposts: postId } });
-		await Post.findByIdAndUpdate(postId, { $inc: { repostCount: 1 } });
+		// Get the highest post number for the new repost
+		const [highestPost, highestComment] = await Promise.all([
+			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
+			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
+		]);
 
-		// Create notification for the original post author
+		const highestPostNumber = highestPost ? highestPost.postNumber : 0;
+		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
+		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
+
+		// Create new repost
+		const repostData = {
+			user: userId,
+			text: `Reposted: ${originalPost.text}`,
+			postNumber: nextPostNumber,
+			isRepost: true,
+			likes: [],
+			reposts: [],
+			comments: [],
+			bookmarkedBy: [],
+			ratings: [],
+			viewCount: 0
+		};
+
+		// Set original reference
+		if (isComment) {
+			repostData.originalComment = postId;
+		} else {
+			repostData.originalPost = postId;
+		}
+
+		// Handle board targeting for board reposts
+		if (repostType === 'board' && targetBoard) {
+			const board = await Board.findOne({ name: targetBoard, owner: userId });
+			if (board) {
+				repostData.board = board._id;
+				repostData.boardName = targetBoard;
+			}
+		}
+
+		// Copy media if present
+		if (originalPost.img) {
+			repostData.img = originalPost.img;
+		}
+		if (originalPost.videoUrl) {
+			repostData.videoUrl = originalPost.videoUrl;
+		}
+
+		const newRepost = new Post(repostData);
+		await newRepost.save();
+
+		// Update user's reposts array
+		await User.findByIdAndUpdate(userId, { $push: { reposts: postId } });
+
+		// Increment repost count on original
+		if (isComment) {
+			await Comment.findByIdAndUpdate(postId, { $inc: { repostCount: 1 } });
+		} else {
+			await Post.findByIdAndUpdate(postId, { $inc: { repostCount: 1 } });
+		}
+
+		// Add to board if specified
+		if (repostData.board) {
+			await Board.findByIdAndUpdate(repostData.board, {
+				$push: { posts: newRepost._id }
+			});
+		}
+
+		// Create notification for the original author
 		await createRepostNotification(postId, userId);
 
-		res.status(200).json({ message: 'Post reposted' });
+		// Populate the new repost for response
+		const populatedRepost = await Post.findById(newRepost._id)
+			.populate('user', 'username fullName profileImg')
+			.populate('originalPost', 'text img user')
+			.populate('originalComment', 'text img user');
+
+		res.status(200).json({ 
+			message: 'Content reposted successfully',
+			repost: populatedRepost,
+			reposts: [userId]
+		});
 	} catch (error) {
 		console.log('Error in repostPost function', error.message);
 		res.status(500).json({ error: 'Internal Server Error' });
