@@ -361,7 +361,7 @@ const NotificationPage = () => {
 		});
 	};
 
-	const handleNotificationClick = (notification) => {
+	const handleNotificationClick = async (notification) => {
 		console.log('Notification clicked:', notification);
 		switch (notification.type) {
 			case "follow":
@@ -372,6 +372,7 @@ const NotificationPage = () => {
 			case "reply":
 			case "post_reply":
 			case "mention":
+			case "comment":
 			case "bookmark": // Added bookmark handling
 				// Check all possible post reference fields
 				let postId = null;
@@ -393,10 +394,23 @@ const NotificationPage = () => {
 				console.log('Extracted post ID:', postId);
 				
 				if (postId) {
-					setSelectedPost(postId);
+					try {
+						// Verify the post still exists before opening modal
+						const response = await fetch(`/api/posts/${postId}`);
+						if (response.ok) {
+							setSelectedPost(postId);
+						} else {
+							console.warn(`Post ${postId} no longer exists`);
+							toast.error('This post is no longer available');
+						}
+					} catch (error) {
+						console.error('Error checking post existence:', error);
+						// Still try to open the modal - the Post component will handle the error
+						setSelectedPost(postId);
+					}
 				} else {
 					console.warn('No post ID found in notification:', notification);
-					toast.error('Post not found');
+					toast.error('Post reference not found - this may be an older notification');
 				}
 				break;
 			case "comment_reply":
