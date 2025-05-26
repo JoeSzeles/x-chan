@@ -1,7 +1,6 @@
 import newsBotService from "../services/newsBotService.js";
 import NewsBot from "../models/NewsBot.js";
 import NewsArticle from "../models/NewsArticle.js";
-import User from '../models/user.model.js';
 import axios from "axios";
 import { createNewsBotActivityNotification } from "./notification.controller.js";
 
@@ -132,28 +131,10 @@ export const deleteBot = async (req, res) => {
 
 export const getUserBots = async (req, res) => {
     try {
-        const userId = req.user._id;
-        const { search = '', category = 'all', following = 'false' } = req.query;
+        const { search, category } = req.query;
+        let query = { owner: req.user._id };
 
-        let query;
-
-        if (following === 'true') {
-            // Get current user's following list
-            const currentUser = await User.findById(userId).select('following');
-            if (!currentUser || !currentUser.following || currentUser.following.length === 0) {
-                return res.status(200).json({
-                    success: true,
-                    data: []
-                });
-            }
-
-            // Find bots from users that the current user follows
-            query = { owner: { $in: currentUser.following } };
-        } else {
-            // All bots (could be modified to show public bots from all users)
-            query = { owner: userId };
-        }
-
+        // Add search filter if provided
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
@@ -161,7 +142,8 @@ export const getUserBots = async (req, res) => {
             ];
         }
 
-        if (category !== 'all') {
+        // Add category filter if provided
+        if (category && category !== 'all') {
             query['websites.type'] = category;
         }
 

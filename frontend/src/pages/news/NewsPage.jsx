@@ -58,7 +58,6 @@ const ShareIcon = () => (
 
 const NewsPage = () => {
     const [selectedCategory, setSelectedCategory] = useState("all");
-    const [activeTab, setActiveTab] = useState("all"); // "all" or "following"
     const [searchQuery, setSearchQuery] = useState("");
     const [showCreateBot, setShowCreateBot] = useState(false);
     const [selectedBot, setSelectedBot] = useState(null);
@@ -185,12 +184,11 @@ const NewsPage = () => {
 
     // Fetch user's bots with search and category filters
     const { data: botsData, isLoading: isLoadingBots } = useQuery({
-        queryKey: ["newsBots", searchQuery, selectedCategory, activeTab],
+        queryKey: ["newsBots", searchQuery, selectedCategory],
         queryFn: async () => {
             try {
                 // Use relative URL to avoid CORS issues
-                const followingParam = activeTab === "following" ? "&following=true" : "";
-                const url = `/api/newsbot/user?search=${encodeURIComponent(searchQuery)}&category=${selectedCategory}${followingParam}`;
+                const url = `/api/newsbot/user?search=${encodeURIComponent(searchQuery)}&category=${selectedCategory}`;
                 console.log('Attempting to fetch bots from URL:', url);
 
                 const res = await fetch(url, {
@@ -718,31 +716,6 @@ const NewsPage = () => {
         <div className="container-fluid mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-4">News Bots</h1>
-                
-                {/* Tabs */}
-                <div className="flex border-b border-gray-700 mb-6">
-                    <button
-                        className={`flex-1 py-2 px-4 text-center ${
-                            activeTab === 'all'
-                                ? 'border-b-2 border-blue-500 text-blue-500'
-                                : 'text-gray-500 hover:text-gray-300'
-                        }`}
-                        onClick={() => setActiveTab('all')}
-                    >
-                        All Bots
-                    </button>
-                    <button
-                        className={`flex-1 py-2 px-4 text-center ${
-                            activeTab === 'following'
-                                ? 'border-b-2 border-blue-500 text-blue-500'
-                                : 'text-gray-500 hover:text-gray-300'
-                        }`}
-                        onClick={() => setActiveTab('following')}
-                    >
-                        Following
-                    </button>
-                </div>
-
                 <button
                     onClick={() => setShowCreateBot(true)}
                     className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
