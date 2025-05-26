@@ -5,9 +5,9 @@ import Notification from "../models/notification.model.js";
 export const getComments = async (req, res) => {
 	try {
 		const { postId } = req.params;
-		
+
 		console.log(`Fetching comments for post ${postId}`);
-		
+
 		// First, get all comments for this post (both top-level and replies)
 		const allComments = await Comment.find({ post: postId })
 			.populate('user', 'username fullName profileImg')
@@ -27,13 +27,13 @@ export const getComments = async (req, res) => {
 				}
 			})
 			.lean();
-		
+
 		console.log(`Found ${allComments.length} comments for post ${postId}`);
-		
+
 		// Separate top-level comments and create a map of all comments
 		const topLevelComments = [];
 		const commentsMap = new Map();
-		
+
 		// First pass: create map of all comments and identify top-level ones
 		allComments.forEach(comment => {
 			// Add to map for easy lookup
@@ -41,20 +41,20 @@ export const getComments = async (req, res) => {
 				...comment,
 				replies: comment.replies || [] // Initialize empty replies array if none exist
 			});
-			
+
 			// If it's a top-level comment, add to that array
 			if (!comment.parentComment) {
 				topLevelComments.push(comment._id.toString());
 			}
 		});
-		
+
 		// Second pass: build reply trees
 		allComments.forEach(comment => {
 			// If this comment has a parent, add it to parent's replies
 			if (comment.parentComment) {
 				const parentId = comment.parentComment.toString();
 				const parent = commentsMap.get(parentId);
-				
+
 				if (parent) {
 					parent.replies.push(comment._id.toString());
 				} else {
@@ -62,12 +62,12 @@ export const getComments = async (req, res) => {
 				}
 			}
 		});
-		
+
 		// Function to recursively expand a comment with its replies
 		const expandComment = (commentId) => {
 			const comment = commentsMap.get(commentId);
 			if (!comment) return null;
-			
+
 			return {
 				...comment,
 				replies: comment.replies
@@ -75,17 +75,17 @@ export const getComments = async (req, res) => {
 					.filter(Boolean) // Remove any null replies
 			};
 		};
-		
+
 		// Build the final result with expanded replies
 		const result = topLevelComments
 			.map(commentId => expandComment(commentId))
 			.filter(Boolean); // Remove any null comments
-		
+
 		console.log(`Returning ${result.length} top-level comments with nested replies`);
 		if (result.length > 0) {
 			console.log('Sample comment structure:', JSON.stringify(result[0], null, 2));
 		}
-		
+
 		res.status(200).json(result);
 	} catch (error) {
 		console.error("Error in getComments:", error);
@@ -301,12 +301,12 @@ export const bookmarkComment = async (req, res) => {
 export const repostComment = async (req, res) => {
 	try {
 		const { commentId } = req.params;
-		
+
 		// Verify user is authenticated
 		if (!req.user || !req.user._id) {
 			return res.status(401).json({ error: "You must be logged in to repost" });
 		}
-		
+
 		const userId = req.user._id;
 		const { repostType, targetBoard } = req.body;
 
@@ -456,7 +456,6 @@ export const getCommentQuotes = async (req, res, next) => {
 }; 
 import mongoose from "mongoose";
 import Comment from "../models/comment.model.js";
-import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import Board from "../models/board.model.js";
 import { createRepostNotification } from "./notification.controller.js";
