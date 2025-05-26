@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import Notification from '../models/notification.model.js';
 import Post from '../models/post.model.js';
 import User from '../models/user.model.js';
-import { connectMongoDB } from '../db/connectMongoDB.js';
+import connectMongoDB from '../db/connectMongoDB.js';
 
 const fixNotificationReferences = async () => {
     try {
