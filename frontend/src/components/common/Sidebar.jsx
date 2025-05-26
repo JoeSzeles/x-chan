@@ -1,6 +1,6 @@
 import { MdHomeFilled } from "react-icons/md";
 import { IoNotifications } from "react-icons/io5";
-import { FaUser, FaFeather, FaBookmark, FaList, FaCog } from "react-icons/fa";
+import { FaUser, FaFeather, FaBookmark, FaList, FaCog, FaUserFriends } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
 import { BsNewspaper, BsChatDots, BsGrid3X3 } from "react-icons/bs";
 import { RiServiceLine } from "react-icons/ri";
@@ -145,6 +145,15 @@ const Sidebar = ({ isWideMode }) => {
 						>
 							<FaUser className='w-6 h-6' />
 							<span className='text-lg hidden md:block'>Profile</span>
+						</Link>
+					</li>
+					<li className='flex justify-center md:justify-start'>
+						<Link
+							to='/following'
+							className={`nav-button ${isActive('/following') ? 'active' : ''}`}
+						>
+							<FaUserFriends className='w-6 h-6' />
+							<span className='text-lg hidden md:block'>Following</span>
 						</Link>
 					</li>
 				</ul>

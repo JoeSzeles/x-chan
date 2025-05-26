@@ -1,0 +1,151 @@
+
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useAuthUser } from "../hooks/useAuthUser";
+import UserCard from "../components/common/UserCard";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import PageHeader from "../components/common/PageHeader";
+import Breadcrumb from "../components/common/Breadcrumb";
+
+const FollowingPage = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { username } = useParams();
+    const { data: authUser } = useAuthUser();
+    
+    // Get initial tab from URL params or default to 'following'
+    const searchParams = new URLSearchParams(location.search);
+    const initialTab = searchParams.get('tab') || 'following';
+    const [activeTab, setActiveTab] = useState(initialTab);
+    
+    // Determine which user's following/followers to show
+    const targetUsername = username || authUser?.username;
+    const isOwnProfile = !username || username === authUser?.username;
+    
+    const { data: followingUsers, isLoading: loadingFollowing } = useQuery({
+        queryKey: ["following", targetUsername],
+        queryFn: async () => {
+            if (!targetUsername) return [];
+            
+            const res = await fetch(`/api/users/${targetUsername}/following`, {
+                credentials: "include",
+            });
+            
+            if (!res.ok) {
+                throw new Error("Failed to fetch following users");
+            }
+            
+            return res.json();
+        },
+        enabled: !!targetUsername && activeTab === 'following',
+    });
+
+    const { data: followerUsers, isLoading: loadingFollowers } = useQuery({
+        queryKey: ["followers", targetUsername],
+        queryFn: async () => {
+            if (!targetUsername) return [];
+            
+            const res = await fetch(`/api/users/${targetUsername}/followers`, {
+                credentials: "include",
+            });
+            
+            if (!res.ok) {
+                throw new Error("Failed to fetch followers");
+            }
+            
+            return res.json();
+        },
+        enabled: !!targetUsername && activeTab === 'followers',
+    });
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        // Update URL without full page reload
+        const newSearchParams = new URLSearchParams(location.search);
+        newSearchParams.set('tab', tab);
+        navigate(`${location.pathname}?${newSearchParams.toString()}`, { replace: true });
+    };
+
+    const currentData = activeTab === 'following' ? followingUsers : followerUsers;
+    const isLoading = activeTab === 'following' ? loadingFollowing : loadingFollowers;
+
+    return (
+        <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
+            {/* Breadcrumb Navigation */}
+            <Breadcrumb 
+                items={[
+                    { label: isOwnProfile ? 'Following' : `${targetUsername}'s Following` }
+                ]}
+            />
+
+            {/* Header */}
+            <PageHeader>
+                <div className="flex w-full justify-between items-center">
+                    <h1 className="text-xl font-bold">
+                        {isOwnProfile ? 'Your Connections' : `${targetUsername}'s Connections`}
+                    </h1>
+                </div>
+            </PageHeader>
+
+            {/* Tabs */}
+            <div className="flex w-full border-b border-gray-700">
+                <div
+                    className={`flex justify-center flex-1 p-3 hover:bg-[#1e1e1e] transition duration-300 relative cursor-pointer ${
+                        activeTab === "following" ? "text-primary" : "text-gray-400"
+                    }`}
+                    onClick={() => handleTabChange("following")}
+                >
+                    Following
+                    {activeTab === "following" && (
+                        <div className="absolute bottom-0 w-10 h-1 rounded-full bg-primary" />
+                    )}
+                </div>
+                <div
+                    className={`flex justify-center flex-1 p-3 hover:bg-[#1e1e1e] transition duration-300 relative cursor-pointer ${
+                        activeTab === "followers" ? "text-primary" : "text-gray-400"
+                    }`}
+                    onClick={() => handleTabChange("followers")}
+                >
+                    Followers
+                    {activeTab === "followers" && (
+                        <div className="absolute bottom-0 w-10 h-1 rounded-full bg-primary" />
+                    )}
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-4">
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <LoadingSpinner size="lg" />
+                    </div>
+                ) : !currentData || currentData.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-8">
+                        <p>
+                            {activeTab === 'following' 
+                                ? (isOwnProfile ? "You're not following anyone yet" : `${targetUsername} isn't following anyone yet`)
+                                : (isOwnProfile ? "You don't have any followers yet" : `${targetUsername} doesn't have any followers yet`)
+                            }
+                        </p>
+                        <p className="text-sm mt-2">
+                            {activeTab === 'following' && isOwnProfile && "Start following users to see them here"}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-0">
+                        {currentData.map((user) => (
+                            <UserCard 
+                                key={user._id} 
+                                user={user} 
+                                isCompact={false}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default FollowingPage;
