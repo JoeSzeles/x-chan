@@ -94,6 +94,12 @@ const userSchema = new mongoose.Schema(
 				default: [],
 			},
 		],
+		reposts: [
+			{
+				type: mongoose.Schema.Types.ObjectId,
+				default: [],
+			},
+		],
 		lastSeen: {
 			type: Date,
 			default: Date.now,

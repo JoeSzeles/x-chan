@@ -336,15 +336,22 @@ export const repostComment = async (req, res) => {
 			// Remove existing repost
 			await Post.findByIdAndDelete(existingRepost._id);
 
-			// Update user's reposts array
-			await User.findByIdAndUpdate(userId, { $pull: { reposts: commentId } });
+			// Update user's reposts array if it exists
+			if (user.reposts && user.reposts.includes(commentId)) {
+				await User.findByIdAndUpdate(userId, { $pull: { reposts: commentId } });
+			}
 
 			// Decrease repost count on original comment
-			await Comment.findByIdAndUpdate(commentId, { $inc: { repostCount: -1 } });
+			const updatedComment = await Comment.findByIdAndUpdate(
+				commentId, 
+				{ $inc: { repostCount: -1 } },
+				{ new: true }
+			);
 
 			return res.status(200).json({ 
 				message: 'Comment unreposted',
-				reposts: []
+				reposts: [],
+				repostCount: Math.max(0, updatedComment.repostCount || 0)
 			});
 		}
 
@@ -363,7 +370,7 @@ export const repostComment = async (req, res) => {
 		// Create new repost
 		const repostData = {
 			user: userId,
-			text: originalComment.text, // Use original text instead of prefixed text
+			text: originalComment.text,
 			postNumber: nextPostNumber,
 			isRepost: true,
 			originalComment: commentId,
@@ -384,11 +391,19 @@ export const repostComment = async (req, res) => {
 		await newRepost.save();
 		console.log('Repost created:', newRepost._id);
 
-		// Update user's reposts array
-		await User.findByIdAndUpdate(userId, { $push: { reposts: commentId } });
+		// Update user's reposts array - ensure reposts array exists
+		await User.findByIdAndUpdate(
+			userId, 
+			{ $push: { reposts: commentId } },
+			{ upsert: false }
+		);
 
 		// Increment repost count on original comment
-		await Comment.findByIdAndUpdate(commentId, { $inc: { repostCount: 1 } });
+		const updatedComment = await Comment.findByIdAndUpdate(
+			commentId, 
+			{ $inc: { repostCount: 1 } },
+			{ new: true }
+		);
 
 		// Create notification for the original author (only if not reposting own comment)
 		if (originalComment.user._id.toString() !== userId.toString()) {
@@ -404,15 +419,24 @@ export const repostComment = async (req, res) => {
 		// Populate the new repost for response
 		const populatedRepost = await Post.findById(newRepost._id)
 			.populate('user', 'username fullName profileImg')
-			.populate('originalComment', 'text img user postNumber');
+			.populate({
+				path: 'originalComment',
+				select: 'text img user postNumber',
+				populate: {
+					path: 'user',
+					select: 'username fullName profileImg'
+				}
+			});
 
 		res.status(200).json({ 
 			message: 'Comment reposted successfully',
 			repost: populatedRepost,
-			reposts: [userId]
+			reposts: [userId],
+			repostCount: updatedComment.repostCount || 1
 		});
 	} catch (error) {
 		console.error('Error in repostComment function:', error);
+		console.error('Error stack:', error.stack);
 		res.status(500).json({ error: 'Internal Server Error: ' + error.message });
 	}
 };
