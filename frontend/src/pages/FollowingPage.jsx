@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -13,21 +12,21 @@ const FollowingPage = () => {
     const navigate = useNavigate();
     const { username } = useParams();
     const { data: authUser } = useAuthUser();
-    
+
     // Get initial tab from URL params or default to 'following'
     const searchParams = new URLSearchParams(location.search);
     const initialTab = searchParams.get('tab') || 'following';
     const [activeTab, setActiveTab] = useState(initialTab);
-    
+
     // Determine which user's following/followers to show
     const targetUsername = username || authUser?.username;
     const isOwnProfile = !username || username === authUser?.username;
-    
+
     const { data: followingUsers, isLoading: loadingFollowing, error: followingError } = useQuery({
         queryKey: ["following", targetUsername],
         queryFn: async () => {
             if (!targetUsername) return [];
-            
+
             console.log('Fetching following users for:', targetUsername);
             const res = await fetch(`/api/users/${targetUsername}/following`, {
                 credentials: "include",
@@ -35,25 +34,25 @@ const FollowingPage = () => {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            
+
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
                 console.error('Error fetching following:', res.status, errorData);
                 throw new Error(errorData.error || "Failed to fetch following users");
             }
-            
+
             const data = await res.json();
             console.log('Following users data:', data);
             return data;
         },
-        enabled: !!targetUsername,
+        enabled: !!targetUsername && !!authUser,
     });
 
     const { data: followerUsers, isLoading: loadingFollowers, error: followersError } = useQuery({
         queryKey: ["followers", targetUsername],
         queryFn: async () => {
             if (!targetUsername) return [];
-            
+
             console.log('Fetching followers for:', targetUsername);
             const res = await fetch(`/api/users/${targetUsername}/followers`, {
                 credentials: "include",
@@ -61,18 +60,18 @@ const FollowingPage = () => {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
             });
-            
+
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
                 console.error('Error fetching followers:', res.status, errorData);
                 throw new Error(errorData.error || "Failed to fetch followers");
             }
-            
+
             const data = await res.json();
             console.log('Followers data:', data);
             return data;
         },
-        enabled: !!targetUsername,
+        enabled: !!targetUsername && !!authUser,
     });
 
     const handleTabChange = (tab) => {

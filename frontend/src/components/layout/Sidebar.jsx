@@ -58,6 +58,10 @@ const Sidebar = () => {
                     <FaRegListAlt size={24} />
                     <span className="text-xl font-semibold">Lists</span>
                 </Link>
+                <Link to="/following" className="flex items-center gap-4 p-3 text-white hover:bg-gray-800 rounded-xl transition-colors">
+                    <FaRegUser size={24} />
+                    <span className="text-xl font-semibold">Following</span>
+                </Link>
                 <Link to={`/profile/${authUser?.username}`} className="flex items-center gap-4 p-3 text-white hover:bg-gray-800 rounded-xl transition-colors">
                     <FaRegUser size={24} />
                     <span className="text-xl font-semibold">Profile</span>
