@@ -23,40 +23,56 @@ const FollowingPage = () => {
     const targetUsername = username || authUser?.username;
     const isOwnProfile = !username || username === authUser?.username;
     
-    const { data: followingUsers, isLoading: loadingFollowing } = useQuery({
+    const { data: followingUsers, isLoading: loadingFollowing, error: followingError } = useQuery({
         queryKey: ["following", targetUsername],
         queryFn: async () => {
             if (!targetUsername) return [];
             
+            console.log('Fetching following users for:', targetUsername);
             const res = await fetch(`/api/users/${targetUsername}/following`, {
                 credentials: "include",
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
             
             if (!res.ok) {
-                throw new Error("Failed to fetch following users");
+                const errorData = await res.json().catch(() => ({}));
+                console.error('Error fetching following:', res.status, errorData);
+                throw new Error(errorData.error || "Failed to fetch following users");
             }
             
-            return res.json();
+            const data = await res.json();
+            console.log('Following users data:', data);
+            return data;
         },
-        enabled: !!targetUsername && activeTab === 'following',
+        enabled: !!targetUsername,
     });
 
-    const { data: followerUsers, isLoading: loadingFollowers } = useQuery({
+    const { data: followerUsers, isLoading: loadingFollowers, error: followersError } = useQuery({
         queryKey: ["followers", targetUsername],
         queryFn: async () => {
             if (!targetUsername) return [];
             
+            console.log('Fetching followers for:', targetUsername);
             const res = await fetch(`/api/users/${targetUsername}/followers`, {
                 credentials: "include",
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
             
             if (!res.ok) {
-                throw new Error("Failed to fetch followers");
+                const errorData = await res.json().catch(() => ({}));
+                console.error('Error fetching followers:', res.status, errorData);
+                throw new Error(errorData.error || "Failed to fetch followers");
             }
             
-            return res.json();
+            const data = await res.json();
+            console.log('Followers data:', data);
+            return data;
         },
-        enabled: !!targetUsername && activeTab === 'followers',
+        enabled: !!targetUsername,
     });
 
     const handleTabChange = (tab) => {
@@ -119,6 +135,19 @@ const FollowingPage = () => {
                 {isLoading ? (
                     <div className="flex justify-center items-center h-64">
                         <LoadingSpinner size="lg" />
+                    </div>
+                ) : (followingError || followersError) ? (
+                    <div className="text-center text-red-500 mt-8">
+                        <p>Error loading {activeTab}</p>
+                        <p className="text-sm mt-2">
+                            {activeTab === 'following' ? followingError?.message : followersError?.message}
+                        </p>
+                        <button 
+                            onClick={() => window.location.reload()} 
+                            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                            Retry
+                        </button>
                     </div>
                 ) : !currentData || currentData.length === 0 ? (
                     <div className="text-center text-gray-500 mt-8">
