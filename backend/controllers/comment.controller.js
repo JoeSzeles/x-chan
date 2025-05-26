@@ -307,105 +307,190 @@ export const repostComment = async (req, res) => {
 		const { repostType = 'personal' } = req.body;
 		const userId = req.user._id;
 
-		console.log('Repost comment request:', { commentId, userId, repostType });
+		console.log('=== REPOST COMMENT START ===');
+		console.log('Request params:', { commentId, userId, repostType });
+		console.log('User from req.user:', req.user);
 
 		// Find the original comment
+		console.log('Step 1: Finding original comment...');
 		const originalComment = await Comment.findById(commentId)
 			.populate('user', 'username fullName profileImg')
 			.populate('post', '_id postNumber');
 
+		console.log('Original comment found:', originalComment ? 'YES' : 'NO');
+		if (originalComment) {
+			console.log('Original comment details:', {
+				id: originalComment._id,
+				text: originalComment.text?.substring(0, 50) + '...',
+				user: originalComment.user?.username,
+				postId: originalComment.post?._id,
+				repostCount: originalComment.repostCount
+			});
+		}
+
 		if (!originalComment) {
-			console.log('Comment not found:', commentId);
+			console.log('ERROR: Comment not found:', commentId);
 			return res.status(404).json({ error: 'Comment not found' });
 		}
 
+		console.log('Step 2: Finding user...');
 		const user = await User.findById(userId);
+		console.log('User found:', user ? 'YES' : 'NO');
+		if (user) {
+			console.log('User details:', {
+				id: user._id,
+				username: user.username,
+				reposts: user.reposts?.length || 0
+			});
+		}
+
 		if (!user) {
-			console.log('User not found:', userId);
+			console.log('ERROR: User not found:', userId);
 			return res.status(404).json({ error: 'User not found' });
 		}
 
 		// Check if user has already reposted this comment
+		console.log('Step 3: Checking for existing repost...');
 		const existingRepost = await Post.findOne({
 			user: userId,
 			originalComment: commentId
 		});
 
+		console.log('Existing repost found:', existingRepost ? 'YES' : 'NO');
 		if (existingRepost) {
-			console.log('Removing existing repost:', existingRepost._id);
-			// Remove existing repost
-			await Post.findByIdAndDelete(existingRepost._id);
-
-			// Update user's reposts array if it exists
-			if (user.reposts && user.reposts.includes(commentId)) {
-				await User.findByIdAndUpdate(userId, { $pull: { reposts: commentId } });
-			}
-
-			// Decrease repost count on original comment
-			const updatedComment = await Comment.findByIdAndUpdate(
-				commentId, 
-				{ $inc: { repostCount: -1 } },
-				{ new: true }
-			);
-
-			return res.status(200).json({ 
-				message: 'Comment unreposted',
-				reposts: [],
-				repostCount: Math.max(0, updatedComment.repostCount || 0)
+			console.log('Existing repost details:', {
+				id: existingRepost._id,
+				postNumber: existingRepost.postNumber
 			});
 		}
 
-		// Get the highest post number for the new repost
-		const [highestPost, highestComment] = await Promise.all([
-			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
-			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
-		]);
+		if (existingRepost) {
+			console.log('Step 3a: Removing existing repost...');
+			try {
+				// Remove existing repost
+				await Post.findByIdAndDelete(existingRepost._id);
+				console.log('Existing repost deleted successfully');
 
-		const highestPostNumber = highestPost ? highestPost.postNumber : 0;
-		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
-		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
+				// Update user's reposts array if it exists
+				if (user.reposts && user.reposts.includes(commentId)) {
+					console.log('Updating user reposts array...');
+					await User.findByIdAndUpdate(userId, { $pull: { reposts: commentId } });
+					console.log('User reposts array updated');
+				}
 
-		console.log('Creating repost with postNumber:', nextPostNumber);
+				// Decrease repost count on original comment
+				console.log('Decreasing repost count...');
+				const updatedComment = await Comment.findByIdAndUpdate(
+					commentId, 
+					{ $inc: { repostCount: -1 } },
+					{ new: true }
+				);
+				console.log('Repost count decreased:', updatedComment.repostCount);
 
-		// Create new repost
-		const repostData = {
-			user: userId,
-			text: originalComment.text,
-			postNumber: nextPostNumber,
-			isRepost: true,
-			originalComment: commentId,
-			likes: [],
-			reposts: [],
-			comments: [],
-			bookmarkedBy: [],
-			ratings: [],
-			viewCount: 0
-		};
-
-		// Copy media if present
-		if (originalComment.img) {
-			repostData.img = originalComment.img;
+				console.log('=== UNREPOST SUCCESSFUL ===');
+				return res.status(200).json({ 
+					message: 'Comment unreposted',
+					reposts: [],
+					repostCount: Math.max(0, updatedComment.repostCount || 0)
+				});
+			} catch (unrepostError) {
+				console.error('ERROR during unrepost:', unrepostError);
+				throw unrepostError;
+			}
 		}
 
-		const newRepost = new Post(repostData);
-		await newRepost.save();
-		console.log('Repost created:', newRepost._id);
+		// Get the highest post number for the new repost
+		console.log('Step 4: Getting next post number...');
+		try {
+			const [highestPost, highestComment] = await Promise.all([
+				Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
+				Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
+			]);
+
+			const highestPostNumber = highestPost ? highestPost.postNumber : 0;
+			const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
+			const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
+
+			console.log('Post numbers:', {
+				highestPost: highestPostNumber,
+				highestComment: highestCommentNumber,
+				nextPostNumber: nextPostNumber
+			});
+
+			// Create new repost
+			console.log('Step 5: Creating repost data...');
+			const repostData = {
+				user: userId,
+				text: originalComment.text,
+				postNumber: nextPostNumber,
+				isRepost: true,
+				originalComment: commentId,
+				likes: [],
+				reposts: [],
+				comments: [],
+				bookmarkedBy: [],
+				ratings: [],
+				viewCount: 0
+			};
+
+			// Copy media if present
+			if (originalComment.img) {
+				console.log('Copying image from original comment');
+				repostData.img = originalComment.img;
+			}
+
+			console.log('Repost data prepared:', {
+				user: repostData.user,
+				textLength: repostData.text?.length,
+				postNumber: repostData.postNumber,
+				hasImg: !!repostData.img
+			});
+
+			console.log('Step 6: Saving new repost...');
+			const newRepost = new Post(repostData);
+			await newRepost.save();
+			console.log('Repost created successfully:', {
+				id: newRepost._id,
+				postNumber: newRepost.postNumber
+			});
+		} catch (repostCreationError) {
+			console.error('ERROR during repost creation:', repostCreationError);
+			throw repostCreationError;
+		}
 
 		// Update user's reposts array - ensure reposts array exists
-		await User.findByIdAndUpdate(
-			userId, 
-			{ $push: { reposts: commentId } },
-			{ upsert: false }
-		);
+		console.log('Step 7: Updating user reposts array...');
+		try {
+			await User.findByIdAndUpdate(
+				userId, 
+				{ $push: { reposts: commentId } },
+				{ upsert: false }
+			);
+			console.log('User reposts array updated successfully');
+		} catch (userUpdateError) {
+			console.error('ERROR updating user reposts:', userUpdateError);
+			throw userUpdateError;
+		}
 
 		// Increment repost count on original comment
-		const updatedComment = await Comment.findByIdAndUpdate(
-			commentId, 
-			{ $inc: { repostCount: 1 } },
-			{ new: true }
-		);
+		console.log('Step 8: Incrementing repost count...');
+		try {
+			const updatedComment = await Comment.findByIdAndUpdate(
+				commentId, 
+				{ $inc: { repostCount: 1 } },
+				{ new: true }
+			);
+			console.log('Repost count incremented:', {
+				commentId: commentId,
+				newRepostCount: updatedComment.repostCount
+			});
+		} catch (commentUpdateError) {
+			console.error('ERROR updating comment repost count:', commentUpdateError);
+			throw commentUpdateError;
+		}
 
 		// Create notification for the original author (only if not reposting own comment)
+		console.log('Step 9: Creating notification...');
 		if (originalComment.user._id.toString() !== userId.toString()) {
 			try {
 				await createRepostNotification(commentId, userId);
@@ -414,29 +499,65 @@ export const repostComment = async (req, res) => {
 				console.error('Failed to create notification:', notificationError);
 				// Don't fail the entire request if notification fails
 			}
+		} else {
+			console.log('Skipping notification - user reposting own comment');
 		}
 
 		// Populate the new repost for response
-		const populatedRepost = await Post.findById(newRepost._id)
-			.populate('user', 'username fullName profileImg')
-			.populate({
-				path: 'originalComment',
-				select: 'text img user postNumber',
-				populate: {
-					path: 'user',
-					select: 'username fullName profileImg'
-				}
+		console.log('Step 10: Populating repost for response...');
+		try {
+			const populatedRepost = await Post.findById(newRepost._id)
+				.populate('user', 'username fullName profileImg')
+				.populate({
+					path: 'originalComment',
+					select: 'text img user postNumber',
+					populate: {
+						path: 'user',
+						select: 'username fullName profileImg'
+					}
+				});
+
+			console.log('Populated repost:', {
+				id: populatedRepost._id,
+				user: populatedRepost.user?.username,
+				originalComment: populatedRepost.originalComment?._id
 			});
 
-		res.status(200).json({ 
-			message: 'Comment reposted successfully',
-			repost: populatedRepost,
-			reposts: [userId],
-			repostCount: updatedComment.repostCount || 1
-		});
+			const responseData = { 
+				message: 'Comment reposted successfully',
+				repost: populatedRepost,
+				reposts: [userId],
+				repostCount: updatedComment.repostCount || 1
+			};
+
+			console.log('=== REPOST SUCCESSFUL ===');
+			console.log('Response data:', {
+				message: responseData.message,
+				repostId: responseData.repost._id,
+				repostCount: responseData.repostCount
+			});
+
+			res.status(200).json(responseData);
+		} catch (populationError) {
+			console.error('ERROR during population:', populationError);
+			throw populationError;
+		}
 	} catch (error) {
+		console.error('=== REPOST ERROR ===');
 		console.error('Error in repostComment function:', error);
+		console.error('Error name:', error.name);
+		console.error('Error message:', error.message);
 		console.error('Error stack:', error.stack);
+		
+		// Log additional context
+		console.error('Request context:', {
+			commentId: req.params.id,
+			userId: req.user?._id,
+			userAgent: req.headers['user-agent'],
+			method: req.method,
+			url: req.url
+		});
+
 		res.status(500).json({ error: 'Internal Server Error: ' + error.message });
 	}
 };
