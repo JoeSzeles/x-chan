@@ -19,14 +19,24 @@ const FollowingPage = () => {
     const [activeTab, setActiveTab] = useState(initialTab);
 
     // Determine which user's following/followers to show
-    const targetUsername = username || authUser?.username;
+    // Wait for authUser to load if no username is provided (sidebar navigation)
+    const targetUsername = username || (authUser?.username);
     const isOwnProfile = !username || username === authUser?.username;
+
+    // Show loading if we're waiting for authUser and no username param
+    const isWaitingForAuth = !username && !authUser;
+
+    console.log('FollowingPage state:', {
+        username,
+        authUser: authUser?.username,
+        targetUsername,
+        isWaitingForAuth,
+        isOwnProfile
+    });
 
     const { data: followingUsers, isLoading: loadingFollowing, error: followingError } = useQuery({
         queryKey: ["following", targetUsername],
         queryFn: async () => {
-            if (!targetUsername) return [];
-
             console.log('Fetching following users for:', targetUsername);
             const res = await fetch(`/api/users/${targetUsername}/following`, {
                 credentials: "include",
@@ -45,15 +55,14 @@ const FollowingPage = () => {
             console.log('Following users data:', data);
             return data;
         },
-        enabled: !!targetUsername,
+        enabled: !!targetUsername && !isWaitingForAuth,
         retry: 2,
+        staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
     const { data: followerUsers, isLoading: loadingFollowers, error: followersError } = useQuery({
         queryKey: ["followers", targetUsername],
         queryFn: async () => {
-            if (!targetUsername) return [];
-
             console.log('Fetching followers for:', targetUsername);
             const res = await fetch(`/api/users/${targetUsername}/followers`, {
                 credentials: "include",
@@ -72,8 +81,9 @@ const FollowingPage = () => {
             console.log('Followers data:', data);
             return data;
         },
-        enabled: !!targetUsername,
+        enabled: !!targetUsername && !isWaitingForAuth,
         retry: 2,
+        staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
     const handleTabChange = (tab) => {
@@ -87,12 +97,13 @@ const FollowingPage = () => {
     const currentData = activeTab === 'following' ? followingUsers : followerUsers;
     const isLoading = activeTab === 'following' ? loadingFollowing : loadingFollowers;
 
-    // Show loading if authUser is still loading and no username param provided
-    if (!username && !authUser) {
+    // Show loading if we're waiting for auth user to load
+    if (isWaitingForAuth) {
         return (
             <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
                 <div className="flex justify-center items-center h-64">
                     <LoadingSpinner size="lg" />
+                    <p className="ml-4 text-gray-400">Loading user data...</p>
                 </div>
             </div>
         );
