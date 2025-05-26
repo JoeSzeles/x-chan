@@ -86,8 +86,7 @@ function App() {
 						<Route path='/settings' element={authUser ? <SettingsPage isWideMode={isWideMode} /> : <Navigate to='/login' />} />
 						<Route path='/news' element={authUser ? <NewsPage isWideMode={isWideMode} /> : <Navigate to='/login' />} />
 						<Route path='/bookmarks' element={<BookmarksPage />} />
-						<Route path='/following' element={<FollowingPage />} />
-						<Route path='/profile/:username/following' element={<FollowingPage />} />
+						<Route path='/following/:username?' element={<FollowingPage />} />
 						<Route path='/lists' element={authUser ? <ListsPage isWideMode={isWideMode} /> : <Navigate to='/login' />} />
 						<Route path='/messages' element={authUser ? <Messages /> : <Navigate to='/login' />} />
 						<Route path='/post/:postId' element={<PostPage isWideMode={isWideMode} />} />
