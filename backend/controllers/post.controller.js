@@ -536,10 +536,6 @@ export const repostPost = async (req, res) => {
 			user: userId,
 			text: `Reposted: ${originalPost.text}`,
 			postNumber: nextPostNumber,
-			isRepost: true,
-			repostSource: {
-				type: 'internal'
-			},
 			likes: [],
 			reposts: [],
 			comments: [],
@@ -548,12 +544,18 @@ export const repostPost = async (req, res) => {
 			viewCount: 0
 		};
 
-		// Set original reference
+		// Set original reference and repost flag
 		if (isComment) {
 			repostData.originalComment = postId;
 		} else {
 			repostData.originalPost = postId;
 		}
+
+		// Set isRepost flag and repostSource after we have the original reference
+		repostData.isRepost = true;
+		repostData.repostSource = {
+			type: 'internal'
+		};
 
 		// Handle board targeting for board reposts
 		if (repostType === 'board' && targetBoard) {
