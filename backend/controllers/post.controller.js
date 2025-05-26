@@ -3,7 +3,6 @@ import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import Comment from "../models/comment.model.js";
 import { createRepostNotification } from "./notification.controller.js";
-import Board from "../models/board.model.js";
 import { v2 as cloudinary } from "cloudinary";
 import { handleImageUpload, getImageUrl } from "../utils/imageUpload.js";
 import path from "path";
@@ -469,137 +468,42 @@ export const repostPost = async (req, res) => {
 	try {
 		const { id: postId } = req.params;
 		const userId = req.user._id;
-		const { repostType, targetBoard } = req.body;
 
-		// First try to find in posts
-		let originalPost = await Post.findById(postId);
-		let isComment = false;
-
-		// If not found in posts, try comments
-		if (!originalPost) {
-			const comment = await Comment.findById(postId);
-			if (comment) {
-				originalPost = comment;
-				isComment = true;
-			}
-		}
-
-		if (!originalPost) {
+		const post = await Post.findById(postId);
+		if (!post) {
 			return res.status(404).json({ error: 'Post not found' });
 		}
 
+		// Check if user has already reposted the post
 		const user = await User.findById(userId);
 		if (!user) {
 			return res.status(404).json({ error: 'User not found' });
 		}
 
-		// Check if user has already reposted this post
-		const existingRepost = await Post.findOne({
-			user: userId,
-			$or: [
-				{ originalPost: postId },
-				{ originalComment: postId }
-			]
-		});
-
-		if (existingRepost) {
-			// Remove existing repost
-			await Post.findByIdAndDelete(existingRepost._id);
-			
-			// Update original post's reposts array
-			if (isComment) {
-				await Comment.findByIdAndUpdate(postId, { $pull: { reposts: userId } });
-			} else {
-				await Post.findByIdAndUpdate(postId, { $pull: { reposts: userId } });
-			}
-
-			// Remove from board if it was a board repost
-			if (existingRepost.board) {
-				await Board.findByIdAndUpdate(existingRepost.board, {
-					$pull: { posts: existingRepost._id }
-				});
-			}
-
-			const updatedReposts = isComment 
-				? (await Comment.findById(postId)).reposts 
-				: (await Post.findById(postId)).reposts;
-
-			return res.status(200).json({ 
-				message: 'Post unreposted',
-				reposts: updatedReposts
-			});
+		// Ensure reposts array exists
+		if (!user.reposts) {
+			// Initialize reposts array if it doesn't exist
+			await User.findByIdAndUpdate(userId, { reposts: [] });
+			user.reposts = [];
 		}
 
-		// Get the highest post number for the new repost
-		const [highestPost, highestComment] = await Promise.all([
-			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
-			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
-		]);
+		const hasReposted = user.reposts && user.reposts.includes(postId);
 
-		const highestPostNumber = highestPost ? highestPost.postNumber : 0;
-		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
-		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
-
-		// Create the repost
-		const repostData = {
-			user: userId,
-			text: `Reposted: ${originalPost.text.substring(0, 100)}${originalPost.text.length > 100 ? '...' : ''}`,
-			postNumber: nextPostNumber,
-			likes: [],
-			reposts: [],
-			comments: [],
-			bookmarkedBy: [],
-			ratings: [],
-			viewCount: 0
-		};
-
-		// Set the original reference
-		if (isComment) {
-			repostData.originalComment = postId;
-		} else {
-			repostData.originalPost = postId;
+		if (hasReposted) {
+			// Unrepost
+			await User.findByIdAndUpdate(userId, { $pull: { reposts: postId } });
+			await Post.findByIdAndUpdate(postId, { $inc: { repostCount: -1 } });
+			return res.status(200).json({ message: 'Post unreposted' });
 		}
 
-		// Handle board repost
-		if (repostType === 'board' && targetBoard) {
-			const board = await Board.findOne({ name: targetBoard, user: userId });
-			if (board) {
-				repostData.board = board._id;
-			}
-		}
-
-		const newRepost = new Post(repostData);
-		await newRepost.save();
-
-		// Add repost to board's posts array if applicable
-		if (repostData.board) {
-			await Board.findByIdAndUpdate(repostData.board, {
-				$push: { posts: newRepost._id }
-			});
-		}
-
-		// Update original post's reposts array
-		if (isComment) {
-			await Comment.findByIdAndUpdate(postId, { $push: { reposts: userId } });
-		} else {
-			await Post.findByIdAndUpdate(postId, { $push: { reposts: userId } });
-		}
+		// Repost
+		await User.findByIdAndUpdate(userId, { $push: { reposts: postId } });
+		await Post.findByIdAndUpdate(postId, { $inc: { repostCount: 1 } });
 
 		// Create notification for the original post author
-		if (originalPost.user.toString() !== userId.toString()) {
-			await createRepostNotification(postId, userId);
-		}
+		await createRepostNotification(postId, userId);
 
-		// Get updated reposts count
-		const updatedReposts = isComment 
-			? (await Comment.findById(postId)).reposts 
-			: (await Post.findById(postId)).reposts;
-
-		res.status(200).json({ 
-			message: 'Post reposted successfully',
-			reposts: updatedReposts,
-			repost: newRepost
-		});
+		res.status(200).json({ message: 'Post reposted' });
 	} catch (error) {
 		console.log('Error in repostPost function', error.message);
 		res.status(500).json({ error: 'Internal Server Error' });
