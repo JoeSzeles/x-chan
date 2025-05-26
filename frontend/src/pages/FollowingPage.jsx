@@ -20,6 +20,7 @@ const FollowingPage = () => {
     const [activeTab, setActiveTab] = useState(initialTab);
     
     // Determine which user's following/followers to show
+    // If no username in params, use the authenticated user's username
     const targetUsername = username || authUser?.username;
     const isOwnProfile = !username || username === authUser?.username;
     
@@ -46,7 +47,7 @@ const FollowingPage = () => {
             console.log('Following users data:', data);
             return data;
         },
-        enabled: !!targetUsername,
+        enabled: !!targetUsername && !!authUser,
     });
 
     const { data: followerUsers, isLoading: loadingFollowers, error: followersError } = useQuery({
@@ -72,7 +73,7 @@ const FollowingPage = () => {
             console.log('Followers data:', data);
             return data;
         },
-        enabled: !!targetUsername,
+        enabled: !!targetUsername && !!authUser,
     });
 
     const handleTabChange = (tab) => {
@@ -85,6 +86,17 @@ const FollowingPage = () => {
 
     const currentData = activeTab === 'following' ? followingUsers : followerUsers;
     const isLoading = activeTab === 'following' ? loadingFollowing : loadingFollowers;
+
+    // Show loading if authUser is not loaded yet and we don't have a username param
+    if (!authUser && !username) {
+        return (
+            <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
+                <div className="flex justify-center items-center h-64">
+                    <LoadingSpinner size="lg" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
