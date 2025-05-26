@@ -363,6 +363,26 @@ const NotificationPage = () => {
 
 	const handleNotificationClick = async (notification) => {
 		console.log('Notification clicked:', notification);
+		
+		// Check all possible post reference fields first
+		let postId = null;
+		
+		if (notification.postId?._id) {
+			postId = notification.postId._id;
+		} else if (notification.post?._id) {
+			postId = notification.post._id;
+		} else if (notification.referencedPost?._id) {
+			postId = notification.referencedPost._id;
+		} else if (typeof notification.postId === 'string') {
+			postId = notification.postId;
+		} else if (typeof notification.post === 'string') {
+			postId = notification.post;
+		} else if (typeof notification.referencedPost === 'string') {
+			postId = notification.referencedPost;
+		}
+		
+		console.log('Extracted post ID:', postId);
+
 		switch (notification.type) {
 			case "follow":
 				navigate(`/profile/${notification.from.username}`);
@@ -373,26 +393,7 @@ const NotificationPage = () => {
 			case "post_reply":
 			case "mention":
 			case "comment":
-			case "bookmark": // Added bookmark handling
-				// Check all possible post reference fields
-				let postId = null;
-				
-				if (notification.postId?._id) {
-					postId = notification.postId._id;
-				} else if (notification.post?._id) {
-					postId = notification.post._id;
-				} else if (notification.referencedPost?._id) {
-					postId = notification.referencedPost._id;
-				} else if (typeof notification.postId === 'string') {
-					postId = notification.postId;
-				} else if (typeof notification.post === 'string') {
-					postId = notification.post;
-				} else if (typeof notification.referencedPost === 'string') {
-					postId = notification.referencedPost;
-				}
-				
-				console.log('Extracted post ID:', postId);
-				
+			case "bookmark":
 				if (postId) {
 					try {
 						// Verify the post still exists before opening modal
