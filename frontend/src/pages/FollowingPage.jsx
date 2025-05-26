@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useAuthUser } from "../hooks/useAuthUser";
 import UserCard from "../components/common/UserCard";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import PageHeader from "../components/common/PageHeader";
@@ -12,7 +11,30 @@ const FollowingPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { username } = useParams();
-    const { data: authUser, isLoading: authUserLoading } = useAuthUser();
+
+    // Use the same auth pattern as other pages
+    const { data: authUser, isLoading: authUserLoading } = useQuery({
+        queryKey: ["authUser"],
+        queryFn: async () => {
+            try {
+                const res = await fetch("/api/auth/me", {
+                    credentials: 'include',
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    },
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || "Something went wrong");
+                }
+                return data;
+            } catch (error) {
+                console.error("Error fetching user:", error);
+                return null;
+            }
+        },
+        retry: false,
+    });
 
     // Get initial tab from URL params or default to 'following'
     const searchParams = new URLSearchParams(location.search);
@@ -32,7 +54,7 @@ const FollowingPage = () => {
     });
 
     // Show loading if we're still waiting for auth user and no username param
-    if (!username && (authUserLoading || !authUser)) {
+    if (!username && authUserLoading) {
         return (
             <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
                 <div className="flex justify-center items-center h-64">
