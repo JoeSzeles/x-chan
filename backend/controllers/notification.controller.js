@@ -342,6 +342,48 @@ export const createNewsBotActivityNotification = async (botId, content, articles
 	}
 };
 
+// Create like notification
+export const createLikeNotification = async (postId, userId) => {
+	try {
+		const post = await Post.findById(postId).populate("user");
+		if (!post) {
+			console.log('Post not found when creating like notification');
+			return;
+		}
+
+		// Skip if the post creator is the same as the user who liked
+		if (post.user._id.toString() === userId.toString()) {
+			console.log('User liking their own post, skipping notification');
+			return;
+		}
+
+		const notification = new Notification({
+			from: userId,
+			to: post.user._id,
+			type: "like",
+			content: "liked your post",
+			referencedPost: post._id
+		});
+
+		await notification.save();
+		console.log('Like notification created successfully');
+
+		try {
+			// Send real-time notification via Socket.io
+			io.to(`notifications_${post.user._id}`).emit('newNotification', notification);
+			console.log(`Like notification emitted to ${post.user._id}`);
+		} catch (socketError) {
+			console.error('Error emitting socket notification:', socketError);
+		}
+
+		console.log(`Like notification created from ${userId} to ${post.user._id} for post ${postId}`);
+		return notification;
+	} catch (error) {
+		console.log("Error in createLikeNotification:", error.message);
+		throw error;
+	}
+};
+
 // Create bookmark notification
 export const createBookmarkNotification = async (postId, userId) => {
 	try {

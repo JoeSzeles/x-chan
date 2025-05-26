@@ -1,10 +1,10 @@
-import Notification from "../models/notification.model.js";
-import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
+import Post from "../models/post.model.js";
+import Notification from "../models/notification.model.js";
+import { v2 as cloudinary } from "cloudinary";
+import { createLikeNotification } from "./notification.controller.js";
 import Comment from "../models/comment.model.js";
 import { createRepostNotification } from "./notification.controller.js";
-import { v2 as cloudinary } from "cloudinary";
-import { handleImageUpload, getImageUrl } from "../utils/imageUpload.js";
 import path from "path";
 import fs from "fs";
 import { errorHandler } from "../utils/error.js";
@@ -305,12 +305,10 @@ export const likeUnlikePost = async (req, res) => {
 			await User.updateOne({ _id: userId }, { $push: { likedPosts: postId } });
 			await post.save();
 
-			const notification = new Notification({
-				from: userId,
-				to: post.user,
-				type: "like",
-			});
-			await notification.save();
+			// Create notification if not the user's own post
+		if (post.user.toString() !== userId.toString()) {
+			await createLikeNotification(postId, userId);
+		}
 
 			const updatedLikes = post.likes;
 			res.status(200).json(updatedLikes);
