@@ -1,10 +1,10 @@
-import User from "../models/user.model.js";
-import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
-import { v2 as cloudinary } from "cloudinary";
-import { createLikeNotification } from "./notification.controller.js";
+import Post from "../models/post.model.js";
+import User from "../models/user.model.js";
 import Comment from "../models/comment.model.js";
 import { createRepostNotification } from "./notification.controller.js";
+import { v2 as cloudinary } from "cloudinary";
+import { handleImageUpload, getImageUrl } from "../utils/imageUpload.js";
 import path from "path";
 import fs from "fs";
 import { errorHandler } from "../utils/error.js";
@@ -305,10 +305,12 @@ export const likeUnlikePost = async (req, res) => {
 			await User.updateOne({ _id: userId }, { $push: { likedPosts: postId } });
 			await post.save();
 
-			// Create notification if not the user's own post
-		if (post.user.toString() !== userId.toString()) {
-			await createLikeNotification(postId, userId);
-		}
+			const notification = new Notification({
+				from: userId,
+				to: post.user,
+				type: "like",
+			});
+			await notification.save();
 
 			const updatedLikes = post.likes;
 			res.status(200).json(updatedLikes);
@@ -648,76 +650,6 @@ export const getPostByNumber = async (req, res, next) => {
 	}
 };
 
-export const bookmarkPost = async (req, res) => {
-	try {
-		const postId = req.params.postId;
-		const userId = req.user._id;
-
-		const post = await Post.findById(postId);
-		if (!post) {
-			return res.status(404).json({ error: "Post not found" });
-		}
-
-		const user = await User.findById(userId);
-		if (!user) {
-			return res.status(404).json({ error: "User not found" });
-		}
-
-		const isBookmarked = user.bookmarkedPosts && user.bookmarkedPosts.includes(postId);
-
-		if (isBookmarked) {
-			// Remove bookmark
-			await User.updateOne({ _id: userId }, { $pull: { bookmarkedPosts: postId } });
-			res.status(200).json({ message: "Post unbookmarked" });
-		} else {
-			// Add bookmark
-			await User.updateOne({ _id: userId }, { $push: { bookmarkedPosts: postId } });
-			res.status(200).json({ message: "Post bookmarked" });
-		}
-	} catch (error) {
-		console.log("Error in bookmarkPost controller: ", error);
-		res.status(500).json({ error: "Internal server error" });
-	}
-};
-
-export const getBookmarkedPosts = async (req, res) => {
-	try {
-		const userId = req.user._id;
-
-		const user = await User.findById(userId);
-		if (!user) return res.status(404).json({ error: "User not found" });
-
-		const bookmarkedPosts = await Post.find({ _id: { $in: user.bookmarkedPosts || [] } })
-			.populate({
-				path: "user",
-				select: "-password",
-			})
-			.populate({
-				path: "comments.user",
-				select: "-password",
-			})
-			.sort({ createdAt: -1 });
-
-		res.status(200).json(bookmarkedPosts);
-	} catch (error) {
-		console.log("Error in getBookmarkedPosts controller: ", error);
-		res.status(500).json({ error: "Internal server error" });
-	}
-};
-
-export const removeBookmark = async (req, res) => {
-	try {
-		const { postId } = req.params;
-		const userId = req.user._id;
-
-		await User.updateOne({ _id: userId }, { $pull: { bookmarkedPosts: postId } });
-		res.status(200).json({ message: "Bookmark removed successfully" });
-	} catch (error) {
-		console.log("Error in removeBookmark controller: ", error);
-		res.status(500).json({ error: "Internal server error" });
-	}
-};
-
 export const getPostQuotes = async (req, res, next) => {
 	try {
 		const { postId } = req.params;
@@ -747,6 +679,3 @@ export const getPostQuotes = async (req, res, next) => {
 		next(error);
 	}
 };
-
-// Alias for backward compatibility
-export const getQuoteReferences = getPostQuotes;

@@ -269,10 +269,7 @@ export const createRepostNotification = async (postId, userId) => {
 			from: userId,
 			to: post.user,
 			type: "repost",
-			content: "reposted your post",
-			postId: postId,        // Legacy field
-			post: postId,          // Legacy field
-			referencedPost: postId // Primary field
+			referencedPost: postId
 		});
 
 		await notification.save();
@@ -345,50 +342,6 @@ export const createNewsBotActivityNotification = async (botId, content, articles
 	}
 };
 
-// Create like notification
-export const createLikeNotification = async (postId, userId) => {
-	try {
-		const post = await Post.findById(postId).populate("user");
-		if (!post) {
-			console.log('Post not found when creating like notification');
-			return;
-		}
-
-		// Skip if the post creator is the same as the user who liked
-		if (post.user._id.toString() === userId.toString()) {
-			console.log('User liking their own post, skipping notification');
-			return;
-		}
-
-		const notification = new Notification({
-			from: userId,
-			to: post.user._id,
-			type: "like",
-			content: "liked your post",
-			postId: post._id,        // Legacy field
-			post: post._id,          // Legacy field
-			referencedPost: post._id // Primary field
-		});
-
-		await notification.save();
-		console.log('Like notification created successfully');
-
-		try {
-			// Send real-time notification via Socket.io
-			io.to(`notifications_${post.user._id}`).emit('newNotification', notification);
-			console.log(`Like notification emitted to ${post.user._id}`);
-		} catch (socketError) {
-			console.error('Error emitting socket notification:', socketError);
-		}
-
-		console.log(`Like notification created from ${userId} to ${post.user._id} for post ${postId}`);
-		return notification;
-	} catch (error) {
-		console.log("Error in createLikeNotification:", error.message);
-		throw error;
-	}
-};
-
 // Create bookmark notification
 export const createBookmarkNotification = async (postId, userId) => {
 	try {
@@ -409,9 +362,7 @@ export const createBookmarkNotification = async (postId, userId) => {
 			to: post.user._id,
 			type: "bookmark",
 			content: "bookmarked your post",
-			postId: post._id,        // Legacy field
-			post: post._id,          // Legacy field
-			referencedPost: post._id // Primary field
+			referencedPost: post._id
 		});
 
 		await notification.save();
@@ -463,7 +414,7 @@ export const getNotifications = async (req, res) => {
 		const userId = req.user._id;
 		const { page = 1, limit = 20 } = req.query;
 
-		let notifications = await Notification.find({ to: userId })
+		const notifications = await Notification.find({ to: userId })
 			.populate({
 				path: "from",
 				select: "username profileImg",
@@ -507,42 +458,6 @@ export const getNotifications = async (req, res) => {
 			.sort({ createdAt: -1 })
 			.skip((page - 1) * limit)
 			.limit(parseInt(limit));
-
-		// Fix missing post references for older notifications
-		notifications = await Promise.all(notifications.map(async (notification) => {
-			const notificationObj = notification.toObject();
-			
-			// For like/repost/bookmark notifications without referencedPost, try to find the post
-			if (['like', 'repost', 'bookmark'].includes(notification.type) && !notification.referencedPost) {
-				try {
-					// Try to find the post from user's posts around the notification creation time
-					const timeWindow = 24 * 60 * 60 * 1000; // 24 hours
-					const notificationTime = new Date(notification.createdAt);
-					const startTime = new Date(notificationTime.getTime() - timeWindow);
-					const endTime = new Date(notificationTime.getTime() + timeWindow);
-					
-					const recentPost = await Post.findOne({
-						user: notification.to,
-						createdAt: {
-							$gte: startTime,
-							$lte: endTime
-						}
-					}).populate({
-						path: "user",
-						select: "username profileImg"
-					}).sort({ createdAt: -1 });
-					
-					if (recentPost) {
-						notificationObj.referencedPost = recentPost;
-						console.log(`Fixed missing post reference for notification ${notification._id}`);
-					}
-				} catch (error) {
-					console.error(`Error fixing notification ${notification._id}:`, error);
-				}
-			}
-			
-			return notificationObj;
-		}));
 
 		const total = await Notification.countDocuments({ to: userId });
 

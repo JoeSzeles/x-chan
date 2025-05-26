@@ -361,28 +361,7 @@ const NotificationPage = () => {
 		});
 	};
 
-	const handleNotificationClick = async (notification) => {
-		console.log('Notification clicked:', notification);
-		
-		// Check all possible post reference fields first
-		let postId = null;
-		
-		if (notification.postId?._id) {
-			postId = notification.postId._id;
-		} else if (notification.post?._id) {
-			postId = notification.post._id;
-		} else if (notification.referencedPost?._id) {
-			postId = notification.referencedPost._id;
-		} else if (typeof notification.postId === 'string') {
-			postId = notification.postId;
-		} else if (typeof notification.post === 'string') {
-			postId = notification.post;
-		} else if (typeof notification.referencedPost === 'string') {
-			postId = notification.referencedPost;
-		}
-		
-		console.log('Extracted post ID:', postId);
-
+	const handleNotificationClick = (notification) => {
 		switch (notification.type) {
 			case "follow":
 				navigate(`/profile/${notification.from.username}`);
@@ -392,32 +371,18 @@ const NotificationPage = () => {
 			case "reply":
 			case "post_reply":
 			case "mention":
-			case "comment":
-			case "bookmark":
-				if (postId) {
-					try {
-						// Verify the post still exists before opening modal
-						const response = await fetch(`/api/posts/${postId}`);
-						if (response.ok) {
-							setSelectedPost(postId);
-						} else {
-							console.warn(`Post ${postId} no longer exists`);
-							toast.error('This post is no longer available');
-						}
-					} catch (error) {
-						console.error('Error checking post existence:', error);
-						// Still try to open the modal - the Post component will handle the error
-						setSelectedPost(postId);
-					}
-				} else {
-					console.warn('No post ID found in notification:', notification);
-					// For older notifications without post references, try to navigate to user profile instead
-					if (notification.type === 'like' || notification.type === 'bookmark' || notification.type === 'repost') {
-						toast.info('Post reference not available - navigating to user profile');
-						navigate(`/profile/${notification.from.username}`);
-					} else {
-						toast.error('Post reference not found - this may be an older notification');
-					}
+			case "bookmark": // Added bookmark handling
+				// Check both post and postId fields
+				if (notification.postId?._id) {
+					setSelectedPost(notification.postId._id);
+				} else if (notification.post?._id) {
+					setSelectedPost(notification.post._id);
+				} else if (notification.postId) {
+					setSelectedPost(notification.postId);
+				} else if (notification.post) {
+					setSelectedPost(notification.post);
+				} else if (notification.referencedPost?._id) {
+					setSelectedPost(notification.referencedPost._id);
 				}
 				break;
 			case "comment_reply":
@@ -498,24 +463,8 @@ const NotificationPage = () => {
 	const handleShare = async (e, notification) => {
 		e.stopPropagation();
 
-		// Get the post ID from any available field
-		let postId = null;
-		
-		if (notification.postId?._id) {
-			postId = notification.postId._id;
-		} else if (notification.post?._id) {
-			postId = notification.post._id;
-		} else if (notification.referencedPost?._id) {
-			postId = notification.referencedPost._id;
-		} else if (typeof notification.postId === 'string') {
-			postId = notification.postId;
-		} else if (typeof notification.post === 'string') {
-			postId = notification.post;
-		} else if (typeof notification.referencedPost === 'string') {
-			postId = notification.referencedPost;
-		}
-
-		console.log('Share - extracted post ID:', postId, 'from notification:', notification);
+		// Get the post ID from either the notification or its referenced post
+		const postId = notification.post?._id || notification.referencedPost?._id;
 
 		if (!postId) {
 			toast.error('No post link available');
@@ -681,9 +630,7 @@ const NotificationPage = () => {
 									)}
 									<div className='flex items-center justify-between mt-1 text-xs text-gray-500'>
 										<span>{formatDate(notification.createdAt)}</span>
-										{(notification.post?._id || notification.referencedPost?._id || notification.postId?._id || 
-									  typeof notification.post === 'string' || typeof notification.postId === 'string' || 
-									  typeof notification.referencedPost === 'string') && (
+										{(notification.post?._id || notification.referencedPost?._id) && (
 											<button
 												onClick={(e) => handleShare(e, notification)}
 												className='p-1 rounded-full hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100'
