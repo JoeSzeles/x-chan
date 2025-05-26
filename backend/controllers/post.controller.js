@@ -747,3 +747,6 @@ export const getPostQuotes = async (req, res, next) => {
 		next(error);
 	}
 };
+
+// Alias for backward compatibility
+export const getQuoteReferences = getPostQuotes;
