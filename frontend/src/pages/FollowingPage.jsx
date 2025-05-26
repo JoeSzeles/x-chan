@@ -45,7 +45,8 @@ const FollowingPage = () => {
             console.log('Following users data:', data);
             return data;
         },
-        enabled: !!targetUsername && !!authUser,
+        enabled: !!targetUsername,
+        retry: 2,
     });
 
     const { data: followerUsers, isLoading: loadingFollowers, error: followersError } = useQuery({
@@ -71,7 +72,8 @@ const FollowingPage = () => {
             console.log('Followers data:', data);
             return data;
         },
-        enabled: !!targetUsername && !!authUser,
+        enabled: !!targetUsername,
+        retry: 2,
     });
 
     const handleTabChange = (tab) => {
@@ -85,8 +87,8 @@ const FollowingPage = () => {
     const currentData = activeTab === 'following' ? followingUsers : followerUsers;
     const isLoading = activeTab === 'following' ? loadingFollowing : loadingFollowers;
 
-    // Show loading if we don't have a target username yet
-    if (!targetUsername) {
+    // Show loading if authUser is still loading and no username param provided
+    if (!username && !authUser) {
         return (
             <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
                 <div className="flex justify-center items-center h-64">
