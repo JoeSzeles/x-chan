@@ -307,7 +307,7 @@ const NotificationPage = () => {
 			case "like":
 				return "liked your post";
 			case "repost":
-				return "reposted your post";
+				return notification.referencedPost ? "reposted your comment" : "reposted your post";
 			case "reply":
 			case "post_reply":
 				return "replied to your post";

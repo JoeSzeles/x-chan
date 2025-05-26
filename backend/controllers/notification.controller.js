@@ -1,7 +1,7 @@
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
-import Thread from "../models/thread.model.js";
 import Post from "../models/post.model.js";
+import Comment from "../models/comment.model.js";
 import { io } from "../server.js";
 
 // Helper function to create notifications
@@ -250,40 +250,46 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 	}
 };
 
-// Create repost notification
-export const createRepostNotification = async (postId, userId) => {
+export const createRepostNotification = async (itemId, userId) => {
 	try {
-		const post = await Post.findById(postId);
-		if (!post) {
-			console.log('Post not found when creating repost notification');
+		// Try to find as post first
+		let item = await Post.findById(itemId).populate('user');
+		let isComment = false;
+
+		// If not found as post, try as comment
+		if (!item) {
+			item = await Comment.findById(itemId).populate('user');
+			isComment = true;
+		}
+
+		if (!item) {
+			console.error('Post/Comment not found for notification:', itemId);
 			return;
 		}
 
-		// Don't create notification if the user is reposting their own post
-		if (post.user.toString() === userId.toString()) {
-			console.log('User reposting their own post, skipping notification');
+		// Don't create notification if user is reposting their own content
+		if (item.user._id.toString() === userId.toString()) {
 			return;
 		}
 
-		const notification = new Notification({
+		// Create notification
+		const notificationData = {
 			from: userId,
-			to: post.user,
-			type: "repost",
-			referencedPost: postId
-		});
+			to: item.user._id,
+			type: "repost"
+		};
+
+		// Set the appropriate reference based on content type
+		if (isComment) {
+			notificationData.referencedPost = itemId;
+		} else {
+			notificationData.post = itemId;
+		}
+
+		const notification = new Notification(notificationData);
 
 		await notification.save();
 		console.log('Repost notification created successfully');
-
-		try {
-			// Send real-time notification via Socket.io
-			io.to(`notifications_${post.user}`).emit('newNotification', notification);
-			console.log('Repost notification emitted via socket');
-		} catch (socketError) {
-			console.error('Error emitting socket notification:', socketError);
-		}
-
-		return notification;
 	} catch (error) {
 		console.error('Error creating repost notification:', error);
 	}
