@@ -9,6 +9,7 @@ import { handleImageUpload, getImageUrl } from "../utils/imageUpload.js";
 import path from "path";
 import fs from "fs";
 import { errorHandler } from "../utils/error.js";
+import Board from "../models/board.model.js";
 
 export const createPost = async (req, res) => {
 	try {
