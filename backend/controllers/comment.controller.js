@@ -464,3 +464,36 @@ export const getCommentQuotes = async (req, res, next) => {
 		next(error);
 	}
 };
+
+export const getCommentById = async (req, res) => {
+	try {
+		const { id } = req.params;
+
+		const comment = await Comment.findById(id)
+			.populate("user", "username fullName profileImg")
+			.populate({
+				path: "post",
+				select: "_id postNumber",
+				populate: {
+					path: "user",
+					select: "username fullName profileImg"
+				}
+			})
+			.populate({
+				path: "replies",
+				populate: {
+					path: "user",
+					select: "username fullName profileImg"
+				}
+			});
+
+		if (!comment) {
+			return res.status(404).json({ error: "Comment not found" });
+		}
+
+		res.status(200).json(comment);
+	} catch (error) {
+		console.error("Error in getCommentById:", error);
+		res.status(500).json({ error: error.message });
+	}
+};
