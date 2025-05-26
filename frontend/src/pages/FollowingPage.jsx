@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuthUser } from "../hooks/useAuthUser";
@@ -11,7 +12,7 @@ const FollowingPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { username } = useParams();
-    const { data: authUser } = useAuthUser();
+    const { data: authUser, isLoading: authUserLoading } = useAuthUser();
 
     // Get initial tab from URL params or default to 'following'
     const searchParams = new URLSearchParams(location.search);
@@ -19,20 +20,39 @@ const FollowingPage = () => {
     const [activeTab, setActiveTab] = useState(initialTab);
 
     // Determine which user's following/followers to show
-    // Wait for authUser to load if no username is provided (sidebar navigation)
-    const targetUsername = username || (authUser?.username);
+    const targetUsername = username || authUser?.username;
     const isOwnProfile = !username || username === authUser?.username;
-
-    // Show loading if we're waiting for authUser and no username param
-    const isWaitingForAuth = !username && !authUser;
 
     console.log('FollowingPage state:', {
         username,
         authUser: authUser?.username,
         targetUsername,
-        isWaitingForAuth,
+        authUserLoading,
         isOwnProfile
     });
+
+    // Show loading if we're still waiting for auth user and no username param
+    if (!username && authUserLoading) {
+        return (
+            <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
+                <div className="flex justify-center items-center h-64">
+                    <LoadingSpinner size="lg" />
+                    <p className="ml-4 text-gray-400">Loading user data...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // If we still don't have a target username after auth loading, show error
+    if (!targetUsername) {
+        return (
+            <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
+                <div className="flex justify-center items-center h-64">
+                    <p className="text-red-500">Unable to determine user</p>
+                </div>
+            </div>
+        );
+    }
 
     const { data: followingUsers, isLoading: loadingFollowing, error: followingError } = useQuery({
         queryKey: ["following", targetUsername],
@@ -96,18 +116,6 @@ const FollowingPage = () => {
 
     const currentData = activeTab === 'following' ? followingUsers : followerUsers;
     const isLoading = activeTab === 'following' ? loadingFollowing : loadingFollowers;
-
-    // Show loading if we're waiting for auth user to load
-    if (isWaitingForAuth) {
-        return (
-            <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
-                <div className="flex justify-center items-center h-64">
-                    <LoadingSpinner size="lg" />
-                    <p className="ml-4 text-gray-400">Loading user data...</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
