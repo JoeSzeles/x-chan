@@ -542,11 +542,7 @@ export const repostPost = async (req, res) => {
 			comments: [],
 			bookmarkedBy: [],
 			ratings: [],
-			viewCount: 0,
-			repostSource: {
-				type: isComment ? 'comment' : 'post',
-				id: postId
-			}
+			viewCount: 0
 		};
 
 		// Set original reference
