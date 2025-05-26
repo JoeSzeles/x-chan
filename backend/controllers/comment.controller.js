@@ -454,3 +454,113 @@ export const getCommentQuotes = async (req, res, next) => {
 		next(error);
 	}
 }; 
+export const repostComment = async (req, res) => {
+	try {
+		const { id: commentId } = req.params;
+		const { repostType = 'personal', targetBoard } = req.body;
+		const userId = req.user._id;
+
+		const comment = await Comment.findById(commentId);
+		if (!comment) {
+			return res.status(404).json({ error: 'Comment not found' });
+		}
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ error: 'User not found' });
+		}
+
+		// Check if user has already reposted this comment
+		const existingRepost = await Post.findOne({
+			user: userId,
+			originalComment: commentId
+		});
+
+		if (existingRepost) {
+			// Remove existing repost
+			await Post.findByIdAndDelete(existingRepost._id);
+			await User.findByIdAndUpdate(userId, { $pull: { reposts: commentId } });
+			await Comment.findByIdAndUpdate(commentId, { $inc: { repostCount: -1 } });
+			
+			return res.status(200).json({ 
+				message: 'Comment unreposted',
+				reposts: []
+			});
+		}
+
+		// Get the highest post number
+		const [highestPost, highestComment] = await Promise.all([
+			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
+			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
+		]);
+
+		const highestPostNumber = highestPost ? highestPost.postNumber : 0;
+		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
+		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
+
+		// Create new repost
+		const repostData = {
+			user: userId,
+			text: `Reposted comment: ${comment.text}`,
+			postNumber: nextPostNumber,
+			isRepost: true,
+			originalComment: commentId,
+			likes: [],
+			reposts: [],
+			comments: [],
+			bookmarkedBy: [],
+			ratings: [],
+			viewCount: 0
+		};
+
+		// Handle board targeting
+		if (repostType === 'board' && targetBoard) {
+			const board = await Board.findOne({ name: targetBoard, owner: userId });
+			if (board) {
+				repostData.board = board._id;
+				repostData.boardName = targetBoard;
+			}
+		}
+
+		// Copy media if present
+		if (comment.img) {
+			repostData.img = comment.img;
+		}
+
+		const newRepost = new Post(repostData);
+		await newRepost.save();
+
+		// Update arrays and counts
+		await User.findByIdAndUpdate(userId, { $push: { reposts: commentId } });
+		await Comment.findByIdAndUpdate(commentId, { $inc: { repostCount: 1 } });
+
+		// Add to board if specified
+		if (repostData.board) {
+			await Board.findByIdAndUpdate(repostData.board, {
+				$push: { posts: newRepost._id }
+			});
+		}
+
+		// Create notification
+		const notification = new Notification({
+			from: userId,
+			to: comment.user,
+			type: "repost",
+		});
+		await notification.save();
+
+		// Populate the response
+		const populatedRepost = await Post.findById(newRepost._id)
+			.populate('user', 'username fullName profileImg')
+			.populate('originalComment', 'text img user');
+
+		res.status(200).json({ 
+			message: 'Comment reposted successfully',
+			repost: populatedRepost,
+			reposts: [userId]
+		});
+	} catch (error) {
+		console.log('Error in repostComment function', error.message);
+		res.status(500).json({ error: 'Internal Server Error' });
+	}
+};

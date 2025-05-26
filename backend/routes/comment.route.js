@@ -41,4 +41,4 @@ router.post("/:commentId/view", trackView);
 // Get comment quotes
 router.get("/:commentId/quotes", getCommentQuotes);
 
-export default router; 
+export default router;
