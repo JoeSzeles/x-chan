@@ -79,14 +79,6 @@ const RepostButton = ({
                 ? `/api/posts/repost/${itemId}`
                 : `/api/comments/repost/${itemId}`;
 
-            console.log('[RepostButton] Making repost request:', {
-                endpoint,
-                itemId,
-                type,
-                repostType,
-                targetBoard: repostType === 'board' ? selectedBoard : undefined
-            });
-
             const res = await fetch(endpoint, {
                 method: "POST",
                 credentials: "include",
@@ -101,86 +93,93 @@ const RepostButton = ({
             });
 
             const data = await res.json();
-            console.log('[RepostButton] Repost response:', { status: res.status, data });
-            
-            if (!res.ok) {
-                throw new Error(data.error || `HTTP ${res.status}: ${res.statusText}`);
-            }
+            if (!res.ok) throw new Error(data.error);
             return data;
         },
         onSuccess: (data) => {
-            // Update the current item's reposts
-            if (type === 'post') {
-                queryClient.setQueryData(["post", itemId], (oldData) => {
-                    if (!oldData) return null;
-                    return {
-                        ...oldData,
-                        reposts: data.reposts || [],
-                    };
-                });
-            } else {
-                queryClient.setQueryData(["comment", itemId], (oldData) => {
-                    if (!oldData) return null;
-                    return {
-                        ...oldData,
-                        reposts: data.reposts || [],
-                    };
-                });
-            }
+			// Update the current item's reposts
+			if (type === 'post') {
+				queryClient.setQueryData(["post", itemId], (oldData) => {
+					if (!oldData) return null;
+					return {
+						...oldData,
+						reposts: data.reposts || [],
+					};
+				});
+			} else {
+				queryClient.setQueryData(["comment", itemId], (oldData) => {
+					if (!oldData) return null;
+					return {
+						...oldData,
+						reposts: data.reposts || [],
+					};
+				});
+			}
 
-            // Update profile posts if we're on a profile page
-            const currentPath = window.location.pathname;
-            if (currentPath.startsWith('/profile/')) {
-                const username = currentPath.split('/profile/')[1];
-                queryClient.setQueryData(["userPosts", username], (oldData) => {
-                    if (!oldData) return null;
-                    return oldData.map(p => 
-                        p._id === itemId 
-                            ? { ...p, reposts: data.reposts || [] }
-                            : p
-                    );
-                });
-            }
+			// Update profile posts if we're on a profile page
+			const currentPath = window.location.pathname;
+			if (currentPath.startsWith('/profile/')) {
+				const username = currentPath.split('/profile/')[1];
+				queryClient.setQueryData(["userPosts", username], (oldData) => {
+					if (!oldData) return null;
+					// Add the new repost to the beginning of the user's posts if it was created
+					const updatedPosts = oldData.map(p => 
+						p._id === itemId 
+							? { ...p, reposts: data.reposts || [] }
+							: p
+					);
+					// If a new repost was created, add it to the posts
+					if (data.repost && !data.message.includes('unreposted')) {
+						updatedPosts.unshift(data.repost);
+					}
+					return updatedPosts;
+				});
+			}
 
-            // Update feed if it exists
-            queryClient.setQueryData(["feed"], (oldData) => {
-                if (!oldData) return null;
-                return oldData.map(p => 
-                    p._id === itemId 
-                        ? { ...p, reposts: data.reposts || [] }
-                        : p
-                );
-            });
+			// Update feed if it exists
+			queryClient.setQueryData(["feed"], (oldData) => {
+				if (!oldData) return null;
+				const updatedPosts = oldData.map(p => 
+					p._id === itemId 
+						? { ...p, reposts: data.reposts || [] }
+						: p
+				);
+				// If a new repost was created, add it to the beginning of the feed
+				if (data.repost && !data.message.includes('unreposted')) {
+					updatedPosts.unshift(data.repost);
+				}
+				return updatedPosts;
+			});
 
-            // Update posts list if it exists
-            queryClient.setQueryData(["posts"], (oldData) => {
-                if (!oldData) return null;
-                return oldData.map(p => 
-                    p._id === itemId 
-                        ? { ...p, reposts: data.reposts || [] }
-                        : p
-                );
-            });
+			// Update posts list if it exists
+			queryClient.setQueryData(["posts"], (oldData) => {
+				if (!oldData) return null;
+				const updatedPosts = oldData.map(p => 
+					p._id === itemId 
+						? { ...p, reposts: data.reposts || [] }
+						: p
+				);
+				// If a new repost was created, add it to the beginning of the posts
+				if (data.repost && !data.message.includes('unreposted')) {
+					updatedPosts.unshift(data.repost);
+				}
+				return updatedPosts;
+			});
 
-            toast.success(data.message || `${type === 'post' ? 'Post' : 'Comment'} reposted successfully`);
-            setShowRepostOptions(false);
-            if (onRepost) onRepost(data);
-        },
+			// Invalidate queries to refresh the data
+			queryClient.invalidateQueries(["posts"]);
+			queryClient.invalidateQueries(["feed"]);
+			if (userData?._id) {
+				queryClient.invalidateQueries(["userPosts", userData.username]);
+			}
+
+			toast.success(data.message || `${type === 'post' ? 'Post' : 'Comment'} reposted successfully`);
+			setShowRepostOptions(false);
+			if (onRepost) onRepost(data);
+		},
         onError: (error) => {
-            console.error('[RepostButton] Repost error:', error);
-            
-            // Handle different error types
-            let errorMessage = `Failed to repost ${type}`;
-            
-            if (error.message) {
-                errorMessage = error.message;
-            } else if (error.response?.data?.error) {
-                errorMessage = error.response.data.error;
-            } else if (error.response?.statusText) {
-                errorMessage = `${error.response.status}: ${error.response.statusText}`;
-            }
-            
-            toast.error(errorMessage);
+            console.error('Repost error:', error);
+            toast.error(error.response?.data?.error || error.message || `Failed to repost ${type}`);
             setShowRepostOptions(false);
         }
     });
@@ -240,7 +239,7 @@ const RepostButton = ({
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Repost Options</h3>
-                        
+
                         <div className="space-y-4">
                             <button
                                 onClick={(e) => {
@@ -329,4 +328,4 @@ const RepostButton = ({
     );
 };
 
-export default RepostButton; 
+export default RepostButton;

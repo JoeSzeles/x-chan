@@ -38,16 +38,10 @@ const commentSchema = new mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
 		}],
-		reposts: [
-			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: "User",
-			}
-		],
-		repostCount: {
-			type: Number,
-			default: 0
-		},
+		reposts: [{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		}],
 		bookmarkedBy: [{
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
@@ -101,4 +95,4 @@ commentSchema.statics.findByNumber = function(postNumber) {
 
 const Comment = mongoose.model("Comment", commentSchema);
 
-export default Comment;
+export default Comment; 

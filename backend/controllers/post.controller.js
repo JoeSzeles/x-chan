@@ -3,6 +3,7 @@ import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import Comment from "../models/comment.model.js";
 import { createRepostNotification } from "./notification.controller.js";
+import Board from "../models/board.model.js";
 import { v2 as cloudinary } from "cloudinary";
 import { handleImageUpload, getImageUrl } from "../utils/imageUpload.js";
 import path from "path";
@@ -467,30 +468,24 @@ export const getUserPosts = async (req, res) => {
 export const repostPost = async (req, res) => {
 	try {
 		const { id: postId } = req.params;
-		const { repostType = 'personal', targetBoard } = req.body;
 		const userId = req.user._id;
+		const { repostType, targetBoard } = req.body;
 
-		console.log('[repostPost] Request details:', { postId, repostType, targetBoard, userId });
-
-		// Find the original post or comment
+		// First try to find in posts
 		let originalPost = await Post.findById(postId);
 		let isComment = false;
-		
+
+		// If not found in posts, try comments
 		if (!originalPost) {
-			// Try finding in comments collection
 			const comment = await Comment.findById(postId);
 			if (comment) {
 				originalPost = comment;
 				isComment = true;
-				console.log('[repostPost] Found comment to repost:', comment._id);
 			}
-		} else {
-			console.log('[repostPost] Found post to repost:', originalPost._id);
 		}
 
 		if (!originalPost) {
-			console.log('[repostPost] Post/comment not found:', postId);
-			return res.status(404).json({ error: 'Post or comment not found' });
+			return res.status(404).json({ error: 'Post not found' });
 		}
 
 		const user = await User.findById(userId);
@@ -498,7 +493,7 @@ export const repostPost = async (req, res) => {
 			return res.status(404).json({ error: 'User not found' });
 		}
 
-		// Check if user has already reposted this content
+		// Check if user has already reposted this post
 		const existingRepost = await Post.findOne({
 			user: userId,
 			$or: [
@@ -511,19 +506,27 @@ export const repostPost = async (req, res) => {
 			// Remove existing repost
 			await Post.findByIdAndDelete(existingRepost._id);
 			
-			// Update user's reposts array
-			await User.findByIdAndUpdate(userId, { $pull: { reposts: postId } });
-			
-			// Decrease repost count on original
+			// Update original post's reposts array
 			if (isComment) {
-				await Comment.findByIdAndUpdate(postId, { $inc: { repostCount: -1 } });
+				await Comment.findByIdAndUpdate(postId, { $pull: { reposts: userId } });
 			} else {
-				await Post.findByIdAndUpdate(postId, { $inc: { repostCount: -1 } });
+				await Post.findByIdAndUpdate(postId, { $pull: { reposts: userId } });
 			}
-			
+
+			// Remove from board if it was a board repost
+			if (existingRepost.board) {
+				await Board.findByIdAndUpdate(existingRepost.board, {
+					$pull: { posts: existingRepost._id }
+				});
+			}
+
+			const updatedReposts = isComment 
+				? (await Comment.findById(postId)).reposts 
+				: (await Post.findById(postId)).reposts;
+
 			return res.status(200).json({ 
 				message: 'Post unreposted',
-				reposts: []
+				reposts: updatedReposts
 			});
 		}
 
@@ -537,12 +540,11 @@ export const repostPost = async (req, res) => {
 		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
 		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
 
-		// Create new repost
+		// Create the repost
 		const repostData = {
 			user: userId,
-			text: `Reposted: ${originalPost.text}`,
+			text: `Reposted: ${originalPost.text.substring(0, 100)}${originalPost.text.length > 100 ? '...' : ''}`,
 			postNumber: nextPostNumber,
-			isRepost: true,
 			likes: [],
 			reposts: [],
 			comments: [],
@@ -551,63 +553,52 @@ export const repostPost = async (req, res) => {
 			viewCount: 0
 		};
 
-		// Set original reference
+		// Set the original reference
 		if (isComment) {
 			repostData.originalComment = postId;
 		} else {
 			repostData.originalPost = postId;
 		}
 
-		// Handle board targeting for board reposts
+		// Handle board repost
 		if (repostType === 'board' && targetBoard) {
-			const board = await Board.findOne({ name: targetBoard, owner: userId });
+			const board = await Board.findOne({ name: targetBoard, user: userId });
 			if (board) {
 				repostData.board = board._id;
-				repostData.boardName = targetBoard;
 			}
-		}
-
-		// Copy media if present
-		if (originalPost.img) {
-			repostData.img = originalPost.img;
-		}
-		if (originalPost.videoUrl) {
-			repostData.videoUrl = originalPost.videoUrl;
 		}
 
 		const newRepost = new Post(repostData);
 		await newRepost.save();
 
-		// Update user's reposts array
-		await User.findByIdAndUpdate(userId, { $push: { reposts: postId } });
-
-		// Increment repost count on original
-		if (isComment) {
-			await Comment.findByIdAndUpdate(postId, { $inc: { repostCount: 1 } });
-		} else {
-			await Post.findByIdAndUpdate(postId, { $inc: { repostCount: 1 } });
-		}
-
-		// Add to board if specified
+		// Add repost to board's posts array if applicable
 		if (repostData.board) {
 			await Board.findByIdAndUpdate(repostData.board, {
 				$push: { posts: newRepost._id }
 			});
 		}
 
-		// Create notification for the original author
-		await createRepostNotification(postId, userId);
+		// Update original post's reposts array
+		if (isComment) {
+			await Comment.findByIdAndUpdate(postId, { $push: { reposts: userId } });
+		} else {
+			await Post.findByIdAndUpdate(postId, { $push: { reposts: userId } });
+		}
 
-		// Populate the new repost for response
-		const populatedRepost = await Post.findById(newRepost._id)
-			.populate('user', 'username fullName profileImg')
-			.populate('originalPost', 'text img user')
-			.populate('originalComment', 'text img user');
+		// Create notification for the original post author
+		if (originalPost.user.toString() !== userId.toString()) {
+			await createRepostNotification(postId, userId);
+		}
+
+		// Get updated reposts count
+		const updatedReposts = isComment 
+			? (await Comment.findById(postId)).reposts 
+			: (await Post.findById(postId)).reposts;
 
 		res.status(200).json({ 
-			message: 'Content reposted successfully',
-			repost: populatedRepost,
-			reposts: [userId]
+			message: 'Post reposted successfully',
+			reposts: updatedReposts,
+			repost: newRepost
 		});
 	} catch (error) {
 		console.log('Error in repostPost function', error.message);
