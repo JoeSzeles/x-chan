@@ -85,6 +85,17 @@ const FollowingPage = () => {
     const currentData = activeTab === 'following' ? followingUsers : followerUsers;
     const isLoading = activeTab === 'following' ? loadingFollowing : loadingFollowers;
 
+    // Show loading if we don't have a target username yet
+    if (!targetUsername) {
+        return (
+            <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
+                <div className="flex justify-center items-center h-64">
+                    <LoadingSpinner size="lg" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
             {/* Breadcrumb Navigation */}
