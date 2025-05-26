@@ -302,10 +302,15 @@ export const bookmarkComment = async (req, res) => {
 
 export const repostComment = async (req, res) => {
 	try {
+		console.log('Repost comment called with params:', req.params);
+		console.log('Repost comment body:', req.body);
+		console.log('User:', req.user ? req.user._id : 'No user');
+		
 		const { commentId } = req.params;
 		
 		// Verify user is authenticated
 		if (!req.user || !req.user._id) {
+			console.log('User not authenticated');
 			return res.status(401).json({ error: "You must be logged in to repost" });
 		}
 		
@@ -417,7 +422,12 @@ export const repostComment = async (req, res) => {
 		});
 	} catch (error) {
 		console.error("Error in repostComment: ", error);
-		res.status(500).json({ error: error.message });
+		console.error("Error stack: ", error.stack);
+		res.status(500).json({ 
+			error: "Internal Server Error",
+			message: error.message,
+			details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+		});
 	}
 };
 
