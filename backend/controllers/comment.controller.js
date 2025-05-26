@@ -307,15 +307,21 @@ export const repostComment = async (req, res) => {
 		const { repostType = 'personal' } = req.body;
 		const userId = req.user._id;
 
+		console.log('Repost comment request:', { commentId, userId, repostType });
+
 		// Find the original comment
-		const originalComment = await Comment.findById(commentId);
+		const originalComment = await Comment.findById(commentId)
+			.populate('user', 'username fullName profileImg')
+			.populate('post', '_id postNumber');
 
 		if (!originalComment) {
+			console.log('Comment not found:', commentId);
 			return res.status(404).json({ error: 'Comment not found' });
 		}
 
 		const user = await User.findById(userId);
 		if (!user) {
+			console.log('User not found:', userId);
 			return res.status(404).json({ error: 'User not found' });
 		}
 
@@ -326,6 +332,7 @@ export const repostComment = async (req, res) => {
 		});
 
 		if (existingRepost) {
+			console.log('Removing existing repost:', existingRepost._id);
 			// Remove existing repost
 			await Post.findByIdAndDelete(existingRepost._id);
 
@@ -351,10 +358,12 @@ export const repostComment = async (req, res) => {
 		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
 		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
 
+		console.log('Creating repost with postNumber:', nextPostNumber);
+
 		// Create new repost
 		const repostData = {
 			user: userId,
-			text: `Reposted comment: ${originalComment.text}`,
+			text: originalComment.text, // Use original text instead of prefixed text
 			postNumber: nextPostNumber,
 			isRepost: true,
 			originalComment: commentId,
@@ -373,6 +382,7 @@ export const repostComment = async (req, res) => {
 
 		const newRepost = new Post(repostData);
 		await newRepost.save();
+		console.log('Repost created:', newRepost._id);
 
 		// Update user's reposts array
 		await User.findByIdAndUpdate(userId, { $push: { reposts: commentId } });
@@ -380,13 +390,21 @@ export const repostComment = async (req, res) => {
 		// Increment repost count on original comment
 		await Comment.findByIdAndUpdate(commentId, { $inc: { repostCount: 1 } });
 
-		// Create notification for the original author
-		await createRepostNotification(commentId, userId);
+		// Create notification for the original author (only if not reposting own comment)
+		if (originalComment.user._id.toString() !== userId.toString()) {
+			try {
+				await createRepostNotification(commentId, userId);
+				console.log('Notification created for repost');
+			} catch (notificationError) {
+				console.error('Failed to create notification:', notificationError);
+				// Don't fail the entire request if notification fails
+			}
+		}
 
 		// Populate the new repost for response
 		const populatedRepost = await Post.findById(newRepost._id)
 			.populate('user', 'username fullName profileImg')
-			.populate('originalComment', 'text img user');
+			.populate('originalComment', 'text img user postNumber');
 
 		res.status(200).json({ 
 			message: 'Comment reposted successfully',
@@ -394,8 +412,8 @@ export const repostComment = async (req, res) => {
 			reposts: [userId]
 		});
 	} catch (error) {
-		console.log('Error in repostComment function', error.message);
-		res.status(500).json({ error: 'Internal Server Error' });
+		console.error('Error in repostComment function:', error);
+		res.status(500).json({ error: 'Internal Server Error: ' + error.message });
 	}
 };
 

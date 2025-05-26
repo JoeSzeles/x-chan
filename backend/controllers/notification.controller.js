@@ -250,48 +250,56 @@ export const createBoardActivityNotification = async (boardId, activityType, use
 	}
 };
 
-export const createRepostNotification = async (itemId, userId) => {
+export const createRepostNotification = async (postId, fromUserId) => {
 	try {
-		// Try to find as post first
-		let item = await Post.findById(itemId).populate('user');
-		let isComment = false;
+		console.log('Creating repost notification for:', { postId, fromUserId });
 
-		// If not found as post, try as comment
-		if (!item) {
-			item = await Comment.findById(itemId).populate('user');
-			isComment = true;
-		}
-
-		if (!item) {
-			console.error('Post/Comment not found for notification:', itemId);
-			return;
-		}
-
-		// Don't create notification if user is reposting their own content
-		if (item.user._id.toString() === userId.toString()) {
-			return;
-		}
-
-		// Create notification
-		const notificationData = {
-			from: userId,
-			to: item.user._id,
-			type: "repost"
+		// First try to find the post
+		let originalPost = await Post.findById(postId);
+		let originalUser = null;
+		let notificationType = "repost";
+		let notificationData = {
+			from: fromUserId,
+			type: notificationType,
+			post: postId
 		};
 
-		// Set the appropriate reference based on content type
-		if (isComment) {
-			notificationData.referencedPost = itemId;
+		if (originalPost) {
+			// It's a post repost
+			originalUser = originalPost.user;
+			console.log('Found original post, user:', originalUser);
 		} else {
-			notificationData.post = itemId;
+			// Try to find as a comment
+			const originalComment = await Comment.findById(postId);
+			if (originalComment) {
+				originalUser = originalComment.user;
+				notificationType = "comment_repost";
+				notificationData = {
+					from: fromUserId,
+					type: notificationType,
+					comment: postId,
+					post: originalComment.post
+				};
+				console.log('Found original comment, user:', originalUser);
+			} else {
+				console.log('No post or comment found with ID:', postId);
+				return null;
+			}
 		}
 
-		const notification = new Notification(notificationData);
-
-		await notification.save();
-		console.log('Repost notification created successfully');
+		if (originalUser && originalUser.toString() !== fromUserId.toString()) {
+			notificationData.to = originalUser;
+			const notification = new Notification(notificationData);
+			await notification.save();
+			console.log('Repost notification created successfully:', notification._id);
+			return notification;
+		} else {
+			console.log('No notification created - same user or no original user found');
+			return null;
+		}
 	} catch (error) {
 		console.error('Error creating repost notification:', error);
+		throw error;
 	}
 };
 
