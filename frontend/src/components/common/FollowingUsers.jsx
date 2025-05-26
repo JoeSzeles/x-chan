@@ -12,15 +12,23 @@ const FollowingUsers = ({ viewMode = "list" }) => {
         queryFn: async () => {
             if (!authUser?.username) return [];
             
+            console.log('FollowingUsers: Fetching following for', authUser.username);
             const res = await fetch(`/api/users/${authUser.username}/following`, {
                 credentials: "include",
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
             });
             
             if (!res.ok) {
-                throw new Error("Failed to fetch following users");
+                const errorData = await res.json().catch(() => ({}));
+                console.error('FollowingUsers: Error fetching following:', res.status, errorData);
+                throw new Error(errorData.error || "Failed to fetch following users");
             }
             
-            return res.json();
+            const data = await res.json();
+            console.log('FollowingUsers: Received following data:', data);
+            return data;
         },
         enabled: !!authUser?.username,
     });

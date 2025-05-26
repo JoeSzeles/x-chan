@@ -27,7 +27,7 @@ export const followUnfollowUser = async (req, res) => {
   try {
     // First check if we're dealing with a username or ID
     let userToModify;
-    
+
     // If it looks like a MongoDB ObjectId
     if (/^[0-9a-fA-F]{24}$/.test(id)) {
       userToModify = await User.findById(id);
@@ -65,9 +65,9 @@ export const followUnfollowUser = async (req, res) => {
       await User.findByIdAndUpdate(userToModify._id, {
         $pull: { followers: userId },
       });
-      
+
       console.log(`User ${userId} unfollowed ${userToModify._id}`);
-      
+
       res.status(200).json({
         success: true,
         isFollowing: false,
@@ -92,7 +92,7 @@ export const followUnfollowUser = async (req, res) => {
       }
 
       console.log(`User ${userId} followed ${userToModify._id}`);
-      
+
       res.status(200).json({
         success: true,
         isFollowing: true,
@@ -302,48 +302,46 @@ export const updateSettings = async (req, res) => {
 export const getFollowers = async (req, res) => {
 	try {
 		const { username } = req.params;
-		const user = await User.findOne({ username })
-			.populate('followers', 'username name profilePic bio followers following')
-			.select('followers');
+		console.log('Getting followers for username:', username);
+
+		const user = await User.findOne({ username }).populate({
+			path: "followers",
+			select: "-password -email"
+		});
 
 		if (!user) {
-			return res.status(404).json({ error: 'User not found' });
+			console.log('User not found:', username);
+			return res.status(404).json({ error: "User not found" });
 		}
 
-		// Add isFollowing field to each follower
-		const followers = user.followers.map(follower => ({
-			...follower.toObject(),
-			isFollowing: follower.followers.includes(req.user._id)
-		}));
-
-		res.status(200).json(followers);
+		console.log('Found followers:', user.followers?.length || 0);
+		res.status(200).json(user.followers || []);
 	} catch (error) {
-		console.error('Error in getFollowers:', error);
-		res.status(500).json({ error: 'Internal server error' });
+		console.log("Error in getFollowers: ", error.message);
+		res.status(500).json({ error: error.message });
 	}
 };
 
 export const getFollowing = async (req, res) => {
 	try {
 		const { username } = req.params;
-		const user = await User.findOne({ username })
-			.populate('following', 'username name profilePic bio followers following')
-			.select('following');
+		console.log('Getting following for username:', username);
+
+		const user = await User.findOne({ username }).populate({
+			path: "following",
+			select: "-password -email"
+		});
 
 		if (!user) {
-			return res.status(404).json({ error: 'User not found' });
+			console.log('User not found:', username);
+			return res.status(404).json({ error: "User not found" });
 		}
 
-		// Add isFollowing field to each following user
-		const following = user.following.map(followingUser => ({
-			...followingUser.toObject(),
-			isFollowing: followingUser.followers.includes(req.user._id)
-		}));
-
-		res.status(200).json(following);
+		console.log('Found following:', user.following?.length || 0);
+		res.status(200).json(user.following || []);
 	} catch (error) {
-		console.error('Error in getFollowing:', error);
-		res.status(500).json({ error: 'Internal server error' });
+		console.log("Error in getFollowing: ", error.message);
+		res.status(500).json({ error: error.message });
 	}
 };
 
