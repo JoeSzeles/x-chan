@@ -2,7 +2,7 @@ import Comment from "../models/comment.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
-import Board from "../models/board.model.js";
+import Board from "../models/Board.js";
 
 export const getComments = async (req, res) => {
 	try {
@@ -302,28 +302,35 @@ export const bookmarkComment = async (req, res) => {
 
 export const repostComment = async (req, res) => {
 	try {
-		console.log('Repost comment called with params:', req.params);
-		console.log('Repost comment body:', req.body);
+		console.log('=== Repost Comment Function Called ===');
+		console.log('Params:', req.params);
+		console.log('Body:', req.body);
 		console.log('User:', req.user ? req.user._id : 'No user');
 		
 		const { commentId } = req.params;
 		
 		// Verify user is authenticated
 		if (!req.user || !req.user._id) {
-			console.log('User not authenticated');
+			console.log('ERROR: User not authenticated');
 			return res.status(401).json({ error: "You must be logged in to repost" });
 		}
 		
 		const userId = req.user._id;
 		const { repostType = 'personal', targetBoard } = req.body;
+		
+		console.log('Processing repost for commentId:', commentId, 'userId:', userId, 'repostType:', repostType);
 
+		console.log('Looking up comment with ID:', commentId);
 		const comment = await Comment.findById(commentId)
 			.populate("user", "username fullName profileImg")
 			.populate("post");
 
 		if (!comment) {
+			console.log('ERROR: Comment not found for ID:', commentId);
 			return res.status(404).json({ error: "Comment not found" });
 		}
+		
+		console.log('Found comment:', comment._id, 'by user:', comment.user.username);
 
 		// Check if user has already reposted this comment
 		const existingRepost = await Post.findOne({
@@ -375,7 +382,7 @@ export const repostComment = async (req, res) => {
 		// Handle board targeting
 		if (repostType === 'board' && targetBoard) {
 			try {
-				const board = await Board.findOne({ name: targetBoard, creator: userId });
+				const board = await Board.findOne({ name: targetBoard, owner: userId });
 				if (board) {
 					repostData.board = board._id;
 					repostData.boardName = targetBoard;
