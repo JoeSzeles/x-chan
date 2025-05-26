@@ -362,6 +362,24 @@ const NotificationPage = () => {
 	};
 
 	const handleNotificationClick = (notification) => {
+		console.log("Notification clicked:", notification);
+		
+		// Extract post ID from notification
+		let postId = null;
+		if (notification.post?._id) {
+			postId = notification.post._id;
+		} else if (notification.postId?._id) {
+			postId = notification.postId._id;
+		} else if (notification.referencedPost?._id) {
+			postId = notification.referencedPost._id;
+		} else if (typeof notification.postId === 'string') {
+			postId = notification.postId;
+		} else if (typeof notification.post === 'string') {
+			postId = notification.post;
+		}
+		
+		console.log("Extracted post ID:", postId);
+
 		switch (notification.type) {
 			case "follow":
 				navigate(`/profile/${notification.from.username}`);
@@ -371,30 +389,27 @@ const NotificationPage = () => {
 			case "reply":
 			case "post_reply":
 			case "mention":
-			case "bookmark": // Added bookmark handling
-				// Check both post and postId fields
-				if (notification.postId?._id) {
-					setSelectedPost(notification.postId._id);
-				} else if (notification.post?._id) {
-					setSelectedPost(notification.post._id);
-				} else if (notification.postId) {
-					setSelectedPost(notification.postId);
-				} else if (notification.post) {
-					setSelectedPost(notification.post);
-				} else if (notification.referencedPost?._id) {
-					setSelectedPost(notification.referencedPost._id);
+			case "bookmark":
+			case "comment":
+				if (postId) {
+					navigate(`/post/${postId}`);
+				} else {
+					console.error("No post ID found for notification:", notification);
+					toast.error("Post not found");
 				}
 				break;
 			case "comment_reply":
-				// Handle comment replies
-				if (notification.commentId) {
-					navigate(`/post/${notification.postId}?commentId=${notification.commentId}`);
-				} else if (notification.postId) {
-					setSelectedPost(notification.postId);
+				if (notification.commentId && postId) {
+					navigate(`/post/${postId}?commentId=${notification.commentId}`);
+				} else if (postId) {
+					navigate(`/post/${postId}`);
+				} else {
+					console.error("No post ID found for comment reply notification:", notification);
+					toast.error("Post not found");
 				}
 				break;
 			case "news_update":
-			case "newsbot_activity": // Added newsbot activity handling
+			case "newsbot_activity":
 				if (notification.newsId) {
 					navigate(`/news/${notification.newsId}`);
 				} else {
@@ -427,23 +442,16 @@ const NotificationPage = () => {
 				}
 				break;
 			case "system_announcement":
-				// System announcements may not have a specific destination
 				if (notification.linkUrl) {
 					window.open(notification.linkUrl, '_blank');
 				}
 				break;
 			default:
-				// If there's any post reference, show the post
-				if (notification.postId?._id) {
-					setSelectedPost(notification.postId._id);
-				} else if (notification.post?._id) {
-					setSelectedPost(notification.post._id);
-				} else if (notification.postId) {
-					setSelectedPost(notification.postId);
-				} else if (notification.post) {
-					setSelectedPost(notification.post);
-				} else if (notification.referencedPost?._id) {
-					setSelectedPost(notification.referencedPost._id);
+				if (postId) {
+					navigate(`/post/${postId}`);
+				} else {
+					console.error("No post ID found for notification:", notification);
+					toast.error("Post not found");
 				}
 				break;
 		}
@@ -463,8 +471,21 @@ const NotificationPage = () => {
 	const handleShare = async (e, notification) => {
 		e.stopPropagation();
 
-		// Get the post ID from either the notification or its referenced post
-		const postId = notification.post?._id || notification.referencedPost?._id;
+		// Extract post ID using the same logic as handleNotificationClick
+		let postId = null;
+		if (notification.post?._id) {
+			postId = notification.post._id;
+		} else if (notification.postId?._id) {
+			postId = notification.postId._id;
+		} else if (notification.referencedPost?._id) {
+			postId = notification.referencedPost._id;
+		} else if (typeof notification.postId === 'string') {
+			postId = notification.postId;
+		} else if (typeof notification.post === 'string') {
+			postId = notification.post;
+		}
+
+		console.log('Share - extracted post ID:', postId, 'from notification:', notification);
 
 		if (!postId) {
 			toast.error('No post link available');
@@ -630,7 +651,8 @@ const NotificationPage = () => {
 									)}
 									<div className='flex items-center justify-between mt-1 text-xs text-gray-500'>
 										<span>{formatDate(notification.createdAt)}</span>
-										{(notification.post?._id || notification.referencedPost?._id) && (
+										{(notification.post?._id || notification.postId?._id || notification.referencedPost?._id || 
+										  typeof notification.postId === 'string' || typeof notification.post === 'string') && (
 											<button
 												onClick={(e) => handleShare(e, notification)}
 												className='p-1 rounded-full hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100'
