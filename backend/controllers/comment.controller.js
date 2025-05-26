@@ -355,7 +355,6 @@ export const repostComment = async (req, res) => {
 		}
 
 		// Get the highest post number
-		console.log('Getting highest post numbers...');
 		const [highestPost, highestComment] = await Promise.all([
 			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
 			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
@@ -364,8 +363,6 @@ export const repostComment = async (req, res) => {
 		const highestPostNumber = highestPost ? highestPost.postNumber : 0;
 		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
 		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
-		
-		console.log('Next post number will be:', nextPostNumber);
 
 		// Create new repost post
 		const repostData = {
@@ -382,19 +379,13 @@ export const repostComment = async (req, res) => {
 			viewCount: 0
 		};
 
-		console.log('Base repost data created:', repostData);
-
 		// Handle board targeting
 		if (repostType === 'board' && targetBoard) {
 			try {
-				console.log('Looking for board with name:', targetBoard, 'and owner:', userId);
 				const board = await Board.findOne({ name: targetBoard, owner: userId });
 				if (board) {
-					console.log('Found board:', board._id);
 					repostData.board = board._id;
 					repostData.boardName = targetBoard;
-				} else {
-					console.log('Board not found');
 				}
 			} catch (error) {
 				console.log('Board lookup error:', error.message);
@@ -406,16 +397,8 @@ export const repostComment = async (req, res) => {
 			repostData.img = comment.img;
 		}
 
-		console.log('Final repost data before save:', repostData);
-
-		try {
-			const newRepost = new Post(repostData);
-			await newRepost.save();
-			console.log('Successfully saved new repost:', newRepost._id);
-		} catch (saveError) {
-			console.error('Error saving repost:', saveError);
-			throw new Error(`Failed to save repost: ${saveError.message}`);
-		}
+		const newRepost = new Post(repostData);
+		await newRepost.save();
 
 		// Update comment arrays and counts
 		await Comment.findByIdAndUpdate(commentId, {
