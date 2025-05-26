@@ -269,7 +269,10 @@ export const createRepostNotification = async (postId, userId) => {
 			from: userId,
 			to: post.user,
 			type: "repost",
-			referencedPost: postId
+			content: "reposted your post",
+			postId: postId,        // Legacy field
+			post: postId,          // Legacy field
+			referencedPost: postId // Primary field
 		});
 
 		await notification.save();
@@ -362,7 +365,9 @@ export const createLikeNotification = async (postId, userId) => {
 			to: post.user._id,
 			type: "like",
 			content: "liked your post",
-			referencedPost: post._id
+			postId: post._id,        // Legacy field
+			post: post._id,          // Legacy field
+			referencedPost: post._id // Primary field
 		});
 
 		await notification.save();
@@ -404,7 +409,9 @@ export const createBookmarkNotification = async (postId, userId) => {
 			to: post.user._id,
 			type: "bookmark",
 			content: "bookmarked your post",
-			referencedPost: post._id
+			postId: post._id,        // Legacy field
+			post: post._id,          // Legacy field
+			referencedPost: post._id // Primary field
 		});
 
 		await notification.save();

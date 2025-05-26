@@ -410,7 +410,13 @@ const NotificationPage = () => {
 					}
 				} else {
 					console.warn('No post ID found in notification:', notification);
-					toast.error('Post reference not found - this may be an older notification');
+					// For older notifications without post references, try to navigate to user profile instead
+					if (notification.type === 'like' || notification.type === 'bookmark' || notification.type === 'repost') {
+						toast.info('Post reference not available - navigating to user profile');
+						navigate(`/profile/${notification.from.username}`);
+					} else {
+						toast.error('Post reference not found - this may be an older notification');
+					}
 				}
 				break;
 			case "comment_reply":
