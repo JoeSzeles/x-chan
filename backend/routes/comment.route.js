@@ -1,5 +1,6 @@
 import express from "express";
 import { authenticateToken } from "../middleware/auth.js";
+import { protectRoute } from "../middleware/protectRoute.js";
 import {
 	getComments,
 	createComment,
@@ -9,7 +10,8 @@ import {
 	bookmarkComment,
 	repostComment,
 	rateComment,
-	getCommentQuotes
+	getCommentQuotes,
+	getCommentById
 } from "../controllers/comment.controller.js";
 
 const router = express.Router();
@@ -19,18 +21,22 @@ router.get("/:postId", getComments);
 
 // Create a comment
 router.post("/:postId", authenticateToken, createComment);
+router.post("/create", protectRoute, createComment);
 
 // Delete a comment
 router.delete("/:commentId", authenticateToken, deleteComment);
+router.delete("/:id", protectRoute, deleteComment);
 
 // Like/unlike a comment
 router.post("/like/:commentId", authenticateToken, likeComment);
+router.post("/like/:id", protectRoute, likeComment);
 
 // Bookmark/unbookmark a comment
 router.post("/bookmark/:commentId", authenticateToken, bookmarkComment);
 
 // Repost/unrepost a comment
 router.post("/repost/:commentId", authenticateToken, repostComment);
+router.post("/repost/:id", protectRoute, repostComment);
 
 // Rate a comment
 router.post("/rate/:commentId", authenticateToken, rateComment);
@@ -41,23 +47,7 @@ router.post("/:commentId/view", trackView);
 // Get comment quotes
 router.get("/:commentId/quotes", getCommentQuotes);
 
-export default router;
-import express from "express";
-import { protectRoute } from "../middleware/protectRoute.js";
-import {
-    createComment,
-    deleteComment,
-    likeComment,
-    getCommentById,
-    repostComment
-} from "../controllers/comment.controller.js";
-
-const router = express.Router();
-
-router.post("/create", protectRoute, createComment);
-router.post("/repost/:id", protectRoute, repostComment);
-router.delete("/:id", protectRoute, deleteComment);
-router.post("/like/:id", protectRoute, likeComment);
+// Get comment by ID
 router.get("/:id", getCommentById);
 
 export default router;
