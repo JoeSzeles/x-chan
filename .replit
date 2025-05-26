@@ -69,7 +69,7 @@ localPort = 5000
 externalPort = 5000
 
 [workflows]
-runButton = "Production Build"
+runButton = "Production Server"
 
 [[workflows.workflow]]
 name = "Backend Server"
@@ -135,7 +135,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run build"
+args = "cd frontend && npm run build"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

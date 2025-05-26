@@ -1,6 +1,8 @@
 import Comment from "../models/comment.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
+import User from "../models/user.model.js";
+import Board from "../models/board.model.js";
 
 export const getComments = async (req, res) => {
 	try {
@@ -308,7 +310,7 @@ export const repostComment = async (req, res) => {
 		}
 		
 		const userId = req.user._id;
-		const { repostType, targetBoard } = req.body;
+		const { repostType = 'personal', targetBoard } = req.body;
 
 		const comment = await Comment.findById(commentId)
 			.populate("user", "username fullName profileImg")
@@ -318,69 +320,99 @@ export const repostComment = async (req, res) => {
 			return res.status(404).json({ error: "Comment not found" });
 		}
 
-		const isReposted = comment.reposts.includes(userId);
+		// Check if user has already reposted this comment
+		const existingRepost = await Post.findOne({
+			user: userId,
+			originalComment: commentId
+		});
 
-		if (isReposted) {
-			// Remove repost
-			comment.reposts = comment.reposts.filter(
-				(id) => id.toString() !== userId.toString()
-			);
-			await comment.save();
-
-			// Delete the repost post if it exists
-			await Post.findOneAndDelete({
-				originalComment: commentId,
-				user: userId
+		if (existingRepost) {
+			// Remove existing repost
+			await Post.findByIdAndDelete(existingRepost._id);
+			
+			// Remove from comment's reposts array
+			await Comment.findByIdAndUpdate(commentId, {
+				$pull: { reposts: userId },
+				$inc: { repostCount: -1 }
 			});
 
 			return res.status(200).json({ 
-				reposts: comment.reposts,
-				message: "Comment un-reposted successfully"
+				reposts: [],
+				message: "Comment unreposted successfully"
 			});
 		}
 
-		// Add repost to comment
-		comment.reposts.push(userId);
-		await comment.save();
+		// Get the highest post number
+		const [highestPost, highestComment] = await Promise.all([
+			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
+			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
+		]);
 
-		// Create a new post for the reposted comment
-		const newRepost = new Post({
+		const highestPostNumber = highestPost ? highestPost.postNumber : 0;
+		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
+		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
+
+		// Create new repost post
+		const repostData = {
 			user: userId,
-			text: comment.text,
-			img: comment.img,
+			text: `Reposted comment: ${comment.text}`,
+			postNumber: nextPostNumber,
+			isRepost: true,
 			originalComment: commentId,
-			originalPost: comment.post._id,
-			reposts: [],
 			likes: [],
+			reposts: [],
 			comments: [],
+			bookmarkedBy: [],
+			ratings: [],
 			viewCount: 0
-		});
+		};
 
-		// If reposting to a board, add board information
+		// Handle board targeting
 		if (repostType === 'board' && targetBoard) {
-			newRepost.board = targetBoard;
+			try {
+				const board = await Board.findOne({ name: targetBoard, creator: userId });
+				if (board) {
+					repostData.board = board._id;
+					repostData.boardName = targetBoard;
+				}
+			} catch (error) {
+				console.log('Board lookup error:', error.message);
+			}
 		}
 
+		// Copy media if present
+		if (comment.img) {
+			repostData.img = comment.img;
+		}
+
+		const newRepost = new Post(repostData);
 		await newRepost.save();
+
+		// Update comment arrays and counts
+		await Comment.findByIdAndUpdate(commentId, {
+			$push: { reposts: userId },
+			$inc: { repostCount: 1 }
+		});
+
+		// Add to board if specified
+		if (repostData.board) {
+			await Board.findByIdAndUpdate(repostData.board, {
+				$push: { posts: newRepost._id }
+			});
+		}
 
 		// Create notification if not reposting own comment
 		if (comment.user._id.toString() !== userId.toString()) {
 			const notification = new Notification({
 				from: userId,
 				to: comment.user._id,
-				type: "repost",
-				comment: commentId
+				type: "repost"
 			});
 			await notification.save();
 		}
 
-		// Return the updated comment with populated user data
-		const updatedComment = await Comment.findById(commentId)
-			.populate("user", "username fullName profileImg")
-			.populate("replies");
-
 		res.status(200).json({ 
-			reposts: updatedComment.reposts,
+			reposts: [userId],
 			message: "Comment reposted successfully"
 		});
 	} catch (error) {
@@ -454,114 +486,4 @@ export const getCommentQuotes = async (req, res, next) => {
 		next(error);
 	}
 }; 
-import mongoose from "mongoose";
-import Comment from "../models/comment.model.js";
-import Post from "../models/post.model.js";
-import User from "../models/user.model.js";
-import Board from "../models/board.model.js";
-import { createRepostNotification } from "./notification.controller.js";
 
-export const repostComment = async (req, res) => {
-	try {
-		const { id: commentId } = req.params;
-		const userId = req.user._id;
-		const { repostType, targetBoard } = req.body;
-
-		const comment = await Comment.findById(commentId);
-		if (!comment) {
-			return res.status(404).json({ error: 'Comment not found' });
-		}
-
-		const user = await User.findById(userId);
-		if (!user) {
-			return res.status(404).json({ error: 'User not found' });
-		}
-
-		// Check if user has already reposted this comment
-		const existingRepost = await Post.findOne({
-			user: userId,
-			originalComment: commentId
-		});
-
-		if (existingRepost) {
-			// Remove existing repost
-			await Post.findByIdAndDelete(existingRepost._id);
-			await Comment.findByIdAndUpdate(commentId, { $pull: { reposts: userId } });
-
-			// Remove from board if it was a board repost
-			if (existingRepost.board) {
-				await Board.findByIdAndUpdate(existingRepost.board, {
-					$pull: { posts: existingRepost._id }
-				});
-			}
-
-			const updatedComment = await Comment.findById(commentId);
-			return res.status(200).json({ 
-				message: 'Comment unreposted',
-				reposts: updatedComment.reposts
-			});
-		}
-
-		// Get the highest post number for the new repost
-		const [highestPost, highestComment] = await Promise.all([
-			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
-			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
-		]);
-
-		const highestPostNumber = highestPost ? highestPost.postNumber : 0;
-		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
-		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
-
-		// Create the repost as a new post
-		const repostData = {
-			user: userId,
-			text: `Reposted comment: ${comment.text.substring(0, 100)}${comment.text.length > 100 ? '...' : ''}`,
-			originalComment: commentId,
-			postNumber: nextPostNumber,
-			likes: [],
-			reposts: [],
-			comments: [],
-			bookmarkedBy: [],
-			ratings: [],
-			viewCount: 0
-		};
-
-		// Handle board repost
-		if (repostType === 'board' && targetBoard) {
-			const board = await Board.findOne({ name: targetBoard, user: userId });
-			if (board) {
-				repostData.board = board._id;
-			}
-		}
-
-		const newRepost = new Post(repostData);
-		await newRepost.save();
-
-		// Add repost to board's posts array if applicable
-		if (repostData.board) {
-			await Board.findByIdAndUpdate(repostData.board, {
-				$push: { posts: newRepost._id }
-			});
-		}
-
-		// Update comment's reposts array
-		await Comment.findByIdAndUpdate(commentId, { $push: { reposts: userId } });
-
-		// Create notification for the original comment author
-		if (comment.user.toString() !== userId.toString()) {
-			await createRepostNotification(commentId, userId);
-		}
-
-		// Get updated comment with reposts
-		const updatedComment = await Comment.findById(commentId);
-
-		res.status(200).json({ 
-			message: 'Comment reposted successfully',
-			reposts: updatedComment.reposts,
-			repost: newRepost
-		});
-	} catch (error) {
-		console.log('Error in repostComment function', error.message);
-		res.status(500).json({ error: 'Internal Server Error' });
-	}
-};

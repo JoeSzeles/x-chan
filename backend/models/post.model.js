@@ -102,6 +102,10 @@ const postSchema = new mongoose.Schema(
 				ref: "User",
 			},
 		],
+		repostCount: {
+			type: Number,
+			default: 0
+		},
 		comments: [{
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "Comment",
@@ -186,12 +190,12 @@ postSchema.pre('save', async function(next) {
 		// Get the highest post number and increment by 1
 		const highestPost = await this.constructor.findOne({}, {}, { sort: { 'postNumber': -1 } });
 			let newPostNumber = highestPost ? highestPost.postNumber + 1 : 1;
-			
+
 			// Keep trying until we find an unused post number
 			while (await this.constructor.findOne({ postNumber: newPostNumber })) {
 				newPostNumber++;
 			}
-			
+
 			this.postNumber = newPostNumber;
 		} catch (error) {
 			console.error('Error generating post number:', error);
