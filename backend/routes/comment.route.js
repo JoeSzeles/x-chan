@@ -42,3 +42,22 @@ router.post("/:commentId/view", trackView);
 router.get("/:commentId/quotes", getCommentQuotes);
 
 export default router;
+import express from "express";
+import { protectRoute } from "../middleware/protectRoute.js";
+import {
+    createComment,
+    deleteComment,
+    likeComment,
+    getCommentById,
+    repostComment
+} from "../controllers/comment.controller.js";
+
+const router = express.Router();
+
+router.post("/create", protectRoute, createComment);
+router.post("/repost/:id", protectRoute, repostComment);
+router.delete("/:id", protectRoute, deleteComment);
+router.post("/like/:id", protectRoute, likeComment);
+router.get("/:id", getCommentById);
+
+export default router;

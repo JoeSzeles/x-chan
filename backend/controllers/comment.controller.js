@@ -1,15 +1,16 @@
 import Comment from "../models/comment.model.js";
-import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
+import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import Board from "../models/board.model.js";
+import { createRepostNotification } from "./notification.controller.js";
 
 export const getComments = async (req, res) => {
 	try {
 		const { postId } = req.params;
-		
+
 		console.log(`Fetching comments for post ${postId}`);
-		
+
 		// First, get all comments for this post (both top-level and replies)
 		const allComments = await Comment.find({ post: postId })
 			.populate('user', 'username fullName profileImg')
@@ -29,13 +30,13 @@ export const getComments = async (req, res) => {
 				}
 			})
 			.lean();
-		
+
 		console.log(`Found ${allComments.length} comments for post ${postId}`);
-		
+
 		// Separate top-level comments and create a map of all comments
 		const topLevelComments = [];
 		const commentsMap = new Map();
-		
+
 		// First pass: create map of all comments and identify top-level ones
 		allComments.forEach(comment => {
 			// Add to map for easy lookup
@@ -43,20 +44,20 @@ export const getComments = async (req, res) => {
 				...comment,
 				replies: comment.replies || [] // Initialize empty replies array if none exist
 			});
-			
+
 			// If it's a top-level comment, add to that array
 			if (!comment.parentComment) {
 				topLevelComments.push(comment._id.toString());
 			}
 		});
-		
+
 		// Second pass: build reply trees
 		allComments.forEach(comment => {
 			// If this comment has a parent, add it to parent's replies
 			if (comment.parentComment) {
 				const parentId = comment.parentComment.toString();
 				const parent = commentsMap.get(parentId);
-				
+
 				if (parent) {
 					parent.replies.push(comment._id.toString());
 				} else {
@@ -64,12 +65,12 @@ export const getComments = async (req, res) => {
 				}
 			}
 		});
-		
+
 		// Function to recursively expand a comment with its replies
 		const expandComment = (commentId) => {
 			const comment = commentsMap.get(commentId);
 			if (!comment) return null;
-			
+
 			return {
 				...comment,
 				replies: comment.replies
@@ -77,17 +78,17 @@ export const getComments = async (req, res) => {
 					.filter(Boolean) // Remove any null replies
 			};
 		};
-		
+
 		// Build the final result with expanded replies
 		const result = topLevelComments
 			.map(commentId => expandComment(commentId))
 			.filter(Boolean); // Remove any null comments
-		
+
 		console.log(`Returning ${result.length} top-level comments with nested replies`);
 		if (result.length > 0) {
 			console.log('Sample comment structure:', JSON.stringify(result[0], null, 2));
 		}
-		
+
 		res.status(200).json(result);
 	} catch (error) {
 		console.error("Error in getComments:", error);
@@ -302,22 +303,20 @@ export const bookmarkComment = async (req, res) => {
 
 export const repostComment = async (req, res) => {
 	try {
-		const { commentId } = req.params;
-		
-		// Verify user is authenticated
-		if (!req.user || !req.user._id) {
-			return res.status(401).json({ error: "You must be logged in to repost" });
-		}
-		
+		const { id: commentId } = req.params;
+		const { repostType = 'personal' } = req.body;
 		const userId = req.user._id;
-		const { repostType = 'personal', targetBoard } = req.body;
 
-		const comment = await Comment.findById(commentId)
-			.populate("user", "username fullName profileImg")
-			.populate("post");
+		// Find the original comment
+		const originalComment = await Comment.findById(commentId);
 
-		if (!comment) {
-			return res.status(404).json({ error: "Comment not found" });
+		if (!originalComment) {
+			return res.status(404).json({ error: 'Comment not found' });
+		}
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ error: 'User not found' });
 		}
 
 		// Check if user has already reposted this comment
@@ -329,20 +328,20 @@ export const repostComment = async (req, res) => {
 		if (existingRepost) {
 			// Remove existing repost
 			await Post.findByIdAndDelete(existingRepost._id);
-			
-			// Remove from comment's reposts array
-			await Comment.findByIdAndUpdate(commentId, {
-				$pull: { reposts: userId },
-				$inc: { repostCount: -1 }
-			});
+
+			// Update user's reposts array
+			await User.findByIdAndUpdate(userId, { $pull: { reposts: commentId } });
+
+			// Decrease repost count on original comment
+			await Comment.findByIdAndUpdate(commentId, { $inc: { repostCount: -1 } });
 
 			return res.status(200).json({ 
-				reposts: [],
-				message: "Comment unreposted successfully"
+				message: 'Comment unreposted',
+				reposts: []
 			});
 		}
 
-		// Get the highest post number
+		// Get the highest post number for the new repost
 		const [highestPost, highestComment] = await Promise.all([
 			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
 			Comment.findOne({}, {}, { sort: { 'postNumber': -1 } })
@@ -352,10 +351,10 @@ export const repostComment = async (req, res) => {
 		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
 		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
 
-		// Create new repost post
+		// Create new repost
 		const repostData = {
 			user: userId,
-			text: `Reposted comment: ${comment.text}`,
+			text: `Reposted comment: ${originalComment.text}`,
 			postNumber: nextPostNumber,
 			isRepost: true,
 			originalComment: commentId,
@@ -367,57 +366,36 @@ export const repostComment = async (req, res) => {
 			viewCount: 0
 		};
 
-		// Handle board targeting
-		if (repostType === 'board' && targetBoard) {
-			try {
-				const board = await Board.findOne({ name: targetBoard, creator: userId });
-				if (board) {
-					repostData.board = board._id;
-					repostData.boardName = targetBoard;
-				}
-			} catch (error) {
-				console.log('Board lookup error:', error.message);
-			}
-		}
-
 		// Copy media if present
-		if (comment.img) {
-			repostData.img = comment.img;
+		if (originalComment.img) {
+			repostData.img = originalComment.img;
 		}
 
 		const newRepost = new Post(repostData);
 		await newRepost.save();
 
-		// Update comment arrays and counts
-		await Comment.findByIdAndUpdate(commentId, {
-			$push: { reposts: userId },
-			$inc: { repostCount: 1 }
-		});
+		// Update user's reposts array
+		await User.findByIdAndUpdate(userId, { $push: { reposts: commentId } });
 
-		// Add to board if specified
-		if (repostData.board) {
-			await Board.findByIdAndUpdate(repostData.board, {
-				$push: { posts: newRepost._id }
-			});
-		}
+		// Increment repost count on original comment
+		await Comment.findByIdAndUpdate(commentId, { $inc: { repostCount: 1 } });
 
-		// Create notification if not reposting own comment
-		if (comment.user._id.toString() !== userId.toString()) {
-			const notification = new Notification({
-				from: userId,
-				to: comment.user._id,
-				type: "repost"
-			});
-			await notification.save();
-		}
+		// Create notification for the original author
+		await createRepostNotification(commentId, userId);
+
+		// Populate the new repost for response
+		const populatedRepost = await Post.findById(newRepost._id)
+			.populate('user', 'username fullName profileImg')
+			.populate('originalComment', 'text img user');
 
 		res.status(200).json({ 
-			reposts: [userId],
-			message: "Comment reposted successfully"
+			message: 'Comment reposted successfully',
+			repost: populatedRepost,
+			reposts: [userId]
 		});
 	} catch (error) {
-		console.error("Error in repostComment: ", error);
-		res.status(500).json({ error: error.message });
+		console.log('Error in repostComment function', error.message);
+		res.status(500).json({ error: 'Internal Server Error' });
 	}
 };
 
@@ -485,5 +463,4 @@ export const getCommentQuotes = async (req, res, next) => {
 	} catch (error) {
 		next(error);
 	}
-}; 
-
+};
