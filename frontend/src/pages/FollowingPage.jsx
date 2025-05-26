@@ -32,7 +32,7 @@ const FollowingPage = () => {
     });
 
     // Show loading if we're still waiting for auth user and no username param
-    if (!username && authUserLoading) {
+    if (!username && (authUserLoading || !authUser)) {
         return (
             <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
                 <div className="flex justify-center items-center h-64">
@@ -44,7 +44,7 @@ const FollowingPage = () => {
     }
 
     // If we still don't have a target username after auth loading, show error
-    if (!targetUsername) {
+    if (!targetUsername && !authUserLoading) {
         return (
             <div className="flex-[4_4_0] border-r border-gray-700 min-h-screen bg-[#121212]">
                 <div className="flex justify-center items-center h-64">
