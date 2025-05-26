@@ -10,6 +10,7 @@ import BoardsList from "../../components/boards/BoardsList";
 import ServicesList from "../../components/services/ServicesList";
 import Breadcrumb from "../../components/common/Breadcrumb";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import FollowingUsers from "../../components/common/FollowingUsers";
 
 const HomePage = ({ isWideMode }) => {
 	const [activeCategory, setActiveCategory] = useState("myPosts");
@@ -48,7 +49,7 @@ const HomePage = ({ isWideMode }) => {
 			case "boards":
 				return <BoardsList viewMode={viewMode} />;
 			case "following":
-				return <Posts feedType="following" isWideMode={isWideMode} viewMode={viewMode} />;
+				return <FollowingUsers viewMode={viewMode} />;
 			case "public":
 				return <Posts feedType="public" isWideMode={isWideMode} viewMode={viewMode} />;
 			case "services":
