@@ -537,6 +537,9 @@ export const repostPost = async (req, res) => {
 			text: `Reposted: ${originalPost.text}`,
 			postNumber: nextPostNumber,
 			isRepost: true,
+			repostSource: {
+				type: 'internal'
+			},
 			likes: [],
 			reposts: [],
 			comments: [],
