@@ -2,7 +2,7 @@ import Comment from "../models/comment.model.js";
 import Post from "../models/post.model.js";
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
-import Board from "../models/Board.js";
+import Board from "../models/board.model.js";
 
 export const getComments = async (req, res) => {
 	try {
