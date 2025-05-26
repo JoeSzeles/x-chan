@@ -363,7 +363,7 @@ const NotificationPage = () => {
 
 	const handleNotificationClick = (notification) => {
 		console.log("Notification clicked:", notification);
-		
+
 		// Extract post ID from notification
 		let postId = null;
 		if (notification.post?._id) {
@@ -377,7 +377,7 @@ const NotificationPage = () => {
 		} else if (typeof notification.post === 'string') {
 			postId = notification.post;
 		}
-		
+
 		console.log("Extracted post ID:", postId);
 
 		switch (notification.type) {
@@ -641,12 +641,16 @@ const NotificationPage = () => {
 											<span className="text-red-500">#{formatPostNumber(notification.referencedPost._id)}</span>
 										</div>
 									)}
-									{notification.post?._id && viewMode === "grid" && (
-										<div className='mt-1'>
-											<Post 
-												post={notification.post._id} 
-												isCompact={true}
-											/>
+									{(notification.post?._id || notification.postId?._id) && (
+										<div 
+											className='mt-1 text-xs text-gray-400 hover:text-gray-300 transition-colors cursor-pointer'
+											onMouseEnter={() => {
+												const postId = notification.post?._id || notification.postId?._id;
+												setHoveredPostId(postId);
+											}}
+											onMouseLeave={() => setHoveredPostId(null)}
+										>
+											<span className="text-blue-500">#{formatPostNumber(notification.post?._id || notification.postId?._id)}</span>
 										</div>
 									)}
 									<div className='flex items-center justify-between mt-1 text-xs text-gray-500'>
