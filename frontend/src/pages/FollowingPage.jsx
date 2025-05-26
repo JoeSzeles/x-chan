@@ -55,7 +55,7 @@ const FollowingPage = () => {
             console.log('Following users data:', data);
             return data;
         },
-        enabled: !!targetUsername && !isWaitingForAuth,
+        enabled: !!targetUsername,
         retry: 2,
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
@@ -81,7 +81,7 @@ const FollowingPage = () => {
             console.log('Followers data:', data);
             return data;
         },
-        enabled: !!targetUsername && !isWaitingForAuth,
+        enabled: !!targetUsername,
         retry: 2,
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
