@@ -79,6 +79,14 @@ const RepostButton = ({
                 ? `/api/posts/repost/${itemId}`
                 : `/api/comments/repost/${itemId}`;
 
+            console.log('[RepostButton] Making repost request:', {
+                endpoint,
+                itemId,
+                type,
+                repostType,
+                targetBoard: repostType === 'board' ? selectedBoard : undefined
+            });
+
             const res = await fetch(endpoint, {
                 method: "POST",
                 credentials: "include",
@@ -93,7 +101,11 @@ const RepostButton = ({
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            console.log('[RepostButton] Repost response:', { status: res.status, data });
+            
+            if (!res.ok) {
+                throw new Error(data.error || `HTTP ${res.status}: ${res.statusText}`);
+            }
             return data;
         },
         onSuccess: (data) => {
@@ -155,8 +167,20 @@ const RepostButton = ({
             if (onRepost) onRepost(data);
         },
         onError: (error) => {
-            console.error('Repost error:', error);
-            toast.error(error.response?.data?.error || error.message || `Failed to repost ${type}`);
+            console.error('[RepostButton] Repost error:', error);
+            
+            // Handle different error types
+            let errorMessage = `Failed to repost ${type}`;
+            
+            if (error.message) {
+                errorMessage = error.message;
+            } else if (error.response?.data?.error) {
+                errorMessage = error.response.data.error;
+            } else if (error.response?.statusText) {
+                errorMessage = `${error.response.status}: ${error.response.statusText}`;
+            }
+            
+            toast.error(errorMessage);
             setShowRepostOptions(false);
         }
     });

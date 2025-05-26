@@ -470,6 +470,8 @@ export const repostPost = async (req, res) => {
 		const { repostType = 'personal', targetBoard } = req.body;
 		const userId = req.user._id;
 
+		console.log('[repostPost] Request details:', { postId, repostType, targetBoard, userId });
+
 		// Find the original post or comment
 		let originalPost = await Post.findById(postId);
 		let isComment = false;
@@ -480,11 +482,15 @@ export const repostPost = async (req, res) => {
 			if (comment) {
 				originalPost = comment;
 				isComment = true;
+				console.log('[repostPost] Found comment to repost:', comment._id);
 			}
+		} else {
+			console.log('[repostPost] Found post to repost:', originalPost._id);
 		}
 
 		if (!originalPost) {
-			return res.status(404).json({ error: 'Post not found' });
+			console.log('[repostPost] Post/comment not found:', postId);
+			return res.status(404).json({ error: 'Post or comment not found' });
 		}
 
 		const user = await User.findById(userId);
