@@ -507,6 +507,9 @@ export const repostComment = async (req, res) => {
 			originalComment: populatedRepost.originalComment?._id
 		});
 
+		// Create repost text using the correct format
+		const repostText = `Reposted by @${originalComment.user.username} from comment >>${originalComment.postNumber.toString().padStart(10, '0')}\n\n${originalComment.text}`;
+
 		const responseData = { 
 			message: 'Comment reposted successfully',
 			repost: populatedRepost,
@@ -528,7 +531,7 @@ export const repostComment = async (req, res) => {
 		console.error('Error name:', error.name);
 		console.error('Error message:', error.message);
 		console.error('Error stack:', error.stack);
-		
+
 		// Log additional context
 		console.error('Request context:', {
 			commentId: req.params.id,

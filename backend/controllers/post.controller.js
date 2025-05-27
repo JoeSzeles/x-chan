@@ -539,7 +539,7 @@ export const repostPost = async (req, res) => {
 		// Create new repost with proper format
 		const repostData = {
 			user: userId,
-			text: `Reposted by @${originalAuthor.username} from ${isComment ? 'comment' : 'post'} No.${originalPost.postNumber.toString().padStart(10, '0')}\n\n${originalPost.text}`,
+			text: `Reposted by @${originalAuthor.username} from ${isComment ? 'comment' : 'post'} >>${originalPost.postNumber.toString().padStart(10, '0')}\n\n${originalPost.text}`,
 			postNumber: nextPostNumber,
 			likes: [],
 			reposts: [],
