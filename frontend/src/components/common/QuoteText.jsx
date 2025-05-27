@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import PostNumberLink from './PostNumberLink';
+import UserLink from './UserLink';
 
 // Global Twitter script loading
 let twitterScriptPromise = null;
@@ -457,6 +458,8 @@ const processText = (text) => {
     // Handle code text
     processed = processed.replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded break-all">$1</code>');
     
+    
+    
     // Handle links (including Twitter/X links)
     processed = processed.replace(/(https?:\/\/[^\s]+)/g, (url) => {
         // Remove any trailing punctuation
@@ -618,11 +621,11 @@ const PostPreview = ({ url }) => {
     );
 };
 
-const QuoteText = ({ text, onQuoteClick }) => {
+const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
     if (!text) return null;
     
-    // Split text into parts and extract all media URLs
-    const parts = text.split(/(>>\d+)/g);
+    // Split text into parts and extract all interactive elements
+    const parts = text.split(/(>>\d+|@[a-zA-Z0-9_]+)/g);
     const mediaElements = [];
     let currentText = '';
     let mediaIndex = 0;
@@ -645,6 +648,29 @@ const QuoteText = ({ text, onQuoteClick }) => {
                     key={`quote-${mediaIndex}`}
                     postNumber={parseInt(quoteMatch[1])}
                     onQuoteClick={onQuoteClick}
+                />
+            );
+            mediaIndex++;
+            return;
+        }
+
+        // Handle username mentions
+        const userMatch = part.match(/@([a-zA-Z0-9_]+)/);
+        if (userMatch) {
+            // If there's accumulated text, process it first
+            if (currentText) {
+                mediaElements.push(
+                    <div key={`text-${mediaIndex}`} dangerouslySetInnerHTML={{ __html: processText(currentText) }} />
+                );
+                currentText = '';
+                mediaIndex++;
+            }
+            // Add the user link
+            mediaElements.push(
+                <UserLink
+                    key={`user-${mediaIndex}`}
+                    username={userMatch[1]}
+                    onUserClick={onUserClick}
                 />
             );
             mediaIndex++;

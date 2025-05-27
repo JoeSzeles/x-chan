@@ -531,10 +531,15 @@ export const repostPost = async (req, res) => {
 		const highestCommentNumber = highestComment ? highestComment.postNumber : 0;
 		const nextPostNumber = Math.max(highestPostNumber, highestCommentNumber) + 1;
 
-		// Create new repost
+		// Get the original author's username
+		const originalAuthor = isComment 
+			? await User.findById(originalPost.user).select('username')
+			: await User.findById(originalPost.user).select('username');
+
+		// Create new repost with proper format
 		const repostData = {
 			user: userId,
-			text: `Reposted: ${originalPost.text}`,
+			text: `Reposted by @${originalAuthor.username} from ${isComment ? 'comment' : 'post'} No.${originalPost.postNumber.toString().padStart(10, '0')}\n\n${originalPost.text}`,
 			postNumber: nextPostNumber,
 			likes: [],
 			reposts: [],
