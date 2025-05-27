@@ -442,7 +442,7 @@ const processText = (text) => {
     
     // First handle post number links to prevent them from being processed as greentext
     let processed = text.replace(
-        /(>>0*\d+)/g,
+        /(>>\d+)/g,
         '<span class="text-blue-400 hover:text-blue-300 cursor-pointer">$1</span>'
     );
     
@@ -625,14 +625,14 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
     if (!text) return null;
     
     // Split text into parts and extract all interactive elements
-    const parts = text.split(/(>>0*\d+|@[a-zA-Z0-9_]+)/g);
+    const parts = text.split(/(>>\d+|@[a-zA-Z0-9_]+)/g);
     const mediaElements = [];
     let currentText = '';
     let mediaIndex = 0;
 
     parts.forEach((part, index) => {
-        // Handle quote references - match both >>123 and >>0000000123 formats
-        const quoteMatch = part.match(/>>0*(\d+)/);
+        // Handle quote references
+        const quoteMatch = part.match(/>>(\d+)/);
         if (quoteMatch) {
             // If there's accumulated text, process it first
             if (currentText) {
@@ -642,7 +642,7 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
                 currentText = '';
                 mediaIndex++;
             }
-            // Add the post number link using the actual number (without leading zeros)
+            // Add the post number link
             mediaElements.push(
                 <PostNumberLink
                     key={`quote-${mediaIndex}`}
