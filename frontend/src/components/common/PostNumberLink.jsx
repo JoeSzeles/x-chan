@@ -15,7 +15,9 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
     const { data: postData, isLoading } = useQuery({
         queryKey: ['post', postNumber],
         queryFn: async () => {
-            const res = await fetch(`/api/posts/number/${postNumber}`);
+            // Ensure we're using the raw post number (not formatted)
+            const rawPostNumber = parseInt(postNumber, 10);
+            const res = await fetch(`/api/posts/number/${rawPostNumber}`);
             if (!res.ok) throw new Error('Post not found');
             return res.json();
         },
