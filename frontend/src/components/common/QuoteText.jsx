@@ -121,7 +121,7 @@ const TwitterEmbed = ({ url }) => {
             try {
                 // Clean the URL (remove @ if present and ensure proper format)
                 const cleanUrl = url.replace(/^@/, '').trim();
-                
+
                 // Extract tweet ID
                 const tweetId = cleanUrl.match(/status\/(\d+)/)?.[1];
                 if (!tweetId) {
@@ -173,7 +173,7 @@ const TwitterEmbed = ({ url }) => {
                 }
 
                 const data = await response.json();
-                
+
                 if (data.error) {
                     throw new Error(data.error);
                 }
@@ -438,32 +438,32 @@ const GrokImageEmbed = ({ url }) => {
 // Helper function to process text with formatting
 const processText = (text) => {
     if (!text) return '';
-    
+
     // First handle post number links to prevent them from being processed as greentext
     let processed = text.replace(
         /(>>\d+)/g,
         '<span class="text-blue-400 hover:text-blue-300 cursor-pointer">$1</span>'
     );
-    
+
     // Handle bold text
     processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
+
     // Handle italic text
     processed = processed.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
+
     // Handle underlined text
     processed = processed.replace(/__(.*?)__/g, '<u>$1</u>');
-    
+
     // Handle code text
     processed = processed.replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded break-all">$1</code>');
-    
+
     // Handle links (including Twitter/X links)
     processed = processed.replace(/(https?:\/\/[^\s]+)/g, (url) => {
         // Remove any trailing punctuation
         const cleanUrl = url.replace(/[.,;:!?]+$/, '');
         return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-all">${cleanUrl}</a>`;
     });
-    
+
     // Process greentext (only for lines starting with > that aren't post number links)
     processed = processed.split('\n').map(line => {
         if (line.trim().startsWith('>') && !line.trim().startsWith('>>')) {
@@ -471,7 +471,7 @@ const processText = (text) => {
         }
         return line;
     }).join('\n');
-    
+
     return processed;
 };
 
@@ -619,108 +619,177 @@ const PostPreview = ({ url }) => {
 };
 
 const QuoteText = ({ text, onQuoteClick }) => {
-    if (!text) return null;
-    
-    // Split text into parts and extract all media URLs
-    const parts = text.split(/(>>\d+)/g);
-    const mediaElements = [];
-    let currentText = '';
-    let mediaIndex = 0;
+    const textRef = useRef(null);
 
-    parts.forEach((part, index) => {
-        // Handle quote references
-        const quoteMatch = part.match(/>>(\d+)/);
-        if (quoteMatch) {
-            // If there's accumulated text, process it first
-            if (currentText) {
-                mediaElements.push(
-                    <div key={`text-${mediaIndex}`} dangerouslySetInnerHTML={{ __html: processText(currentText) }} />
-                );
-                currentText = '';
-                mediaIndex++;
+    const handleClick = (e) => {
+        const clickedElement = e.target;
+
+        // Check if clicked element contains a post number link
+        if (clickedElement.classList.contains('post-number-link')) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let postNumber;
+            if (clickedElement.textContent.match(/^>>\d+$/)) {
+                postNumber = clickedElement.textContent.replace('>>', '');
+            } else if (clickedElement.dataset.postNumber) {
+                postNumber = clickedElement.dataset.postNumber;
             }
-            // Add the post number link
-            mediaElements.push(
-                <PostNumberLink
-                    key={`quote-${mediaIndex}`}
-                    postNumber={parseInt(quoteMatch[1])}
-                    onQuoteClick={onQuoteClick}
-                />
-            );
-            mediaIndex++;
-            return;
+
+            if (postNumber && onQuoteClick) {
+                onQuoteClick(postNumber);
+            }
         }
 
-        // Extract all URLs from the part
-        const urls = part.match(/(?:@)?(https?:\/\/[^\s]+)/g) || [];
-        let remainingText = part;
+        // Check if clicked element is a username link
+        if (clickedElement.classList.contains('username-link')) {
+            e.preventDefault();
+            e.stopPropagation();
 
-        // Process each URL
-        urls.forEach(url => {
-            // Remove the URL from the remaining text
-            remainingText = remainingText.replace(url, '').trim();
-            
-            // Add the text before the URL
-            if (remainingText) {
-                currentText += remainingText;
-                remainingText = '';
+            const username = clickedElement.dataset.username;
+            if (username) {
+                // Navigate to user profile
+                window.location.href = `/profile/${username}`;
             }
+        }
+    };
+    
+    useEffect(() => {
+        const textElement = textRef.current;
+        if (!textElement) return;
 
-            // Handle different types of URLs
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                mediaElements.push(
-                    <div key={`youtube-${mediaIndex}`} className="mb-4">
-                        <YouTubeEmbed url={url} />
-                    </div>
-                );
-            } else if (url.includes('/i/grok/share/')) {
-                mediaElements.push(
-                    <div key={`grok-${mediaIndex}`} className="mb-4">
-                        <GrokImageEmbed url={url} />
-                    </div>
-                );
-            } else if (url.includes('twitter.com') || url.includes('x.com')) {
-                // Add both the clickable link and the embed
-                mediaElements.push(
-                    <div key={`twitter-${mediaIndex}`} className="mb-4">
-                        <div className="mb-2">
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">
-                                {url}
-                            </a>
-                        </div>
-                        <TwitterEmbed url={url} />
-                    </div>
-                );
-            } else if (url.includes('tradehub.ap.ngrok.io/post/')) {
-                mediaElements.push(
-                    <div key={`post-${mediaIndex}-${url}`} className="mb-4">
-                        <PostPreview url={url} />
-                    </div>
-                );
-            } else {
-                // For other URLs, just add them to the text
-                currentText += url;
-            }
-            mediaIndex++;
+        textElement.innerHTML = processText(text);
+
+        // Add hover listeners for post number links and username links
+        const postNumberLinks = textElement.querySelectorAll('.post-number-link');
+        const usernameLinks = textElement.querySelectorAll('.username-link');
+
+        postNumberLinks.forEach(link => {
+            let hoverTimeout;
+            let previewElement;
+
+            const showPreview = (e) => {
+                const rect = e.target.getBoundingClientRect();
+                let targetPostNumber;
+
+                if (e.target.textContent.match(/^>>\d+$/)) {
+                    targetPostNumber = e.target.textContent.replace('>>', '');
+                } else if (e.target.dataset.postNumber) {
+                    targetPostNumber = e.target.dataset.postNumber;
+                }
+
+                if (targetPostNumber) {
+                    hoverTimeout = setTimeout(() => {
+                        fetch(`/api/posts/number/${targetPostNumber}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data && !previewElement) {
+                                    previewElement = document.createElement('div');
+                                    previewElement.className = 'fixed z-[9999] w-64 bg-[#1e1e1e] rounded-lg shadow-lg p-4 border border-gray-700';
+                                    previewElement.style.left = `${rect.left}px`;
+                                    previewElement.style.top = `${rect.bottom + 5}px`;
+
+                                    previewElement.innerHTML = `
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <img src="${data.user.profileImg || '/avatar-placeholder.png'}" 
+                                                 alt="${data.user.username}" 
+                                                 class="w-8 h-8 rounded-full">
+                                            <div>
+                                                <p class="font-semibold text-sm text-white">${data.user.username}</p>
+                                                <p class="text-xs text-gray-400">No.${data.postNumber.toString().padStart(10, '0')}</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-200 line-clamp-3">${data.text}</p>
+                                        ${data.img ? `<img src="${data.img}" alt="Post preview" class="mt-2 w-full h-24 object-cover rounded">` : ''}
+                                    `;
+
+                                    document.body.appendChild(previewElement);
+                                }
+                            })
+                            .catch(err => console.error('Error fetching post preview:', err));
+                    }, 500);
+                }
+            };
+
+            const hidePreview = () => {
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                }
+                if (previewElement) {
+                    document.body.removeChild(previewElement);
+                    previewElement = null;
+                }
+            };
+
+            link.addEventListener('mouseenter', showPreview);
+            link.addEventListener('mouseleave', hidePreview);
         });
 
-        // Add any remaining text
-        if (remainingText) {
-            currentText += remainingText;
-        }
-    });
+        usernameLinks.forEach(link => {
+            let hoverTimeout;
+            let previewElement;
 
-    // Add any remaining text
-    if (currentText) {
-        mediaElements.push(
-            <div key={`text-${mediaIndex}`} dangerouslySetInnerHTML={{ __html: processText(currentText) }} />
-        );
-    }
+            const showPreview = (e) => {
+                const rect = e.target.getBoundingClientRect();
+                const username = e.target.dataset.username;
 
+                if (username) {
+                    hoverTimeout = setTimeout(() => {
+                        fetch(`/api/users/profile/${username}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data && !previewElement) {
+                                    previewElement = document.createElement('div');
+                                    previewElement.className = 'fixed z-[9999] w-64 bg-[#1e1e1e] rounded-lg shadow-lg p-4 border border-gray-700';
+                                    previewElement.style.left = `${rect.left}px`;
+                                    previewElement.style.top = `${rect.bottom + 5}px`;
+
+                                    previewElement.innerHTML = `
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <img src="${data.profileImg || '/avatar-placeholder.png'}" 
+                                                 alt="${data.username}" 
+                                                 class="w-12 h-12 rounded-full">
+                                            <div>
+                                                <p class="font-semibold text-white">${data.fullName || data.username}</p>
+                                                <p class="text-sm text-gray-400">@${data.username}</p>
+                                            </div>
+                                        </div>
+                                        ${data.bio ? `<p class="text-sm text-gray-200">${data.bio}</p>` : ''}
+                                        <div class="flex gap-4 mt-2 text-sm text-gray-400">
+                                            <span>${data.following?.length || 0} Following</span>
+                                            <span>${data.followers?.length || 0} Followers</span>
+                                        </div>
+                                    `;
+
+                                    document.body.appendChild(previewElement);
+                                }
+                            })
+                            .catch(err => console.error('Error fetching user preview:', err));
+                    }, 500);
+                }
+            };
+
+            const hidePreview = () => {
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                }
+                if (previewElement) {
+                    document.body.removeChild(previewElement);
+                    previewElement = null;
+                }
+            };
+
+            link.addEventListener('mouseenter', showPreview);
+            link.addEventListener('mouseleave', hidePreview);
+        });
+    }, [text]);
+    
     return (
-        <div className="whitespace-pre-wrap break-words break-all overflow-hidden">
-            {mediaElements}
-        </div>
+        <div 
+            className="whitespace-pre-wrap break-words break-all overflow-hidden"
+            ref={textRef}
+            onClick={handleClick}
+        />
     );
 };
 
@@ -775,4 +844,4 @@ const styles = `
 }
 `;
 
-export default QuoteText; 
+export default QuoteText;

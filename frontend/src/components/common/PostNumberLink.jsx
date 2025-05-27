@@ -34,27 +34,66 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
     };
 
     // Handle click
-    const handleClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (onQuoteClick) {
-            onQuoteClick(postNumber);
+    const handleClick = () => {
+        if (post) {
+            // If it's a comment, navigate to its parent post's thread
+            if (post.post) {
+                navigate(`/thread/${post.post}`);
+            } else {
+                navigate(`/thread/${post._id}`);
+            }
         }
     };
+
+    // Handle clicks from processed text elements
+    useEffect(() => {
+        const handleDocumentClick = (e) => {
+            if (e.target.classList.contains('post-number-link')) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                let targetPostNumber;
+                if (e.target.textContent.match(/^>>\d+$/)) {
+                    targetPostNumber = e.target.textContent.replace('>>', '');
+                } else if (e.target.dataset.postNumber) {
+                    targetPostNumber = e.target.dataset.postNumber;
+                }
+
+                if (targetPostNumber) {
+                    // Find post by number and navigate
+                    fetch(`/api/posts/number/${targetPostNumber}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data._id) {
+                                if (data.post) {
+                                    navigate(`/thread/${data.post}`);
+                                } else {
+                                    navigate(`/thread/${data._id}`);
+                                }
+                            }
+                        })
+                        .catch(err => console.error('Error finding post:', err));
+                }
+            }
+        };
+
+        document.addEventListener('click', handleDocumentClick);
+        return () => document.removeEventListener('click', handleDocumentClick);
+    }, [navigate]);
 
     // Update preview position
     useEffect(() => {
         if (showPreview && previewRef.current) {
             const preview = previewRef.current;
             const rect = preview.getBoundingClientRect();
-            
+
             // Check if preview would go off screen
             if (mousePosition.x + rect.width > window.innerWidth) {
                 preview.style.left = `${mousePosition.x - rect.width}px`;
             } else {
                 preview.style.left = `${mousePosition.x}px`;
             }
-            
+
             if (mousePosition.y + rect.height > window.innerHeight) {
                 preview.style.top = `${mousePosition.y - rect.height}px`;
             } else {
@@ -118,4 +157,4 @@ const PostNumberLink = ({ postNumber, onQuoteClick }) => {
     );
 };
 
-export default PostNumberLink; 
+export default PostNumberLink;
