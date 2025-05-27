@@ -122,7 +122,7 @@ const TwitterEmbed = ({ url }) => {
             try {
                 // Clean the URL (remove @ if present and ensure proper format)
                 const cleanUrl = url.replace(/^@/, '').trim();
-                
+
                 // Extract tweet ID
                 const tweetId = cleanUrl.match(/status\/(\d+)/)?.[1];
                 if (!tweetId) {
@@ -174,7 +174,7 @@ const TwitterEmbed = ({ url }) => {
                 }
 
                 const data = await response.json();
-                
+
                 if (data.error) {
                     throw new Error(data.error);
                 }
@@ -256,7 +256,7 @@ const TwitterEmbed = ({ url }) => {
                         <button
                             onClick={() => {
                                 setIsLoading(true);
-                                setError(null);
+                               setError(null);
                                 fetchTweetData();
                             }}
                             className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
@@ -439,34 +439,35 @@ const GrokImageEmbed = ({ url }) => {
 // Helper function to process text with formatting
 const processText = (text) => {
     if (!text) return '';
-    
+
     // First handle post number links to prevent them from being processed as greentext
+    // This handles both >>123 and >>0000000123 formats
     let processed = text.replace(
-        /(>>\d+)/g,
+        /(>>0*\d+)/g,
         '<span class="text-blue-400 hover:text-blue-300 cursor-pointer">$1</span>'
     );
-    
+
     // Handle bold text
     processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    
+
     // Handle italic text
     processed = processed.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
+
     // Handle underlined text
     processed = processed.replace(/__(.*?)__/g, '<u>$1</u>');
-    
+
     // Handle code text
     processed = processed.replace(/`(.*?)`/g, '<code class="bg-gray-800 px-1 rounded break-all">$1</code>');
-    
-    
-    
+
+
+
     // Handle links (including Twitter/X links)
     processed = processed.replace(/(https?:\/\/[^\s]+)/g, (url) => {
         // Remove any trailing punctuation
         const cleanUrl = url.replace(/[.,;:!?]+$/, '');
         return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-all">${cleanUrl}</a>`;
     });
-    
+
     // Process greentext (only for lines starting with > that aren't post number links)
     processed = processed.split('\n').map(line => {
         if (line.trim().startsWith('>') && !line.trim().startsWith('>>')) {
@@ -474,7 +475,7 @@ const processText = (text) => {
         }
         return line;
     }).join('\n');
-    
+
     return processed;
 };
 
@@ -623,16 +624,17 @@ const PostPreview = ({ url }) => {
 
 const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
     if (!text) return null;
-    
+
     // Split text into parts and extract all interactive elements
-    const parts = text.split(/(>>\d+|@[a-zA-Z0-9_]+)/g);
+    // This regex captures both >>123 and >>0000000123 formats, plus @username mentions
+    const parts = text.split(/(>>0*\d+|@[a-zA-Z0-9_]+)/g);
     const mediaElements = [];
     let currentText = '';
     let mediaIndex = 0;
 
     parts.forEach((part, index) => {
-        // Handle quote references
-        const quoteMatch = part.match(/>>(\d+)/);
+        // Handle quote references - match both >>123 and >>0000000123 formats
+        const quoteMatch = part.match(/>>0*(\d+)/);
         if (quoteMatch) {
             // If there's accumulated text, process it first
             if (currentText) {
@@ -642,11 +644,12 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
                 currentText = '';
                 mediaIndex++;
             }
-            // Add the post number link
+            // Add the post number link using the actual number (without leading zeros)
+            const postNumber = parseInt(quoteMatch[1], 10);
             mediaElements.push(
                 <PostNumberLink
                     key={`quote-${mediaIndex}`}
-                    postNumber={parseInt(quoteMatch[1])}
+                    postNumber={postNumber}
                     onQuoteClick={onQuoteClick}
                 />
             );
@@ -685,7 +688,7 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
         urls.forEach(url => {
             // Remove the URL from the remaining text
             remainingText = remainingText.replace(url, '').trim();
-            
+
             // Add the text before the URL
             if (remainingText) {
                 currentText += remainingText;
@@ -801,4 +804,4 @@ const styles = `
 }
 `;
 
-export default QuoteText; 
+export default QuoteText;

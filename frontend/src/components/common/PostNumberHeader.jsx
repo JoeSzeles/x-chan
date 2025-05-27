@@ -54,7 +54,9 @@ const PostNumberHeader = ({
     const { data: postData, isLoading } = useQuery({
         queryKey: ['post', displayPostNumber],
         queryFn: async () => {
-            const res = await fetch(`/api/posts/number/${displayPostNumber}`);
+            // Ensure we're using the raw post number (not formatted)
+            const rawPostNumber = parseInt(displayPostNumber, 10);
+            const res = await fetch(`/api/posts/number/${rawPostNumber}`);
             if (!res.ok) throw new Error('Post not found');
             return res.json();
         },
