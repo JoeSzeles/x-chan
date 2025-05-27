@@ -69,7 +69,7 @@ class LeechService {
             const url = `${this.apiBase}/${board}/thread/${threadId}.json`;
             console.log('[LeechService] Fetching thread:', url);
             const response = await axios.get(url, { timeout: 10000 });
-            
+
             if (!response.data || !response.data.posts) {
                 console.error('[LeechService] Invalid thread data received:', response.data);
                 throw new Error('Invalid thread data received');
@@ -109,7 +109,7 @@ class LeechService {
                     hasImage: !!processedPost.image,
                     imageUrl: processedPost.image
                 });
-                
+
                 return processedPost;
             });
 
@@ -148,7 +148,7 @@ class LeechService {
 
             // Get the original post (first post in the thread)
             const originalThreadPost = threadContent.posts[0];
-            
+
             // Validate required fields
             if (!originalThreadPost.comment) {
                 console.error('[LeechService] Thread has no content:', originalThreadPost);
@@ -169,11 +169,11 @@ class LeechService {
             let uploadedImageUrl = null;
             let originalImageUrl = null;
             let imageProcessingResult = null;
-            
+
             if (originalThreadPost.image) {
                 try {
                     console.log('[LeechService] Processing image:', originalThreadPost.image);
-                    
+
                     // Download image from 4chan with proper headers
                     const imageResponse = await axios.get(originalThreadPost.image, {
                         responseType: 'arraybuffer',
@@ -353,4 +353,4 @@ class LeechService {
     }
 }
 
-export default new LeechService(); 
+export default new LeechService();

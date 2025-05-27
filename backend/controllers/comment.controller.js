@@ -96,10 +96,10 @@ export const getComments = async (req, res) => {
 	}
 };
 
-export const createComment = async (req, res) => {
+export const createComment = async (req, res, next) => {
 	try {
-		const { postId } = req.params;
 		const { text, img, parentComment } = req.body;
+		const { postId } = req.params;
 		const userId = req.user._id;
 
 		if (!text) {
@@ -110,6 +110,14 @@ export const createComment = async (req, res) => {
 		const post = await Post.findById(postId);
 		if (!post) {
 			return res.status(404).json({ error: "Post not found" });
+		}
+
+		// Extract mentions from comment text
+		const mentionRegex = /@(\w+)/g;
+		const mentions = [];
+		let match;
+		while ((match = mentionRegex.exec(text)) !== null) {
+			mentions.push(match[1]);
 		}
 
 		// Get the highest post number from both posts and comments
@@ -163,6 +171,23 @@ export const createComment = async (req, res) => {
 				post: postId,
 				comment: comment._id
 			});
+		}
+
+		// Create mention notifications for comments
+		if (mentions.length > 0) {
+			const mentionedUsers = await User.find({ 
+				username: { $in: mentions } 
+			}).select('_id');
+
+			if (mentionedUsers.length > 0) {
+				const { createMentionNotification } = await import('./notification.controller.js');
+				await createMentionNotification(
+					postId, 
+					mentionedUsers.map(u => u._id), 
+					userId, 
+					`mentioned you in a comment`
+				);
+			}
 		}
 
 		res.status(201).json(populatedComment);
@@ -507,6 +532,9 @@ export const repostComment = async (req, res) => {
 			originalComment: populatedRepost.originalComment?._id
 		});
 
+		// Create repost text using the correct format
+		const repostText = `Reposted by @${originalComment.user.username} from comment >>${originalComment.postNumber.toString().padStart(10, '0')}\n\n${originalComment.text}`;
+
 		const responseData = { 
 			message: 'Comment reposted successfully',
 			repost: populatedRepost,
@@ -528,7 +556,7 @@ export const repostComment = async (req, res) => {
 		console.error('Error name:', error.name);
 		console.error('Error message:', error.message);
 		console.error('Error stack:', error.stack);
-		
+
 		// Log additional context
 		console.error('Request context:', {
 			commentId: req.params.id,

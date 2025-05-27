@@ -23,6 +23,14 @@ export const createPost = async (req, res) => {
 			return res.status(400).json({ error: "Post must have text, image, or video" });
 		}
 
+		// Extract mentions from text
+		const mentionRegex = /@(\w+)/g;
+		const mentions = [];
+		let match;
+		while ((match = mentionRegex.exec(text)) !== null) {
+			mentions.push(match[1]);
+		}
+
 		if (img) {
 			// Check if base64 string is too large (roughly 5MB)
 			const base64Size = Math.ceil((img.length * 3) / 4);
@@ -72,6 +80,23 @@ export const createPost = async (req, res) => {
 			await Board.findByIdAndUpdate(boardId, {
 				$push: { posts: newPost._id }
 			});
+		}
+
+		// Create mention notifications
+		if (mentions.length > 0) {
+			const mentionedUsers = await User.find({ 
+				username: { $in: mentions } 
+			}).select('_id');
+			
+			if (mentionedUsers.length > 0) {
+				const { createMentionNotification } = await import('./notification.controller.js');
+				await createMentionNotification(
+					newPost._id, 
+					mentionedUsers.map(u => u._id), 
+					userId, 
+					`mentioned you in a post`
+				);
+			}
 		}
 
 		res.status(201).json(newPost);
@@ -133,6 +158,14 @@ export const commentOnPost = async (req, res, next) => {
 			return next(errorHandler(404, "Post not found"));
 		}
 
+		// Extract mentions from comment text
+		const mentionRegex = /@(\w+)/g;
+		const mentions = [];
+		let match;
+		while ((match = mentionRegex.exec(text)) !== null) {
+			mentions.push(match[1]);
+		}
+
 		// Get the highest post number from both posts and comments
 		const [highestPost, highestComment] = await Promise.all([
 			Post.findOne({}, {}, { sort: { 'postNumber': -1 } }),
@@ -168,6 +201,23 @@ export const commentOnPost = async (req, res, next) => {
 				path: "user",
 				select: "-password"
 			});
+
+		// Create mention notifications for comments
+		if (mentions.length > 0) {
+			const mentionedUsers = await User.find({ 
+				username: { $in: mentions } 
+			}).select('_id');
+			
+			if (mentionedUsers.length > 0) {
+				const { createMentionNotification } = await import('./notification.controller.js');
+				await createMentionNotification(
+					postId, 
+					mentionedUsers.map(u => u._id), 
+					userId, 
+					`mentioned you in a comment`
+				);
+			}
+		}
 
 		res.status(200).json(populatedPost);
 	} catch (error) {
@@ -539,7 +589,7 @@ export const repostPost = async (req, res) => {
 		// Create new repost with proper format
 		const repostData = {
 			user: userId,
-			text: `Reposted by @${originalAuthor.username} from ${isComment ? 'comment' : 'post'} No.${originalPost.postNumber.toString().padStart(10, '0')}\n\n${originalPost.text}`,
+			text: `Reposted by @${originalAuthor.username} from ${isComment ? 'comment' : 'post'} >>${originalPost.postNumber.toString().padStart(10, '0')}\n\n${originalPost.text}`,
 			postNumber: nextPostNumber,
 			likes: [],
 			reposts: [],

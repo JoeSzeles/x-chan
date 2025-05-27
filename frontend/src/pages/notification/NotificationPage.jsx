@@ -319,6 +319,8 @@ const NotificationPage = () => {
 				return "New activity in thread: " + notification.content;
 			case "mention":
 				return "mentioned you in a post";
+			case "comment_mention":
+				return "mentioned you in a comment";
 			case "comment_reply":
 				return "replied to your comment";
 			case "milestone":
