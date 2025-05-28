@@ -70,8 +70,6 @@ app.use("/api/lists", listRoutes);
 console.log('Registering messages routes...');
 console.log('messageRoutes type:', typeof messageRoutes);
 console.log('messageRoutes is function:', typeof messageRoutes === 'function');
-console.log('messageRoutes has stack:', !!messageRoutes?.stack);
-console.log('messageRoutes stack length:', messageRoutes?.stack?.length || 0);
 
 app.use("/api/messages", messageRoutes);
 console.log('✓ Messages routes registered at /api/messages');

@@ -1,21 +1,14 @@
 
 import express from 'express';
+import { protectRoute } from '../middleware/protectRoute.js';
 import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
+import MessageRequest from '../models/MessageRequest.js';
 import User from '../models/user.model.js';
-import { protectRoute } from '../middleware/protectRoute.js';
 
-// Create the router instance
 const router = express.Router();
 
-console.log('[messages.js] ===== ROUTER CREATION DEBUG =====');
-console.log('[messages.js] Express version:', express.version || 'unknown');
-console.log('[messages.js] Router created successfully:', !!router);
-console.log('[messages.js] Router type:', typeof router);
-console.log('[messages.js] Router constructor:', router.constructor?.name);
-console.log('[messages.js] Router is function:', typeof router === 'function');
-console.log('[messages.js] Router stack exists:', !!router.stack);
-console.log('[messages.js] Router stack length:', router.stack?.length || 0);
+console.log('[messages.js] Router initialized and ready');
 
 // Test route to verify router is working
 router.get('/test', (req, res) => {
@@ -30,7 +23,7 @@ router.get('/test', (req, res) => {
 
 // Debug middleware to log all requests to this router
 router.use((req, res, next) => {
-    console.log(`[messages.js] MIDDLEWARE: ${req.method} ${req.path} - Body:`, req.body);
+    console.log(`[messages.js] MIDDLEWARE: ${req.method} ${req.originalUrl} - Body:`, req.body);
     console.log(`[messages.js] User:`, req.user ? req.user._id : 'No user');
     next();
 });
@@ -39,7 +32,7 @@ router.use((req, res, next) => {
 router.get('/conversations', protectRoute, async (req, res) => {
     try {
         console.log(`[messages.js] Getting conversations for user: ${req.user._id}`);
-
+        
         const conversations = await Conversation.find({
             participants: req.user._id
         })
@@ -55,173 +48,251 @@ router.get('/conversations', protectRoute, async (req, res) => {
     }
 });
 
-// Start a new conversation
-router.post('/conversations', protectRoute, async (req, res) => {
-    try {
-        const { participantId } = req.body;
-        console.log(`[messages.js] Starting conversation between ${req.user._id} and ${participantId}`);
-
-        // Check if conversation already exists
-        let conversation = await Conversation.findOne({
-            participants: { $all: [req.user._id, participantId] }
-        }).populate('participants', 'username fullName profileImg');
-
-        if (!conversation) {
-            conversation = new Conversation({
-                participants: [req.user._id, participantId]
-            });
-            await conversation.save();
-            await conversation.populate('participants', 'username fullName profileImg');
-        }
-
-        console.log(`[messages.js] Conversation ready:`, conversation._id);
-        res.json(conversation);
-    } catch (error) {
-        console.error('[messages.js] Error starting conversation:', error);
-        res.status(500).json({ error: 'Failed to start conversation' });
-    }
-});
-
-// Start conversation with a specific user
+// Start conversation with a specific user - THIS IS THE ENDPOINT THAT'S FAILING
 router.post('/start-conversation', protectRoute, async (req, res) => {
     try {
         console.log('[messages.js] POST /start-conversation endpoint hit');
         console.log('[messages.js] Request body:', req.body);
-        console.log('[messages.js] User from protectRoute:', req.user ? req.user._id : 'No user');
-
+        console.log('[messages.js] User ID:', req.user._id);
+        
         const { userId } = req.body;
-        console.log(`[messages.js] Starting conversation between ${req.user._id} and ${userId}`);
-
+        
         if (!userId) {
-            console.log('[messages.js] Error: No userId provided');
+            console.log('[messages.js] No userId provided in request body');
             return res.status(400).json({ error: 'User ID is required' });
         }
 
-        if (userId === req.user._id.toString()) {
-            console.log('[messages.js] Error: User trying to start conversation with themselves');
-            return res.status(400).json({ error: 'Cannot start conversation with yourself' });
-        }
-
-        // Verify the target user exists
-        const targetUser = await User.findById(userId);
-        if (!targetUser) {
-            console.log('[messages.js] Error: Target user not found');
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        console.log('[messages.js] Checking if conversation already exists...');
         // Check if conversation already exists
         let conversation = await Conversation.findOne({
             participants: { $all: [req.user._id, userId] }
         }).populate('participants', 'username fullName profileImg');
 
-        if (!conversation) {
-            console.log('[messages.js] Creating new conversation...');
-            conversation = new Conversation({
-                participants: [req.user._id, userId]
-            });
-            await conversation.save();
-            console.log('[messages.js] Conversation saved, populating participants...');
-            await conversation.populate('participants', 'username fullName profileImg');
-        } else {
+        if (conversation) {
             console.log('[messages.js] Found existing conversation:', conversation._id);
+            return res.json(conversation);
         }
 
-        console.log(`[messages.js] Conversation ready:`, conversation._id);
-        console.log('[messages.js] Sending success response');
-        res.status(200).json(conversation);
+        // Create new conversation
+        conversation = new Conversation({
+            participants: [req.user._id, userId]
+        });
+
+        await conversation.save();
+        
+        conversation = await Conversation.findById(conversation._id)
+            .populate('participants', 'username fullName profileImg');
+
+        console.log('[messages.js] Created new conversation:', conversation._id);
+        res.status(201).json(conversation);
     } catch (error) {
-        console.error('[messages.js] Error starting conversation:', error);
-        console.error('[messages.js] Error stack:', error.stack);
+        console.error('[messages.js] Error in start-conversation:', error);
         res.status(500).json({ error: 'Failed to start conversation' });
     }
 });
 
-// Get messages in a conversation
-router.get('/:conversationId', protectRoute, async (req, res) => {
+// Get messages for a conversation
+router.get('/conversations/:conversationId/messages', protectRoute, async (req, res) => {
     try {
-        console.log('Fetching messages for conversation:', req.params.conversationId);
+        const { conversationId } = req.params;
+        console.log(`[messages.js] Getting messages for conversation: ${conversationId}`);
 
-        const messages = await Message.find({
-            conversationId: req.params.conversationId
-        })
-        .populate('senderId', 'username profileImg profilePicture')
-        .sort({ createdAt: 1 });
+        // Check if user is part of the conversation
+        const conversation = await Conversation.findOne({
+            _id: conversationId,
+            participants: req.user._id
+        });
 
-        console.log('Found messages:', messages.length);
+        if (!conversation) {
+            return res.status(404).json({ error: 'Conversation not found' });
+        }
+
+        const messages = await Message.find({ conversation: conversationId })
+            .populate('senderId', 'username fullName profileImg')
+            .sort({ createdAt: 1 });
+
+        console.log(`[messages.js] Found ${messages.length} messages`);
         res.json(messages);
     } catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error('[messages.js] Error fetching messages:', error);
         res.status(500).json({ error: 'Failed to fetch messages' });
     }
 });
 
 // Send a message
-router.post('/:conversationId', protectRoute, async (req, res) => {
+router.post('/conversations/:conversationId/messages', protectRoute, async (req, res) => {
     try {
+        const { conversationId } = req.params;
         const { content } = req.body;
-        console.log('Sending message to conversation:', req.params.conversationId);
 
-        const newMessage = new Message({
-            conversationId: req.params.conversationId,
+        console.log(`[messages.js] Sending message to conversation: ${conversationId}`);
+
+        // Check if user is part of the conversation
+        const conversation = await Conversation.findOne({
+            _id: conversationId,
+            participants: req.user._id
+        });
+
+        if (!conversation) {
+            return res.status(404).json({ error: 'Conversation not found' });
+        }
+
+        const message = new Message({
+            conversation: conversationId,
             senderId: req.user._id,
-            content,
-            readBy: [req.user._id]
-        });
-        await newMessage.save();
-
-        // Update conversation's lastMessage and updatedAt
-        await Conversation.findByIdAndUpdate(req.params.conversationId, {
-            lastMessage: {
-                content,
-                senderId: req.user._id,
-                timestamp: new Date()
-            },
-            updatedAt: new Date()
+            content
         });
 
-        const populatedMessage = await Message.findById(newMessage._id)
-            .populate('senderId', 'username profileImg profilePicture');
+        await message.save();
 
-        console.log('Message sent successfully');
+        // Update conversation's last message
+        conversation.lastMessage = message._id;
+        conversation.updatedAt = new Date();
+        await conversation.save();
+
+        const populatedMessage = await Message.findById(message._id)
+            .populate('senderId', 'username fullName profileImg');
+
+        console.log('[messages.js] Message sent successfully');
         res.status(201).json(populatedMessage);
     } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('[messages.js] Error sending message:', error);
         res.status(500).json({ error: 'Failed to send message' });
     }
 });
 
-// Mark messages as read
-router.patch('/conversations/:conversationId/read', protectRoute, async (req, res) => {
+// Get message requests
+router.get('/requests', protectRoute, async (req, res) => {
     try {
-        const { conversationId } = req.params;
-        const userId = req.user._id;
+        console.log(`[messages.js] Getting message requests for user: ${req.user._id}`);
+        
+        const requests = await MessageRequest.find({
+            recipientId: req.user._id,
+            status: 'pending'
+        }).populate('senderId', 'username fullName profileImg');
 
-        await Message.updateMany(
-            {
-                conversation: conversationId,
-                sender: { $ne: userId },
-                readBy: { $nin: [userId] }
-            },
-            {
-                $addToSet: { readBy: userId }
-            }
-        );
-
-        res.json({ success: true });
+        console.log(`[messages.js] Found ${requests.length} message requests`);
+        res.json(requests);
     } catch (error) {
-        console.error('Error marking messages as read:', error);
-        res.status(500).json({ error: 'Failed to mark messages as read' });
+        console.error('[messages.js] Error fetching message requests:', error);
+        res.status(500).json({ error: 'Failed to fetch message requests' });
     }
 });
 
-console.log('[messages.js] ===== FINAL ROUTER STATE =====');
-console.log('[messages.js] Routes added to stack:', router.stack?.length || 0);
-console.log('[messages.js] Route details:', router.stack?.map(layer => ({
-    path: layer.route?.path,
-    methods: layer.route ? Object.keys(layer.route.methods) : 'middleware'
-})) || 'No routes');
-console.log('[messages.js] Router ready for export');
-console.log('[messages.js] =====================================');
+// Send message request
+router.post('/requests', protectRoute, async (req, res) => {
+    try {
+        const { recipientId, message } = req.body;
+        
+        console.log(`[messages.js] Sending message request to user: ${recipientId}`);
+
+        // Check if request already exists
+        const existingRequest = await MessageRequest.findOne({
+            senderId: req.user._id,
+            recipientId,
+            status: 'pending'
+        });
+
+        if (existingRequest) {
+            return res.status(400).json({ error: 'Message request already sent' });
+        }
+
+        const messageRequest = new MessageRequest({
+            senderId: req.user._id,
+            recipientId,
+            message
+        });
+
+        await messageRequest.save();
+        
+        const populatedRequest = await MessageRequest.findById(messageRequest._id)
+            .populate('senderId', 'username fullName profileImg');
+
+        console.log('[messages.js] Message request sent successfully');
+        res.status(201).json(populatedRequest);
+    } catch (error) {
+        console.error('[messages.js] Error sending message request:', error);
+        res.status(500).json({ error: 'Failed to send message request' });
+    }
+});
+
+// Accept message request
+router.put('/requests/:requestId/accept', protectRoute, async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        
+        console.log(`[messages.js] Accepting message request: ${requestId}`);
+
+        const messageRequest = await MessageRequest.findOne({
+            _id: requestId,
+            recipientId: req.user._id
+        }).populate('senderId', 'username fullName profileImg');
+
+        if (!messageRequest) {
+            return res.status(404).json({ error: 'Message request not found' });
+        }
+
+        // Create conversation
+        const conversation = new Conversation({
+            participants: [messageRequest.senderId._id, req.user._id]
+        });
+
+        await conversation.save();
+
+        // Create initial message if provided
+        if (messageRequest.message) {
+            const message = new Message({
+                conversation: conversation._id,
+                senderId: messageRequest.senderId._id,
+                content: messageRequest.message
+            });
+
+            await message.save();
+            conversation.lastMessage = message._id;
+            await conversation.save();
+        }
+
+        // Update request status
+        messageRequest.status = 'accepted';
+        await messageRequest.save();
+
+        const populatedConversation = await Conversation.findById(conversation._id)
+            .populate('participants', 'username fullName profileImg');
+
+        console.log('[messages.js] Message request accepted successfully');
+        res.json(populatedConversation);
+    } catch (error) {
+        console.error('[messages.js] Error accepting message request:', error);
+        res.status(500).json({ error: 'Failed to accept message request' });
+    }
+});
+
+// Decline message request
+router.put('/requests/:requestId/decline', protectRoute, async (req, res) => {
+    try {
+        const { requestId } = req.params;
+        
+        console.log(`[messages.js] Declining message request: ${requestId}`);
+
+        const messageRequest = await MessageRequest.findOne({
+            _id: requestId,
+            recipientId: req.user._id
+        });
+
+        if (!messageRequest) {
+            return res.status(404).json({ error: 'Message request not found' });
+        }
+
+        messageRequest.status = 'declined';
+        await messageRequest.save();
+
+        console.log('[messages.js] Message request declined successfully');
+        res.json({ message: 'Message request declined' });
+    } catch (error) {
+        console.error('[messages.js] Error declining message request:', error);
+        res.status(500).json({ error: 'Failed to decline message request' });
+    }
+});
+
+console.log('[messages.js] All routes defined successfully');
 
 export default router;
