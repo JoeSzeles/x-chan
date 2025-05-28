@@ -1,3 +1,4 @@
+
 import express from 'express';
 import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
@@ -5,6 +6,13 @@ import User from '../models/user.model.js';
 import { protectRoute } from '../middleware/protectRoute.js';
 
 const router = express.Router();
+
+// Debug middleware to log all requests to this router
+router.use((req, res, next) => {
+    console.log(`[messages.js] ${req.method} ${req.path} - Body:`, req.body);
+    console.log(`[messages.js] User:`, req.user ? req.user._id : 'No user');
+    next();
+});
 
 // Get all conversations for a user
 router.get('/conversations', protectRoute, async (req, res) => {
@@ -53,10 +61,10 @@ router.post('/conversations', protectRoute, async (req, res) => {
     }
 });
 
-// Start conversation with a specific user
+// Start conversation with a specific user - THIS IS THE ENDPOINT THAT'S FAILING
 router.post('/start-conversation', protectRoute, async (req, res) => {
     try {
-        console.log('[messages.js] /start-conversation endpoint hit');
+        console.log('[messages.js] POST /start-conversation endpoint hit');
         console.log('[messages.js] Request body:', req.body);
         console.log('[messages.js] User from protectRoute:', req.user ? req.user._id : 'No user');
 
@@ -71,6 +79,13 @@ router.post('/start-conversation', protectRoute, async (req, res) => {
         if (userId === req.user._id.toString()) {
             console.log('[messages.js] Error: User trying to start conversation with themselves');
             return res.status(400).json({ error: 'Cannot start conversation with yourself' });
+        }
+
+        // Verify the target user exists
+        const targetUser = await User.findById(userId);
+        if (!targetUser) {
+            console.log('[messages.js] Error: Target user not found');
+            return res.status(404).json({ error: 'User not found' });
         }
 
         console.log('[messages.js] Checking if conversation already exists...');
@@ -93,7 +108,7 @@ router.post('/start-conversation', protectRoute, async (req, res) => {
 
         console.log(`[messages.js] Conversation ready:`, conversation._id);
         console.log('[messages.js] Sending success response');
-        res.json(conversation);
+        res.status(200).json(conversation);
     } catch (error) {
         console.error('[messages.js] Error starting conversation:', error);
         console.error('[messages.js] Error stack:', error.stack);
@@ -103,56 +118,56 @@ router.post('/start-conversation', protectRoute, async (req, res) => {
 
 // Get messages in a conversation
 router.get('/:conversationId', protectRoute, async (req, res) => {
-  try {
-    console.log('Fetching messages for conversation:', req.params.conversationId);
+    try {
+        console.log('Fetching messages for conversation:', req.params.conversationId);
 
-    const messages = await Message.find({
-      conversationId: req.params.conversationId
-    })
-    .populate('senderId', 'username profileImg profilePicture')
-    .sort({ createdAt: 1 });
+        const messages = await Message.find({
+            conversationId: req.params.conversationId
+        })
+        .populate('senderId', 'username profileImg profilePicture')
+        .sort({ createdAt: 1 });
 
-    console.log('Found messages:', messages.length);
-    res.json(messages);
-  } catch (error) {
-    console.error('Error fetching messages:', error);
-    res.status(500).json({ error: 'Failed to fetch messages' });
-  }
+        console.log('Found messages:', messages.length);
+        res.json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
 });
 
 // Send a message
 router.post('/:conversationId', protectRoute, async (req, res) => {
-  try {
-    const { content } = req.body;
-    console.log('Sending message to conversation:', req.params.conversationId);
+    try {
+        const { content } = req.body;
+        console.log('Sending message to conversation:', req.params.conversationId);
 
-    const newMessage = new Message({
-      conversationId: req.params.conversationId,
-      senderId: req.user._id,
-      content,
-      readBy: [req.user._id]
-    });
-    await newMessage.save();
+        const newMessage = new Message({
+            conversationId: req.params.conversationId,
+            senderId: req.user._id,
+            content,
+            readBy: [req.user._id]
+        });
+        await newMessage.save();
 
-    // Update conversation's lastMessage and updatedAt
-    await Conversation.findByIdAndUpdate(req.params.conversationId, {
-      lastMessage: {
-        content,
-        senderId: req.user._id,
-        timestamp: new Date()
-      },
-      updatedAt: new Date()
-    });
+        // Update conversation's lastMessage and updatedAt
+        await Conversation.findByIdAndUpdate(req.params.conversationId, {
+            lastMessage: {
+                content,
+                senderId: req.user._id,
+                timestamp: new Date()
+            },
+            updatedAt: new Date()
+        });
 
-    const populatedMessage = await Message.findById(newMessage._id)
-      .populate('senderId', 'username profileImg profilePicture');
+        const populatedMessage = await Message.findById(newMessage._id)
+            .populate('senderId', 'username profileImg profilePicture');
 
-    console.log('Message sent successfully');
-    res.status(201).json(populatedMessage);
-  } catch (error) {
-    console.error('Error sending message:', error);
-    res.status(500).json({ error: 'Failed to send message' });
-  }
+        console.log('Message sent successfully');
+        res.status(201).json(populatedMessage);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
 });
 
 // Mark messages as read
