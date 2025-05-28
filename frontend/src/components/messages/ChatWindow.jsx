@@ -46,10 +46,22 @@ const ChatWindow = ({ conversation, authUser }) => {
       socketService.joinConversation(conversation._id);
 
       const handleNewMessage = (message) => {
-        setMessages((prev) => [...prev, message]);
+        setMessages((prev) => {
+          // Prevent duplicate messages by checking if message already exists
+          const messageExists = prev.some(msg => msg._id === message._id);
+          if (messageExists) {
+            return prev;
+          }
+          return [...prev, message];
+        });
       };
 
       socketService.onNewMessage(handleNewMessage);
+
+      // Scroll to bottom after initial load with a small delay
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+      }, 100);
 
       return () => {
         socketService.leaveConversation(conversation._id);
@@ -59,12 +71,28 @@ const ChatWindow = ({ conversation, authUser }) => {
   }, [conversation?._id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    // Only auto-scroll if user is near the bottom or if it's a new message from current user
+    const messagesContainer = messagesEndRef.current?.parentElement;
+    if (messagesContainer && messages.length > 0) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      
+      // Auto-scroll if user is near bottom or if the last message is from current user
+      const lastMessage = messages[messages.length - 1];
+      const isOwnMessage = lastMessage?.senderId._id === currentUserId;
+      
+      if (isNearBottom || isOwnMessage) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [messages, currentUserId]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
+
+    const messageContent = newMessage;
+    setNewMessage(''); // Clear input immediately for better UX
 
     try {
       setSending(true);
@@ -75,7 +103,7 @@ const ChatWindow = ({ conversation, authUser }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ content: newMessage })
+        body: JSON.stringify({ content: messageContent })
       });
 
       if (!response.ok) {
@@ -84,12 +112,19 @@ const ChatWindow = ({ conversation, authUser }) => {
       }
 
       const messageData = await response.json();
+      
+      // Add message to local state immediately
+      setMessages((prev) => [...prev, messageData]);
+      
+      // Send via socket for real-time updates to other participants
       socketService.sendMessage(messageData);
-      setNewMessage('');
+      
       inputRef.current?.focus();
     } catch (err) {
       console.error('Error sending message:', err);
       setError(err.message || 'Failed to send message');
+      // Restore message content if sending failed
+      setNewMessage(messageContent);
     } finally {
       setSending(false);
     }
