@@ -9,6 +9,7 @@ const auth = require('../middleware/auth');
 // Get all conversations for the logged-in user
 router.get('/conversations', auth, async (req, res) => {
   try {
+    console.log('Auth user in conversations:', req.user._id);
     const conversations = await Conversation.find({
       participants: req.user._id
     })
@@ -16,6 +17,7 @@ router.get('/conversations', auth, async (req, res) => {
     .populate('lastMessage.senderId', 'username')
     .sort({ updatedAt: -1 });
 
+    console.log('Found conversations:', conversations.length);
     res.json(conversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);
@@ -120,10 +122,15 @@ router.get('/followers', auth, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log('User with followers:', user.followers?.length || 0);
+    console.log('User found:', user.username);
+    console.log('User followers field exists:', !!user.followers);
+    console.log('User followers count:', user.followers?.length || 0);
+    
+    // Handle case where followers array doesn't exist or is empty
+    const followers = user.followers || [];
     
     // Filter followers who allow messages (default is true if not set)
-    const messageableFollowers = user.followers.filter(follower => 
+    const messageableFollowers = followers.filter(follower => 
       follower && follower.allowMessages !== false
     );
     
@@ -148,6 +155,29 @@ router.get('/requests', auth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching message requests:', error);
     res.status(500).json({ error: 'Failed to fetch message requests' });
+  }
+});
+
+// Test endpoint to check available users
+router.get('/test/users', auth, async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.user._id);
+    const allUsers = await User.find({ 
+      _id: { $ne: req.user._id } 
+    }).select('username profileImg allowMessages').limit(10);
+    
+    console.log('Current user:', currentUser?.username);
+    console.log('Available users:', allUsers.length);
+    console.log('Users with allowMessages:', allUsers.filter(u => u.allowMessages !== false).length);
+    
+    res.json({
+      currentUser: currentUser?.username,
+      totalUsers: allUsers.length,
+      users: allUsers
+    });
+  } catch (error) {
+    console.error('Error in test endpoint:', error);
+    res.status(500).json({ error: 'Test failed' });
   }
 });
 
