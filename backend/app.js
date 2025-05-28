@@ -65,8 +65,42 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/leech", leechRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/lists", listRoutes);
+
+// Debug message routes registration
+console.log('Registering messages routes...');
+console.log('messageRoutes type:', typeof messageRoutes);
+console.log('messageRoutes:', messageRoutes);
 app.use("/api/messages", messageRoutes);
 console.log('Messages routes registered at /api/messages');
+
+// Test endpoint to verify server is running
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Server is running', timestamp: new Date().toISOString() });
+});
+
+// List all registered routes for debugging
+app.get('/api/debug/routes', (req, res) => {
+    const routes = [];
+    app._router.stack.forEach((middleware) => {
+        if (middleware.route) {
+            routes.push({
+                path: middleware.route.path,
+                methods: Object.keys(middleware.route.methods)
+            });
+        } else if (middleware.name === 'router') {
+            middleware.handle.stack.forEach((handler) => {
+                const route = handler.route;
+                if (route) {
+                    routes.push({
+                        path: route.path,
+                        methods: Object.keys(route.methods)
+                    });
+                }
+            });
+        }
+    });
+    res.json({ routes, timestamp: new Date().toISOString() });
+});
 
 // Error handling middleware
 app.use(errorHandler);
