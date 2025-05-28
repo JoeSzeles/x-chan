@@ -135,10 +135,38 @@ router.get('/followers', auth, async (req, res) => {
     );
     
     console.log('Messageable followers count:', messageableFollowers.length);
+    
+    // If no followers, return all users as fallback
+    if (messageableFollowers.length === 0) {
+      const allUsers = await User.find({ 
+        _id: { $ne: req.user._id },
+        allowMessages: { $ne: false }
+      }).select('username profileImg allowMessages').limit(20);
+      
+      console.log('No followers found, returning all users:', allUsers.length);
+      return res.json(allUsers);
+    }
+    
     res.json(messageableFollowers);
   } catch (error) {
     console.error('Error in /followers endpoint:', error);
     res.status(500).json({ error: 'Failed to fetch followers' });
+  }
+});
+
+// Get all users for messaging
+router.get('/users', auth, async (req, res) => {
+  try {
+    const allUsers = await User.find({ 
+      _id: { $ne: req.user._id },
+      allowMessages: { $ne: false }
+    }).select('username profileImg allowMessages').limit(50);
+    
+    console.log('All messageable users:', allUsers.length);
+    res.json(allUsers);
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
 
