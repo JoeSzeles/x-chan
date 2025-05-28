@@ -7,6 +7,7 @@ const ConversationsList = ({ authUser, onSelectConversation, selectedConversatio
 	const [conversations, setConversations] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add refresh trigger state
 
 	useEffect(() => {
 		const fetchConversations = async () => {
@@ -44,6 +45,14 @@ const ConversationsList = ({ authUser, onSelectConversation, selectedConversatio
 
 		fetchConversations();
 	}, [authUser]);
+
+  // Refetch conversations when refresh trigger changes (new message arrived)
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      console.log('Refreshing conversations due to new message');
+      fetchConversations();
+    }
+  }, [refreshTrigger]);
 
 	if (loading) {
 		return (

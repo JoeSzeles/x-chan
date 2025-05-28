@@ -78,31 +78,31 @@ const ChatWindow = ({ conversation, authUser }) => {
       const handleNewMessage = (message) => {
         console.log('Received new message:', message);
         
-        // Only process messages for the current conversation
-        if (message.conversationId !== conversation._id) {
-          console.log('Message not for current conversation, ignoring');
-          return;
-        }
-        
-        // Don't add messages sent by current user (they're already added optimistically)
-        if (message.senderId._id === currentUserId) {
-          console.log('Message from current user, already displayed');
-          return;
-        }
-        
-        setMessages((prev) => {
-          // Prevent duplicate messages by checking if message already exists
-          const messageExists = prev.some(msg => msg._id === message._id);
-          if (messageExists) {
-            console.log('Message already exists, skipping');
-            return prev;
+        // Process messages for the current conversation
+        if (message.conversationId === conversation._id) {
+          // Don't add messages sent by current user (they're already added optimistically)
+          if (message.senderId._id === currentUserId) {
+            console.log('Message from current user, already displayed');
+            return;
           }
-          console.log('Adding new message from other user to state');
-          return [...prev, message];
-        });
-        
-        // Mark as read immediately since conversation is open
-        setTimeout(markAsRead, 500);
+          
+          setMessages((prev) => {
+            // Prevent duplicate messages by checking if message already exists
+            const messageExists = prev.some(msg => msg._id === message._id);
+            if (messageExists) {
+              console.log('Message already exists, skipping');
+              return prev;
+            }
+            console.log('Adding new message from other user to state');
+            return [...prev, message];
+          });
+          
+          // Mark as read immediately since conversation is open
+          setTimeout(markAsRead, 500);
+        } else {
+          // Message is for a different conversation, just log it
+          console.log('Message for different conversation, will be handled by notification system');
+        }
       };
 
       socketService.onNewMessage(handleNewMessage);
@@ -112,7 +112,7 @@ const ChatWindow = ({ conversation, authUser }) => {
         socketService.offNewMessage(handleNewMessage);
       };
     }
-  }, [conversation?._id]);
+  }, [conversation?._id, currentUserId]);
 
   
 
