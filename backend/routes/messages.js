@@ -295,7 +295,7 @@ router.delete('/conversations/:conversationId/messages/:messageId', protectRoute
 router.post('/:conversationId', protectRoute, async (req, res) => {
     try {
         const { conversationId } = req.params;
-        const { content } = req.body;
+        const { content, attachments } = req.body;
 
         console.log(`[messages.js] Sending message to conversation: ${conversationId}`);
 
@@ -309,10 +309,27 @@ router.post('/:conversationId', protectRoute, async (req, res) => {
             return res.status(404).json({ error: 'Conversation not found' });
         }
 
+        // Determine message type based on content and attachments
+        let messageType = 'text';
+        if (attachments && attachments.length > 0) {
+            const firstAttachment = attachments[0];
+            if (firstAttachment.fileType === 'image') {
+                messageType = 'image';
+            } else if (firstAttachment.fileType === 'video') {
+                messageType = 'video';
+            } else if (firstAttachment.fileType === 'audio') {
+                messageType = 'audio';
+            } else {
+                messageType = 'file';
+            }
+        }
+
         const message = new Message({
             conversationId: conversationId,
             senderId: req.user._id,
-            content
+            content: content || '',
+            messageType,
+            attachments: attachments || []
         });
 
         await message.save();
@@ -369,7 +386,7 @@ router.get('/conversations/:conversationId/messages', protectRoute, async (req, 
 router.post('/conversations/:conversationId/messages', protectRoute, async (req, res) => {
     try {
         const { conversationId } = req.params;
-        const { content } = req.body;
+        const { content, attachments } = req.body;
 
         console.log(`[messages.js] Sending message to conversation: ${conversationId}`);
 
@@ -383,10 +400,27 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
             return res.status(404).json({ error: 'Conversation not found' });
         }
 
+        // Determine message type based on content and attachments
+        let messageType = 'text';
+        if (attachments && attachments.length > 0) {
+            const firstAttachment = attachments[0];
+            if (firstAttachment.fileType === 'image') {
+                messageType = 'image';
+            } else if (firstAttachment.fileType === 'video') {
+                messageType = 'video';
+            } else if (firstAttachment.fileType === 'audio') {
+                messageType = 'audio';
+            } else {
+                messageType = 'file';
+            }
+        }
+
         const message = new Message({
             conversationId: conversationId,
             senderId: req.user._id,
-            content
+            content: content || '',
+            messageType,
+            attachments: attachments || []
         });
 
         await message.save();

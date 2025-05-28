@@ -12,8 +12,11 @@ const ChatWindow = ({ conversation, authUser }) => {
   const [editingMessage, setEditingMessage] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
   const currentUserId = authUser?._id;
 
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎'];
@@ -96,13 +99,29 @@ const ChatWindow = ({ conversation, authUser }) => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || sending) return;
+    if ((!newMessage.trim() && selectedFiles.length === 0) || sending) return;
 
     const messageContent = newMessage;
-    setNewMessage(''); // Clear input immediately for better UX
+    const filesToUpload = [...selectedFiles];
+    
+    // Clear inputs immediately for better UX
+    setNewMessage('');
+    setSelectedFiles([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
 
     try {
       setSending(true);
+      setUploadingFiles(filesToUpload.length > 0);
+
+      let attachments = [];
+      
+      // Upload files if any
+      if (filesToUpload.length > 0) {
+        attachments = await uploadFiles(filesToUpload);
+      }
+
       const response = await fetch(`/api/messages/${conversation._id}`, {
         method: 'POST',
         credentials: 'include',
@@ -110,7 +129,10 @@ const ChatWindow = ({ conversation, authUser }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ content: messageContent })
+        body: JSON.stringify({ 
+          content: messageContent,
+          attachments: attachments
+        })
       });
 
       if (!response.ok) {
@@ -130,10 +152,12 @@ const ChatWindow = ({ conversation, authUser }) => {
     } catch (err) {
       console.error('Error sending message:', err);
       setError(err.message || 'Failed to send message');
-      // Restore message content if sending failed
+      // Restore message content and files if sending failed
       setNewMessage(messageContent);
+      setSelectedFiles(filesToUpload);
     } finally {
       setSending(false);
+      setUploadingFiles(false);
     }
   };
 
@@ -216,6 +240,50 @@ const ChatWindow = ({ conversation, authUser }) => {
   const startEditing = (message) => {
     setEditingMessage(message._id);
     setEditContent(message.content);
+  };
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 5) {
+      alert('You can only upload up to 5 files at once');
+      return;
+    }
+    setSelectedFiles(files);
+  };
+
+  const uploadFiles = async (files) => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    const response = await fetch(`/api/messages/conversations/${conversation._id}/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload files');
+    }
+
+    const data = await response.json();
+    return data.attachments;
+  };
+
+  const removeSelectedFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const otherParticipant = conversation.participants.find(
@@ -365,7 +433,60 @@ const ChatWindow = ({ conversation, authUser }) => {
                               : 'var(--color-text-primary)',
                           }}
                         >
-                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          {/* Text content */}
+                          {message.content && (
+                            <p className="text-sm whitespace-pre-wrap mb-2">{message.content}</p>
+                          )}
+                          
+                          {/* File attachments */}
+                          {message.attachments && message.attachments.length > 0 && (
+                            <div className="space-y-2">
+                              {message.attachments.map((attachment, idx) => (
+                                <div key={idx} className="attachment">
+                                  {attachment.fileType === 'image' ? (
+                                    <img
+                                      src={attachment.url}
+                                      alt={attachment.filename}
+                                      className="max-w-xs rounded-lg cursor-pointer"
+                                      onClick={() => window.open(attachment.url, '_blank')}
+                                    />
+                                  ) : attachment.fileType === 'video' ? (
+                                    <video
+                                      src={attachment.url}
+                                      controls
+                                      className="max-w-xs rounded-lg"
+                                    />
+                                  ) : attachment.fileType === 'audio' ? (
+                                    <audio
+                                      src={attachment.url}
+                                      controls
+                                      className="w-full max-w-xs"
+                                    />
+                                  ) : (
+                                    <a
+                                      href={attachment.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                    >
+                                      <div className="flex-shrink-0">
+                                        📄
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                          {attachment.filename}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                          {formatFileSize(attachment.fileSize)}
+                                        </p>
+                                      </div>
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          
                           {message.isEdited && (
                             <span className="text-xs opacity-70 ml-2">(edited)</span>
                           )}
@@ -453,6 +574,55 @@ const ChatWindow = ({ conversation, authUser }) => {
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)' 
       }}>
+        {/* Selected files preview */}
+        {selectedFiles.length > 0 && (
+          <div className="mb-3 p-3 border rounded-lg" style={{ 
+            backgroundColor: 'var(--color-bg-main)',
+            borderColor: 'var(--color-border-default)'
+          }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                Selected Files ({selectedFiles.length}/5)
+              </span>
+              <button
+                onClick={() => {
+                  setSelectedFiles([]);
+                  if (fileInputRef.current) fileInputRef.current.value = '';
+                }}
+                className="text-xs text-red-500 hover:text-red-700"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="space-y-2">
+              {selectedFiles.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm">
+                      {file.type.startsWith('image/') ? '🖼️' : 
+                       file.type.startsWith('video/') ? '🎥' : 
+                       file.type.startsWith('audio/') ? '🎵' : '📄'}
+                    </span>
+                    <span className="text-sm font-medium text-gray-700 truncate max-w-xs">
+                      {file.name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formatFileSize(file.size)}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeSelectedFile(index)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    title="Remove file"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSendMessage} className="flex space-x-3">
           <div className="flex-1 relative">
             <input
@@ -476,27 +646,52 @@ const ChatWindow = ({ conversation, authUser }) => {
             {/* Character count or typing indicator could go here */}
           </div>
           
+          {/* File upload button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending || uploadingFiles}
+            className="p-3 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            style={{
+              backgroundColor: 'var(--color-bg-card)',
+              color: 'var(--color-text-secondary)',
+              border: '1px solid var(--color-border-default)'
+            }}
+            title="Attach files"
+          >
+            📎
+          </button>
+          
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+          />
+          
           <button
             type="submit"
-            disabled={!newMessage.trim() || sending}
+            disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending || uploadingFiles}
             className="px-6 py-3 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             style={{
-              backgroundColor: newMessage.trim() ? 'var(--color-primary)' : 'var(--color-bg-card)',
-              color: newMessage.trim() ? 'var(--color-text-light)' : 'var(--color-text-secondary)',
+              backgroundColor: (newMessage.trim() || selectedFiles.length > 0) ? 'var(--color-primary)' : 'var(--color-bg-card)',
+              color: (newMessage.trim() || selectedFiles.length > 0) ? 'var(--color-text-light)' : 'var(--color-text-secondary)',
               minWidth: '56px'
             }}
             onMouseEnter={(e) => {
-              if (!e.target.disabled && newMessage.trim()) {
+              if (!e.target.disabled && (newMessage.trim() || selectedFiles.length > 0)) {
                 e.target.style.backgroundColor = 'var(--color-primary-dark)';
               }
             }}
             onMouseLeave={(e) => {
-              if (!e.target.disabled && newMessage.trim()) {
+              if (!e.target.disabled && (newMessage.trim() || selectedFiles.length > 0)) {
                 e.target.style.backgroundColor = 'var(--color-primary)';
               }
             }}
           >
-            {sending ? (
+            {(sending || uploadingFiles) ? (
               <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
