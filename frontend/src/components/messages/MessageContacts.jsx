@@ -12,49 +12,20 @@ const MessageContacts = ({ onStartConversation }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
-        setError(null);
         console.log('Fetching followers and requests...');
+        const [followersRes, requestsRes] = await Promise.all([
+          axios.get('/api/messages/followers', { withCredentials: true }),
+          axios.get('/api/messages/requests', { withCredentials: true })
+        ]);
+        console.log('Followers response:', followersRes.data);
+        console.log('Requests response:', requestsRes.data);
 
-        // Fetch followers
-        let followersData = [];
-        let requestsData = [];
-
-        try {
-          const followersResponse = await axios.get('/api/messages/followers', { withCredentials: true });
-          followersData = followersResponse.data || [];
-          console.log('Followers response:', followersData);
-        } catch (followersError) {
-          console.warn('Failed to fetch followers:', followersError.response?.status);
-          
-          // If no followers found, try to get all users as fallback
-          try {
-            const usersResponse = await axios.get('/api/messages/users', { withCredentials: true });
-            followersData = usersResponse.data || [];
-            console.log('Using all users as fallback:', followersData);
-          } catch (usersError) {
-            console.warn('Users endpoint also failed:', usersError.response?.status);
-          }
-        }
-
-        // Fetch requests
-        try {
-          const requestsResponse = await axios.get('/api/messages/requests', { withCredentials: true });
-          requestsData = requestsResponse.data || [];
-          console.log('Requests response:', requestsData);
-        } catch (requestsError) {
-          console.warn('Failed to fetch requests:', requestsError.response?.status);
-          if (requestsError.response?.status !== 404 && requestsError.response?.status !== 500) {
-            throw requestsError;
-          }
-        }
-
-        setFollowers(followersData);
-        setRequests(requestsData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError(error.response?.data?.error || 'Failed to fetch data');
-      } finally {
+        setFollowers(followersRes.data);
+        setRequests(requestsRes.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err.response?.data?.error || 'Failed to fetch data');
         setLoading(false);
       }
     };

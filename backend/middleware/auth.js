@@ -33,7 +33,7 @@ export const authenticateToken = async (req, res, next) => {
                 userId: user._id,
                 username: user.username 
             });
-
+            
             next();
         } catch (jwtError) {
             console.error('[Auth] JWT verification failed:', {
@@ -55,4 +55,4 @@ export const authenticateToken = async (req, res, next) => {
             error: 'Authentication failed' 
         });
     }
-};
+}; 

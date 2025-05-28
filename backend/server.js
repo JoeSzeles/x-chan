@@ -39,7 +39,6 @@ import serviceRoutes from './routes/service.route.js';
 import liveBoardRoutes from './routes/liveBoard.js';
 import connectMongoDB from "./db/connectMongoDB.js";
 import coverPhotoRoutes from './routes/cover-photo.route.js'; // Import cover photo route
-import messagesRoutes from './routes/messages.js';
 
 dotenv.config();
 
@@ -135,7 +134,6 @@ app.use("/api/leech", leechRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 app.use('/api/cover-photo', coverPhotoRoutes);
-app.use('/api/messages', messagesRoutes);
 
 // Catch-all route to serve the frontend for any non-API routes
 app.get('*', (req, res) => {
@@ -258,26 +256,6 @@ io.on('connection', socket => {
         console.log(`[Socket.io] User ${userId} left notification room ${roomName}`);
     });
 
-    // Join conversation room for messaging
-    socket.on('joinConversation', (conversationId) => {
-        socket.join(`conversation_${conversationId}`);
-        console.log(`Socket ${socket.id} joined conversation ${conversationId}`);
-    });
-
-    // Leave conversation room
-    socket.on('leaveConversation', (conversationId) => {
-        socket.leave(`conversation_${conversationId}`);
-        console.log(`Socket ${socket.id} left conversation ${conversationId}`);
-    });
-
-    // Handle sending messages
-    socket.on('sendMessage', (data) => {
-        const { conversationId, message } = data;
-        // Broadcast to all users in the conversation
-        socket.to(`conversation_${conversationId}`).emit('newMessage', message);
-        console.log(`Message sent to conversation ${conversationId}`);
-    });
-
     socket.on('joinBotRoom', (botId) => {
         console.log('[Socket.io] Client joined bot room:', {
             socketId: socket.id,
@@ -286,9 +264,6 @@ io.on('connection', socket => {
         socket.join(`bot_${botId}`);
     });
 });
-
-// Make io accessible to routes
-app.set('socketio', io);
 
 connectMongoDB().then(() => {
     httpServer.listen(PORT, HOST, () => {
