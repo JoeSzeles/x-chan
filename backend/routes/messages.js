@@ -11,6 +11,17 @@ console.log('[messages.js] Router initialized');
 console.log('[messages.js] Express router type:', typeof router);
 console.log('[messages.js] Router methods available:', Object.getOwnPropertyNames(router).filter(name => typeof router[name] === 'function'));
 
+// Test route to verify router is working
+router.get('/test', (req, res) => {
+    console.log('[messages.js] TEST route hit successfully!');
+    res.json({ 
+        message: 'Messages router is working!', 
+        timestamp: new Date().toISOString(),
+        path: req.path,
+        method: req.method
+    });
+});
+
 // Debug middleware to log all requests to this router
 router.use((req, res, next) => {
     console.log(`[messages.js] ${req.method} ${req.path} - Body:`, req.body);
@@ -206,6 +217,9 @@ console.log('[messages.js] Routes stack:', router.stack?.map(layer => ({
     path: layer.route?.path,
     methods: layer.route?.methods
 })) || 'undefined');
+console.log('[messages.js] Router is function:', typeof router === 'function');
+console.log('[messages.js] Router has stack:', !!router.stack);
+console.log('[messages.js] About to export router...');
 console.log('[messages.js] =================================');
 
 export default router;

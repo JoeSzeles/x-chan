@@ -67,11 +67,38 @@ app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/lists", listRoutes);
 
 // Debug message routes registration
-console.log('Registering messages routes...');
+console.log('=== MESSAGES ROUTES DEBUG START ===');
 console.log('messageRoutes type:', typeof messageRoutes);
-console.log('messageRoutes:', messageRoutes);
-app.use("/api/messages", messageRoutes);
-console.log('Messages routes registered at /api/messages');
+console.log('messageRoutes default:', messageRoutes.default);
+console.log('messageRoutes keys:', Object.keys(messageRoutes || {}));
+console.log('messageRoutes constructor:', messageRoutes?.constructor?.name);
+console.log('messageRoutes stack length:', messageRoutes?.stack?.length);
+
+// Check if messageRoutes is actually an Express router
+if (messageRoutes && typeof messageRoutes === 'function' && messageRoutes.stack) {
+    console.log('✓ messageRoutes appears to be a valid Express router');
+    console.log('Routes in stack:', messageRoutes.stack.map(layer => ({
+        path: layer.route?.path,
+        methods: layer.route ? Object.keys(layer.route.methods) : 'middleware'
+    })));
+} else {
+    console.log('✗ messageRoutes is NOT a valid Express router');
+    console.log('Attempting to use messageRoutes.default...');
+    if (messageRoutes?.default && typeof messageRoutes.default === 'function') {
+        console.log('Using messageRoutes.default instead');
+        app.use("/api/messages", messageRoutes.default);
+    } else {
+        console.error('CRITICAL: No valid router found for messages!');
+    }
+}
+
+if (messageRoutes && typeof messageRoutes === 'function' && messageRoutes.stack) {
+    app.use("/api/messages", messageRoutes);
+    console.log('✓ Messages routes registered at /api/messages');
+} else {
+    console.error('✗ Failed to register messages routes');
+}
+console.log('=== MESSAGES ROUTES DEBUG END ===');
 
 // Test endpoint to verify server is running
 app.get('/api/test', (req, res) => {
@@ -81,25 +108,54 @@ app.get('/api/test', (req, res) => {
 // List all registered routes for debugging
 app.get('/api/debug/routes', (req, res) => {
     const routes = [];
-    app._router.stack.forEach((middleware) => {
+    const middlewares = [];
+    
+    app._router.stack.forEach((middleware, index) => {
         if (middleware.route) {
             routes.push({
+                type: 'route',
                 path: middleware.route.path,
-                methods: Object.keys(middleware.route.methods)
+                methods: Object.keys(middleware.route.methods),
+                index
             });
-        } else if (middleware.name === 'router') {
-            middleware.handle.stack.forEach((handler) => {
-                const route = handler.route;
-                if (route) {
-                    routes.push({
-                        path: route.path,
-                        methods: Object.keys(route.methods)
-                    });
-                }
+        } else if (middleware.name === 'router' && middleware.regexp) {
+            const baseUrl = middleware.regexp.source
+                .replace(/^\^\\?/, '')
+                .replace(/\$.*/, '')
+                .replace(/\\\//g, '/');
+            
+            middlewares.push({
+                type: 'middleware',
+                baseUrl: baseUrl || 'unknown',
+                index,
+                hasStack: !!middleware.handle?.stack,
+                stackLength: middleware.handle?.stack?.length || 0
             });
+            
+            if (middleware.handle?.stack) {
+                middleware.handle.stack.forEach((handler, handlerIndex) => {
+                    if (handler.route) {
+                        routes.push({
+                            type: 'nested_route',
+                            baseUrl: baseUrl || 'unknown',
+                            path: handler.route.path,
+                            fullPath: (baseUrl || '') + handler.route.path,
+                            methods: Object.keys(handler.route.methods),
+                            middlewareIndex: index,
+                            handlerIndex
+                        });
+                    }
+                });
+            }
         }
     });
-    res.json({ routes, timestamp: new Date().toISOString() });
+    
+    res.json({ 
+        routes, 
+        middlewares, 
+        timestamp: new Date().toISOString(),
+        totalMiddlewares: app._router.stack.length
+    });
 });
 
 // Error handling middleware
