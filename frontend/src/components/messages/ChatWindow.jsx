@@ -142,7 +142,7 @@ const ChatWindow = ({ conversation, authUser }) => {
           });
           
           // Mark as read immediately since conversation is open
-          setTimeout(markAsRead, 500);
+          setTimeout(markAsRead, 100); // Reduced delay for faster processing
         } else {
           // Message is for a different conversation, just log it
           console.log('Message for different conversation, will be handled by notification system');
