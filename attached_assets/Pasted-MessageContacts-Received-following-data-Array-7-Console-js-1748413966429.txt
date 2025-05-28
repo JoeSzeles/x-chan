@@ -1,0 +1,33 @@
+MessageContacts: Received following data: 
+Array(7) [ {…}, {…}, {…}, {…}, {…}, {…}, {…} ]
+Console.js:61:14
+MessageContacts: Starting conversation with user: 682856a265339c12c363f70c Console.js:61:14
+MessageContacts: Current authUser: 
+Object { coverPhoto: {…}, location: {…}, settings: {…}, _id: "682828859d23238ff0dd5c75", username: "joe", fullName: "joe", email: "eff@ff.com", isSystem: false, followers: (2) […], following: (7) […], … }
+Console.js:61:14
+MessageContacts: Token exists: true Console.js:61:14
+MessageContacts: Request body: 
+Object { userId: "682856a265339c12c363f70c" }
+Console.js:61:14
+Post component rendering: 
+Object { postId: "6835459b3c05d5fe0c4b27d5", isComment: false, isCompact: false }
+Console.js:61:14
+Post component rendering: 
+Object { postId: "6832e1aad0682946a34e2170", isComment: false, isCompact: false }
+Console.js:61:14
+MessageContacts: Start conversation response status: 404 Console.js:61:14
+MessageContacts: Response headers: 
+Headers(11) { "access-control-allow-credentials" → "true", "access-control-allow-origin" → "https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000", "content-length" → "171", "content-security-policy" → "default-src 'none'", "content-type" → "text/html; charset=utf-8", date → "Wed, 28 May 2025 06:31:34 GMT", "replit-cluster" → "worf", vary → "Origin", "x-content-type-options" → "nosniff", "x-powered-by" → "Express", … }
+Console.js:61:14
+MessageContacts: Error response: 
+Object { error: "Failed to start conversation" }
+Console.js:61:14
+MessageContacts: Full response object: 
+Response { type: "basic", url: "https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/messages/start-conversation", redirected: false, status: 404, ok: false, statusText: "Not Found", headers: Headers(11), body: ReadableStream, bodyUsed: true }
+Console.js:61:14
+MessageContacts: Error starting conversation: Error: Failed to start conversation
+    g https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CLEy2UbT.js:1020
+Console.js:61:14
+MessageContacts: Error details: 
+Object { message: "Failed to start conversation", stack: "g@https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CLEy2UbT.js:1020:23530\n", userId: "682856a265339c12c363f70c", authUser: "682828859d23238ff0dd5c75" }
+Console.js:61:14

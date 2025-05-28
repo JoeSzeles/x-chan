@@ -52,6 +52,7 @@ const __dirname = dirname(__filename);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Register routes
+console.log('Setting up routes...');
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
@@ -65,6 +66,7 @@ app.use("/api/leech", leechRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/lists", listRoutes);
 app.use("/api/messages", messageRoutes);
+console.log('Messages routes registered at /api/messages');
 
 // Error handling middleware
 app.use(errorHandler);
