@@ -94,6 +94,80 @@ router.get('/conversations', protectRoute, async (req, res) => {
     }
 });
 
+// Get messages for a conversation (alternative route for compatibility)
+router.get('/:conversationId', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        console.log(`[messages.js] Getting messages for conversation: ${conversationId}`);
+
+        // Check if user is part of the conversation
+        const conversation = await Conversation.findOne({
+            _id: conversationId,
+            participants: req.user._id
+        });
+
+        if (!conversation) {
+            return res.status(404).json({ error: 'Conversation not found' });
+        }
+
+        const messages = await Message.find({ conversationId: conversationId })
+            .populate('senderId', 'username fullName profileImg')
+            .sort({ createdAt: 1 });
+
+        console.log(`[messages.js] Found ${messages.length} messages`);
+        res.json(messages);
+    } catch (error) {
+        console.error('[messages.js] Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
+// Send a message (alternative route for compatibility)
+router.post('/:conversationId', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const { content } = req.body;
+
+        console.log(`[messages.js] Sending message to conversation: ${conversationId}`);
+
+        // Check if user is part of the conversation
+        const conversation = await Conversation.findOne({
+            _id: conversationId,
+            participants: req.user._id
+        });
+
+        if (!conversation) {
+            return res.status(404).json({ error: 'Conversation not found' });
+        }
+
+        const message = new Message({
+            conversationId: conversationId,
+            senderId: req.user._id,
+            content
+        });
+
+        await message.save();
+
+        // Update conversation's last message
+        conversation.lastMessage = {
+            content: content,
+            senderId: req.user._id,
+            timestamp: new Date()
+        };
+        conversation.lastActivity = new Date();
+        await conversation.save();
+
+        const populatedMessage = await Message.findById(message._id)
+            .populate('senderId', 'username fullName profileImg');
+
+        console.log('[messages.js] Message sent successfully');
+        res.status(201).json(populatedMessage);
+    } catch (error) {
+        console.error('[messages.js] Error sending message:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
 // Get messages for a conversation
 router.get('/conversations/:conversationId/messages', protectRoute, async (req, res) => {
     try {
@@ -110,7 +184,7 @@ router.get('/conversations/:conversationId/messages', protectRoute, async (req, 
             return res.status(404).json({ error: 'Conversation not found' });
         }
 
-        const messages = await Message.find({ conversation: conversationId })
+        const messages = await Message.find({ conversationId: conversationId })
             .populate('senderId', 'username fullName profileImg')
             .sort({ createdAt: 1 });
 
@@ -141,7 +215,7 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
         }
 
         const message = new Message({
-            conversation: conversationId,
+            conversationId: conversationId,
             senderId: req.user._id,
             content
         });
@@ -149,8 +223,12 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
         await message.save();
 
         // Update conversation's last message
-        conversation.lastMessage = message._id;
-        conversation.updatedAt = new Date();
+        conversation.lastMessage = {
+            content: content,
+            senderId: req.user._id,
+            timestamp: new Date()
+        };
+        conversation.lastActivity = new Date();
         await conversation.save();
 
         const populatedMessage = await Message.findById(message._id)
