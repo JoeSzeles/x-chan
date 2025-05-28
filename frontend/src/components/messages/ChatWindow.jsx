@@ -84,6 +84,12 @@ const ChatWindow = ({ conversation, authUser }) => {
           return;
         }
         
+        // Don't add messages sent by current user (they're already added optimistically)
+        if (message.senderId._id === currentUserId) {
+          console.log('Message from current user, already displayed');
+          return;
+        }
+        
         setMessages((prev) => {
           // Prevent duplicate messages by checking if message already exists
           const messageExists = prev.some(msg => msg._id === message._id);
@@ -91,7 +97,7 @@ const ChatWindow = ({ conversation, authUser }) => {
             console.log('Message already exists, skipping');
             return prev;
           }
-          console.log('Adding new message to state');
+          console.log('Adding new message from other user to state');
           return [...prev, message];
         });
         
@@ -155,10 +161,10 @@ const ChatWindow = ({ conversation, authUser }) => {
 
       const messageData = await response.json();
       
-      // Don't add to local state here - let the socket handler do it
-      // This prevents duplicate messages and ensures consistency
+      // Add message to local state immediately for better UX
+      setMessages((prev) => [...prev, messageData]);
       
-      // Send via socket for real-time updates to all participants (including sender)
+      // Send via socket for real-time updates to other participants
       socketService.sendMessage(messageData);
       
       inputRef.current?.focus();
