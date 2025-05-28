@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+
+import mongoose from 'mongoose';
 
 const MessageRequestSchema = new mongoose.Schema({
   senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -14,4 +15,4 @@ const MessageRequestSchema = new mongoose.Schema({
 // Ensure a user can only have one pending request to another user
 MessageRequestSchema.index({ senderId: 1, recipientId: 1 }, { unique: true });
 
-module.exports = mongoose.model('MessageRequest', MessageRequestSchema); 
+export default mongoose.model('MessageRequest', MessageRequestSchema);
