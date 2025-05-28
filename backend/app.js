@@ -23,12 +23,13 @@ import leechRoutes from "./routes/leech.js";
 import bookmarkRoutes from "./routes/bookmark.route.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import listRoutes from "./routes/listRoutes.js";
-import messageRoutes from "./routes/messages.js";
-
 // Load environment variables
 dotenv.config();
 
 const app = express();
+
+// Import messageRoutes after app is created
+import messageRoutes from "./routes/messages.js";
 
 // Middleware
 app.use(express.json({ limit: "50mb" }));
@@ -66,39 +67,14 @@ app.use("/api/leech", leechRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/lists", listRoutes);
 
-// Debug message routes registration
-console.log('=== MESSAGES ROUTES DEBUG START ===');
+console.log('Registering messages routes...');
 console.log('messageRoutes type:', typeof messageRoutes);
-console.log('messageRoutes default:', messageRoutes.default);
-console.log('messageRoutes keys:', Object.keys(messageRoutes || {}));
-console.log('messageRoutes constructor:', messageRoutes?.constructor?.name);
-console.log('messageRoutes stack length:', messageRoutes?.stack?.length);
+console.log('messageRoutes is function:', typeof messageRoutes === 'function');
+console.log('messageRoutes has stack:', !!messageRoutes?.stack);
+console.log('messageRoutes stack length:', messageRoutes?.stack?.length || 0);
 
-// Check if messageRoutes is actually an Express router
-if (messageRoutes && typeof messageRoutes === 'function' && messageRoutes.stack) {
-    console.log('✓ messageRoutes appears to be a valid Express router');
-    console.log('Routes in stack:', messageRoutes.stack.map(layer => ({
-        path: layer.route?.path,
-        methods: layer.route ? Object.keys(layer.route.methods) : 'middleware'
-    })));
-} else {
-    console.log('✗ messageRoutes is NOT a valid Express router');
-    console.log('Attempting to use messageRoutes.default...');
-    if (messageRoutes?.default && typeof messageRoutes.default === 'function') {
-        console.log('Using messageRoutes.default instead');
-        app.use("/api/messages", messageRoutes.default);
-    } else {
-        console.error('CRITICAL: No valid router found for messages!');
-    }
-}
-
-if (messageRoutes && typeof messageRoutes === 'function' && messageRoutes.stack) {
-    app.use("/api/messages", messageRoutes);
-    console.log('✓ Messages routes registered at /api/messages');
-} else {
-    console.error('✗ Failed to register messages routes');
-}
-console.log('=== MESSAGES ROUTES DEBUG END ===');
+app.use("/api/messages", messageRoutes);
+console.log('✓ Messages routes registered at /api/messages');
 
 // Test endpoint to verify server is running
 app.get('/api/test', (req, res) => {

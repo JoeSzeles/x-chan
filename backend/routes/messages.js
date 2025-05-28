@@ -5,11 +5,17 @@ import Message from '../models/Message.js';
 import User from '../models/user.model.js';
 import { protectRoute } from '../middleware/protectRoute.js';
 
+// Create the router instance
 const router = express.Router();
 
-console.log('[messages.js] Router initialized');
-console.log('[messages.js] Express router type:', typeof router);
-console.log('[messages.js] Router methods available:', Object.getOwnPropertyNames(router).filter(name => typeof router[name] === 'function'));
+console.log('[messages.js] ===== ROUTER CREATION DEBUG =====');
+console.log('[messages.js] Express version:', express.version || 'unknown');
+console.log('[messages.js] Router created successfully:', !!router);
+console.log('[messages.js] Router type:', typeof router);
+console.log('[messages.js] Router constructor:', router.constructor?.name);
+console.log('[messages.js] Router is function:', typeof router === 'function');
+console.log('[messages.js] Router stack exists:', !!router.stack);
+console.log('[messages.js] Router stack length:', router.stack?.length || 0);
 
 // Test route to verify router is working
 router.get('/test', (req, res) => {
@@ -24,7 +30,7 @@ router.get('/test', (req, res) => {
 
 // Debug middleware to log all requests to this router
 router.use((req, res, next) => {
-    console.log(`[messages.js] ${req.method} ${req.path} - Body:`, req.body);
+    console.log(`[messages.js] MIDDLEWARE: ${req.method} ${req.path} - Body:`, req.body);
     console.log(`[messages.js] User:`, req.user ? req.user._id : 'No user');
     next();
 });
@@ -76,8 +82,7 @@ router.post('/conversations', protectRoute, async (req, res) => {
     }
 });
 
-// Start conversation with a specific user - THIS IS THE ENDPOINT THAT'S FAILING
-console.log('[messages.js] Defining POST /start-conversation route...');
+// Start conversation with a specific user
 router.post('/start-conversation', protectRoute, async (req, res) => {
     try {
         console.log('[messages.js] POST /start-conversation endpoint hit');
@@ -210,16 +215,13 @@ router.patch('/conversations/:conversationId/read', protectRoute, async (req, re
     }
 });
 
-console.log('[messages.js] =================================');
-console.log('[messages.js] Router setup complete');
-console.log('[messages.js] Total routes defined:', router.stack?.length || 'unknown');
-console.log('[messages.js] Routes stack:', router.stack?.map(layer => ({
+console.log('[messages.js] ===== FINAL ROUTER STATE =====');
+console.log('[messages.js] Routes added to stack:', router.stack?.length || 0);
+console.log('[messages.js] Route details:', router.stack?.map(layer => ({
     path: layer.route?.path,
-    methods: layer.route?.methods
-})) || 'undefined');
-console.log('[messages.js] Router is function:', typeof router === 'function');
-console.log('[messages.js] Router has stack:', !!router.stack);
-console.log('[messages.js] About to export router...');
-console.log('[messages.js] =================================');
+    methods: layer.route ? Object.keys(layer.route.methods) : 'middleware'
+})) || 'No routes');
+console.log('[messages.js] Router ready for export');
+console.log('[messages.js] =====================================');
 
 export default router;
