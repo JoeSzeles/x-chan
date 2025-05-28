@@ -78,67 +78,100 @@ const ChatWindow = ({ conversation }) => {
   );
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Chat header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center space-x-3">
-          <img
-            src={otherParticipant?.profilePicture || '/default-avatar.png'}
-            alt={otherParticipant?.username}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-          <h2 className="text-lg font-medium">{otherParticipant?.username}</h2>
-        </div>
-      </div>
+		<div className="h-full flex flex-col" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+			{/* Header */}
+			<div className="p-4 border-b" style={{ 
+				borderColor: 'var(--color-border-default)', 
+				backgroundColor: 'var(--color-bg-card)' 
+			}}>
+				<div className="flex items-center space-x-3">
+					<img
+						src={otherParticipant?.profilePicture || '/default-avatar.png'}
+						alt={otherParticipant?.username}
+						className="w-10 h-10 rounded-full object-cover"
+					/>
+					<div>
+						<h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+							{otherParticipant?.username}
+						</h3>
+						<p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+							@{otherParticipant?.username}
+						</p>
+					</div>
+				</div>
+			</div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message._id}
-            className={`flex ${
-              message.senderId._id === currentUserId ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            <div
-              className={`max-w-[70%] rounded-lg p-3 ${
-                message.senderId._id === currentUserId
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 text-gray-900'
-              }`}
-            >
-              <p className="text-sm">{message.content}</p>
-              <span className="text-xs opacity-70">
-                {formatDistanceToNow(new Date(message.createdAt), {
-                  addSuffix: true
-                })}
-              </span>
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+			{/* Messages */}
+			<div className="flex-1 overflow-y-auto p-4" ref={messagesEndRef}>
+				{messages.map((message) => (
+					<div
+						key={message._id}
+						className={`mb-4 flex ${
+							message.senderId._id === currentUserId ? 'justify-end' : 'justify-start'
+						}`}
+					>
+						<div
+							className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg`}
+							style={{
+								backgroundColor: message.senderId._id === currentUserId 
+									? 'var(--color-primary)' 
+									: 'var(--color-bg-card)',
+								color: message.senderId._id === currentUserId 
+									? 'var(--color-text-light)' 
+									: 'var(--color-text-primary)',
+								borderRadius: 'var(--border-radius)'
+							}}
+						>
+							<p className="text-sm">{message.content}</p>
+							<p className="text-xs mt-1 opacity-70">
+								{formatDistanceToNow(new Date(message.createdAt))} ago
+							</p>
+						</div>
+					</div>
+				))}
+				<div ref={messagesEndRef} />
+			</div>
 
-      {/* Message input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 rounded-full border border-gray-300 px-4 py-2 focus:outline-none focus:border-blue-500"
-          />
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600 focus:outline-none"
-          >
-            Send
-          </button>
-        </div>
-      </form>
-    </div>
-  );
+			{/* Message input */}
+			<div className="p-4 border-t" style={{ 
+				borderColor: 'var(--color-border-default)', 
+				backgroundColor: 'var(--color-bg-card)' 
+			}}>
+				<div className="flex space-x-2">
+					<input
+						type="text"
+						value={newMessage}
+						onChange={(e) => setNewMessage(e.target.value)}
+						onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+						placeholder="Type a message..."
+						className="flex-1 px-4 py-2 rounded-lg border focus:outline-none transition-colors duration-300"
+						style={{
+							backgroundColor: 'var(--color-input-bg)',
+							color: 'var(--color-input-text)',
+							borderColor: 'var(--color-input-border)',
+							borderRadius: 'var(--border-radius)'
+						}}
+						onFocus={(e) => e.target.style.borderColor = 'var(--color-border-focus)'}
+						onBlur={(e) => e.target.style.borderColor = 'var(--color-input-border)'}
+					/>
+					<button
+						onClick={handleSendMessage}
+						disabled={!newMessage.trim()}
+						className="px-4 py-2 rounded-lg transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+						style={{
+							backgroundColor: 'var(--color-primary)',
+							color: 'var(--color-text-light)',
+							borderRadius: 'var(--border-radius)'
+						}}
+						onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = 'var(--color-primary-dark)')}
+						onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = 'var(--color-primary)')}
+					>
+						Send
+					</button>
+				</div>
+			</div>
+		</div>
+	);
 };
 
-export default ChatWindow; 
+export default ChatWindow;

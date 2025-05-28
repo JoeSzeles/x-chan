@@ -80,4 +80,4 @@ const ConversationsList = ({ onSelectConversation }) => {
   );
 };
 
-export default ConversationsList; 
+export default ConversationsList;
