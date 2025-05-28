@@ -1,7 +1,7 @@
 {
-  "name": "twitter-clone-backend",
+  "name": "x-chan-backend",
   "version": "1.0.0",
-  "description": "Backend for Twitter clone",
+  "description": "Backend for XChan",
   "type": "module",
   "main": "server.js",
   "scripts": {
