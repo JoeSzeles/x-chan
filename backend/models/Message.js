@@ -37,9 +37,31 @@ const MessageSchema = new mongoose.Schema({
   }],
   messageType: {
     type: String,
-    enum: ['text', 'image', 'file'],
+    enum: ['text', 'image', 'file', 'audio', 'video'],
     default: 'text'
   },
+  attachments: [{
+    url: {
+      type: String,
+      required: true
+    },
+    filename: {
+      type: String,
+      required: true
+    },
+    fileType: {
+      type: String,
+      required: true
+    },
+    fileSize: {
+      type: Number,
+      required: true
+    },
+    mimeType: {
+      type: String,
+      required: true
+    }
+  }],
   editedAt: {
     type: Date,
     default: null
