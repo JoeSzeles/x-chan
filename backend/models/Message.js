@@ -21,10 +21,32 @@ const MessageSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
+  reactions: [{
+    emoji: {
+      type: String,
+      required: true
+    },
+    users: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    count: {
+      type: Number,
+      default: 0
+    }
+  }],
   messageType: {
     type: String,
     enum: ['text', 'image', 'file'],
     default: 'text'
+  },
+  editedAt: {
+    type: Date,
+    default: null
+  },
+  isEdited: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true

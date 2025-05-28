@@ -9,9 +9,14 @@ const ChatWindow = ({ conversation, authUser }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sending, setSending] = useState(false);
+  const [editingMessage, setEditingMessage] = useState(null);
+  const [editContent, setEditContent] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const currentUserId = authUser?._id;
+
+  const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎'];
 
   const fetchMessages = async () => {
     try {
@@ -39,11 +44,28 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   };
 
+  const markAsRead = async () => {
+    try {
+      await fetch(`/api/messages/conversations/${conversation._id}/mark-read`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  };
+
   useEffect(() => {
     if (conversation?._id) {
       fetchMessages();
       socketService.connect();
       socketService.joinConversation(conversation._id);
+
+      // Mark messages as read when opening conversation
+      markAsRead();
 
       const handleNewMessage = (message) => {
         setMessages((prev) => {
@@ -54,6 +76,11 @@ const ChatWindow = ({ conversation, authUser }) => {
           }
           return [...prev, message];
         });
+        
+        // Mark as read if conversation is open
+        if (conversation._id === message.conversationId) {
+          setTimeout(markAsRead, 1000);
+        }
       };
 
       socketService.onNewMessage(handleNewMessage);
@@ -115,6 +142,80 @@ const ChatWindow = ({ conversation, authUser }) => {
       e.preventDefault();
       handleSendMessage(e);
     }
+  };
+
+  const handleReaction = async (messageId, emoji) => {
+    try {
+      const response = await fetch(`/api/messages/conversations/${conversation._id}/messages/${messageId}/reactions`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ emoji })
+      });
+
+      if (response.ok) {
+        const updatedMessage = await response.json();
+        setMessages(prev => prev.map(msg => 
+          msg._id === messageId ? updatedMessage : msg
+        ));
+      }
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+    }
+    setShowEmojiPicker(null);
+  };
+
+  const handleEditMessage = async (messageId) => {
+    try {
+      const response = await fetch(`/api/messages/conversations/${conversation._id}/messages/${messageId}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ content: editContent })
+      });
+
+      if (response.ok) {
+        const updatedMessage = await response.json();
+        setMessages(prev => prev.map(msg => 
+          msg._id === messageId ? updatedMessage : msg
+        ));
+        setEditingMessage(null);
+        setEditContent('');
+      }
+    } catch (error) {
+      console.error('Error editing message:', error);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    
+    try {
+      const response = await fetch(`/api/messages/conversations/${conversation._id}/messages/${messageId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        setMessages(prev => prev.filter(msg => msg._id !== messageId));
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
+  };
+
+  const startEditing = (message) => {
+    setEditingMessage(message._id);
+    setEditContent(message.content);
   };
 
   const otherParticipant = conversation.participants.find(
@@ -210,18 +311,134 @@ const ChatWindow = ({ conversation, authUser }) => {
                     </div>
                   )}
                   
-                  <div
-                    className={`px-4 py-2 rounded-lg break-words ${isOwnMessage ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
-                    style={{
-                      backgroundColor: isOwnMessage 
-                        ? 'var(--color-primary)' 
-                        : 'var(--color-bg-card)',
-                      color: isOwnMessage 
-                        ? 'var(--color-text-light)' 
-                        : 'var(--color-text-primary)',
-                    }}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <div className="group relative">
+                    {editingMessage === message._id ? (
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="flex-1 px-3 py-2 rounded-lg border"
+                          style={{
+                            backgroundColor: 'var(--color-input-bg)',
+                            borderColor: 'var(--color-input-border)',
+                            color: 'var(--color-input-text)'
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleEditMessage(message._id);
+                            } else if (e.key === 'Escape') {
+                              setEditingMessage(null);
+                              setEditContent('');
+                            }
+                          }}
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleEditMessage(message._id)}
+                          className="px-3 py-1 text-xs rounded"
+                          style={{ backgroundColor: 'var(--color-primary)', color: 'var(--color-text-light)' }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingMessage(null);
+                            setEditContent('');
+                          }}
+                          className="px-3 py-1 text-xs rounded"
+                          style={{ backgroundColor: 'var(--color-secondary)', color: 'var(--color-text-light)' }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div
+                          className={`px-4 py-2 rounded-lg break-words ${isOwnMessage ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
+                          style={{
+                            backgroundColor: isOwnMessage 
+                              ? 'var(--color-primary)' 
+                              : 'var(--color-bg-card)',
+                            color: isOwnMessage 
+                              ? 'var(--color-text-light)' 
+                              : 'var(--color-text-primary)',
+                          }}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          {message.isEdited && (
+                            <span className="text-xs opacity-70 ml-2">(edited)</span>
+                          )}
+                        </div>
+                        
+                        {/* Reactions */}
+                        {message.reactions && message.reactions.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {message.reactions.map((reaction, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => handleReaction(message._id, reaction.emoji)}
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors ${
+                                  reaction.users.includes(currentUserId)
+                                    ? 'bg-blue-100 text-blue-600 border border-blue-300'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                              >
+                                <span>{reaction.emoji}</span>
+                                <span>{reaction.count}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Action buttons (show on hover) */}
+                        <div className={`absolute ${isOwnMessage ? 'left-0' : 'right-0'} top-0 opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg p-1 flex gap-1`}>
+                          {/* Emoji picker button */}
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowEmojiPicker(showEmojiPicker === message._id ? null : message._id)}
+                              className="p-1 hover:bg-gray-100 rounded text-sm"
+                              title="Add reaction"
+                            >
+                              😊
+                            </button>
+                            {showEmojiPicker === message._id && (
+                              <div className="absolute bottom-full mb-1 bg-white border rounded-lg p-2 shadow-lg flex gap-1 z-10">
+                                {commonEmojis.map(emoji => (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => handleReaction(message._id, emoji)}
+                                    className="p-1 hover:bg-gray-100 rounded"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Edit/Delete buttons for own messages */}
+                          {isOwnMessage && (
+                            <>
+                              <button
+                                onClick={() => startEditing(message)}
+                                className="p-1 hover:bg-gray-100 rounded text-xs"
+                                title="Edit message"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => handleDeleteMessage(message._id)}
+                                className="p-1 hover:bg-gray-100 rounded text-xs"
+                                title="Delete message"
+                              >
+                                🗑️
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
