@@ -23,12 +23,13 @@ import leechRoutes from "./routes/leech.js";
 import bookmarkRoutes from "./routes/bookmark.route.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import listRoutes from "./routes/listRoutes.js";
-import messageRoutes from "./routes/messages.js";
-
 // Load environment variables
 dotenv.config();
 
 const app = express();
+
+// Import messageRoutes after app is created
+import messageRoutes from "./routes/messages.js";
 
 // Middleware
 app.use(express.json({ limit: "50mb" }));
@@ -66,12 +67,12 @@ app.use("/api/leech", leechRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/lists", listRoutes);
 
-// Debug message routes registration
 console.log('Registering messages routes...');
 console.log('messageRoutes type:', typeof messageRoutes);
-console.log('messageRoutes:', messageRoutes);
+console.log('messageRoutes is function:', typeof messageRoutes === 'function');
+
 app.use("/api/messages", messageRoutes);
-console.log('Messages routes registered at /api/messages');
+console.log('✓ Messages routes registered at /api/messages');
 
 // Test endpoint to verify server is running
 app.get('/api/test', (req, res) => {
@@ -81,25 +82,54 @@ app.get('/api/test', (req, res) => {
 // List all registered routes for debugging
 app.get('/api/debug/routes', (req, res) => {
     const routes = [];
-    app._router.stack.forEach((middleware) => {
+    const middlewares = [];
+    
+    app._router.stack.forEach((middleware, index) => {
         if (middleware.route) {
             routes.push({
+                type: 'route',
                 path: middleware.route.path,
-                methods: Object.keys(middleware.route.methods)
+                methods: Object.keys(middleware.route.methods),
+                index
             });
-        } else if (middleware.name === 'router') {
-            middleware.handle.stack.forEach((handler) => {
-                const route = handler.route;
-                if (route) {
-                    routes.push({
-                        path: route.path,
-                        methods: Object.keys(route.methods)
-                    });
-                }
+        } else if (middleware.name === 'router' && middleware.regexp) {
+            const baseUrl = middleware.regexp.source
+                .replace(/^\^\\?/, '')
+                .replace(/\$.*/, '')
+                .replace(/\\\//g, '/');
+            
+            middlewares.push({
+                type: 'middleware',
+                baseUrl: baseUrl || 'unknown',
+                index,
+                hasStack: !!middleware.handle?.stack,
+                stackLength: middleware.handle?.stack?.length || 0
             });
+            
+            if (middleware.handle?.stack) {
+                middleware.handle.stack.forEach((handler, handlerIndex) => {
+                    if (handler.route) {
+                        routes.push({
+                            type: 'nested_route',
+                            baseUrl: baseUrl || 'unknown',
+                            path: handler.route.path,
+                            fullPath: (baseUrl || '') + handler.route.path,
+                            methods: Object.keys(handler.route.methods),
+                            middlewareIndex: index,
+                            handlerIndex
+                        });
+                    }
+                });
+            }
         }
     });
-    res.json({ routes, timestamp: new Date().toISOString() });
+    
+    res.json({ 
+        routes, 
+        middlewares, 
+        timestamp: new Date().toISOString(),
+        totalMiddlewares: app._router.stack.length
+    });
 });
 
 // Error handling middleware
