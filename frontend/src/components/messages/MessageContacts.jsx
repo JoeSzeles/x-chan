@@ -56,15 +56,15 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 	const handleStartConversation = async (userId) => {
 		try {
 			console.log('MessageContacts: Starting conversation with user:', userId);
-			
-			const response = await fetch('/api/messages/start', {
+
+			const response = await fetch('/api/messages/start-conversation', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
 					'Content-Type': 'application/json',
 					'Authorization': `Bearer ${localStorage.getItem('token')}`
 				},
-				body: JSON.stringify({ recipientId: userId })
+				body: JSON.stringify({ userId: userId })
 			});
 
 			console.log('MessageContacts: Start conversation response status:', response.status);

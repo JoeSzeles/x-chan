@@ -1,4 +1,3 @@
-
 import express from 'express';
 import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
@@ -7,31 +6,93 @@ import { protectRoute } from '../middleware/protectRoute.js';
 
 const router = express.Router();
 
-// Get all conversations for the logged-in user
+// Get all conversations for a user
 router.get('/conversations', protectRoute, async (req, res) => {
-  try {
-    console.log('Fetching conversations for user:', req.user._id);
-    
-    const conversations = await Conversation.find({
-      participants: req.user._id
-    })
-    .populate('participants', 'username profileImg profilePicture fullName')
-    .populate('lastMessage.senderId', 'username')
-    .sort({ updatedAt: -1 });
+    try {
+        console.log(`[messages.js] Getting conversations for user: ${req.user._id}`);
 
-    console.log('Found conversations:', conversations.length);
-    res.json(conversations);
-  } catch (error) {
-    console.error('Error fetching conversations:', error);
-    res.status(500).json({ error: 'Failed to fetch conversations' });
-  }
+        const conversations = await Conversation.find({
+            participants: req.user._id
+        })
+        .populate('participants', 'username fullName profileImg')
+        .populate('lastMessage')
+        .sort({ updatedAt: -1 });
+
+        console.log(`[messages.js] Found ${conversations.length} conversations`);
+        res.json(conversations);
+    } catch (error) {
+        console.error('[messages.js] Error fetching conversations:', error);
+        res.status(500).json({ error: 'Failed to fetch conversations' });
+    }
+});
+
+// Start a new conversation
+router.post('/conversations', protectRoute, async (req, res) => {
+    try {
+        const { participantId } = req.body;
+        console.log(`[messages.js] Starting conversation between ${req.user._id} and ${participantId}`);
+
+        // Check if conversation already exists
+        let conversation = await Conversation.findOne({
+            participants: { $all: [req.user._id, participantId] }
+        }).populate('participants', 'username fullName profileImg');
+
+        if (!conversation) {
+            conversation = new Conversation({
+                participants: [req.user._id, participantId]
+            });
+            await conversation.save();
+            await conversation.populate('participants', 'username fullName profileImg');
+        }
+
+        console.log(`[messages.js] Conversation ready:`, conversation._id);
+        res.json(conversation);
+    } catch (error) {
+        console.error('[messages.js] Error starting conversation:', error);
+        res.status(500).json({ error: 'Failed to start conversation' });
+    }
+});
+
+// Start conversation with a specific user
+router.post('/start-conversation', protectRoute, async (req, res) => {
+    try {
+        const { userId } = req.body;
+        console.log(`[messages.js] Starting conversation between ${req.user._id} and ${userId}`);
+
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
+
+        if (userId === req.user._id.toString()) {
+            return res.status(400).json({ error: 'Cannot start conversation with yourself' });
+        }
+
+        // Check if conversation already exists
+        let conversation = await Conversation.findOne({
+            participants: { $all: [req.user._id, userId] }
+        }).populate('participants', 'username fullName profileImg');
+
+        if (!conversation) {
+            conversation = new Conversation({
+                participants: [req.user._id, userId]
+            });
+            await conversation.save();
+            await conversation.populate('participants', 'username fullName profileImg');
+        }
+
+        console.log(`[messages.js] Conversation ready:`, conversation._id);
+        res.json(conversation);
+    } catch (error) {
+        console.error('[messages.js] Error starting conversation:', error);
+        res.status(500).json({ error: 'Failed to start conversation' });
+    }
 });
 
 // Get messages in a conversation
 router.get('/:conversationId', protectRoute, async (req, res) => {
   try {
     console.log('Fetching messages for conversation:', req.params.conversationId);
-    
+
     const messages = await Message.find({
       conversationId: req.params.conversationId
     })
@@ -51,7 +112,7 @@ router.post('/:conversationId', protectRoute, async (req, res) => {
   try {
     const { content } = req.body;
     console.log('Sending message to conversation:', req.params.conversationId);
-    
+
     const newMessage = new Message({
       conversationId: req.params.conversationId,
       senderId: req.user._id,
@@ -78,56 +139,6 @@ router.post('/:conversationId', protectRoute, async (req, res) => {
   } catch (error) {
     console.error('Error sending message:', error);
     res.status(500).json({ error: 'Failed to send message' });
-  }
-});
-
-// Start a new conversation
-router.post('/start', protectRoute, async (req, res) => {
-  try {
-    const { recipientId } = req.body;
-    const userId = req.user._id;
-
-    console.log('Starting conversation between:', userId, 'and', recipientId);
-
-    if (!recipientId) {
-      return res.status(400).json({ error: 'Recipient ID is required' });
-    }
-
-    if (recipientId === userId.toString()) {
-      return res.status(400).json({ error: 'Cannot start conversation with yourself' });
-    }
-
-    // Check if recipient exists
-    const recipient = await User.findById(recipientId);
-    if (!recipient) {
-      console.log('Recipient not found:', recipientId);
-      return res.status(404).json({ error: 'Recipient not found' });
-    }
-
-    // Check if conversation already exists
-    let conversation = await Conversation.findOne({
-      participants: { $all: [userId, recipientId] }
-    }).populate('participants', 'username profileImg profilePicture fullName');
-
-    if (!conversation) {
-      // Create new conversation
-      conversation = new Conversation({
-        participants: [userId, recipientId],
-        lastMessage: null,
-        lastActivity: new Date()
-      });
-      await conversation.save();
-
-      // Populate participants
-      conversation = await Conversation.findById(conversation._id)
-        .populate('participants', 'username profileImg profilePicture fullName');
-    }
-
-    console.log('Conversation created/found:', conversation._id);
-    res.json(conversation);
-  } catch (error) {
-    console.error('Error starting conversation:', error);
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
