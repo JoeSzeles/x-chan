@@ -1,7 +1,7 @@
 {
-	"name": "twitter-clone",
+	"name": "x-chan",
 	"version": "1.0.0",
-	"description": "A Twitter clone built with MERN stack",
+	"description": "A XChan application built with MERN stack",
 	"scripts": {
 		"start": "cd backend && npm start",
 		"server": "cd backend && npm run dev",

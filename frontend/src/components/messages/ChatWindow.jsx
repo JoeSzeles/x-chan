@@ -1,26 +1,39 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
-import { initSocket, getSocketInstance } from '../../services/socket';
+import socketService from '../../services/socket';
 
-const ChatWindow = ({ conversation }) => {
+const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
-  const currentUserId = localStorage.getItem('userId');
+  const currentUserId = authUser?._id;
 
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const response = await axios.get(`/api/messages/${conversation._id}`, {
-          withCredentials: true
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`/api/messages/${conversation._id}`, {
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
-        setMessages(response.data);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to fetch messages');
+        }
+
+        const data = await response.json();
+        setMessages(data);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch messages');
+        console.error('Error fetching messages:', err);
+        setError(err.message || 'Failed to fetch messages');
         setLoading(false);
       }
     };
@@ -52,30 +65,65 @@ const ChatWindow = ({ conversation }) => {
     if (!newMessage.trim()) return;
 
     try {
-      const response = await axios.post(
-        `/api/messages/${conversation._id}`,
-        { content: newMessage },
-        { withCredentials: true }
-      );
+      const response = await fetch(`/api/messages/${conversation._id}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ content: newMessage })
+      });
 
-      socketService.sendMessage(response.data);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to send message');
+      }
+
+      const messageData = await response.json();
+      socketService.sendMessage(messageData);
       setNewMessage('');
     } catch (err) {
-      setError('Failed to send message');
+      console.error('Error sending message:', err);
+      setError(err.message || 'Failed to send message');
     }
   };
 
-  if (loading) {
-    return <div className="p-4">Loading messages...</div>;
-  }
-
-  if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
-  }
+  
 
   const otherParticipant = conversation.participants.find(
     (p) => p._id !== currentUserId
   );
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+        <div className="text-center" style={{ color: 'var(--color-text-secondary)' }}>
+          Loading messages...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            onClick={fetchMessages}
+            className="px-4 py-2 rounded-lg transition-colors duration-300"
+            style={{
+              backgroundColor: 'var(--color-primary)',
+              color: 'var(--color-text-light)'
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
 		<div className="h-full flex flex-col" style={{ backgroundColor: 'var(--color-bg-main)' }}>
@@ -86,7 +134,7 @@ const ChatWindow = ({ conversation }) => {
 			}}>
 				<div className="flex items-center space-x-3">
 					<img
-						src={otherParticipant?.profilePicture || '/default-avatar.png'}
+						src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
 						alt={otherParticipant?.username}
 						className="w-10 h-10 rounded-full object-cover"
 					/>
