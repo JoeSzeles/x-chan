@@ -7,6 +7,10 @@ import { protectRoute } from '../middleware/protectRoute.js';
 
 const router = express.Router();
 
+console.log('[messages.js] Router initialized');
+console.log('[messages.js] Express router type:', typeof router);
+console.log('[messages.js] Router methods available:', Object.getOwnPropertyNames(router).filter(name => typeof router[name] === 'function'));
+
 // Debug middleware to log all requests to this router
 router.use((req, res, next) => {
     console.log(`[messages.js] ${req.method} ${req.path} - Body:`, req.body);
@@ -62,6 +66,7 @@ router.post('/conversations', protectRoute, async (req, res) => {
 });
 
 // Start conversation with a specific user - THIS IS THE ENDPOINT THAT'S FAILING
+console.log('[messages.js] Defining POST /start-conversation route...');
 router.post('/start-conversation', protectRoute, async (req, res) => {
     try {
         console.log('[messages.js] POST /start-conversation endpoint hit');
@@ -193,5 +198,14 @@ router.patch('/conversations/:conversationId/read', protectRoute, async (req, re
         res.status(500).json({ error: 'Failed to mark messages as read' });
     }
 });
+
+console.log('[messages.js] =================================');
+console.log('[messages.js] Router setup complete');
+console.log('[messages.js] Total routes defined:', router.stack?.length || 'unknown');
+console.log('[messages.js] Routes stack:', router.stack?.map(layer => ({
+    path: layer.route?.path,
+    methods: layer.route?.methods
+})) || 'undefined');
+console.log('[messages.js] =================================');
 
 export default router;
