@@ -55,6 +55,8 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 
 	const handleStartConversation = async (userId) => {
 		try {
+			console.log('MessageContacts: Starting conversation with user:', userId);
+			
 			const response = await fetch('/api/messages/start', {
 				method: 'POST',
 				credentials: 'include',
@@ -65,17 +67,20 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 				body: JSON.stringify({ recipientId: userId })
 			});
 
+			console.log('MessageContacts: Start conversation response status:', response.status);
+
 			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.error || 'Failed to start conversation');
+				const errorData = await response.json().catch(() => ({ error: 'Failed to start conversation' }));
+				console.error('MessageContacts: Error response:', errorData);
+				throw new Error(errorData.error || `HTTP ${response.status}: Failed to start conversation`);
 			}
 
 			const conversation = await response.json();
-			console.log('Started conversation:', conversation);
+			console.log('MessageContacts: Started conversation:', conversation);
 			onStartConversation(conversation);
 		} catch (err) {
-			console.error('Error starting conversation:', err);
-			alert(`Error: ${err.message}`);
+			console.error('MessageContacts: Error starting conversation:', err);
+			alert(`Error starting conversation: ${err.message}`);
 		}
 	};
 

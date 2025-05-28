@@ -10,32 +10,37 @@ const ConversationsList = ({ authUser, onSelectConversation, selectedConversatio
 
 	useEffect(() => {
 		const fetchConversations = async () => {
-			if (!authUser) return;
+    try {
+      setLoading(true);
+      console.log('ConversationsList: Fetching conversations...');
 
-			try {
-				setLoading(true);
-				setError(null);
-				const response = await fetch('/api/messages/conversations', {
-					credentials: 'include',
-					headers: {
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					}
-				});
+      const response = await fetch('/api/messages/conversations', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
-				if (!response.ok) {
-					const errorData = await response.json().catch(() => ({}));
-					throw new Error(errorData.error || 'Failed to fetch conversations');
-				}
+      console.log('ConversationsList: Response status:', response.status);
 
-				const data = await response.json();
-				setConversations(data);
-				setLoading(false);
-			} catch (err) {
-				console.error('Error fetching conversations:', err);
-				setError(err.message);
-				setLoading(false);
-			}
-		};
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'API endpoint not found' }));
+        console.error('ConversationsList: Error response:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch conversations`);
+      }
+
+      const data = await response.json();
+      console.log('ConversationsList: Conversations data:', data);
+      setConversations(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('ConversationsList: Error fetching conversations:', err);
+      setError(err.message || 'Failed to fetch conversations');
+    } finally {
+      setLoading(false);
+    }
+  };
 
 		fetchConversations();
 	}, [authUser]);
