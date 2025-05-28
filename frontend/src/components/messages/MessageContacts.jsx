@@ -26,14 +26,8 @@ const MessageContacts = ({ onStartConversation }) => {
           console.log('Followers response:', followersData);
         } catch (followersError) {
           console.warn('Failed to fetch followers:', followersError.response?.status);
-          
-          // If no followers found, try to get all users as fallback
-          try {
-            const usersResponse = await axios.get('/api/messages/users', { withCredentials: true });
-            followersData = usersResponse.data || [];
-            console.log('Using all users as fallback:', followersData);
-          } catch (usersError) {
-            console.warn('Users endpoint also failed:', usersError.response?.status);
+          if (followersError.response?.status !== 404) {
+            throw followersError;
           }
         }
 
@@ -44,7 +38,7 @@ const MessageContacts = ({ onStartConversation }) => {
           console.log('Requests response:', requestsData);
         } catch (requestsError) {
           console.warn('Failed to fetch requests:', requestsError.response?.status);
-          if (requestsError.response?.status !== 404 && requestsError.response?.status !== 500) {
+          if (requestsError.response?.status !== 404) {
             throw requestsError;
           }
         }

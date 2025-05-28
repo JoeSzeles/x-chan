@@ -2,25 +2,21 @@ const express = require('express');
 const router = express.Router();
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
-const MessageRequest = require('../models/MessageRequest');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
 // Get all conversations for the logged-in user
 router.get('/conversations', auth, async (req, res) => {
   try {
-    console.log('Auth user in conversations:', req.user._id);
     const conversations = await Conversation.find({
       participants: req.user._id
     })
-    .populate('participants', 'username profilePicture profileImg')
+    .populate('participants', 'username profilePicture')
     .populate('lastMessage.senderId', 'username')
     .sort({ updatedAt: -1 });
 
-    console.log('Found conversations:', conversations.length);
     res.json(conversations);
   } catch (error) {
-    console.error('Error fetching conversations:', error);
     res.status(500).json({ error: 'Failed to fetch conversations' });
   }
 });
@@ -31,12 +27,11 @@ router.get('/:conversationId', auth, async (req, res) => {
     const messages = await Message.find({
       conversationId: req.params.conversationId
     })
-    .populate('senderId', 'username profilePicture profileImg')
+    .populate('senderId', 'username profilePicture')
     .sort({ createdAt: 1 });
 
     res.json(messages);
   } catch (error) {
-    console.error('Error fetching messages:', error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
@@ -102,7 +97,7 @@ router.post('/start', auth, async (req, res) => {
     }
 
     const populatedConversation = await Conversation.findById(conversation._id)
-      .populate('participants', 'username profilePicture profileImg');
+      .populate('participants', 'username profilePicture');
 
     res.status(201).json(populatedConversation);
   } catch (error) {
@@ -113,60 +108,26 @@ router.post('/start', auth, async (req, res) => {
 // Get followers who allow messages
 router.get('/followers', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate({
-      path: 'followers',
-      select: 'username profilePicture profileImg allowMessages'
-    });
+    const user = await User.findById(req.user._id)
+      .populate({
+        path: 'followers',
+        select: 'username profilePicture profileImg allowMessages',
+        match: { allowMessages: { $ne: false } }
+      });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log('User found:', user.username);
-    console.log('User followers field exists:', !!user.followers);
-    console.log('User followers count:', user.followers?.length || 0);
-    
-    // Handle case where followers array doesn't exist or is empty
-    const followers = user.followers || [];
-    
-    // Filter followers who allow messages (default is true if not set)
-    const messageableFollowers = followers.filter(follower => 
-      follower && follower.allowMessages !== false
-    );
-    
-    console.log('Messageable followers count:', messageableFollowers.length);
-    
-    // If no followers, return all users as fallback
-    if (messageableFollowers.length === 0) {
-      const allUsers = await User.find({ 
-        _id: { $ne: req.user._id },
-        allowMessages: { $ne: false }
-      }).select('username profileImg allowMessages').limit(20);
-      
-      console.log('No followers found, returning all users:', allUsers.length);
-      return res.json(allUsers);
-    }
-    
+    console.log('User followers:', user.followers);
+    // Filter out null values (followers who don't allow messages)
+    const messageableFollowers = user.followers.filter(follower => follower !== null);
+    console.log('Messageable followers:', messageableFollowers);
+
     res.json(messageableFollowers);
   } catch (error) {
     console.error('Error in /followers endpoint:', error);
     res.status(500).json({ error: 'Failed to fetch followers' });
-  }
-});
-
-// Get all users for messaging
-router.get('/users', auth, async (req, res) => {
-  try {
-    const allUsers = await User.find({ 
-      _id: { $ne: req.user._id },
-      allowMessages: { $ne: false }
-    }).select('username profileImg allowMessages').limit(50);
-    
-    console.log('All messageable users:', allUsers.length);
-    res.json(allUsers);
-  } catch (error) {
-    console.error('Error fetching all users:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
 
@@ -176,36 +137,11 @@ router.get('/requests', auth, async (req, res) => {
     const requests = await MessageRequest.find({
       recipientId: req.user._id,
       status: 'pending'
-    }).populate('senderId', 'username profilePicture profileImg');
+    }).populate('senderId', 'username profilePicture');
 
-    console.log('Message requests found:', requests.length);
-    res.json(requests || []);
+    res.json(requests);
   } catch (error) {
-    console.error('Error fetching message requests:', error);
     res.status(500).json({ error: 'Failed to fetch message requests' });
-  }
-});
-
-// Test endpoint to check available users
-router.get('/test/users', auth, async (req, res) => {
-  try {
-    const currentUser = await User.findById(req.user._id);
-    const allUsers = await User.find({ 
-      _id: { $ne: req.user._id } 
-    }).select('username profileImg allowMessages').limit(10);
-    
-    console.log('Current user:', currentUser?.username);
-    console.log('Available users:', allUsers.length);
-    console.log('Users with allowMessages:', allUsers.filter(u => u.allowMessages !== false).length);
-    
-    res.json({
-      currentUser: currentUser?.username,
-      totalUsers: allUsers.length,
-      users: allUsers
-    });
-  } catch (error) {
-    console.error('Error in test endpoint:', error);
-    res.status(500).json({ error: 'Test failed' });
   }
 });
 
