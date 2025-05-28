@@ -3,7 +3,7 @@ import { protectRoute } from '../middleware/protectRoute.js';
 import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
 import User from '../models/user.model.js';
-const MessageRequest = require('../models/MessageRequest.js');
+import MessageRequest from '../models/MessageRequest.js';
 
 const router = express.Router();
 
