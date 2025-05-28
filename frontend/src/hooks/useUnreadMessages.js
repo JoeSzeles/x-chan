@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import socketService from '../services/socket';
 
@@ -27,15 +26,23 @@ export const useUnreadMessages = (authUser) => {
     }
   };
 
+  // Function to play notification sound
+  const playNotificationSound = () => {
+    const audio = new Audio('/sounds/notification.mp3'); // Replace with your sound file path
+    audio.play();
+  };
+
   useEffect(() => {
     if (authUser) {
       fetchUnreadCount();
-      
+
       // Listen for new messages via socket
       const handleNewMessage = (message) => {
         // Only increment if message is not from current user
         if (message.senderId._id !== authUser._id) {
           setUnreadCount(prev => prev + 1);
+          // Play notification sound
+          playNotificationSound();
         }
       };
 
