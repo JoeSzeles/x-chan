@@ -11,10 +11,10 @@ router.get('/conversations', auth, async (req, res) => {
     const conversations = await Conversation.find({
       participants: req.user._id
     })
-    .populate('participants', 'username profilePicture')
+    .populate('participants', 'username profileImg')
     .populate('lastMessage.senderId', 'username')
     .sort({ updatedAt: -1 });
-    
+
     res.json(conversations);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch conversations' });
@@ -27,9 +27,9 @@ router.get('/:conversationId', auth, async (req, res) => {
     const messages = await Message.find({
       conversationId: req.params.conversationId
     })
-    .populate('senderId', 'username profilePicture')
+    .populate('senderId', 'username profileImg')
     .sort({ createdAt: 1 });
-    
+
     res.json(messages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch messages' });
@@ -59,7 +59,7 @@ router.post('/:conversationId', auth, async (req, res) => {
     });
 
     const populatedMessage = await Message.findById(newMessage._id)
-      .populate('senderId', 'username profilePicture');
+      .populate('senderId', 'username profileImg');
 
     res.status(201).json(populatedMessage);
   } catch (error) {
@@ -71,7 +71,7 @@ router.post('/:conversationId', auth, async (req, res) => {
 router.post('/start', auth, async (req, res) => {
   try {
     const { recipientId } = req.body;
-    
+
     // Check if conversation already exists
     let conversation = await Conversation.findOne({
       participants: { $all: [req.user._id, recipientId] }
@@ -85,7 +85,7 @@ router.post('/start', auth, async (req, res) => {
     }
 
     const populatedConversation = await Conversation.findById(conversation._id)
-      .populate('participants', 'username profilePicture');
+      .populate('participants', 'username profileImg');
 
     res.status(201).json(populatedConversation);
   } catch (error) {
@@ -113,7 +113,7 @@ router.get('/followers', auth, async (req, res) => {
     // Filter out null values (followers who don't allow messages)
     const messageableFollowers = user.followers.filter(follower => follower !== null);
     console.log('Messageable followers:', messageableFollowers);
-    
+
     res.json(messageableFollowers);
   } catch (error) {
     console.error('Error in /followers endpoint:', error);
@@ -127,8 +127,8 @@ router.get('/requests', auth, async (req, res) => {
     const requests = await MessageRequest.find({
       recipientId: req.user._id,
       status: 'pending'
-    }).populate('senderId', 'username profilePicture');
-    
+    }).populate('senderId', 'username profileImg');
+
     res.json(requests);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch message requests' });
@@ -139,7 +139,7 @@ router.get('/requests', auth, async (req, res) => {
 router.post('/requests/:requestId/accept', auth, async (req, res) => {
   try {
     const request = await MessageRequest.findById(req.params.requestId);
-    
+
     if (!request || request.recipientId.toString() !== req.user._id.toString()) {
       return res.status(404).json({ error: 'Request not found' });
     }
@@ -163,7 +163,7 @@ router.post('/requests/:requestId/accept', auth, async (req, res) => {
 router.post('/requests/:requestId/reject', auth, async (req, res) => {
   try {
     const request = await MessageRequest.findById(req.params.requestId);
-    
+
     if (!request || request.recipientId.toString() !== req.user._id.toString()) {
       return res.status(404).json({ error: 'Request not found' });
     }
@@ -177,4 +177,4 @@ router.post('/requests/:requestId/reject', auth, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;
