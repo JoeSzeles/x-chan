@@ -59,7 +59,7 @@ router.post('/start-conversation', protectRoute, async (req, res) => {
         console.log('[messages.js] /start-conversation endpoint hit');
         console.log('[messages.js] Request body:', req.body);
         console.log('[messages.js] User from protectRoute:', req.user ? req.user._id : 'No user');
-        
+
         const { userId } = req.body;
         console.log(`[messages.js] Starting conversation between ${req.user._id} and ${userId}`);
 
@@ -153,6 +153,30 @@ router.post('/:conversationId', protectRoute, async (req, res) => {
     console.error('Error sending message:', error);
     res.status(500).json({ error: 'Failed to send message' });
   }
+});
+
+// Mark messages as read
+router.patch('/conversations/:conversationId/read', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user._id;
+
+        await Message.updateMany(
+            {
+                conversation: conversationId,
+                sender: { $ne: userId },
+                readBy: { $nin: [userId] }
+            },
+            {
+                $addToSet: { readBy: userId }
+            }
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
+        res.status(500).json({ error: 'Failed to mark messages as read' });
+    }
 });
 
 export default router;
