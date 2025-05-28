@@ -20,6 +20,7 @@ const ChatWindow = ({ conversation }) => {
         setMessages(response.data);
         setLoading(false);
       } catch (err) {
+        console.error('Error fetching messages:', err);
         setError('Failed to fetch messages');
         setLoading(false);
       }
@@ -27,19 +28,26 @@ const ChatWindow = ({ conversation }) => {
 
     if (conversation?._id) {
       fetchMessages();
-      socketService.connect();
-      socketService.joinConversation(conversation._id);
-
-      const handleNewMessage = (message) => {
-        setMessages((prev) => [...prev, message]);
-      };
-
-      socketService.onNewMessage(handleNewMessage);
-
-      return () => {
-        socketService.leaveConversation(conversation._id);
-        socketService.offNewMessage(handleNewMessage);
-      };
+      
+      // Initialize socket connection
+      const socket = initSocket();
+      
+      if (socket) {
+        // Join conversation room
+        socket.emit('joinConversation', conversation._id);
+        
+        // Listen for new messages
+        const handleNewMessage = (message) => {
+          setMessages((prev) => [...prev, message]);
+        };
+        
+        socket.on('newMessage', handleNewMessage);
+        
+        return () => {
+          socket.emit('leaveConversation', conversation._id);
+          socket.off('newMessage', handleNewMessage);
+        };
+      }
     }
   }, [conversation?._id]);
 
@@ -58,9 +66,19 @@ const ChatWindow = ({ conversation }) => {
         { withCredentials: true }
       );
 
-      socketService.sendMessage(response.data);
+      // Emit message via socket
+      const socket = getSocketInstance();
+      if (socket) {
+        socket.emit('sendMessage', {
+          conversationId: conversation._id,
+          message: response.data
+        });
+      }
+      
       setNewMessage('');
+      setError(null); // Clear any previous errors
     } catch (err) {
+      console.error('Error sending message:', err);
       setError('Failed to send message');
     }
   };
@@ -86,9 +104,12 @@ const ChatWindow = ({ conversation }) => {
 			}}>
 				<div className="flex items-center space-x-3">
 					<img
-						src={otherParticipant?.profilePicture || '/default-avatar.png'}
+						src={otherParticipant?.profilePicture || otherParticipant?.profileImg || '/avatar-placeholder.png'}
 						alt={otherParticipant?.username}
 						className="w-10 h-10 rounded-full object-cover"
+						onError={(e) => {
+							e.target.src = '/avatar-placeholder.png';
+						}}
 					/>
 					<div>
 						<h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>

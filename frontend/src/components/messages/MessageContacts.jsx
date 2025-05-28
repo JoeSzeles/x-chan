@@ -12,20 +12,43 @@ const MessageContacts = ({ onStartConversation }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
         console.log('Fetching followers and requests...');
-        const [followersRes, requestsRes] = await Promise.all([
-          axios.get('/api/messages/followers', { withCredentials: true }),
-          axios.get('/api/messages/requests', { withCredentials: true })
-        ]);
-        console.log('Followers response:', followersRes.data);
-        console.log('Requests response:', requestsRes.data);
 
-        setFollowers(followersRes.data);
-        setRequests(requestsRes.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.response?.data?.error || 'Failed to fetch data');
+        // Fetch followers
+        let followersData = [];
+        let requestsData = [];
+
+        try {
+          const followersResponse = await axios.get('/api/messages/followers', { withCredentials: true });
+          followersData = followersResponse.data || [];
+          console.log('Followers response:', followersData);
+        } catch (followersError) {
+          console.warn('Failed to fetch followers:', followersError.response?.status);
+          if (followersError.response?.status !== 404) {
+            throw followersError;
+          }
+        }
+
+        // Fetch requests
+        try {
+          const requestsResponse = await axios.get('/api/messages/requests', { withCredentials: true });
+          requestsData = requestsResponse.data || [];
+          console.log('Requests response:', requestsData);
+        } catch (requestsError) {
+          console.warn('Failed to fetch requests:', requestsError.response?.status);
+          if (requestsError.response?.status !== 404) {
+            throw requestsError;
+          }
+        }
+
+        setFollowers(followersData);
+        setRequests(requestsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError(error.response?.data?.error || 'Failed to fetch data');
+      } finally {
         setLoading(false);
       }
     };
