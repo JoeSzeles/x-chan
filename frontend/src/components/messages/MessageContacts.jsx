@@ -124,9 +124,9 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 			<div className="p-4">
 				{activeContactTab === 'followers' ? (
 					followers?.length > 0 ? (
-						<ul>
+						<ul className="space-y-1">
 							{followers.map((follower) => (
-								<li key={follower._id} className="py-2 border-b border-gray-700 last:border-b-0">
+								<li key={follower._id} className="py-3 px-2 border-b border-gray-700 last:border-b-0 hover:bg-gray-700 rounded">
 									<div className="flex items-center space-x-3">
 										<img
 											src={follower.profileImg || follower.profilePicture || '/avatar-placeholder.png'}
@@ -134,14 +134,15 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 											className="w-10 h-10 rounded-full object-cover border border-gray-600"
 										/>
 										<div className="flex-grow">
-											<p className="text-sm font-semibold text-white">{follower.username}</p>
-											<button
-												className="text-blue-400 hover:text-blue-300 hover:underline focus:outline-none text-sm"
-												onClick={() => handleStartConversation(follower._id)}
-											>
-												Message
-											</button>
+											<p className="text-sm font-semibold text-gray-100">{follower.username}</p>
+											<p className="text-xs text-gray-400">{follower.fullName || 'User'}</p>
 										</div>
+										<button
+											className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+											onClick={() => handleStartConversation(follower._id)}
+										>
+											Message
+										</button>
 									</div>
 								</li>
 							))}
