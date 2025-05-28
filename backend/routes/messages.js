@@ -14,7 +14,7 @@ router.get('/conversations', auth, async (req, res) => {
     .populate('participants', 'username profilePicture')
     .populate('lastMessage.senderId', 'username')
     .sort({ updatedAt: -1 });
-    
+
     res.json(conversations);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch conversations' });
@@ -29,7 +29,7 @@ router.get('/:conversationId', auth, async (req, res) => {
     })
     .populate('senderId', 'username profilePicture')
     .sort({ createdAt: 1 });
-    
+
     res.json(messages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch messages' });
@@ -40,29 +40,41 @@ router.get('/:conversationId', auth, async (req, res) => {
 router.post('/:conversationId', auth, async (req, res) => {
   try {
     const { content } = req.body;
-    const newMessage = new Message({
-      conversationId: req.params.conversationId,
+    const conversationId = req.params.conversationId;
+
+    // Verify user is part of conversation
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation || !conversation.participants.includes(req.user._id)) {
+      return res.status(403).json({ error: 'Not authorized to send messages in this conversation' });
+    }
+
+    const message = new Message({
+      conversationId,
       senderId: req.user._id,
+      content
+    });
+
+    await message.save();
+    await message.populate('senderId', 'username profilePicture profileImg');
+
+    // Update conversation's last message
+    conversation.lastMessage = {
       content,
-      readBy: [req.user._id]
-    });
-    await newMessage.save();
+      senderId: req.user._id,
+      timestamp: new Date()
+    };
+    conversation.updatedAt = new Date();
+    await conversation.save();
 
-    // Update conversation's lastMessage and updatedAt
-    await Conversation.findByIdAndUpdate(req.params.conversationId, {
-      lastMessage: {
-        content,
-        senderId: req.user._id,
-        timestamp: new Date()
-      },
-      updatedAt: new Date()
-    });
+    // Broadcast message via socket.io if available
+    const io = req.app.get('socketio');
+    if (io) {
+      io.to(`conversation_${conversationId}`).emit('newMessage', message);
+    }
 
-    const populatedMessage = await Message.findById(newMessage._id)
-      .populate('senderId', 'username profilePicture');
-
-    res.status(201).json(populatedMessage);
+    res.status(201).json(message);
   } catch (error) {
+    console.error('Error sending message:', error);
     res.status(500).json({ error: 'Failed to send message' });
   }
 });
@@ -71,7 +83,7 @@ router.post('/:conversationId', auth, async (req, res) => {
 router.post('/start', auth, async (req, res) => {
   try {
     const { recipientId } = req.body;
-    
+
     // Check if conversation already exists
     let conversation = await Conversation.findOne({
       participants: { $all: [req.user._id, recipientId] }
@@ -96,16 +108,14 @@ router.post('/start', auth, async (req, res) => {
 // Get followers who allow messages
 router.get('/followers', auth, async (req, res) => {
   try {
-    console.log('Fetching followers for user:', req.user._id);
     const user = await User.findById(req.user._id)
       .populate({
         path: 'followers',
-        select: 'username profileImg allowMessages',
-        match: { allowMessages: true }
+        select: 'username profilePicture profileImg allowMessages',
+        match: { allowMessages: { $ne: false } }
       });
 
     if (!user) {
-      console.error('User not found:', req.user._id);
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -113,7 +123,7 @@ router.get('/followers', auth, async (req, res) => {
     // Filter out null values (followers who don't allow messages)
     const messageableFollowers = user.followers.filter(follower => follower !== null);
     console.log('Messageable followers:', messageableFollowers);
-    
+
     res.json(messageableFollowers);
   } catch (error) {
     console.error('Error in /followers endpoint:', error);
@@ -128,7 +138,7 @@ router.get('/requests', auth, async (req, res) => {
       recipientId: req.user._id,
       status: 'pending'
     }).populate('senderId', 'username profilePicture');
-    
+
     res.json(requests);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch message requests' });
@@ -139,7 +149,7 @@ router.get('/requests', auth, async (req, res) => {
 router.post('/requests/:requestId/accept', auth, async (req, res) => {
   try {
     const request = await MessageRequest.findById(req.params.requestId);
-    
+
     if (!request || request.recipientId.toString() !== req.user._id.toString()) {
       return res.status(404).json({ error: 'Request not found' });
     }
@@ -163,7 +173,7 @@ router.post('/requests/:requestId/accept', auth, async (req, res) => {
 router.post('/requests/:requestId/reject', auth, async (req, res) => {
   try {
     const request = await MessageRequest.findById(req.params.requestId);
-    
+
     if (!request || request.recipientId.toString() !== req.user._id.toString()) {
       return res.status(404).json({ error: 'Request not found' });
     }
@@ -177,4 +187,4 @@ router.post('/requests/:requestId/reject', auth, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

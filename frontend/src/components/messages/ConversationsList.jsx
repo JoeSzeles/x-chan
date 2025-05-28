@@ -52,10 +52,13 @@ const ConversationsList = ({ onSelectConversation }) => {
             >
               <div className="flex items-center space-x-3">
                 <img
-                  src={otherParticipant?.profilePicture || '/default-avatar.png'}
-                  alt={otherParticipant?.username}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
+								src={otherParticipant?.profilePicture || otherParticipant?.profileImg || '/avatar-placeholder.png'}
+								alt={otherParticipant?.username}
+								className="w-12 h-12 rounded-full object-cover"
+								onError={(e) => {
+									e.target.src = '/avatar-placeholder.png';
+								}}
+							/>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
                     <h3 className="text-sm font-medium text-gray-900 truncate">
