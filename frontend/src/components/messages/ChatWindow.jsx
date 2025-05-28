@@ -58,11 +58,6 @@ const ChatWindow = ({ conversation, authUser }) => {
 
       socketService.onNewMessage(handleNewMessage);
 
-      // Scroll to bottom after initial load with a small delay
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
-      }, 100);
-
       return () => {
         socketService.leaveConversation(conversation._id);
         socketService.offNewMessage(handleNewMessage);
@@ -70,22 +65,7 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   }, [conversation?._id]);
 
-  useEffect(() => {
-    // Only auto-scroll if user is near the bottom or if it's a new message from current user
-    const messagesContainer = messagesEndRef.current?.parentElement;
-    if (messagesContainer && messages.length > 0) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      
-      // Auto-scroll if user is near bottom or if the last message is from current user
-      const lastMessage = messages[messages.length - 1];
-      const isOwnMessage = lastMessage?.senderId._id === currentUserId;
-      
-      if (isNearBottom || isOwnMessage) {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  }, [messages, currentUserId]);
+  
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
