@@ -64,26 +64,39 @@ const ChatWindow = ({ conversation, authUser }) => {
   useEffect(() => {
     if (conversation?._id) {
       fetchMessages();
-      socketService.connect();
+      
+      // Ensure socket is connected
+      if (!socketService.isConnected) {
+        socketService.connect();
+      }
+      
       socketService.joinConversation(conversation._id);
 
       // Mark messages as read when opening conversation
       markAsRead();
 
       const handleNewMessage = (message) => {
+        console.log('Received new message:', message);
+        
+        // Only process messages for the current conversation
+        if (message.conversationId !== conversation._id) {
+          console.log('Message not for current conversation, ignoring');
+          return;
+        }
+        
         setMessages((prev) => {
           // Prevent duplicate messages by checking if message already exists
           const messageExists = prev.some(msg => msg._id === message._id);
           if (messageExists) {
+            console.log('Message already exists, skipping');
             return prev;
           }
+          console.log('Adding new message to state');
           return [...prev, message];
         });
         
-        // Mark as read if conversation is open
-        if (conversation._id === message.conversationId) {
-          setTimeout(markAsRead, 1000);
-        }
+        // Mark as read immediately since conversation is open
+        setTimeout(markAsRead, 500);
       };
 
       socketService.onNewMessage(handleNewMessage);
@@ -142,10 +155,10 @@ const ChatWindow = ({ conversation, authUser }) => {
 
       const messageData = await response.json();
       
-      // Add message to local state immediately
-      setMessages((prev) => [...prev, messageData]);
+      // Don't add to local state here - let the socket handler do it
+      // This prevents duplicate messages and ensures consistency
       
-      // Send via socket for real-time updates to other participants
+      // Send via socket for real-time updates to all participants (including sender)
       socketService.sendMessage(messageData);
       
       inputRef.current?.focus();

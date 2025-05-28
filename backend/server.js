@@ -265,6 +265,52 @@ io.on('connection', socket => {
         });
         socket.join(`bot_${botId}`);
     });
+
+    // Socket.IO connection handling
+    io.on('connection', (socket) => {
+        console.log('User connected:', socket.id);
+
+        // Join conversation room
+        socket.on('join_conversation', (conversationId) => {
+            socket.join(conversationId);
+            console.log(`User ${socket.id} joined conversation ${conversationId}`);
+        });
+
+        // Leave conversation room
+        socket.on('leave_conversation', (conversationId) => {
+            socket.leave(conversationId);
+            console.log(`User ${socket.id} left conversation ${conversationId}`);
+        });
+
+        // Handle new message - improved broadcasting
+        socket.on('new_message', (message) => {
+            // Broadcast to all users in the conversation including sender
+            io.to(message.conversationId).emit('new_message', message);
+            console.log(`Broadcasting message to conversation ${message.conversationId}`);
+        });
+
+        // Handle send_message event
+        socket.on('send_message', (data) => {
+            const { conversationId, message } = data;
+            // Broadcast to all users in the conversation including sender
+            io.to(conversationId).emit('new_message', message);
+            console.log(`Broadcasting message to conversation ${conversationId}`);
+        });
+
+        // Handle typing indicators
+        socket.on('typing', (data) => {
+            const { conversationId, isTyping } = data;
+            socket.to(conversationId).emit('user_typing', {
+                userId: socket.userId,
+                conversationId,
+                isTyping
+            });
+        });
+
+        socket.on('disconnect', () => {
+            console.log('User disconnected:', socket.id);
+        });
+    });
 });
 
 connectMongoDB().then(() => {

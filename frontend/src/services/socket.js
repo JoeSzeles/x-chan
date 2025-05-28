@@ -55,7 +55,30 @@ class SocketService {
 
   sendMessage(message) {
     if (this.socket && this.isConnected) {
-      this.socket.emit('new_message', message);
+      // Emit to specific conversation room
+      this.socket.emit('send_message', {
+        conversationId: message.conversationId,
+        message: message
+      });
+    }
+  }
+
+  // Listen for typing indicators
+  onTyping(callback) {
+    if (this.socket) {
+      this.socket.on('user_typing', callback);
+    }
+  }
+
+  offTyping(callback) {
+    if (this.socket) {
+      this.socket.off('user_typing', callback);
+    }
+  }
+
+  sendTyping(conversationId, isTyping) {
+    if (this.socket && this.isConnected) {
+      this.socket.emit('typing', { conversationId, isTyping });
     }
   }
 
