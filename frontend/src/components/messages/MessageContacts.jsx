@@ -19,7 +19,7 @@ const MessageContacts = ({ onStartConversation }) => {
         ]);
         console.log('Followers response:', followersRes.data);
         console.log('Requests response:', requestsRes.data);
-
+        
         setFollowers(followersRes.data);
         setRequests(requestsRes.data);
         setLoading(false);
@@ -83,7 +83,7 @@ const MessageContacts = ({ onStartConversation }) => {
   return (
     <div className="h-full flex flex-col">
       {/* Tabs */}
-      <div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
+      <div className="flex border-b">
         <button
           className={`flex-1 py-2 px-4 text-center ${
             activeTab === 'followers'
@@ -176,4 +176,4 @@ const MessageContacts = ({ onStartConversation }) => {
   );
 };
 
-export default MessageContacts;
+export default MessageContacts; 
