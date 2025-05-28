@@ -11,6 +11,9 @@ const Messages = () => {
   const [activeTab, setActiveTab] = useState('conversations');
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [notificationSoundsEnabled, setNotificationSoundsEnabled] = useState(
+    localStorage.getItem('notificationSoundsEnabled') !== 'false' // Default to true
+  );
 
   const { data: authUser, isLoading: authUserLoading } = useQuery({
     queryKey: ["authUser"],
@@ -126,6 +129,29 @@ const Messages = () => {
             }}
           >
             Contacts
+          </button>
+        </div>
+
+        {/* Notification sound toggle */}
+        <div className="p-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border-default)' }}>
+          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            🔊 Sound notifications
+          </span>
+          <button
+            onClick={() => {
+              const newValue = !notificationSoundsEnabled;
+              setNotificationSoundsEnabled(newValue);
+              localStorage.setItem('notificationSoundsEnabled', newValue.toString());
+            }}
+            className={`w-10 h-6 rounded-full transition-colors duration-300 ${
+              notificationSoundsEnabled ? 'bg-green-500' : 'bg-gray-400'
+            } relative`}
+          >
+            <div
+              className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform duration-300 ${
+                notificationSoundsEnabled ? 'translate-x-5' : 'translate-x-1'
+              }`}
+            />
           </button>
         </div>
 

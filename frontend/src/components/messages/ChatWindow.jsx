@@ -17,9 +17,49 @@ const ChatWindow = ({ conversation, authUser }) => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const notificationSoundRef = useRef(null);
   const currentUserId = authUser?._id;
 
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎'];
+
+  // Notification sound functionality
+  const playNotificationSound = () => {
+    // Check if notification sounds are enabled
+    const soundsEnabled = localStorage.getItem('notificationSoundsEnabled') !== 'false';
+    if (!soundsEnabled) return;
+    
+    try {
+      // Create audio context for web-based notification sound
+      if (window.AudioContext || window.webkitAudioContext) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } else {
+        // Fallback: Try to use HTML5 audio if available
+        if (notificationSoundRef.current) {
+          notificationSoundRef.current.volume = 0.3;
+          notificationSoundRef.current.play().catch(e => {
+            console.log('Could not play notification sound:', e);
+          });
+        }
+      }
+    } catch (error) {
+      console.log('Notification sound error:', error);
+    }
+  };
 
   const fetchMessages = async () => {
     try {
@@ -94,6 +134,10 @@ const ChatWindow = ({ conversation, authUser }) => {
               return prev;
             }
             console.log('Adding new message from other user to state');
+            
+            // Play notification sound for new message
+            playNotificationSound();
+            
             return [...prev, message];
           });
           
@@ -322,6 +366,16 @@ const ChatWindow = ({ conversation, authUser }) => {
 
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+      {/* Hidden audio element for notification sound fallback */}
+      <audio
+        ref={notificationSoundRef}
+        preload="auto"
+        style={{ display: 'none' }}
+      >
+        <source src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAADICE1...=" type="audio/mpeg" />
+        {/* Fallback for browsers that don't support MP3 */}
+      </audio>
+      
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b" style={{ 
         borderColor: 'var(--color-border-default)', 
