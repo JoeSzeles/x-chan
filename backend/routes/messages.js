@@ -74,6 +74,35 @@ router.post('/start-conversation', protectRoute, async (req, res) => {
     }
 });
 
+// Get unread messages count
+router.get('/unread-count', protectRoute, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Get all conversations where user is a participant
+    const conversations = await Conversation.find({
+      participants: userId
+    });
+
+    let unreadCount = 0;
+
+    for (const conversation of conversations) {
+      // Count unread messages in each conversation
+      const count = await Message.countDocuments({
+        conversationId: conversation._id,
+        senderId: { $ne: userId }, // Not sent by current user
+        readBy: { $ne: userId } // Not read by current user
+      });
+      unreadCount += count;
+    }
+
+    res.json({ unreadCount });
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get all conversations for a user
 router.get('/conversations', protectRoute, async (req, res) => {
     try {
@@ -92,6 +121,31 @@ router.get('/conversations', protectRoute, async (req, res) => {
         console.error('[messages.js] Error fetching conversations:', error);
         res.status(500).json({ error: 'Failed to fetch conversations' });
     }
+});
+
+// Mark messages as read
+router.put('/conversations/:conversationId/mark-read', protectRoute, async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user._id;
+
+    // Update all unread messages in this conversation
+    await Message.updateMany(
+      {
+        conversationId: conversationId,
+        senderId: { $ne: userId }, // Not sent by current user
+        readBy: { $ne: userId } // Not already read by current user
+      },
+      {
+        $addToSet: { readBy: userId }
+      }
+    );
+
+    res.json({ message: 'Messages marked as read' });
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Get messages for a conversation (alternative route for compatibility)
@@ -120,6 +174,121 @@ router.get('/:conversationId', protectRoute, async (req, res) => {
         console.error('[messages.js] Error fetching messages:', error);
         res.status(500).json({ error: 'Failed to fetch messages' });
     }
+});
+
+// Add/remove reaction to message
+router.post('/conversations/:conversationId/messages/:messageId/reactions', protectRoute, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user._id;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    // Find existing reaction for this emoji
+    let reactionIndex = message.reactions.findIndex(r => r.emoji === emoji);
+
+    if (reactionIndex === -1) {
+      // Create new reaction
+      message.reactions.push({
+        emoji,
+        users: [userId],
+        count: 1
+      });
+    } else {
+      // Toggle user's reaction
+      const reaction = message.reactions[reactionIndex];
+      const userIndex = reaction.users.indexOf(userId);
+
+      if (userIndex === -1) {
+        // Add user to reaction
+        reaction.users.push(userId);
+        reaction.count++;
+      } else {
+        // Remove user from reaction
+        reaction.users.splice(userIndex, 1);
+        reaction.count--;
+
+        // Remove reaction if no users left
+        if (reaction.count === 0) {
+          message.reactions.splice(reactionIndex, 1);
+        }
+      }
+    }
+
+    await message.save();
+    await message.populate('senderId', 'username fullName profileImg');
+
+    res.json(message);
+  } catch (error) {
+    console.error('Error toggling reaction:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Edit message
+router.put('/conversations/:conversationId/messages/:messageId', protectRoute, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { content } = req.body;
+    const userId = req.user._id;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    // Check if user owns the message
+    if (message.senderId.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to edit this message' });
+    }
+
+    // Check if message is not too old (optional: 15 minutes limit)
+    const fifteenMinutes = 15 * 60 * 1000;
+    if (Date.now() - message.createdAt.getTime() > fifteenMinutes) {
+      return res.status(400).json({ error: 'Message too old to edit' });
+    }
+
+    message.content = content;
+    message.editedAt = new Date();
+    message.isEdited = true;
+
+    await message.save();
+    await message.populate('senderId', 'username fullName profileImg');
+
+    res.json(message);
+  } catch (error) {
+    console.error('Error editing message:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Delete message
+router.delete('/conversations/:conversationId/messages/:messageId', protectRoute, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user._id;
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    // Check if user owns the message
+    if (message.senderId.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to delete this message' });
+    }
+
+    await Message.findByIdAndDelete(messageId);
+
+    res.json({ message: 'Message deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Send a message (alternative route for compatibility)

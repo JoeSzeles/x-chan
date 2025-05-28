@@ -6,9 +6,10 @@ import { BsNewspaper, BsChatDots, BsGrid3X3 } from "react-icons/bs";
 import { RiServiceLine } from "react-icons/ri";
 import { Link, useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import PostPopup from "./PostPopup";
 import { useState } from "react";
+import { useUnreadMessages } from "../../hooks/useUnreadMessages";
 
 const Sidebar = ({ isWideMode }) => {
 	const [showPostPopup, setShowPostPopup] = useState(false);
@@ -39,6 +40,7 @@ const Sidebar = ({ isWideMode }) => {
 		},
 	});
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+	const { unreadCount } = useUnreadMessages(authUser);
 
 	const isActive = (path) => {
 		return location.pathname === path;
@@ -105,10 +107,15 @@ const Sidebar = ({ isWideMode }) => {
 					<li className='flex justify-center md:justify-start'>
 						<Link
 							to='/messages'
-							className={`nav-button ${isActive('/messages') ? 'active' : ''}`}
+							className={`nav-button relative ${isActive('/messages') ? 'active' : ''}`}
 						>
 							<BsChatDots className='w-6 h-6' />
 							<span className='text-lg hidden md:block'>Messages</span>
+							{unreadCount > 0 && (
+								<span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1'>
+									{unreadCount > 99 ? '99+' : unreadCount}
+								</span>
+							)}
 						</Link>
 					</li>
 					<li className='flex justify-center md:justify-start'>
