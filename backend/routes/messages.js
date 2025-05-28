@@ -2,12 +2,12 @@ import express from 'express';
 import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
-import { authenticateToken as auth } from '../middleware/auth.js';
+import { protectRoute } from '../middleware/protectRoute.js';
 
 const router = express.Router();
 
 // Get all conversations for the logged-in user
-router.get('/conversations', auth, async (req, res) => {
+router.get('/conversations', protectRoute, async (req, res) => {
   try {
     const conversations = await Conversation.find({
       participants: req.user._id
@@ -24,7 +24,7 @@ router.get('/conversations', auth, async (req, res) => {
 });
 
 // Get messages in a conversation
-router.get('/:conversationId', auth, async (req, res) => {
+router.get('/:conversationId', protectRoute, async (req, res) => {
   try {
     const messages = await Message.find({
       conversationId: req.params.conversationId
@@ -40,7 +40,7 @@ router.get('/:conversationId', auth, async (req, res) => {
 });
 
 // Send a message
-router.post('/:conversationId', auth, async (req, res) => {
+router.post('/:conversationId', protectRoute, async (req, res) => {
   try {
     const { content } = req.body;
     const newMessage = new Message({
@@ -72,7 +72,7 @@ router.post('/:conversationId', auth, async (req, res) => {
 });
 
 // Start a new conversation
-router.post('/start', auth, async (req, res) => {
+router.post('/start', protectRoute, async (req, res) => {
   try {
     const { recipientId } = req.body;
     const userId = req.user._id;
