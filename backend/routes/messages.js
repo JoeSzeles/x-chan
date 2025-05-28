@@ -56,34 +56,47 @@ router.post('/conversations', protectRoute, async (req, res) => {
 // Start conversation with a specific user
 router.post('/start-conversation', protectRoute, async (req, res) => {
     try {
+        console.log('[messages.js] /start-conversation endpoint hit');
+        console.log('[messages.js] Request body:', req.body);
+        console.log('[messages.js] User from protectRoute:', req.user ? req.user._id : 'No user');
+        
         const { userId } = req.body;
         console.log(`[messages.js] Starting conversation between ${req.user._id} and ${userId}`);
 
         if (!userId) {
+            console.log('[messages.js] Error: No userId provided');
             return res.status(400).json({ error: 'User ID is required' });
         }
 
         if (userId === req.user._id.toString()) {
+            console.log('[messages.js] Error: User trying to start conversation with themselves');
             return res.status(400).json({ error: 'Cannot start conversation with yourself' });
         }
 
+        console.log('[messages.js] Checking if conversation already exists...');
         // Check if conversation already exists
         let conversation = await Conversation.findOne({
             participants: { $all: [req.user._id, userId] }
         }).populate('participants', 'username fullName profileImg');
 
         if (!conversation) {
+            console.log('[messages.js] Creating new conversation...');
             conversation = new Conversation({
                 participants: [req.user._id, userId]
             });
             await conversation.save();
+            console.log('[messages.js] Conversation saved, populating participants...');
             await conversation.populate('participants', 'username fullName profileImg');
+        } else {
+            console.log('[messages.js] Found existing conversation:', conversation._id);
         }
 
         console.log(`[messages.js] Conversation ready:`, conversation._id);
+        console.log('[messages.js] Sending success response');
         res.json(conversation);
     } catch (error) {
         console.error('[messages.js] Error starting conversation:', error);
+        console.error('[messages.js] Error stack:', error.stack);
         res.status(500).json({ error: 'Failed to start conversation' });
     }
 });
