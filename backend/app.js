@@ -23,6 +23,7 @@ import leechRoutes from "./routes/leech.js";
 import bookmarkRoutes from "./routes/bookmark.route.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import listRoutes from "./routes/listRoutes.js";
+import messageRoutes from "./routes/messages.js";
 
 // Load environment variables
 dotenv.config();
@@ -63,6 +64,7 @@ app.use("/api/comments", commentRoutes);
 app.use("/api/leech", leechRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/lists", listRoutes);
+app.use("/api/messages", messageRoutes);
 
 // Error handling middleware
 app.use(errorHandler);
