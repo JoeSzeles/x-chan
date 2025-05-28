@@ -5,6 +5,52 @@ const Message = require('../models/Message');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
+// Start a new conversation
+router.post('/start', auth, async (req, res) => {
+  try {
+    const { recipientId } = req.body;
+    const userId = req.user._id;
+
+    if (!recipientId) {
+      return res.status(400).json({ error: 'Recipient ID is required' });
+    }
+
+    if (recipientId === userId.toString()) {
+      return res.status(400).json({ error: 'Cannot start conversation with yourself' });
+    }
+
+    // Check if recipient exists
+    const recipient = await User.findById(recipientId);
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient not found' });
+    }
+
+    // Check if conversation already exists
+    let conversation = await Conversation.findOne({
+      participants: { $all: [userId, recipientId] }
+    }).populate('participants', 'username profileImg profilePicture fullName');
+
+    if (!conversation) {
+      // Create new conversation
+      conversation = new Conversation({
+        participants: [userId, recipientId],
+        lastMessage: null,
+        lastActivity: new Date()
+      });
+      await conversation.save();
+      
+      // Populate participants
+      conversation = await Conversation.findById(conversation._id)
+        .populate('participants', 'username profileImg profilePicture fullName');
+    }
+
+    res.json(conversation);
+  } catch (error) {
+    console.error('Error starting conversation:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get all conversations for the logged-in user
 router.get('/conversations', auth, async (req, res) => {
   try {

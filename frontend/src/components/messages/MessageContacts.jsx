@@ -81,7 +81,7 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 
 	if (loadingFollowing || loading) {
 		return (
-			<div className="p-4 flex justify-center items-center">
+			<div className="p-4 flex justify-center items-center bg-gray-800 rounded-md border border-gray-700">
 				<LoadingSpinner size="sm" />
 				<span className="ml-2 text-gray-400">Loading contacts...</span>
 			</div>
@@ -90,8 +90,8 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 
 	if (error || followingError) {
 		return (
-			<div className="p-4 text-center">
-				<p className="text-red-500 mb-2">{error || followingError?.message}</p>
+			<div className="p-4 text-center bg-gray-800 rounded-md border border-gray-700">
+				<p className="text-red-400 mb-2">{error || followingError?.message}</p>
 				<button
 					onClick={() => window.location.reload()}
 					className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
@@ -103,17 +103,17 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 	}
 
 	return (
-		<div className="bg-white shadow rounded-md overflow-hidden">
-			<div className="flex border-b">
+		<div className="bg-gray-800 border border-gray-700 shadow rounded-md overflow-hidden">
+			<div className="flex border-b border-gray-700">
 				<button
-					className={`flex-1 py-2 px-4 text-center ${activeContactTab === 'followers' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'
+					className={`flex-1 py-2 px-4 text-center ${activeContactTab === 'followers' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-gray-300'
 						}`}
 					onClick={() => setActiveContactTab('followers')}
 				>
 					Followers
 				</button>
 				<button
-					className={`flex-1 py-2 px-4 text-center ${activeContactTab === 'requests' ? 'border-b-2 border-blue-500 text-blue-500' : 'text-gray-500'
+					className={`flex-1 py-2 px-4 text-center ${activeContactTab === 'requests' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-gray-300'
 						}`}
 					onClick={() => setActiveContactTab('requests')}
 				>
@@ -126,17 +126,17 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 					followers?.length > 0 ? (
 						<ul>
 							{followers.map((follower) => (
-								<li key={follower._id} className="py-2 border-b last:border-b-0">
+								<li key={follower._id} className="py-2 border-b border-gray-700 last:border-b-0">
 									<div className="flex items-center space-x-3">
 										<img
 											src={follower.profileImg || follower.profilePicture || '/avatar-placeholder.png'}
 											alt={follower.username}
-											className="w-10 h-10 rounded-full object-cover"
+											className="w-10 h-10 rounded-full object-cover border border-gray-600"
 										/>
 										<div className="flex-grow">
-											<p className="text-sm font-semibold">{follower.username}</p>
+											<p className="text-sm font-semibold text-white">{follower.username}</p>
 											<button
-												className="text-blue-600 hover:underline focus:outline-none"
+												className="text-blue-400 hover:text-blue-300 hover:underline focus:outline-none text-sm"
 												onClick={() => handleStartConversation(follower._id)}
 											>
 												Message
@@ -147,19 +147,19 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 							))}
 						</ul>
 					) : (
-						<p className="text-gray-500">No followers to display.</p>
+						<p className="text-gray-400">No followers to display.</p>
 					)
 				) : (
 					requests?.length > 0 ? (
 						<ul>
 							{requests.map((request) => (
-								<li key={request._id} className="py-2 border-b last:border-b-0">
+								<li key={request._id} className="py-2 border-b border-gray-700 last:border-b-0">
 									{/* Render Request Item */}
 								</li>
 							))}
 						</ul>
 					) : (
-						<p className="text-gray-500">No requests to display.</p>
+						<p className="text-gray-400">No requests to display.</p>
 					)
 				)}
 			</div>
