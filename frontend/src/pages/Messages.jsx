@@ -112,7 +112,7 @@ const Messages = () => {
   return (
     <div className="flex-1 flex h-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-main)' }}>
       {/* Left sidebar */}
-      <div className="w-1/3 border-r flex flex-col" style={{ 
+      <div className="w-1/3 border-r flex flex-col overflow-hidden" style={{ 
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
         height: '100%'
@@ -173,7 +173,7 @@ const Messages = () => {
         </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
               {activeTab === 'conversations' ? (
                 <ConversationsList
                   authUser={authUser}

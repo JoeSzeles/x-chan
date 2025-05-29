@@ -153,8 +153,8 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 	}
 
 	return (
-		<div className="bg-gray-800 border border-gray-700 shadow rounded-md overflow-hidden">
-			<div className="flex border-b border-gray-700">
+		<div>
+			<div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
 				<button
 					className={`flex-1 py-2 px-4 text-center ${activeContactTab === 'followers' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-gray-300'
 						}`}
@@ -176,7 +176,7 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 					followers?.length > 0 ? (
 						<ul className="space-y-1">
 							{followers.map((follower) => (
-								<li key={follower._id} className="py-3 px-2 border-b border-gray-700 last:border-b-0 hover:bg-gray-700 rounded">
+								<li key={follower._id} className="py-3 px-2 border-b last:border-b-0 hover:opacity-80 rounded" style={{ borderColor: 'var(--color-border-default)' }}>
 									<div className="flex items-center space-x-3">
 										<div className="relative">
 											<img
