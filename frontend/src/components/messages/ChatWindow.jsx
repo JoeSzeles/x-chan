@@ -14,13 +14,10 @@ const ChatWindow = ({ conversation, authUser }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [otherUserTyping, setOtherUserTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const notificationSoundRef = useRef(null);
-  const typingTimeoutRef = useRef(null);
   const currentUserId = authUser?._id;
 
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎'];
@@ -61,33 +58,6 @@ const ChatWindow = ({ conversation, authUser }) => {
       }
     } catch (error) {
       console.log('Notification sound error:', error);
-    }
-  };
-
-  // Typing indicator sound functionality
-  const playTypingSound = () => {
-    const soundsEnabled = localStorage.getItem('notificationSoundsEnabled') !== 'false';
-    if (!soundsEnabled) return;
-    
-    try {
-      if (window.AudioContext || window.webkitAudioContext) {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // Soft typing sound
-        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
-      }
-    } catch (error) {
-      console.log('Typing sound error:', error);
     }
   };
 
@@ -181,27 +151,9 @@ const ChatWindow = ({ conversation, authUser }) => {
 
       socketService.onNewMessage(handleNewMessage);
 
-      // Handle typing indicators
-      const handleTypingIndicator = (data) => {
-        if (data.conversationId === conversation._id && data.userId !== currentUserId) {
-          setOtherUserTyping(data.isTyping);
-          if (data.isTyping) {
-            playTypingSound();
-          }
-        }
-      };
-
-      socketService.onTyping(handleTypingIndicator);
-
       return () => {
         socketService.leaveConversation(conversation._id);
         socketService.offNewMessage(handleNewMessage);
-        socketService.offTyping(handleTypingIndicator);
-        
-        // Clear typing timeout
-        if (typingTimeoutRef.current) {
-          clearTimeout(typingTimeoutRef.current);
-        }
       };
     }
   }, [conversation?._id, currentUserId]);
@@ -276,36 +228,6 @@ const ChatWindow = ({ conversation, authUser }) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    setNewMessage(e.target.value);
-    
-    // Handle typing indicators
-    if (e.target.value.trim() && !isTyping) {
-      setIsTyping(true);
-      socketService.sendTyping(conversation._id, true);
-    }
-    
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    // Set new timeout to stop typing indicator
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      socketService.sendTyping(conversation._id, false);
-    }, 2000);
-    
-    // If input is empty, immediately stop typing
-    if (!e.target.value.trim() && isTyping) {
-      setIsTyping(false);
-      socketService.sendTyping(conversation._id, false);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
     }
   };
 
@@ -780,7 +702,7 @@ const ChatWindow = ({ conversation, authUser }) => {
               ref={inputRef}
               type="text"
               value={newMessage}
-              onChange={handleInputChange}
+              onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={`Message @${otherParticipant?.username}...`}
               disabled={sending}
@@ -852,18 +774,9 @@ const ChatWindow = ({ conversation, authUser }) => {
           </button>
         </form>
         
-        {/* Typing indicator */}
-        <div className="mt-2 h-6 flex items-center">
-          {otherUserTyping && (
-            <div className="flex items-center space-x-2 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--color-primary)' }}></div>
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--color-primary)', animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--color-primary)', animationDelay: '0.4s' }}></div>
-              </div>
-              <span>{otherParticipant?.username} is typing...</span>
-            </div>
-          )}
+        {/* Optional: Typing indicator */}
+        <div className="mt-2 h-4">
+          {/* Add typing indicator here if needed */}
         </div>
       </div>
     </div>
