@@ -7,6 +7,29 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 	const [conversations, setConversations] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+
+	const { data: authUser } = useQuery({
+		queryKey: ["authUser"],
+		queryFn: async () => {
+			try {
+				const res = await fetch("/api/auth/me", {
+					credentials: 'include',
+					headers: {
+						"Authorization": `Bearer ${localStorage.getItem("token")}`,
+					},
+				});
+				const data = await res.json();
+				if (!res.ok) {
+					throw new Error(data.error || "Something went wrong");
+				}
+				return data;
+			} catch (error) {
+				console.error("Error fetching user:", error);
+				return null;
+			}
+		},
+		retry: false,
+	});
   
 
 	useEffect(() => {
