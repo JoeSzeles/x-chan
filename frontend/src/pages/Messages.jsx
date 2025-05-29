@@ -115,8 +115,7 @@ const Messages = () => {
       <div className="w-1/3 border-r flex flex-col" style={{ 
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
-        height: '100vh',
-        maxHeight: '100vh',
+        height: '100%',
         overflow: 'hidden'
       }}>
         {/* Tab navigation */}
@@ -176,7 +175,6 @@ const Messages = () => {
 
             {/* Content */}
             <div className="flex-1" style={{ 
-              height: 'calc(100% - 120px)', 
               overflow: 'hidden'
             }}>
               <div className="h-full overflow-y-auto">
@@ -200,8 +198,7 @@ const Messages = () => {
           {/* Right panel */}
       <div className="w-2/3 flex flex-col" style={{ 
         backgroundColor: 'var(--color-bg-main)', 
-        height: '100vh',
-        maxHeight: '100vh',
+        height: '100%',
         overflow: 'hidden'
       }}>
         {selectedConversation ? (
