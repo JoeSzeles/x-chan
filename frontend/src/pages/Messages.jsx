@@ -110,17 +110,13 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex-1 flex overflow-hidden" style={{ 
-      backgroundColor: 'var(--color-bg-main)',
-      height: 'calc(100vh - 80px)', // Subtract header height
-      maxHeight: 'calc(100vh - 80px)'
+    <div className="flex-1 flex h-full overflow-hidden" style={{ 
+      backgroundColor: 'var(--color-bg-main)'
     }}>
       {/* Left sidebar */}
-      <div className="w-1/3 border-r flex flex-col" style={{ 
+      <div className="w-1/3 border-r flex flex-col h-full" style={{ 
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
-        height: '100%',
-        maxHeight: '100%',
         overflow: 'hidden'
       }}>
         {/* Tab navigation */}
@@ -179,10 +175,7 @@ const Messages = () => {
         </div>
 
             {/* Content */}
-            <div className="flex-1" style={{ 
-              overflow: 'hidden',
-              height: 'calc(100% - 120px)' // Account for tabs and notification toggle
-            }}>
+            <div className="flex-1 overflow-hidden">
               <div className="h-full overflow-y-auto">
                 {activeTab === 'conversations' ? (
                 <ConversationsList
@@ -202,9 +195,8 @@ const Messages = () => {
           </div>
 
           {/* Right panel */}
-      <div className="w-2/3 flex flex-col" style={{ 
+      <div className="w-2/3 flex flex-col h-full" style={{ 
         backgroundColor: 'var(--color-bg-main)', 
-        height: '100%',
         overflow: 'hidden'
       }}>
         {selectedConversation ? (
