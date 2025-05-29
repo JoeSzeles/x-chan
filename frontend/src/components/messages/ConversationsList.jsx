@@ -2,13 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '../common/LoadingSpinner';
-import socketService from '../../services/socket';
 
 const ConversationsList = ({ onSelectConversation, selectedConversation, refreshTrigger }) => {
 	const [conversations, setConversations] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-	const [onlineUsers, setOnlineUsers] = useState(new Set());
 
 	const { data: authUser } = useQuery({
 		queryKey: ["authUser"],
@@ -69,34 +67,6 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
   };
 
 		fetchConversations();
-
-    // Handle online status updates
-    const handleUserOnline = (data) => {
-      setOnlineUsers(prev => new Set([...prev, data.userId]));
-    };
-
-    const handleUserOffline = (data) => {
-      setOnlineUsers(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(data.userId);
-        return newSet;
-      });
-    };
-
-    const handleOnlineUsers = (users) => {
-      setOnlineUsers(new Set(users.map(user => user._id)));
-    };
-
-    // Set up socket listeners
-    socketService.onUserOnline(handleUserOnline);
-    socketService.onUserOffline(handleUserOffline);
-    socketService.onOnlineUsers(handleOnlineUsers);
-    socketService.getOnlineUsers();
-
-    return () => {
-      socketService.offUserOnline(handleUserOnline);
-      socketService.offUserOffline(handleUserOffline);
-    };
 	}, [refreshTrigger]); // Re-fetch when refreshTrigger changes
 
   
@@ -141,23 +111,15 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 							onClick={() => onSelectConversation(conversation)}
 						>
 							<div className="flex items-center space-x-3">
-								<div className="relative">
-									<img
-										src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
-										alt={otherParticipant?.username}
-										className="w-12 h-12 rounded-full object-cover"
-									/>
-									{onlineUsers.has(otherParticipant?._id) && (
-										<div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-									)}
-								</div>
+								<img
+									src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
+									alt={otherParticipant?.username}
+									className="w-12 h-12 rounded-full object-cover"
+								/>
 								<div className="flex-1 min-w-0">
 									<div className="flex justify-between items-start">
 										<h3 className="text-sm font-medium text-gray-900 truncate">
 											{otherParticipant?.username}
-											{onlineUsers.has(otherParticipant?._id) && (
-												<span className="ml-2 text-green-500 text-xs">• Online</span>
-											)}
 										</h3>
 										<span className="text-xs text-gray-500">
 											{formatDistanceToNow(new Date(conversation.updatedAt), {
