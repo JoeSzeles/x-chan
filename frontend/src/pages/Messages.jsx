@@ -112,10 +112,12 @@ const Messages = () => {
   return (
     <div className="flex-1 flex h-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-main)' }}>
       {/* Left sidebar */}
-      <div className="w-1/3 border-r flex flex-col overflow-hidden" style={{ 
+      <div className="w-1/3 border-r flex flex-col" style={{ 
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
-        height: '100%'
+        height: '100vh',
+        maxHeight: '100vh',
+        overflow: 'hidden'
       }}>
         {/* Tab navigation */}
         <div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
@@ -173,8 +175,12 @@ const Messages = () => {
         </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
-              {activeTab === 'conversations' ? (
+            <div className="flex-1" style={{ 
+              height: 'calc(100% - 120px)', 
+              overflow: 'hidden'
+            }}>
+              <div className="h-full overflow-y-auto">
+                {activeTab === 'conversations' ? (
                 <ConversationsList
                   authUser={authUser}
                   onSelectConversation={setSelectedConversation}
@@ -183,15 +189,21 @@ const Messages = () => {
                 />
               ) : (
                 <MessageContacts 
-                  authUser={authUser}
-                  onStartConversation={handleStartConversation} 
-                />
-              )}
+                    authUser={authUser}
+                    onStartConversation={handleStartConversation} 
+                  />
+                )}
+              </div>
             </div>
           </div>
 
           {/* Right panel */}
-      <div className="w-2/3 flex flex-col" style={{ backgroundColor: 'var(--color-bg-main)', height: '100%' }}>
+      <div className="w-2/3 flex flex-col" style={{ 
+        backgroundColor: 'var(--color-bg-main)', 
+        height: '100vh',
+        maxHeight: '100vh',
+        overflow: 'hidden'
+      }}>
         {selectedConversation ? (
           <ChatWindow 
               conversation={selectedConversation} 
