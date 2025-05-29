@@ -17,7 +17,6 @@ const ChatWindow = ({ conversation, authUser }) => {
   const [typingUsers, setTypingUsers] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const notificationSoundRef = useRef(null);
@@ -139,12 +138,7 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive (only for chat window)
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+  // Auto-scroll removed to prevent page-level scrolling interference
 
   // Cleanup typing timeout on unmount
   useEffect(() => {
@@ -809,7 +803,6 @@ const ChatWindow = ({ conversation, authUser }) => {
             );
           })
         )}
-        <div ref={messagesEndRef} />
         
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
