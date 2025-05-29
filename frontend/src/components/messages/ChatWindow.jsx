@@ -20,6 +20,11 @@ const ChatWindow = ({ conversation, authUser }) => {
   const notificationSoundRef = useRef(null);
   const currentUserId = authUser?._id;
 
+  // Auto-scroll to bottom function
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎'];
 
   // Enhanced notification sound functionality
@@ -100,7 +105,10 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   };
 
-  // Removed auto-scroll functionality - user can manually scroll
+  // Auto-scroll when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     if (conversation?._id) {
@@ -151,6 +159,9 @@ const ChatWindow = ({ conversation, authUser }) => {
               const newMessages = [...prev, message].sort((a, b) => 
                 new Date(a.createdAt) - new Date(b.createdAt)
               );
+              
+              // Scroll to bottom after receiving new message
+              setTimeout(scrollToBottom, 100);
               
               return newMessages;
             });
@@ -249,6 +260,9 @@ const ChatWindow = ({ conversation, authUser }) => {
       } else {
         console.warn('⚠️ Socket not connected, message sent via API only');
       }
+      
+      // Scroll to bottom after sending message
+      setTimeout(scrollToBottom, 100);
       
       inputRef.current?.focus();
     } catch (err) {
