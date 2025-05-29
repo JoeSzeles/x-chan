@@ -100,12 +100,7 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive (only for chat window)
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+  // Removed auto-scroll functionality - user can manually scroll
 
   useEffect(() => {
     if (conversation?._id) {
@@ -443,7 +438,7 @@ const ChatWindow = ({ conversation, authUser }) => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-0" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: 'var(--color-bg-main)' }}>
         {error && (
           <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-error-bg)', color: 'var(--color-error-text)' }}>
             <p className="text-sm font-medium mb-2">Error: {error}</p>
