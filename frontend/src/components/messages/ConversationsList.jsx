@@ -202,7 +202,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 	}
 
 	return (
-		<div className="h-full overflow-y-auto">
+		<div>
 			{conversations.length === 0 ? (
 				<div className="p-4 text-gray-500">No conversations yet</div>
 			) : (
