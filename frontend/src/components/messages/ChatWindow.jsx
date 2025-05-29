@@ -370,18 +370,32 @@ const ChatWindow = ({ conversation, authUser }) => {
   };
 
   const uploadFiles = async (files) => {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file);
+    const filePromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          resolve({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            data: reader.result
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     });
+
+    const base64Files = await Promise.all(filePromises);
 
     const response = await fetch(`/api/messages/conversations/${conversation._id}/upload`, {
       method: 'POST',
       credentials: 'include',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
       },
-      body: formData
+      body: JSON.stringify({ files: base64Files })
     });
 
     if (!response.ok) {

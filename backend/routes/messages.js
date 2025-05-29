@@ -461,6 +461,66 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
     }
 });
 
+// Upload files for a conversation
+router.post('/conversations/:conversationId/upload', protectRoute, async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { files } = req.body; // Expecting base64 encoded files
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No files uploaded' });
+    }
+
+    // Verify conversation exists and user has access
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    if (!conversation.participants.includes(req.user._id)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const attachments = [];
+
+    for (const file of files) {
+      try {
+        // Check file size (roughly 5MB for base64)
+        const base64Size = Math.ceil((file.data.length * 3) / 4);
+        if (base64Size > 5 * 1024 * 1024) {
+          return res.status(413).json({ error: `File ${file.name} is too large. Maximum size is 5MB` });
+        }
+
+        // Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(file.data, {
+          folder: 'messages',
+          resource_type: 'auto',
+          quality: 'auto',
+          fetch_format: 'auto'
+        });
+
+        attachments.push({
+          type: file.type.startsWith('image/') ? 'image' : 
+                file.type.startsWith('video/') ? 'video' : 
+                file.type.startsWith('audio/') ? 'audio' : 'file',
+          url: result.secure_url,
+          filename: file.name,
+          size: file.size,
+          mimetype: file.type
+        });
+      } catch (uploadError) {
+        console.error('Error uploading file to Cloudinary:', uploadError);
+        return res.status(500).json({ error: `Failed to upload ${file.name}` });
+      }
+    }
+
+    res.json({ attachments });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Failed to upload files' });
+  }
+});
+
 console.log('[messages.js] ========================================');
 console.log('[messages.js] ALL ROUTES REGISTERED SUCCESSFULLY');
 console.log('[messages.js] Available routes:');
