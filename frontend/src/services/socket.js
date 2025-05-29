@@ -83,6 +83,7 @@ class SocketService {
   sendTyping(conversationId, isTyping) {
     if (this.socket && this.isConnected) {
       this.socket.emit('typing', { conversationId, isTyping });
+      console.log(`Sending typing indicator: ${isTyping} for conversation ${conversationId}`);
     }
   }
 

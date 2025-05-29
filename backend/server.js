@@ -296,11 +296,13 @@ io.on('connection', socket => {
     // Handle typing indicators
     socket.on('typing', (data) => {
         const { conversationId, isTyping } = data;
+        // Broadcast typing status to other users in the conversation
         socket.to(conversationId).emit('user_typing', {
             userId: socket.userId,
             conversationId,
             isTyping
         });
+        console.log(`User ${socket.userId} ${isTyping ? 'started' : 'stopped'} typing in conversation ${conversationId}`);
     });
 });
 
