@@ -110,11 +110,12 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex-1 flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+    <div className="flex-1 flex h-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-main)' }}>
       {/* Left sidebar */}
-      <div className="w-1/3 border-r h-full flex flex-col" style={{ 
+      <div className="w-1/3 border-r flex flex-col" style={{ 
         borderColor: 'var(--color-border-default)', 
-        backgroundColor: 'var(--color-bg-card)' 
+        backgroundColor: 'var(--color-bg-card)',
+        height: '100%'
       }}>
         {/* Tab navigation */}
         <div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
@@ -190,7 +191,7 @@ const Messages = () => {
           </div>
 
           {/* Right panel */}
-      <div className="w-2/3 h-full" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+      <div className="w-2/3 flex flex-col" style={{ backgroundColor: 'var(--color-bg-main)', height: '100%' }}>
         {selectedConversation ? (
           <ChatWindow 
               conversation={selectedConversation} 
