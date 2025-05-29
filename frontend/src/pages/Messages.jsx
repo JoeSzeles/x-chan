@@ -110,14 +110,17 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex-1 flex h-full overflow-hidden" style={{ 
-      backgroundColor: 'var(--color-bg-main)'
+    <div className="flex-1 flex" style={{ 
+      backgroundColor: 'var(--color-bg-main)',
+      minHeight: '0',
+      overflow: 'hidden'
     }}>
       {/* Left sidebar */}
-      <div className="w-1/3 border-r flex flex-col h-full" style={{ 
+      <div className="w-1/3 border-r flex flex-col" style={{ 
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        minHeight: '0'
       }}>
         {/* Tab navigation */}
         <div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
@@ -195,9 +198,10 @@ const Messages = () => {
           </div>
 
           {/* Right panel */}
-      <div className="w-2/3 flex flex-col h-full" style={{ 
+      <div className="w-2/3 flex flex-col" style={{ 
         backgroundColor: 'var(--color-bg-main)', 
-        overflow: 'hidden'
+        overflow: 'hidden',
+        minHeight: '0'
       }}>
         {selectedConversation ? (
           <ChatWindow 
