@@ -7,6 +7,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 	const [conversations, setConversations] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [unreadCounts, setUnreadCounts] = useState({});
 
 	const { data: authUser } = useQuery({
 		queryKey: ["authUser"],
@@ -31,6 +32,33 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		retry: false,
 	});
   
+
+	const fetchUnreadCounts = async (conversationIds) => {
+		try {
+			const counts = {};
+			
+			// Fetch unread count for each conversation
+			for (const conversationId of conversationIds) {
+				const response = await fetch(`/api/messages/conversations/${conversationId}/unread-count`, {
+					credentials: 'include',
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+
+				if (response.ok) {
+					const data = await response.json();
+					counts[conversationId] = data.unreadCount || 0;
+				} else {
+					counts[conversationId] = 0;
+				}
+			}
+			
+			setUnreadCounts(counts);
+		} catch (error) {
+			console.error('Error fetching unread counts:', error);
+		}
+	};
 
 	useEffect(() => {
 		const fetchConversations = async () => {
@@ -57,7 +85,14 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 
       const data = await response.json();
       console.log('ConversationsList: Conversations data:', data);
-      setConversations(Array.isArray(data) ? data : []);
+      const conversationsData = Array.isArray(data) ? data : [];
+      setConversations(conversationsData);
+      
+      // Fetch unread counts for all conversations
+      if (conversationsData.length > 0) {
+        const conversationIds = conversationsData.map(conv => conv._id);
+        fetchUnreadCounts(conversationIds);
+      }
     } catch (err) {
       console.error('ConversationsList: Error fetching conversations:', err);
       setError(err.message || 'Failed to fetch conversations');
@@ -104,30 +139,52 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 						p => p._id !== authUser?._id
 					);
 
+					const unreadCount = unreadCounts[conversation._id] || 0;
+					const hasUnread = unreadCount > 0;
+
 					return (
 						<div
 							key={conversation._id}
-							className="p-4 border-b hover:bg-gray-50 cursor-pointer"
-							onClick={() => onSelectConversation(conversation)}
+							className={`p-4 border-b hover:bg-gray-50 cursor-pointer relative ${hasUnread ? 'bg-blue-50' : ''}`}
+							onClick={() => {
+								onSelectConversation(conversation);
+								// Clear unread count for this conversation
+								setUnreadCounts(prev => ({
+									...prev,
+									[conversation._id]: 0
+								}));
+							}}
 						>
 							<div className="flex items-center space-x-3">
-								<img
-									src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
-									alt={otherParticipant?.username}
-									className="w-12 h-12 rounded-full object-cover"
-								/>
+								<div className="relative">
+									<img
+										src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
+										alt={otherParticipant?.username}
+										className="w-12 h-12 rounded-full object-cover"
+									/>
+									{hasUnread && (
+										<div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+											{unreadCount > 99 ? '99+' : unreadCount}
+										</div>
+									)}
+								</div>
 								<div className="flex-1 min-w-0">
 									<div className="flex justify-between items-start">
-										<h3 className="text-sm font-medium text-gray-900 truncate">
+										<h3 className={`text-sm truncate ${hasUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-900'}`}>
 											{otherParticipant?.username}
 										</h3>
-										<span className="text-xs text-gray-500">
-											{formatDistanceToNow(new Date(conversation.updatedAt), {
-												addSuffix: true
-											})}
-										</span>
+										<div className="flex items-center space-x-2">
+											<span className="text-xs text-gray-500">
+												{formatDistanceToNow(new Date(conversation.updatedAt), {
+													addSuffix: true
+												})}
+											</span>
+											{hasUnread && (
+												<div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+											)}
+										</div>
 									</div>
-									<p className="text-sm text-gray-500 truncate">
+									<p className={`text-sm truncate ${hasUnread ? 'font-medium text-gray-700' : 'text-gray-500'}`}>
 										{conversation.lastMessage?.content || 'No messages yet'}
 									</p>
 								</div>
