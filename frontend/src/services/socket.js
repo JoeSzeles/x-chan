@@ -30,6 +30,9 @@ class SocketService {
           try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             this.userId = payload.userId;
+            // Also store it on the socket for backend access
+            this.socket.userId = payload.userId;
+            console.log('Socket user ID set:', payload.userId);
           } catch (e) {
             console.warn('Could not parse user ID from token');
           }

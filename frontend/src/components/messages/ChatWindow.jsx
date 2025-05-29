@@ -146,36 +146,32 @@ const ChatWindow = ({ conversation, authUser }) => {
       markAsRead();
 
       const handleNewMessage = (message) => {
-        console.log('Received new message:', message);
+        console.log('Received new message via socket:', message);
         
         // Process messages for the current conversation
         if (message.conversationId === conversation._id) {
-          // Don't add messages sent by current user (they're already added optimistically)
-          if (message.senderId._id === currentUserId) {
-            console.log('Message from current user, already displayed');
-            return;
-          }
-          
           setMessages((prev) => {
             // Prevent duplicate messages by checking if message already exists
             const messageExists = prev.some(msg => msg._id === message._id);
             if (messageExists) {
-              console.log('Message already exists, skipping');
+              console.log('Message already exists, skipping duplicate');
               return prev;
             }
-            console.log('Adding new message from other user to state');
             
-            // Play notification sound for new message
-            playNotificationSound();
+            console.log('Adding new message to chat window');
+            
+            // Play notification sound for new message (only if not from current user)
+            if (message.senderId._id !== currentUserId) {
+              playNotificationSound();
+            }
             
             return [...prev, message];
           });
           
           // Mark as read immediately since conversation is open
-          setTimeout(markAsRead, 100); // Reduced delay for faster processing
+          setTimeout(markAsRead, 100);
         } else {
-          // Message is for a different conversation, just log it
-          console.log('Message for different conversation, will be handled by notification system');
+          console.log('Message for different conversation:', message.conversationId);
         }
       };
 
@@ -258,6 +254,8 @@ const ChatWindow = ({ conversation, authUser }) => {
       
       // Send via socket for real-time updates to other participants
       socketService.sendMessage(messageData);
+      
+      console.log('Message sent via socket:', messageData);
       
       inputRef.current?.focus();
     } catch (err) {
