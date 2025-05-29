@@ -285,12 +285,25 @@ io.on('connection', socket => {
         console.log(`Broadcasting message to conversation ${message.conversationId}`);
     });
 
-    // Handle send_message event
-    socket.on('send_message', (data) => {
-        const { conversationId, message } = data;
-        // Broadcast to all users in the conversation including sender
-        io.to(conversationId).emit('new_message', message);
-        console.log(`Broadcasting message to conversation ${conversationId}`);
+    // Handle new message with acknowledgment
+    socket.on('send_message', (data, callback) => {
+      console.log('📨 Message received via socket:', data);
+
+      try {
+        // Broadcast to all users in the conversation except sender
+        socket.to(data.conversationId).emit('new_message', data.message);
+        console.log('📤 Message broadcasted to conversation:', data.conversationId);
+
+        // Send acknowledgment back to sender
+        if (callback) {
+          callback({ success: true, timestamp: new Date() });
+        }
+      } catch (error) {
+        console.error('❌ Error broadcasting message:', error);
+        if (callback) {
+          callback({ success: false, error: error.message });
+        }
+      }
     });
 
     // Handle typing indicators

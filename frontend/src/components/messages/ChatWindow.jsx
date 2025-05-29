@@ -22,40 +22,39 @@ const ChatWindow = ({ conversation, authUser }) => {
 
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎'];
 
-  // Notification sound functionality
+  // Enhanced notification sound functionality
   const playNotificationSound = () => {
     // Check if notification sounds are enabled
     const soundsEnabled = localStorage.getItem('notificationSoundsEnabled') !== 'false';
     if (!soundsEnabled) return;
     
     try {
-      // Create audio context for web-based notification sound
-      if (window.AudioContext || window.webkitAudioContext) {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+      // First try to play the notification.mp3 file
+      const audio = new Audio('/sounds/notification.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(e => {
+        console.log('Could not play notification.mp3:', e);
         
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-      } else {
-        // Fallback: Try to use HTML5 audio if available
-        if (notificationSoundRef.current) {
-          notificationSoundRef.current.volume = 0.3;
-          notificationSoundRef.current.play().catch(e => {
-            console.log('Could not play notification sound:', e);
-          });
+        // Fallback to web audio API
+        if (window.AudioContext || window.webkitAudioContext) {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+          oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+          oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+          
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+          
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.3);
         }
-      }
+      });
     } catch (error) {
       console.log('Notification sound error:', error);
     }
@@ -101,51 +100,83 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   };
 
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
   useEffect(() => {
     if (conversation?._id) {
       fetchMessages();
       
-      // Ensure socket is connected
+      // Ensure socket is connected and wait for connection
       if (!socketService.isConnected) {
+        console.log('🔌 Socket not connected, connecting...');
         socketService.connect();
+        
+        // Wait a bit for connection to establish
+        setTimeout(() => {
+          if (socketService.isConnected) {
+            console.log('✅ Socket connected, joining conversation');
+            socketService.joinConversation(conversation._id);
+          }
+        }, 1000);
+      } else {
+        console.log('✅ Socket already connected, joining conversation');
+        socketService.joinConversation(conversation._id);
       }
-      
-      socketService.joinConversation(conversation._id);
 
       // Mark messages as read when opening conversation
       markAsRead();
 
       const handleNewMessage = (message) => {
-        console.log('Received new message:', message);
+        console.log('📨 Received new message:', message);
         
         // Process messages for the current conversation
         if (message.conversationId === conversation._id) {
-          // Don't add messages sent by current user (they're already added optimistically)
-          if (message.senderId._id === currentUserId) {
-            console.log('Message from current user, already displayed');
-            return;
-          }
+          console.log('✅ Message is for current conversation');
           
-          setMessages((prev) => {
-            // Prevent duplicate messages by checking if message already exists
-            const messageExists = prev.some(msg => msg._id === message._id);
-            if (messageExists) {
-              console.log('Message already exists, skipping');
+          // Always add the message if it's from another user
+          if (message.senderId._id !== currentUserId) {
+            setMessages((prev) => {
+              // Check for duplicates more efficiently
+              const isDuplicate = prev.some(msg => msg._id === message._id);
+              if (isDuplicate) {
+                console.log('⚠️ Duplicate message detected, skipping');
+                return prev;
+              }
+              
+              console.log('➕ Adding new message from other user');
+              // Play notification sound immediately
+              playNotificationSound();
+              
+              // Add the new message and sort by timestamp to ensure proper order
+              const newMessages = [...prev, message].sort((a, b) => 
+                new Date(a.createdAt) - new Date(b.createdAt)
+              );
+              
+              return newMessages;
+            });
+            
+            // Mark as read since conversation is open
+            setTimeout(markAsRead, 50);
+          } else {
+            console.log('📤 Message from current user, checking if already displayed');
+            setMessages((prev) => {
+              const exists = prev.some(msg => msg._id === message._id);
+              if (!exists) {
+                console.log('➕ Adding own message (socket confirmation)');
+                return [...prev, message].sort((a, b) => 
+                  new Date(a.createdAt) - new Date(b.createdAt)
+                );
+              }
               return prev;
-            }
-            console.log('Adding new message from other user to state');
-            
-            // Play notification sound for new message
-            playNotificationSound();
-            
-            return [...prev, message];
-          });
-          
-          // Mark as read immediately since conversation is open
-          setTimeout(markAsRead, 100); // Reduced delay for faster processing
+            });
+          }
         } else {
-          // Message is for a different conversation, just log it
-          console.log('Message for different conversation, will be handled by notification system');
+          console.log('📍 Message for different conversation:', message.conversationId);
         }
       };
 
@@ -204,12 +235,25 @@ const ChatWindow = ({ conversation, authUser }) => {
       }
 
       const messageData = await response.json();
+      console.log('📤 Message sent successfully:', messageData);
       
       // Add message to local state immediately for better UX
-      setMessages((prev) => [...prev, messageData]);
+      setMessages((prev) => {
+        // Check if message already exists (shouldn't happen but safety check)
+        const exists = prev.some(msg => msg._id === messageData._id);
+        if (exists) return prev;
+        
+        return [...prev, messageData].sort((a, b) => 
+          new Date(a.createdAt) - new Date(b.createdAt)
+        );
+      });
       
       // Send via socket for real-time updates to other participants
-      socketService.sendMessage(messageData);
+      if (socketService.isConnected) {
+        socketService.sendMessage(messageData);
+      } else {
+        console.warn('⚠️ Socket not connected, message sent via API only');
+      }
       
       inputRef.current?.focus();
     } catch (err) {
