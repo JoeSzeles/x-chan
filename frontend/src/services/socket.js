@@ -98,6 +98,7 @@ class SocketService {
   // Listen for typing indicators
   onTyping(callback) {
     if (this.socket) {
+      this.socket.off('user_typing'); // Remove existing listeners
       this.socket.on('user_typing', callback);
     }
   }
@@ -108,9 +109,50 @@ class SocketService {
     }
   }
 
-  sendTyping(conversationId, isTyping) {
+  sendTyping(conversationId, isTyping, username) {
     if (this.socket && this.isConnected) {
-      this.socket.emit('typing', { conversationId, isTyping });
+      this.socket.emit('typing', { conversationId, isTyping, username });
+    }
+  }
+
+  // Online status functionality
+  onUserOnline(callback) {
+    if (this.socket) {
+      this.socket.off('user_online');
+      this.socket.on('user_online', callback);
+    }
+  }
+
+  onUserOffline(callback) {
+    if (this.socket) {
+      this.socket.off('user_offline');
+      this.socket.on('user_offline', callback);
+    }
+  }
+
+  offUserOnline(callback) {
+    if (this.socket) {
+      this.socket.off('user_online', callback);
+    }
+  }
+
+  offUserOffline(callback) {
+    if (this.socket) {
+      this.socket.off('user_offline', callback);
+    }
+  }
+
+  // Get online users
+  getOnlineUsers() {
+    if (this.socket && this.isConnected) {
+      this.socket.emit('get_online_users');
+    }
+  }
+
+  onOnlineUsers(callback) {
+    if (this.socket) {
+      this.socket.off('online_users');
+      this.socket.on('online_users', callback);
     }
   }
 
