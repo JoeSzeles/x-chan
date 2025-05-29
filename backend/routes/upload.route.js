@@ -1,8 +1,10 @@
+
 import express from 'express';
 import { protectRoute } from '../middleware/protectRoute.js';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
+import { handleImageUpload, validateImage } from "../utils/imageUpload.js";
 
 const router = express.Router();
 
@@ -66,14 +68,6 @@ router.post('/profile', protectRoute, upload.single('profileImg'), async (req, r
         res.status(500).json({ error: error.message });
     }
 });
-
-export default router; 
-import express from "express";
-import { protectRoute } from "../middleware/protectRoute.js";
-import { handleImageUpload, validateImage } from "../utils/imageUpload.js";
-import { v2 as cloudinary } from "cloudinary";
-
-const router = express.Router();
 
 // Upload image for messages
 router.post("/message-image", protectRoute, handleImageUpload('image'), validateImage, async (req, res) => {
