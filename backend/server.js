@@ -149,7 +149,7 @@ app.get('*', (req, res) => {
 
 const httpServer = createServer(app);
 
-// Socket.IO Configuration
+// Configure Socket.IO with proper CORS
 const io = new Server(httpServer, {
     path: '/socket.io',
     cors: {
@@ -203,40 +203,12 @@ io.on("error", (err) => {
     });
 });
 
-// Track online users
-const onlineUsers = new Map(); // userId -> { socketId, user, lastSeen }
-
 io.on('connection', socket => {
     console.log('[Socket.io] Client connected:', {
         id: socket.id,
         transport: socket.conn.transport.name,
         headers: socket.handshake.headers,
         timestamp: new Date().toISOString()
-    });
-
-    // Track user as online
-    // Assuming socket.userId is set during authentication, as it should be.
-    // If not, you'll need to adapt this to how you identify users.
-    socket.on('set_user_id', (userId) => {
-        if(userId) {
-            socket.userId = userId;
-            onlineUsers.set(socket.userId, {
-                socketId: socket.id,
-                user: {
-                    _id: socket.userId
-                },
-                lastSeen: new Date()
-            });
-            socket.broadcast.emit('user_online', {
-                userId: socket.userId,
-                user: {
-                    _id: socket.userId
-                }
-            });
-            console.log(`[Socket.io] User ${userId} online, socket ID: ${socket.id}`);
-        } else {
-            console.log('[Socket.io] User ID not provided.');
-        }
     });
 
     socket.on('error', (error) => {
@@ -255,17 +227,6 @@ io.on('connection', socket => {
             transport: socket.conn?.transport?.name,
             timestamp: new Date().toISOString()
         });
-
-        // Remove user from online users
-        if(socket.userId){
-            onlineUsers.delete(socket.userId);
-             socket.broadcast.emit('user_offline', {
-                userId: socket.userId
-            });
-            console.log(`[Socket.io] User ${socket.userId} offline, socket ID: ${socket.id}`);
-
-        }
-
     });
 
     socket.conn.on('packet', (packet) => {
@@ -353,12 +314,6 @@ io.on('connection', socket => {
             conversationId,
             isTyping
         });
-    });
-
-     // Handle get online users request
-     socket.on('get_online_users', () => {
-        const onlineUsersList = Array.from(onlineUsers.values()).map(data => data.user);
-        socket.emit('online_users', onlineUsersList);
     });
 });
 

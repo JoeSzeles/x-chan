@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '../common/LoadingSpinner';
-import socketService from '../../services/socket';
 
 const MessageContacts = ({ authUser, onStartConversation }) => {
 	const [activeContactTab, setActiveContactTab] = useState('followers');
@@ -10,7 +9,6 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 	const [requests, setRequests] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
-	const [onlineUsers, setOnlineUsers] = useState(new Set());
 
 	// Use the same pattern as FollowingPage for fetching followers
 	const { data: followingUsers, isLoading: loadingFollowing, error: followingError } = useQuery({
@@ -54,36 +52,6 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 			setLoading(false);
 		}
 	}, [followingError]);
-
-	useEffect(() => {
-		// Handle online status updates
-		const handleUserOnline = (data) => {
-			setOnlineUsers(prev => new Set([...prev, data.userId]));
-		};
-
-		const handleUserOffline = (data) => {
-			setOnlineUsers(prev => {
-				const newSet = new Set(prev);
-				newSet.delete(data.userId);
-				return newSet;
-			});
-		};
-
-		const handleOnlineUsers = (users) => {
-			setOnlineUsers(new Set(users.map(user => user._id)));
-		};
-
-		// Set up socket listeners
-		socketService.onUserOnline(handleUserOnline);
-		socketService.onUserOffline(handleUserOffline);
-		socketService.onOnlineUsers(handleOnlineUsers);
-		socketService.getOnlineUsers();
-
-		return () => {
-			socketService.offUserOnline(handleUserOnline);
-			socketService.offUserOffline(handleUserOffline);
-		};
-	}, []);
 
 	const handleStartConversation = async (userId) => {
 		try {
@@ -153,8 +121,8 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 	}
 
 	return (
-		<div>
-			<div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
+		<div className="bg-gray-800 border border-gray-700 shadow rounded-md overflow-hidden">
+			<div className="flex border-b border-gray-700">
 				<button
 					className={`flex-1 py-2 px-4 text-center ${activeContactTab === 'followers' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-gray-400 hover:text-gray-300'
 						}`}
@@ -176,25 +144,15 @@ const MessageContacts = ({ authUser, onStartConversation }) => {
 					followers?.length > 0 ? (
 						<ul className="space-y-1">
 							{followers.map((follower) => (
-								<li key={follower._id} className="py-3 px-2 border-b last:border-b-0 hover:opacity-80 rounded" style={{ borderColor: 'var(--color-border-default)' }}>
+								<li key={follower._id} className="py-3 px-2 border-b border-gray-700 last:border-b-0 hover:bg-gray-700 rounded">
 									<div className="flex items-center space-x-3">
-										<div className="relative">
-											<img
-												src={follower.profileImg || follower.profilePicture || '/avatar-placeholder.png'}
-												alt={follower.username}
-												className="w-10 h-10 rounded-full object-cover border border-gray-600"
-											/>
-											{onlineUsers.has(follower._id) && (
-												<div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-gray-800 rounded-full"></div>
-											)}
-										</div>
+										<img
+											src={follower.profileImg || follower.profilePicture || '/avatar-placeholder.png'}
+											alt={follower.username}
+											className="w-10 h-10 rounded-full object-cover border border-gray-600"
+										/>
 										<div className="flex-grow">
-											<p className="text-sm font-semibold text-gray-100">
-												{follower.username}
-												{onlineUsers.has(follower._id) && (
-													<span className="ml-2 text-green-500 text-xs">• Online</span>
-												)}
-											</p>
+											<p className="text-sm font-semibold text-gray-100">{follower.username}</p>
 											<p className="text-xs text-gray-400">{follower.fullName || 'User'}</p>
 										</div>
 										<button

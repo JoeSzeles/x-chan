@@ -123,36 +123,6 @@ router.get('/conversations', protectRoute, async (req, res) => {
     }
 });
 
-// Get unread count for a specific conversation
-router.get('/conversations/:conversationId/unread-count', protectRoute, async (req, res) => {
-  try {
-    const { conversationId } = req.params;
-    const userId = req.user._id;
-
-    // Check if user is part of this conversation
-    const conversation = await Conversation.findOne({
-      _id: conversationId,
-      participants: userId
-    });
-
-    if (!conversation) {
-      return res.status(404).json({ error: 'Conversation not found' });
-    }
-
-    // Count unread messages in this conversation
-    const unreadCount = await Message.countDocuments({
-      conversationId: conversationId,
-      senderId: { $ne: userId }, // Not sent by current user
-      readBy: { $ne: userId } // Not read by current user
-    });
-
-    res.json({ unreadCount });
-  } catch (error) {
-    console.error('Error fetching conversation unread count:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
 // Mark messages as read
 router.put('/conversations/:conversationId/mark-read', protectRoute, async (req, res) => {
   try {
