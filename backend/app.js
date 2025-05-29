@@ -30,6 +30,7 @@ const app = express();
 
 // Import messageRoutes after app is created
 import messageRoutes from "./routes/messages.js";
+import uploadRoutes from "./routes/upload.route.js";
 
 // Middleware
 app.use(express.json({ limit: "50mb" }));
@@ -72,6 +73,7 @@ console.log('messageRoutes type:', typeof messageRoutes);
 console.log('messageRoutes is function:', typeof messageRoutes === 'function');
 
 app.use("/api/messages", messageRoutes);
+app.use("/api/upload", uploadRoutes);
 console.log('✓ Messages routes registered at /api/messages');
 
 // Test endpoint to verify server is running
@@ -83,7 +85,7 @@ app.get('/api/test', (req, res) => {
 app.get('/api/debug/routes', (req, res) => {
     const routes = [];
     const middlewares = [];
-    
+
     app._router.stack.forEach((middleware, index) => {
         if (middleware.route) {
             routes.push({
@@ -97,7 +99,7 @@ app.get('/api/debug/routes', (req, res) => {
                 .replace(/^\^\\?/, '')
                 .replace(/\$.*/, '')
                 .replace(/\\\//g, '/');
-            
+
             middlewares.push({
                 type: 'middleware',
                 baseUrl: baseUrl || 'unknown',
@@ -105,7 +107,7 @@ app.get('/api/debug/routes', (req, res) => {
                 hasStack: !!middleware.handle?.stack,
                 stackLength: middleware.handle?.stack?.length || 0
             });
-            
+
             if (middleware.handle?.stack) {
                 middleware.handle.stack.forEach((handler, handlerIndex) => {
                     if (handler.route) {
@@ -123,7 +125,7 @@ app.get('/api/debug/routes', (req, res) => {
             }
         }
     });
-    
+
     res.json({ 
         routes, 
         middlewares, 
