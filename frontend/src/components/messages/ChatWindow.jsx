@@ -100,12 +100,7 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+  // Removed auto-scroll functionality - user can manually scroll
 
   useEffect(() => {
     if (conversation?._id) {
