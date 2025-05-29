@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import ConversationsList from '../components/messages/ConversationsList';
@@ -110,21 +111,15 @@ const Messages = () => {
   };
 
   return (
-    <div style={{ 
+    <div className="flex-1 flex" style={{ 
       backgroundColor: 'var(--color-bg-main)',
-      height: '600px',
-      display: 'flex',
       overflow: 'hidden'
     }}>
       {/* Left sidebar */}
-      <div style={{ 
-        width: '33.333333%',
-        borderRight: `1px solid var(--color-border-default)`,
+      <div className="w-1/3 border-r flex flex-col" style={{ 
+        borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '600px'
+        overflow: 'hidden'
       }}>
         {/* Tab navigation */}
         <div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
@@ -181,47 +176,36 @@ const Messages = () => {
           </button>
         </div>
 
-            {/* Content */}
-            <div style={{ 
-              flex: '1',
-              overflow: 'hidden',
-              height: 'calc(600px - 120px)'
-            }}>
-              <div style={{ 
-                height: '100%',
-                overflowY: 'auto'
-              }}>
-                {activeTab === 'conversations' ? (
-                <ConversationsList
-                  authUser={authUser}
-                  onSelectConversation={setSelectedConversation}
-                  selectedConversation={selectedConversation}
-                  refreshTrigger={refreshTrigger}
-                />
-              ) : (
-                <MessageContacts 
-                    authUser={authUser}
-                    onStartConversation={handleStartConversation} 
-                  />
-                )}
-              </div>
-            </div>
+        {/* Content */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto">
+            {activeTab === 'conversations' ? (
+              <ConversationsList
+                authUser={authUser}
+                onSelectConversation={setSelectedConversation}
+                selectedConversation={selectedConversation}
+                refreshTrigger={refreshTrigger}
+              />
+            ) : (
+              <MessageContacts 
+                authUser={authUser}
+                onStartConversation={handleStartConversation} 
+              />
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* Right panel */}
-      <div style={{ 
-        width: '66.666667%',
+      {/* Right panel */}
+      <div className="w-2/3 flex flex-col" style={{ 
         backgroundColor: 'var(--color-bg-main)', 
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '600px'
+        overflow: 'hidden'
       }}>
         {selectedConversation ? (
           <ChatWindow 
-              conversation={selectedConversation} 
-              authUser={authUser}
-            />
+            conversation={selectedConversation} 
+            authUser={authUser}
+          />
         ) : (
           <div className="flex items-center justify-center h-full" style={{ color: 'var(--color-text-secondary)' }}>
             <div className="text-center">
@@ -231,7 +215,7 @@ const Messages = () => {
           </div>
         )}
       </div>
-        </div>
+    </div>
   );
 };
 
