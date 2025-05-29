@@ -296,11 +296,16 @@ io.on('connection', socket => {
     // Handle typing indicators
     socket.on('typing', (data) => {
         const { conversationId, isTyping } = data;
+        // Get user ID from socket auth or handshake
+        const userId = socket.handshake.auth?.userId || socket.userId;
+        
         socket.to(conversationId).emit('user_typing', {
-            userId: socket.userId,
+            userId: userId,
             conversationId,
             isTyping
         });
+        
+        console.log(`User ${userId} ${isTyping ? 'started' : 'stopped'} typing in conversation ${conversationId}`);
     });
 });
 
