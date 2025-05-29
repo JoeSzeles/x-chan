@@ -162,9 +162,6 @@ const io = new Server(httpServer, {
     transports: ['websocket', 'polling']
 });
 
-// Store connected users
-const connectedUsers = new Map();
-
 // Enable detailed debug logging
 io.engine.on("initial_headers", (headers, req) => {
     console.log("Initial headers:", headers);
@@ -214,19 +211,6 @@ io.on('connection', socket => {
         timestamp: new Date().toISOString()
     });
 
-    // Extract user ID from token if provided
-    const token = socket.handshake.auth?.token;
-    if (token) {
-        try {
-            const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-            socket.userId = payload.userId;
-            connectedUsers.set(socket.userId, socket.id);
-            console.log(`[Socket.io] User ${socket.userId} authenticated`);
-        } catch (error) {
-            console.warn('[Socket.io] Could not authenticate user from token');
-        }
-    }
-
     socket.on('error', (error) => {
         console.error('[Socket.io] Socket error:', {
             id: socket.id,
@@ -237,10 +221,6 @@ io.on('connection', socket => {
     });
 
     socket.on('disconnect', (reason) => {
-        if (socket.userId) {
-            connectedUsers.delete(socket.userId);
-            console.log(`[Socket.io] User ${socket.userId} disconnected`);
-        }
         console.log('[Socket.io] Client disconnected:', {
             id: socket.id,
             reason,
@@ -300,39 +280,27 @@ io.on('connection', socket => {
 
     // Handle new message - improved broadcasting
     socket.on('new_message', (message) => {
-        console.log(`[Socket.io] Broadcasting new_message to conversation ${message.conversationId}:`, message);
-        // Broadcast to all users in the conversation room
-        socket.to(message.conversationId).emit('new_message', message);
-        console.log(`[Socket.io] Message broadcasted to conversation ${message.conversationId}`);
+        // Broadcast to all users in the conversation including sender
+        io.to(message.conversationId).emit('new_message', message);
+        console.log(`Broadcasting message to conversation ${message.conversationId}`);
     });
 
     // Handle send_message event
     socket.on('send_message', (data) => {
         const { conversationId, message } = data;
-        console.log(`[Socket.io] Broadcasting send_message to conversation ${conversationId}:`, message);
-        // Broadcast to all users in the conversation room (excluding sender)
-        socket.to(conversationId).emit('new_message', message);
-        console.log(`[Socket.io] Message broadcasted to conversation ${conversationId}`);
+        // Broadcast to all users in the conversation including sender
+        io.to(conversationId).emit('new_message', message);
+        console.log(`Broadcasting message to conversation ${conversationId}`);
     });
 
     // Handle typing indicators
     socket.on('typing', (data) => {
         const { conversationId, isTyping } = data;
-        // Get user ID from socket
-        const userId = socket.userId;
-        
-        if (!userId) {
-            console.warn('[Socket.io] No user ID available for typing indicator');
-            return;
-        }
-        
         socket.to(conversationId).emit('user_typing', {
-            userId: userId,
+            userId: socket.userId,
             conversationId,
             isTyping
         });
-        
-        console.log(`[Socket.io] User ${userId} ${isTyping ? 'started' : 'stopped'} typing in conversation ${conversationId}`);
     });
 });
 

@@ -23,20 +23,6 @@ class SocketService {
       this.socket.on('connect', () => {
         console.log('Socket connected');
         this.isConnected = true;
-        
-        // Store user ID for typing indicators
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            this.userId = payload.userId;
-            // Also store it on the socket for backend access
-            this.socket.userId = payload.userId;
-            console.log('Socket user ID set:', payload.userId);
-          } catch (e) {
-            console.warn('Could not parse user ID from token');
-          }
-        }
       });
 
       this.socket.on('disconnect', () => {
