@@ -110,12 +110,17 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex-1 flex h-full overflow-hidden" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+    <div className="flex-1 flex overflow-hidden" style={{ 
+      backgroundColor: 'var(--color-bg-main)',
+      height: 'calc(100vh - 80px)', // Subtract header height
+      maxHeight: 'calc(100vh - 80px)'
+    }}>
       {/* Left sidebar */}
       <div className="w-1/3 border-r flex flex-col" style={{ 
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
         height: '100%',
+        maxHeight: '100%',
         overflow: 'hidden'
       }}>
         {/* Tab navigation */}
@@ -175,7 +180,8 @@ const Messages = () => {
 
             {/* Content */}
             <div className="flex-1" style={{ 
-              overflow: 'hidden'
+              overflow: 'hidden',
+              height: 'calc(100% - 120px)' // Account for tabs and notification toggle
             }}>
               <div className="h-full overflow-y-auto">
                 {activeTab === 'conversations' ? (
