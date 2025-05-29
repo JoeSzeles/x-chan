@@ -111,12 +111,12 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex-1 flex" style={{ 
+    <div className="h-full flex" style={{ 
       backgroundColor: 'var(--color-bg-main)',
       overflow: 'hidden'
     }}>
       {/* Left sidebar */}
-      <div className="w-1/3 border-r flex flex-col" style={{ 
+      <div className="w-1/3 border-r flex flex-col h-full" style={{ 
         borderColor: 'var(--color-border-default)', 
         backgroundColor: 'var(--color-bg-card)',
         overflow: 'hidden'
@@ -197,7 +197,7 @@ const Messages = () => {
       </div>
 
       {/* Right panel */}
-      <div className="w-2/3 flex flex-col" style={{ 
+      <div className="w-2/3 flex flex-col h-full" style={{ 
         backgroundColor: 'var(--color-bg-main)', 
         overflow: 'hidden'
       }}>
