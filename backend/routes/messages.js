@@ -311,66 +311,62 @@ router.delete('/conversations/:conversationId/messages/:messageId', protectRoute
   }
 });
 
-// Send a message (alternative route for compatibility)
-router.post('/:conversationId', protectRoute, async (req, res) => {
+// Send a message
+router.post('/:conversationId/messages', protectRoute, async (req, res) => {
     try {
         const { conversationId } = req.params;
         const { content, attachments } = req.body;
+        const senderId = req.user._id;
 
-        console.log(`[messages.js] Sending message to conversation: ${conversationId}`);
+        if ((!content || content.trim() === '') && (!attachments || attachments.length === 0)) {
+            return res.status(400).json({ error: 'Message content or attachments are required' });
+        }
 
-        // Check if user is part of the conversation
-        const conversation = await Conversation.findOne({
-            _id: conversationId,
-            participants: req.user._id
-        });
-
+        // Verify conversation exists and user is a participant
+        const conversation = await Conversation.findById(conversationId);
         if (!conversation) {
             return res.status(404).json({ error: 'Conversation not found' });
         }
 
-        // Determine message type based on content and attachments
-        let messageType = 'text';
-        if (attachments && attachments.length > 0) {
-            const firstAttachment = attachments[0];
-            if (firstAttachment.fileType === 'image') {
-                messageType = 'image';
-            } else if (firstAttachment.fileType === 'video') {
-                messageType = 'video';
-            } else if (firstAttachment.fileType === 'audio') {
-                messageType = 'audio';
-            } else {
-                messageType = 'file';
-            }
+        const isParticipant = conversation.participants.includes(senderId);
+        if (!isParticipant) {
+            return res.status(403).json({ error: 'You are not a participant in this conversation' });
         }
 
+        // Create new message
         const message = new Message({
-            conversationId: conversationId,
-            senderId: req.user._id,
-            content: content || '',
-            messageType,
-            attachments: attachments || []
+            conversationId,
+            senderId,
+            content: content ? content.trim() : '',
+            attachments: attachments || [],
+            messageType: attachments && attachments.length > 0 ? 'image' : 'text'
         });
 
         await message.save();
 
-        // Update conversation's last message
+        // Update conversation's last message and activity
         conversation.lastMessage = {
-            content: content,
-            senderId: req.user._id,
-            timestamp: new Date()
+            content: content ? content.trim() : (attachments && attachments.length > 0 ? 'Sent an attachment' : ''),
+            senderId,
+            timestamp: message.createdAt
         };
         conversation.lastActivity = new Date();
         await conversation.save();
 
-        const populatedMessage = await Message.findById(message._id)
-            .populate('senderId', 'username fullName profileImg');
+        // Populate sender info
+        await message.populate('senderId', 'username fullName profileImg');
 
-        console.log('[messages.js] Message sent successfully');
-        res.status(201).json(populatedMessage);
+        // Emit to all participants
+        conversation.participants.forEach(participantId => {
+            if (participantId.toString() !== senderId.toString()) {
+                req.io.to(participantId.toString()).emit('newMessage', message);
+            }
+        });
+
+        res.status(201).json(message);
     } catch (error) {
-        console.error('[messages.js] Error sending message:', error);
-        res.status(500).json({ error: 'Failed to send message' });
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
