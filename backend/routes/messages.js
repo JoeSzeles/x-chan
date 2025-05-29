@@ -4,7 +4,6 @@ import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
 import User from '../models/user.model.js';
 import MessageRequest from '../models/MessageRequest.js';
-import { v2 as cloudinary } from 'cloudinary';
 
 const router = express.Router();
 
@@ -312,62 +311,66 @@ router.delete('/conversations/:conversationId/messages/:messageId', protectRoute
   }
 });
 
-// Send a message
-router.post('/:conversationId/messages', protectRoute, async (req, res) => {
+// Send a message (alternative route for compatibility)
+router.post('/:conversationId', protectRoute, async (req, res) => {
     try {
         const { conversationId } = req.params;
         const { content, attachments } = req.body;
-        const senderId = req.user._id;
 
-        if ((!content || content.trim() === '') && (!attachments || attachments.length === 0)) {
-            return res.status(400).json({ error: 'Message content or attachments are required' });
-        }
+        console.log(`[messages.js] Sending message to conversation: ${conversationId}`);
 
-        // Verify conversation exists and user is a participant
-        const conversation = await Conversation.findById(conversationId);
+        // Check if user is part of the conversation
+        const conversation = await Conversation.findOne({
+            _id: conversationId,
+            participants: req.user._id
+        });
+
         if (!conversation) {
             return res.status(404).json({ error: 'Conversation not found' });
         }
 
-        const isParticipant = conversation.participants.includes(senderId);
-        if (!isParticipant) {
-            return res.status(403).json({ error: 'You are not a participant in this conversation' });
+        // Determine message type based on content and attachments
+        let messageType = 'text';
+        if (attachments && attachments.length > 0) {
+            const firstAttachment = attachments[0];
+            if (firstAttachment.fileType === 'image') {
+                messageType = 'image';
+            } else if (firstAttachment.fileType === 'video') {
+                messageType = 'video';
+            } else if (firstAttachment.fileType === 'audio') {
+                messageType = 'audio';
+            } else {
+                messageType = 'file';
+            }
         }
 
-        // Create new message
         const message = new Message({
-            conversationId,
-            senderId,
-            content: content ? content.trim() : '',
-            attachments: attachments || [],
-            messageType: attachments && attachments.length > 0 ? 'image' : 'text'
+            conversationId: conversationId,
+            senderId: req.user._id,
+            content: content || '',
+            messageType,
+            attachments: attachments || []
         });
 
         await message.save();
 
-        // Update conversation's last message and activity
+        // Update conversation's last message
         conversation.lastMessage = {
-            content: content ? content.trim() : (attachments && attachments.length > 0 ? 'Sent an attachment' : ''),
-            senderId,
-            timestamp: message.createdAt
+            content: content,
+            senderId: req.user._id,
+            timestamp: new Date()
         };
         conversation.lastActivity = new Date();
         await conversation.save();
 
-        // Populate sender info
-        await message.populate('senderId', 'username fullName profileImg');
+        const populatedMessage = await Message.findById(message._id)
+            .populate('senderId', 'username fullName profileImg');
 
-        // Emit to all participants
-        conversation.participants.forEach(participantId => {
-            if (participantId.toString() !== senderId.toString()) {
-                req.io.to(participantId.toString()).emit('newMessage', message);
-            }
-        });
-
-        res.status(201).json(message);
+        console.log('[messages.js] Message sent successfully');
+        res.status(201).json(populatedMessage);
     } catch (error) {
-        console.error('Error sending message:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('[messages.js] Error sending message:', error);
+        res.status(500).json({ error: 'Failed to send message' });
     }
 });
 
@@ -460,66 +463,6 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
         console.error('[messages.js] Error sending message:', error);
         res.status(500).json({ error: 'Failed to send message' });
     }
-});
-
-// Upload files for a conversation
-router.post('/conversations/:conversationId/upload', protectRoute, async (req, res) => {
-  try {
-    const { conversationId } = req.params;
-    const { files } = req.body; // Expecting base64 encoded files
-
-    if (!files || files.length === 0) {
-      return res.status(400).json({ error: 'No files uploaded' });
-    }
-
-    // Verify conversation exists and user has access
-    const conversation = await Conversation.findById(conversationId);
-    if (!conversation) {
-      return res.status(404).json({ error: 'Conversation not found' });
-    }
-
-    if (!conversation.participants.includes(req.user._id)) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
-    const attachments = [];
-
-    for (const file of files) {
-      try {
-        // Check file size (roughly 5MB for base64)
-        const base64Size = Math.ceil((file.data.length * 3) / 4);
-        if (base64Size > 5 * 1024 * 1024) {
-          return res.status(413).json({ error: `File ${file.name} is too large. Maximum size is 5MB` });
-        }
-
-        // Upload to Cloudinary
-        const result = await cloudinary.uploader.upload(file.data, {
-          folder: 'messages',
-          resource_type: 'auto',
-          quality: 'auto',
-          fetch_format: 'auto'
-        });
-
-        attachments.push({
-          fileType: file.type.startsWith('image/') ? 'image' : 
-                    file.type.startsWith('video/') ? 'video' : 
-                    file.type.startsWith('audio/') ? 'audio' : 'file',
-          url: result.secure_url,
-          filename: file.name,
-          fileSize: file.size,
-          mimetype: file.type
-        });
-      } catch (uploadError) {
-        console.error('Error uploading file to Cloudinary:', uploadError);
-        return res.status(500).json({ error: `Failed to upload ${file.name}` });
-      }
-    }
-
-    res.json({ attachments });
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({ error: 'Failed to upload files' });
-  }
 });
 
 console.log('[messages.js] ========================================');
