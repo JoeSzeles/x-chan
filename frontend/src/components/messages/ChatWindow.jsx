@@ -15,14 +15,17 @@ const ChatWindow = ({ conversation, authUser }) => {
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const notificationSoundRef = useRef(null);
   const currentUserId = authUser?._id;
 
-  // Auto-scroll to bottom function
+  // Auto-scroll to bottom function - only scrolls the messages container
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
   };
 
   const commonEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '👎'];
@@ -452,7 +455,11 @@ const ChatWindow = ({ conversation, authUser }) => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: 'var(--color-bg-main)' }}>
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4" 
+        style={{ backgroundColor: 'var(--color-bg-main)' }}
+      >
         {error && (
           <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-error-bg)', color: 'var(--color-error-text)' }}>
             <p className="text-sm font-medium mb-2">Error: {error}</p>
