@@ -6,6 +6,7 @@ import ChatWindow from '../components/messages/ChatWindow';
 import PageHeader from '../components/common/PageHeader';
 import Breadcrumb from '../components/common/Breadcrumb';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import socketService from '../services/socket';
 
 const Messages = () => {
   const [activeTab, setActiveTab] = useState('conversations');
@@ -37,6 +38,21 @@ const Messages = () => {
     },
     retry: false,
   });
+
+  // Initialize socket service when user is authenticated
+  useEffect(() => {
+    if (authUser && !authUserLoading) {
+      console.log('🔌 Initializing socket service for Messages page');
+      if (!socketService.isConnected) {
+        socketService.connect();
+      }
+    }
+
+    return () => {
+      // Don't disconnect socket when leaving Messages page
+      // Keep it connected for real-time notifications
+    };
+  }, [authUser, authUserLoading]);
 
   // Show loading if we're still waiting for auth user
   if (authUserLoading) {
