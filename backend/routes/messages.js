@@ -4,6 +4,7 @@ import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
 import User from '../models/user.model.js';
 import MessageRequest from '../models/MessageRequest.js';
+import { v2 as cloudinary } from 'cloudinary';
 
 const router = express.Router();
 
@@ -500,12 +501,12 @@ router.post('/conversations/:conversationId/upload', protectRoute, async (req, r
         });
 
         attachments.push({
-          type: file.type.startsWith('image/') ? 'image' : 
-                file.type.startsWith('video/') ? 'video' : 
-                file.type.startsWith('audio/') ? 'audio' : 'file',
+          fileType: file.type.startsWith('image/') ? 'image' : 
+                    file.type.startsWith('video/') ? 'video' : 
+                    file.type.startsWith('audio/') ? 'audio' : 'file',
           url: result.secure_url,
           filename: file.name,
-          size: file.size,
+          fileSize: file.size,
           mimetype: file.type
         });
       } catch (uploadError) {
