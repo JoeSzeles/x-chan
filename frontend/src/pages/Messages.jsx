@@ -110,17 +110,21 @@ const Messages = () => {
   };
 
   return (
-    <div className="flex-1 flex" style={{ 
+    <div style={{ 
       backgroundColor: 'var(--color-bg-main)',
-      minHeight: '0',
+      height: '600px',
+      display: 'flex',
       overflow: 'hidden'
     }}>
       {/* Left sidebar */}
-      <div className="w-1/3 border-r flex flex-col" style={{ 
-        borderColor: 'var(--color-border-default)', 
+      <div style={{ 
+        width: '33.333333%',
+        borderRight: `1px solid var(--color-border-default)`,
         backgroundColor: 'var(--color-bg-card)',
         overflow: 'hidden',
-        minHeight: '0'
+        display: 'flex',
+        flexDirection: 'column',
+        height: '600px'
       }}>
         {/* Tab navigation */}
         <div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
@@ -178,8 +182,15 @@ const Messages = () => {
         </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-hidden">
-              <div className="h-full overflow-y-auto">
+            <div style={{ 
+              flex: '1',
+              overflow: 'hidden',
+              height: 'calc(600px - 120px)'
+            }}>
+              <div style={{ 
+                height: '100%',
+                overflowY: 'auto'
+              }}>
                 {activeTab === 'conversations' ? (
                 <ConversationsList
                   authUser={authUser}
@@ -198,10 +209,13 @@ const Messages = () => {
           </div>
 
           {/* Right panel */}
-      <div className="w-2/3 flex flex-col" style={{ 
+      <div style={{ 
+        width: '66.666667%',
         backgroundColor: 'var(--color-bg-main)', 
         overflow: 'hidden',
-        minHeight: '0'
+        display: 'flex',
+        flexDirection: 'column',
+        height: '600px'
       }}>
         {selectedConversation ? (
           <ChatWindow 
