@@ -17,6 +17,7 @@ const ChatWindow = ({ conversation, authUser }) => {
   const [typingUsers, setTypingUsers] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const notificationSoundRef = useRef(null);
@@ -138,7 +139,12 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   };
 
-  // Auto-scroll removed to prevent page-level scrolling interference
+  // Auto-scroll to bottom when new messages arrive (only for chat window)
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   // Cleanup typing timeout on unmount
   useEffect(() => {
@@ -563,7 +569,7 @@ const ChatWindow = ({ conversation, authUser }) => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ backgroundColor: 'var(--color-bg-main)', minHeight: 0 }}>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-0" style={{ backgroundColor: 'var(--color-bg-main)' }}>
         {error && (
           <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-error-bg)', color: 'var(--color-error-text)' }}>
             <p className="text-sm font-medium mb-2">Error: {error}</p>
@@ -803,6 +809,7 @@ const ChatWindow = ({ conversation, authUser }) => {
             );
           })
         )}
+        <div ref={messagesEndRef} />
         
         {/* Typing indicator */}
         {typingUsers.length > 0 && (
