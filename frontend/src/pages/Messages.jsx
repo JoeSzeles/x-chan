@@ -155,6 +155,7 @@ const Messages = () => {
                   onSelectConversation={setSelectedConversation}
                   selectedConversation={selectedConversation}
                   refreshTrigger={refreshTrigger}
+                  onUnreadCountChange={() => {}}
                 />
               ) : (
                 <MessageContacts 
