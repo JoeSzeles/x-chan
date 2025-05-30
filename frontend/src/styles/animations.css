@@ -46,6 +46,7 @@
 .message-notification {
   animation: messageNotification 3s ease-in-out;
   border-left: 4px solid #22c55e !important;
+  background-color: #f0fff4 !important;
 }
 
 .pulse-green {

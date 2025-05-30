@@ -11,7 +11,19 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [unreadCounts, setUnreadCounts] = useState({});
+	const [newMessageAnimations, setNewMessageAnimations] = useState({});
 	const { isUserOnline } = useOnlineStatus();
+
+	// Function to play notification sound
+	const playNotificationSound = () => {
+		try {
+			const audio = new Audio('/sounds/notification.mp3');
+			audio.volume = 0.5;
+			audio.play().catch(error => console.log('Could not play notification sound:', error));
+		} catch (error) {
+			console.log('Notification sound error:', error);
+		}
+	};
 
 	const { data: authUser } = useQuery({
 		queryKey: ["authUser"],
@@ -149,10 +161,30 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			// Update unread count if message is not from current user and not in selected conversation
 			if (message.senderId._id !== authUser._id && 
 				(!selectedConversation || message.conversationId !== selectedConversation._id)) {
+				
+				// Update unread count
 				setUnreadCounts(prev => ({
 					...prev,
 					[message.conversationId]: (prev[message.conversationId] || 0) + 1
 				}));
+
+				// Trigger animation for this conversation
+				setNewMessageAnimations(prev => ({
+					...prev,
+					[message.conversationId]: Date.now()
+				}));
+
+				// Play notification sound
+				playNotificationSound();
+
+				// Clear animation after 3 seconds
+				setTimeout(() => {
+					setNewMessageAnimations(prev => {
+						const updated = { ...prev };
+						delete updated[message.conversationId];
+						return updated;
+					});
+				}, 3000);
 			}
 		};
 
@@ -200,12 +232,13 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 
 					const unreadCount = unreadCounts[conversation._id] || 0;
 					const hasUnread = unreadCount > 0;
-					const hasNewMessage = true; // Placeholder for actual logic
+					const hasNewMessage = newMessageAnimations[conversation._id];
+					const animationClass = hasNewMessage ? 'message-notification' : '';
 
 					return (
 						<div
 							key={conversation._id}
-							className={`p-4 border-b hover:bg-gray-50 cursor-pointer relative ${hasUnread ? 'bg-blue-50' : ''}`}
+							className={`p-4 border-b hover:bg-gray-50 cursor-pointer relative transition-all duration-300 ${hasUnread ? 'bg-blue-50' : ''} ${animationClass}`}
 							onClick={() => {
 								onSelectConversation(conversation);
 								// Clear unread count for this conversation
@@ -213,6 +246,12 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 									...prev,
 									[conversation._id]: 0
 								}));
+								// Clear animation for this conversation
+								setNewMessageAnimations(prev => {
+									const updated = { ...prev };
+									delete updated[conversation._id];
+									return updated;
+								});
 							}}
 						>
 							<div className="flex items-center space-x-3">
@@ -237,7 +276,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 											</span>
 											{hasUnread && (
 												<div className="flex items-center space-x-1">
-													<span className="text-xs bg-red-500 text-white rounded-full px-2 py-1 font-bold min-w-[20px] text-center">
+													<span className={`text-xs bg-red-500 text-white rounded-full px-2 py-1 font-bold min-w-[20px] text-center ${hasNewMessage ? 'pulse-green' : ''}`}>
 														{unreadCount}
 													</span>
 													{hasNewMessage && <div className="sound-wave"></div>}
