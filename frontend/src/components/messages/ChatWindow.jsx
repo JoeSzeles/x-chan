@@ -371,26 +371,46 @@ const ChatWindow = ({ conversation, authUser }) => {
   };
 
   const uploadFiles = async (files) => {
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('files', file);
-    });
+    try {
+      setUploadingFiles(true);
+      
+      // Validate file sizes before upload
+      for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(`File "${file.name}" exceeds 5MB limit`);
+        }
+      }
 
-    const response = await fetch(`/api/messages/conversations/${conversation._id}/upload`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: formData
-    });
+      const formData = new FormData();
+      files.forEach(file => {
+        formData.append('files', file);
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to upload files');
+      console.log('📎 Uploading files to:', `/api/messages/conversations/${conversation._id}/upload`);
+
+      const response = await fetch(`/api/messages/conversations/${conversation._id}/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to upload files');
+      }
+
+      const data = await response.json();
+      console.log('📎 Files uploaded successfully:', data.attachments);
+      return data.attachments;
+    } catch (error) {
+      console.error('📎 File upload error:', error);
+      throw error;
+    } finally {
+      setUploadingFiles(false);
     }
-
-    const data = await response.json();
-    return data.attachments;
   };
 
   const removeSelectedFile = (index) => {
@@ -573,45 +593,92 @@ const ChatWindow = ({ conversation, authUser }) => {
                           
                           {/* File attachments */}
                           {message.attachments && message.attachments.length > 0 && (
-                            <div className="space-y-2">
+                            <div className="space-y-3 mt-2">
                               {message.attachments.map((attachment, idx) => (
                                 <div key={idx} className="attachment">
                                   {attachment.fileType === 'image' ? (
-                                    <img
-                                      src={attachment.url}
-                                      alt={attachment.filename}
-                                      className="max-w-xs rounded-lg cursor-pointer"
-                                      onClick={() => window.open(attachment.url, '_blank')}
-                                    />
+                                    <div className="relative max-w-sm">
+                                      <img
+                                        src={attachment.url}
+                                        alt={attachment.filename}
+                                        className="w-full h-auto rounded-lg cursor-pointer shadow-md border"
+                                        style={{ 
+                                          maxHeight: '300px',
+                                          objectFit: 'cover',
+                                          borderColor: 'var(--color-border-default)'
+                                        }}
+                                        onClick={() => window.open(attachment.url, '_blank')}
+                                        loading="lazy"
+                                      />
+                                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                                        {attachment.filename}
+                                      </div>
+                                    </div>
                                   ) : attachment.fileType === 'video' ? (
-                                    <video
-                                      src={attachment.url}
-                                      controls
-                                      className="max-w-xs rounded-lg"
-                                    />
+                                    <div className="max-w-sm">
+                                      <video
+                                        src={attachment.url}
+                                        controls
+                                        className="w-full h-auto rounded-lg shadow-md border"
+                                        style={{ 
+                                          maxHeight: '300px',
+                                          borderColor: 'var(--color-border-default)'
+                                        }}
+                                        preload="metadata"
+                                      />
+                                      <p className="text-xs mt-1 opacity-70">{attachment.filename}</p>
+                                    </div>
                                   ) : attachment.fileType === 'audio' ? (
-                                    <audio
-                                      src={attachment.url}
-                                      controls
-                                      className="w-full max-w-xs"
-                                    />
+                                    <div className="max-w-sm p-3 rounded-lg border" style={{ 
+                                      backgroundColor: 'var(--color-bg-main)',
+                                      borderColor: 'var(--color-border-default)'
+                                    }}>
+                                      <div className="flex items-center space-x-2 mb-2">
+                                        <span className="text-lg">🎵</span>
+                                        <div>
+                                          <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                                            {attachment.filename}
+                                          </p>
+                                          <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                            {formatFileSize(attachment.fileSize)}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <audio
+                                        src={attachment.url}
+                                        controls
+                                        className="w-full"
+                                        preload="metadata"
+                                      />
+                                    </div>
                                   ) : (
                                     <a
                                       href={attachment.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                      className="flex items-center space-x-3 p-3 rounded-lg border hover:shadow-md transition-all duration-200 max-w-sm"
+                                      style={{
+                                        backgroundColor: 'var(--color-bg-card)',
+                                        borderColor: 'var(--color-border-default)'
+                                      }}
                                     >
-                                      <div className="flex-shrink-0">
-                                        📄
+                                      <div className="flex-shrink-0 text-xl">
+                                        {attachment.filename.endsWith('.pdf') ? '📄' :
+                                         attachment.filename.match(/\.(doc|docx)$/i) ? '📝' :
+                                         attachment.filename.endsWith('.txt') ? '📄' : '📎'}
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 truncate">
+                                        <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
                                           {attachment.filename}
                                         </p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                                           {formatFileSize(attachment.fileSize)}
                                         </p>
+                                      </div>
+                                      <div className="flex-shrink-0">
+                                        <svg className="w-4 h-4" style={{ color: 'var(--color-text-secondary)' }} fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                        </svg>
                                       </div>
                                     </a>
                                   )}
@@ -713,7 +780,7 @@ const ChatWindow = ({ conversation, authUser }) => {
             backgroundColor: 'var(--color-bg-main)',
             borderColor: 'var(--color-border-default)'
           }}>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                 Selected Files ({selectedFiles.length}/5)
               </span>
@@ -722,36 +789,59 @@ const ChatWindow = ({ conversation, authUser }) => {
                   setSelectedFiles([]);
                   if (fileInputRef.current) fileInputRef.current.value = '';
                 }}
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs px-2 py-1 rounded transition-colors"
+                style={{ 
+                  color: 'var(--color-error-text)',
+                  backgroundColor: 'var(--color-error-bg)'
+                }}
               >
                 Clear All
               </button>
             </div>
             <div className="space-y-2">
-              {selectedFiles.map((file, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm">
-                      {file.type.startsWith('image/') ? '🖼️' : 
-                       file.type.startsWith('video/') ? '🎥' : 
-                       file.type.startsWith('audio/') ? '🎵' : '📄'}
-                    </span>
-                    <span className="text-sm font-medium text-gray-700 truncate max-w-xs">
-                      {file.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {formatFileSize(file.size)}
-                    </span>
+              {selectedFiles.map((file, index) => {
+                const isLarge = file.size > 5 * 1024 * 1024;
+                return (
+                  <div key={index} className={`flex items-center justify-between p-3 rounded-lg border ${isLarge ? 'border-red-300 bg-red-50' : ''}`} style={{ 
+                    backgroundColor: isLarge ? 'var(--color-error-bg)' : 'var(--color-bg-card)',
+                    borderColor: isLarge ? 'var(--color-error-border)' : 'var(--color-border-default)'
+                  }}>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-lg">
+                        {file.type.startsWith('image/') ? '🖼️' : 
+                         file.type.startsWith('video/') ? '🎥' : 
+                         file.type.startsWith('audio/') ? '🎵' : '📄'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate max-w-xs" style={{ 
+                          color: isLarge ? 'var(--color-error-text)' : 'var(--color-text-primary)' 
+                        }}>
+                          {file.name}
+                        </p>
+                        <p className="text-xs" style={{ 
+                          color: isLarge ? 'var(--color-error-text)' : 'var(--color-text-secondary)' 
+                        }}>
+                          {formatFileSize(file.size)}
+                          {isLarge && ' - Exceeds 5MB limit!'}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeSelectedFile(index)}
+                      className="p-1 rounded hover:bg-opacity-80 transition-colors"
+                      style={{ 
+                        color: 'var(--color-error-text)',
+                        backgroundColor: 'transparent'
+                      }}
+                      title="Remove file"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeSelectedFile(index)}
-                    className="text-red-500 hover:text-red-700 p-1"
-                    title="Remove file"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
