@@ -20,12 +20,12 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			console.log('ConversationsList: Attempting to play notification sound');
 			const audio = new Audio('/sounds/notification.mp3');
 			audio.volume = 0.3;
-			
+
 			// Add event listeners to track loading
 			audio.addEventListener('canplaythrough', () => {
 				console.log('ConversationsList: Audio loaded successfully');
 			});
-			
+
 			audio.addEventListener('error', (e) => {
 				console.log('ConversationsList: Audio error:', e);
 				// Try backup sound
@@ -33,7 +33,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 				backupAudio.volume = 0.3;
 				backupAudio.play().catch(err => console.log('ConversationsList: Backup sound also failed:', err));
 			});
-			
+
 			audio.play().catch(error => {
 				console.log('ConversationsList: Could not play notification sound:', error);
 				// Try with a simple beep sound using Web Audio API
@@ -41,17 +41,17 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 					const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 					const oscillator = audioContext.createOscillator();
 					const gainNode = audioContext.createGain();
-					
+
 					oscillator.connect(gainNode);
 					gainNode.connect(audioContext.destination);
-					
+
 					oscillator.frequency.value = 800; // 800 Hz frequency
 					gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
 					gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-					
+
 					oscillator.start(audioContext.currentTime);
 					oscillator.stop(audioContext.currentTime + 0.1);
-					
+
 					console.log('ConversationsList: Played fallback beep sound');
 				} catch (beepError) {
 					console.log('ConversationsList: Fallback beep also failed:', beepError);
@@ -219,7 +219,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 				// Only play sound and show animation if it's NOT the currently open conversation
 				if (!isCurrentConversation) {
 					console.log('ConversationsList: Playing notification for different conversation');
-					
+
 					// Trigger animation for this conversation
 					setNewMessageAnimations(prev => ({
 						...prev,
@@ -299,14 +299,14 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 							onClick={() => {
 								console.log('ConversationsList: Selecting conversation:', conversation._id);
 								onSelectConversation(conversation);
-								
+
 								// Clear unread count for this conversation
 								setUnreadCounts(prev => {
 									const updated = { ...prev, [conversation._id]: 0 };
 									console.log('ConversationsList: Updated unread counts:', updated);
 									return updated;
 								});
-								
+
 								// Clear animation for this conversation
 								setNewMessageAnimations(prev => {
 									const updated = { ...prev };
