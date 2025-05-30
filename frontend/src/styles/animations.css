@@ -5,15 +5,28 @@
     background-color: #f0fff4;
     border-left-color: #22c55e;
     transform: translateX(-5px);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+  }
+  25% {
+    background-color: #dcfce7;
+    transform: translateX(2px);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
   }
   50% {
-    background-color: #dcfce7;
+    background-color: #bbf7d0;
     transform: translateX(0);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+  }
+  75% {
+    background-color: #dcfce7;
+    transform: translateX(-2px);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
   }
   100% {
-    background-color: inherit;
-    border-left-color: inherit;
+    background-color: #f0fff4;
+    border-left-color: #22c55e;
     transform: translateX(0);
+    box-shadow: 0 0 5px rgba(34, 197, 94, 0.2);
   }
 }
 
@@ -21,19 +34,22 @@
   0%, 100% {
     opacity: 1;
     transform: scale(1);
+    background-color: #22c55e;
   }
   50% {
-    opacity: 0.5;
-    transform: scale(1.1);
+    opacity: 0.7;
+    transform: scale(1.05);
+    background-color: #16a34a;
   }
 }
 
 .message-notification {
-  animation: messageNotification 2s ease-in-out;
+  animation: messageNotification 3s ease-in-out;
+  border-left: 4px solid #22c55e !important;
 }
 
 .pulse-green {
-  animation: pulseGreen 1.5s infinite;
+  animation: pulseGreen 2s infinite;
 }
 
 /* Sound wave animation for active messages */
@@ -41,21 +57,57 @@
   0% {
     transform: scale(1);
     opacity: 1;
+    background-color: #22c55e;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0.6;
+    background-color: #16a34a;
   }
   100% {
-    transform: scale(1.4);
+    transform: scale(2.5);
     opacity: 0;
+    background-color: #15803d;
+  }
+}
+
+@keyframes soundWavePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
   }
 }
 
 .sound-wave {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
+  position: relative;
+  width: 10px;
+  height: 10px;
   background-color: #22c55e;
   border-radius: 50%;
-  animation: soundWave 1s ease-out infinite;
+  animation: soundWave 1.5s ease-out infinite;
+}
+
+.sound-wave::before,
+.sound-wave::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #22c55e;
+  animation: soundWavePulse 1.5s ease-out infinite;
+}
+
+.sound-wave::before {
+  animation-delay: 0.3s;
+}
+
+.sound-wave::after {
+  animation-delay: 0.6s;
 }

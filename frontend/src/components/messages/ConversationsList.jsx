@@ -200,6 +200,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 
 					const unreadCount = unreadCounts[conversation._id] || 0;
 					const hasUnread = unreadCount > 0;
+					const hasNewMessage = true; // Placeholder for actual logic
 
 					return (
 						<div
@@ -235,7 +236,12 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 												})}
 											</span>
 											{hasUnread && (
-												<div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+												<div className="flex items-center space-x-1">
+													<span className="text-xs bg-red-500 text-white rounded-full px-2 py-1 font-bold min-w-[20px] text-center">
+														{unreadCount}
+													</span>
+													{hasNewMessage && <div className="sound-wave"></div>}
+												</div>
 											)}
 										</div>
 									</div>
