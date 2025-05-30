@@ -77,27 +77,8 @@ const Messages = () => {
     );
   }
 
-  // Listen for new messages to trigger conversation list refresh
-  useEffect(() => {
-    if (authUser) {
-      const handleNewMessage = (message) => {
-        console.log('Messages page received new message:', message);
-
-        // Always trigger refresh for new messages to update the list order and unread counts
-        // The ConversationsList component will handle the detailed updates
-        if (message.conversationId !== selectedConversation?._id) {
-          console.log('Triggering conversation list refresh for new message');
-          setRefreshTrigger(prev => prev + 1);
-        }
-      };
-
-      socketService.onNewMessage(handleNewMessage);
-
-      return () => {
-        socketService.offNewMessage(handleNewMessage);
-      };
-    }
-  }, [authUser, selectedConversation]);
+  // The socket listeners are now handled in ConversationsList and ChatWindow components
+  // to avoid conflicts and improve performance
 
   const handleStartConversation = async (conversation) => {
     setSelectedConversation(conversation);

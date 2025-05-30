@@ -137,8 +137,7 @@ class SocketService {
 
   onNewMessage(callback) {
     if (this.socket) {
-      // Remove any existing listeners first to prevent duplicates
-      this.socket.off('new_message');
+      // Don't remove existing listeners, just add the new one
       this.socket.on('new_message', (message) => {
         console.log('📨 Received new message via socket:', message);
         callback(message);
