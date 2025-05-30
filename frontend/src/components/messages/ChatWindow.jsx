@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import socketService from '../../services/socket';
+import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
@@ -20,6 +21,7 @@ const ChatWindow = ({ conversation, authUser }) => {
   const fileInputRef = useRef(null);
   const notificationSoundRef = useRef(null);
   const currentUserId = authUser?._id;
+  const { isUserOnline } = useOnlineStatus();
 
   // Auto-scroll to bottom function - only scrolls the messages container
   const scrollToBottom = () => {
@@ -526,15 +528,26 @@ const ChatWindow = ({ conversation, authUser }) => {
         backgroundColor: 'var(--color-bg-card)' 
       }}>
         <div className="flex items-center space-x-3">
-          <img
-            src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
-            alt={otherParticipant?.username}
-            className="w-10 h-10 rounded-full object-cover"
-          />
+          <div className="relative">
+            <img
+              src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
+              alt={otherParticipant?.username}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+            {/* Online indicator */}
+            {isUserOnline(otherParticipant?._id) && (
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+            )}
+          </div>
           <div>
-            <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-              {otherParticipant?.fullName || otherParticipant?.username}
-            </h3>
+            <div className="flex items-center space-x-2">
+              <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                {otherParticipant?.fullName || otherParticipant?.username}
+              </h3>
+              {isUserOnline(otherParticipant?._id) && (
+                <span className="text-xs text-green-500 font-medium">● Online</span>
+              )}
+            </div>
             <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               @{otherParticipant?.username}
             </p>
@@ -577,13 +590,19 @@ const ChatWindow = ({ conversation, authUser }) => {
             return (
               <div key={message._id} className={`flex ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3`}>
                 {/* Avatar */}
-                <div className="w-10 h-10 flex-shrink-0">
+                <div className="w-10 h-10 flex-shrink-0 relative">
                   {showAvatar && !isOwnMessage && (
-                    <img
-                      src={message.senderId.profileImg || '/avatar-placeholder.png'}
-                      alt={message.senderId.username}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={message.senderId.profileImg || '/avatar-placeholder.png'}
+                        alt={message.senderId.username}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      {/* Online indicator */}
+                      {isUserOnline(message.senderId._id) && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                      )}
+                    </>
                   )}
                 </div>
 

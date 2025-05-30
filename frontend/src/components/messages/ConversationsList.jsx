@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { useOnlineStatus } from '../../hooks/useOnlineStatus';
+import { useQuery } from "@tanstack/react-query";
 
 const ConversationsList = ({ onSelectConversation, selectedConversation, refreshTrigger }) => {
 	const [conversations, setConversations] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [unreadCounts, setUnreadCounts] = useState({});
+	const { isUserOnline } = useOnlineStatus();
 
 	const { data: authUser } = useQuery({
 		queryKey: ["authUser"],
@@ -31,12 +33,12 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		},
 		retry: false,
 	});
-  
+
 
 	const fetchUnreadCounts = async (conversationIds) => {
 		try {
 			const counts = {};
-			
+
 			// Fetch unread count for each conversation
 			for (const conversationId of conversationIds) {
 				const response = await fetch(`/api/messages/conversations/${conversationId}/unread-count`, {
@@ -53,7 +55,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 					counts[conversationId] = 0;
 				}
 			}
-			
+
 			setUnreadCounts(counts);
 		} catch (error) {
 			console.error('Error fetching unread counts:', error);
@@ -87,7 +89,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
       console.log('ConversationsList: Conversations data:', data);
       const conversationsData = Array.isArray(data) ? data : [];
       setConversations(conversationsData);
-      
+
       // Fetch unread counts for all conversations
       if (conversationsData.length > 0) {
         const conversationIds = conversationsData.map(conv => conv._id);
@@ -104,7 +106,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		fetchConversations();
 	}, [refreshTrigger]); // Re-fetch when refreshTrigger changes
 
-  
+
 
 	if (loading) {
 		return (
@@ -162,10 +164,9 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 										alt={otherParticipant?.username}
 										className="w-12 h-12 rounded-full object-cover"
 									/>
-									{hasUnread && (
-										<div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-											{unreadCount > 99 ? '99+' : unreadCount}
-										</div>
+									{/* Online indicator */}
+									{isUserOnline(otherParticipant?._id) && (
+										<div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
 									)}
 								</div>
 								<div className="flex-1 min-w-0">
