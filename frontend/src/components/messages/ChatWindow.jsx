@@ -431,6 +431,68 @@ const ChatWindow = ({ conversation, authUser }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handleRepostMessage = async (message) => {
+    try {
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          text: message.content || '',
+          attachments: message.attachments,
+          isRepost: true,
+          originalMessage: {
+            id: message._id,
+            author: message.senderId.username,
+            content: message.content,
+            attachments: message.attachments,
+            timestamp: message.createdAt
+          }
+        })
+      });
+
+      if (response.ok) {
+        setError(null);
+        // Show success message
+        console.log('Message reposted successfully');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.error || 'Failed to repost message');
+      }
+    } catch (err) {
+      console.error('Error reposting message:', err);
+      setError('Failed to repost message');
+    }
+  };
+
+  const handleSaveMessage = async (message) => {
+    try {
+      const response = await fetch(`/api/messages/${message._id}/bookmark`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        setError(null);
+        // Show success message
+        console.log('Message saved successfully');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.error || 'Failed to save message');
+      }
+    } catch (err) {
+      console.error('Error saving message:', err);
+      setError('Failed to save message');
+    }
+  };
+
   const otherParticipant = conversation.participants.find(
     (p) => p._id !== currentUserId
   );
@@ -761,6 +823,24 @@ const ChatWindow = ({ conversation, authUser }) => {
                               </div>
                             )}
                           </div>
+                          
+                          {/* Repost button */}
+                          <button
+                            onClick={() => handleRepostMessage(message)}
+                            className="p-1 hover:bg-gray-100 rounded text-xs"
+                            title="Repost message"
+                          >
+                            🔄
+                          </button>
+                          
+                          {/* Save/Bookmark button */}
+                          <button
+                            onClick={() => handleSaveMessage(message)}
+                            className="p-1 hover:bg-gray-100 rounded text-xs"
+                            title="Save message"
+                          >
+                            📌
+                          </button>
                           
                           {/* Edit/Delete buttons for own messages */}
                           {isOwnMessage && (
