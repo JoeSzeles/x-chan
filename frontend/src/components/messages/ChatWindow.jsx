@@ -532,7 +532,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                       <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                         {isOwnMessage ? 'You' : message.senderId.username}
                       </span>
-                      <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                      <span className="text-xs" style={{ color: '#dc3545' }}>
                         {formatDistanceToNow(new Date(message.createdAt))} ago
                       </span>
                     </div>
@@ -540,7 +540,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                   
                   {/* Always show timestamp on hover or for messages without avatar */}
                   {!showAvatar && (
-                    <div className={`text-xs mb-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: 'var(--color-text-secondary)' }}>
+                    <div className={`text-xs mb-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: '#dc3545' }}>
                       {formatDistanceToNow(new Date(message.createdAt))} ago
                     </div>
                   )}
@@ -705,7 +705,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                           )}
                           
                           {/* Message timestamp - always visible */}
-                          <div className={`text-xs mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: 'var(--color-text-secondary)' }}>
+                          <div className={`text-xs mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: '#dc3545' }}>
                             <span className="opacity-70">
                               {new Date(message.createdAt).toLocaleTimeString([], { 
                                 hour: '2-digit', 
