@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { useQuery } from "@tanstack/react-query";
-import Avatar from './Avatar';
+import Avatar from '../common/Avatar';
 
 const ConversationsList = ({ onSelectConversation, selectedConversation, refreshTrigger }) => {
 	const [conversations, setConversations] = useState([]);
