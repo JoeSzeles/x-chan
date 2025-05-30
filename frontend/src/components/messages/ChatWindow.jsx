@@ -225,7 +225,7 @@ const ChatWindow = ({ conversation, authUser }) => {
         attachments = await uploadFiles(filesToUpload);
       }
 
-      const response = await fetch(`/api/messages/${conversation._id}`, {
+      const response = await fetch(`/api/messages/conversations/${conversation._id}/messages`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -240,7 +240,13 @@ const ChatWindow = ({ conversation, authUser }) => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to send message');
+        console.error('📤 Message send failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+          url: response.url
+        });
+        throw new Error(errorData.error || `Failed to send message (${response.status})`);
       }
 
       const messageData = await response.json();
