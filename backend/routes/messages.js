@@ -4,8 +4,38 @@ import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
 import User from '../models/user.model.js';
 import MessageRequest from '../models/MessageRequest.js';
+import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
 
 const router = express.Router();
+
+// Configure multer for file uploads (memory storage for direct Cloudinary upload)
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit
+        files: 5 // Maximum 5 files
+    },
+    fileFilter: (req, file, cb) => {
+        // Allow images, videos, audio, and common document types
+        const allowedTypes = [
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+            'video/mp4', 'video/webm', 'video/quicktime',
+            'audio/mpeg', 'audio/wav', 'audio/ogg',
+            'application/pdf', 'text/plain',
+            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error(`File type ${file.mimetype} not allowed`), false);
+        }
+    }
+});
+
+// Apply multer middleware to upload route
+router.use('/conversations/:conversationId/upload', upload.array('files', 5));
 
 console.log('[messages.js] ========================================');
 console.log('[messages.js] INITIALIZING MESSAGES ROUTER');
@@ -465,6 +495,89 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
     }
 });
 
+// File upload route for messages
+router.post('/conversations/:conversationId/upload', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const files = req.files || [];
+
+        console.log(`[messages.js] Uploading ${files.length} files for conversation: ${conversationId}`);
+
+        // Check if user is part of the conversation
+        const conversation = await Conversation.findOne({
+            _id: conversationId,
+            participants: req.user._id
+        });
+
+        if (!conversation) {
+            return res.status(404).json({ error: 'Conversation not found' });
+        }
+
+        if (!files || files.length === 0) {
+            return res.status(400).json({ error: 'No files provided' });
+        }
+
+        if (files.length > 5) {
+            return res.status(400).json({ error: 'Maximum 5 files allowed' });
+        }
+
+        const attachments = [];
+
+        for (const file of files) {
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                return res.status(413).json({ 
+                    error: `File ${file.originalname} exceeds 5MB limit` 
+                });
+            }
+
+            try {
+                // Convert buffer to base64 for Cloudinary upload
+                const base64Data = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+                
+                // Upload to Cloudinary
+                const uploadResult = await cloudinary.uploader.upload(base64Data, {
+                    folder: 'message_attachments',
+                    resource_type: 'auto',
+                    quality: 'auto',
+                    fetch_format: 'auto'
+                });
+
+                // Determine file type
+                let fileType = 'file';
+                if (file.mimetype.startsWith('image/')) {
+                    fileType = 'image';
+                } else if (file.mimetype.startsWith('video/')) {
+                    fileType = 'video';
+                } else if (file.mimetype.startsWith('audio/')) {
+                    fileType = 'audio';
+                }
+
+                attachments.push({
+                    url: uploadResult.secure_url,
+                    filename: file.originalname,
+                    fileType: fileType,
+                    fileSize: file.size,
+                    mimeType: file.mimetype
+                });
+
+                console.log(`[messages.js] File uploaded successfully: ${file.originalname}`);
+            } catch (uploadError) {
+                console.error(`[messages.js] Error uploading file ${file.originalname}:`, uploadError);
+                return res.status(500).json({ 
+                    error: `Failed to upload file: ${file.originalname}` 
+                });
+            }
+        }
+
+        console.log(`[messages.js] All files uploaded successfully`);
+        res.json({ attachments });
+    } catch (error) {
+        console.error('[messages.js] Error in file upload:', error);
+        res.status(500).json({ error: 'Failed to upload files' });
+    }
+});
+
 console.log('[messages.js] ========================================');
 console.log('[messages.js] ALL ROUTES REGISTERED SUCCESSFULLY');
 console.log('[messages.js] Available routes:');
@@ -473,6 +586,7 @@ console.log('[messages.js] - POST /start-conversation');
 console.log('[messages.js] - GET  /conversations');
 console.log('[messages.js] - GET  /conversations/:id/messages');
 console.log('[messages.js] - POST /conversations/:id/messages');
+console.log('[messages.js] - POST /conversations/:id/upload');
 console.log('[messages.js] ========================================');
 
 export default router;
