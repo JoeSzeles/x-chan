@@ -5,6 +5,8 @@ class SocketService {
     this.socket = null;
     this.isConnected = false;
     this.messageCallbacks = new Set();
+    this.presenceCallbacks = new Set();
+    this.onlineUsers = new Set();
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 10;
   }
@@ -62,6 +64,25 @@ class SocketService {
       console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
       this.isConnected = true;
       this.reconnectAttempts = 0;
+    });
+
+    // Handle user presence events
+    this.socket.on('user_online', (userId) => {
+      console.log('👤 User came online:', userId);
+      this.onlineUsers.add(userId);
+      this.presenceCallbacks.forEach(callback => callback({ type: 'online', userId }));
+    });
+
+    this.socket.on('user_offline', (userId) => {
+      console.log('👤 User went offline:', userId);
+      this.onlineUsers.delete(userId);
+      this.presenceCallbacks.forEach(callback => callback({ type: 'offline', userId }));
+    });
+
+    this.socket.on('online_users', (users) => {
+      console.log('👥 Online users list:', users);
+      this.onlineUsers = new Set(users);
+      this.presenceCallbacks.forEach(callback => callback({ type: 'list', users }));
     });
   }
 
@@ -145,6 +166,30 @@ class SocketService {
       });
     } else {
       console.warn('⚠️ Cannot send message: socket not connected');
+    }
+  }
+
+  // Presence management methods
+  onPresenceChange(callback) {
+    this.presenceCallbacks.add(callback);
+  }
+
+  offPresenceChange(callback) {
+    this.presenceCallbacks.delete(callback);
+  }
+
+  isUserOnline(userId) {
+    return this.onlineUsers.has(userId);
+  }
+
+  getOnlineUsers() {
+    return Array.from(this.onlineUsers);
+  }
+
+  // Request current online users list
+  requestOnlineUsers() {
+    if (this.socket && this.isConnected) {
+      this.socket.emit('get_online_users');
     }
   }
 }

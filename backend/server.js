@@ -162,6 +162,9 @@ const io = new Server(httpServer, {
     transports: ['websocket', 'polling']
 });
 
+// Track online users
+const onlineUsers = new Map(); // userId -> socketId
+
 // Enable detailed debug logging
 io.engine.on("initial_headers", (headers, req) => {
     console.log("Initial headers:", headers);
@@ -211,6 +214,18 @@ io.on('connection', socket => {
         timestamp: new Date().toISOString()
     });
 
+    // Add user to online users
+    // Assuming you have a way to identify the user (e.g., from a token)
+    // For example, if you have socket.userId after authentication:
+    if (socket.userId) {
+        onlineUsers.set(socket.userId, socket.id);
+        // Notify all clients that this user is online
+        io.emit('user_online', socket.userId); // Notify everyone, including the new user
+
+        // Send the current online users to the newly connected user
+        socket.emit('online_users', Array.from(onlineUsers.keys()));
+    }
+
     socket.on('error', (error) => {
         console.error('[Socket.io] Socket error:', {
             id: socket.id,
@@ -227,6 +242,13 @@ io.on('connection', socket => {
             transport: socket.conn?.transport?.name,
             timestamp: new Date().toISOString()
         });
+
+        // Remove user from online users
+        if (socket.userId) {
+            onlineUsers.delete(socket.userId);
+            // Notify all clients that this user is offline
+            io.emit('user_offline', socket.userId);
+        }
     });
 
     socket.conn.on('packet', (packet) => {
