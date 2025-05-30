@@ -4,6 +4,7 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { useQuery } from "@tanstack/react-query";
 import Avatar from '../common/Avatar';
+import socketService from '../../services/socket';
 
 const ConversationsList = ({ onSelectConversation, selectedConversation, refreshTrigger }) => {
 	const [conversations, setConversations] = useState([]);
