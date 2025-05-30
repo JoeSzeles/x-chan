@@ -25,6 +25,7 @@ import QuoteText from './QuoteText';
 import usePostNumberNavigation from '../../hooks/usePostNumberNavigation';
 import CachedImage from './CachedImage';
 import RepostButton from './RepostButton';
+import Avatar from './Avatar';
 
 const getYouTubeThumbnail = (url) => {
 	try {
@@ -468,22 +469,12 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 				<div className='flex gap-2'>
 					{!isCompact && (
 						<div className='avatar relative flex flex-col items-center'>
-							<div className="w-12 h-12 relative z-10 rounded-full bg-[#1e1e1e] p-0.5">
-								<Link 
-									to={`/profile/${post.user.username}`} 
-									className='w-full h-full rounded-full overflow-hidden flex items-center justify-center border-2 border-gray-700' 
-									onClick={(e) => e.stopPropagation()}
-								>
-									<img 
-										src={post.user.profileImg || "/avatar-placeholder.png"} 
-										className="w-full h-full object-cover" 
-										alt="Profile"
-										onError={(e) => {
-											e.target.src = "/avatar-placeholder.png";
-										}}
-									/>
-								</Link>
-							</div>
+							<Avatar 
+								user={post.user} 
+								size="sm" 
+								showOnlineStatus={true}
+								isClickable={true}
+							/>
 						</div>
 					)}
 
@@ -853,7 +844,8 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 								alt=""
 							/>
 						)}
-						{post.videoUrl && isYouTubeUrl(post.videoUrl) && (
+						{post.videoUrl && isYouTubeUrl(```python
+post.videoUrl) && (
 							<div className="aspect-video">
 								<iframe
 									src={getYouTubeEmbedUrl(post.videoUrl)}
