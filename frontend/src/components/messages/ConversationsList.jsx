@@ -93,10 +93,10 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
       setConversations(conversationsData);
 
       // Fetch unread counts for all conversations
-      if (conversationsData.length > 0) {
-        const conversationIds = conversationsData.map(conv => conv._id);
-        fetchUnreadCounts(conversationIds);
-      }
+			if (conversationsData.length > 0) {
+				const conversationIds = conversationsData.map(conv => conv._id);
+				await fetchUnreadCounts(conversationIds);
+			}
     } catch (err) {
       console.error('ConversationsList: Error fetching conversations:', err);
       setError(err.message || 'Failed to fetch conversations');
@@ -118,7 +118,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			// Update conversations list with new message
 			setConversations(prevConversations => {
 				const conversationExists = prevConversations.some(conv => conv._id === message.conversationId);
-				
+
 				if (!conversationExists) {
 					// If this is a new conversation, refresh the list
 					return prevConversations;

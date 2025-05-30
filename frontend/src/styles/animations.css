@@ -1,0 +1,61 @@
+
+/* Message notification animations */
+@keyframes messageNotification {
+  0% {
+    background-color: #f0fff4;
+    border-left-color: #22c55e;
+    transform: translateX(-5px);
+  }
+  50% {
+    background-color: #dcfce7;
+    transform: translateX(0);
+  }
+  100% {
+    background-color: inherit;
+    border-left-color: inherit;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGreen {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+.message-notification {
+  animation: messageNotification 2s ease-in-out;
+}
+
+.pulse-green {
+  animation: pulseGreen 1.5s infinite;
+}
+
+/* Sound wave animation for active messages */
+@keyframes soundWave {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.sound-wave {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  animation: soundWave 1s ease-out infinite;
+}
