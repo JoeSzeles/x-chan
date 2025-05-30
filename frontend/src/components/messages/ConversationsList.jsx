@@ -110,50 +110,58 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 
 	// Listen for new messages to update conversation list and unread counts
 	useEffect(() => {
-		if (authUser) {
-			const handleNewMessage = (message) => {
-				console.log('ConversationsList: New message received:', message);
+		if (!authUser) return;
 
-				// Update conversations list with new message
-				setConversations(prevConversations => {
-					const updatedConversations = prevConversations.map(conv => {
-						if (conv._id === message.conversationId) {
-							return {
-								...conv,
-								lastMessage: {
-									content: message.content,
-									senderId: message.senderId._id,
-									timestamp: message.createdAt
-								},
-								lastActivity: message.createdAt,
-								updatedAt: message.createdAt
-							};
-						}
-						return conv;
-					});
+		const handleNewMessage = (message) => {
+			console.log('ConversationsList: New message received:', message);
 
-					// Sort conversations by last activity (most recent first)
-					return updatedConversations.sort((a, b) => 
-						new Date(b.lastActivity) - new Date(a.lastActivity)
-					);
+			// Update conversations list with new message
+			setConversations(prevConversations => {
+				const conversationExists = prevConversations.some(conv => conv._id === message.conversationId);
+				
+				if (!conversationExists) {
+					// If this is a new conversation, refresh the list
+					return prevConversations;
+				}
+
+				const updatedConversations = prevConversations.map(conv => {
+					if (conv._id === message.conversationId) {
+						return {
+							...conv,
+							lastMessage: {
+								content: message.content,
+								senderId: message.senderId._id || message.senderId,
+								timestamp: message.createdAt
+							},
+							lastActivity: message.createdAt,
+							updatedAt: message.createdAt
+						};
+					}
+					return conv;
 				});
 
-				// Update unread count if message is not from current user and not in selected conversation
-				if (message.senderId._id !== authUser._id && 
-					(!selectedConversation || message.conversationId !== selectedConversation._id)) {
-					setUnreadCounts(prev => ({
-						...prev,
-						[message.conversationId]: (prev[message.conversationId] || 0) + 1
-					}));
-				}
-			};
+				// Sort conversations by last activity (most recent first)
+				return updatedConversations.sort((a, b) => 
+					new Date(b.lastActivity || b.updatedAt) - new Date(a.lastActivity || a.updatedAt)
+				);
+			});
 
-			socketService.onNewMessage(handleNewMessage);
+			// Update unread count if message is not from current user and not in selected conversation
+			if (message.senderId._id !== authUser._id && 
+				(!selectedConversation || message.conversationId !== selectedConversation._id)) {
+				setUnreadCounts(prev => ({
+					...prev,
+					[message.conversationId]: (prev[message.conversationId] || 0) + 1
+				}));
+			}
+		};
 
-			return () => {
-				socketService.offNewMessage(handleNewMessage);
-			};
-		}
+		// Use a single listener for the conversation list
+		socketService.onNewMessage(handleNewMessage);
+
+		return () => {
+			socketService.offNewMessage(handleNewMessage);
+		};
 	}, [authUser, selectedConversation]);
 
 
