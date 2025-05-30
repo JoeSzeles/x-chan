@@ -62,7 +62,7 @@ const Avatar = ({
   return (
     <Link 
       to={`/profile/${user.username}`}
-      className="group"
+      className="inline-block"
     >
       {avatarContent}
     </Link>
