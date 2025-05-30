@@ -538,6 +538,13 @@ const ChatWindow = ({ conversation, authUser }) => {
                     </div>
                   )}
                   
+                  {/* Always show timestamp on hover or for messages without avatar */}
+                  {!showAvatar && (
+                    <div className={`text-xs mb-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: 'var(--color-text-secondary)' }}>
+                      {formatDistanceToNow(new Date(message.createdAt))} ago
+                    </div>
+                  )}
+                  
                   <div className="group relative">
                     {editingMessage === message._id ? (
                       <div className="flex gap-2 items-center">
@@ -696,6 +703,17 @@ const ChatWindow = ({ conversation, authUser }) => {
                           {message.isEdited && (
                             <span className="text-xs opacity-70 ml-2">(edited)</span>
                           )}
+                          
+                          {/* Message timestamp - always visible */}
+                          <div className={`text-xs mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: 'var(--color-text-secondary)' }}>
+                            <span className="opacity-70">
+                              {new Date(message.createdAt).toLocaleTimeString([], { 
+                                hour: '2-digit', 
+                                minute: '2-digit'
+                              })}
+                              {message.isEdited && ' • edited'}
+                            </span>
+                          </div>
                         </div>
                         
                         {/* Reactions */}
