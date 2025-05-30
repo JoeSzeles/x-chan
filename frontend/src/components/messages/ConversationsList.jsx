@@ -203,28 +203,40 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			// Get the actual sender ID
 			const senderId = message.senderId._id || message.senderId;
 			const isFromCurrentUser = senderId === authUser._id;
-			const isCurrentConversation = selectedConversation && message.conversationId === selectedConversation._id;
+			const isCurrentConversation = selectedConversation?._id === message.conversationId;
 
+			console.log('ConversationsList: Message conversation ID:', message.conversationId);
+			console.log('ConversationsList: Selected conversation ID:', selectedConversation?._id);
 			console.log('ConversationsList: Is from current user:', isFromCurrentUser);
 			console.log('ConversationsList: Is current conversation:', isCurrentConversation);
 
 			// Only handle notifications for messages NOT from current user
 			if (!isFromCurrentUser) {
-				// Always update unread count for messages from other users (regardless of selected conversation)
-				setUnreadCounts(prev => ({
-					...prev,
-					[message.conversationId]: (prev[message.conversationId] || 0) + 1
-				}));
+				console.log('ConversationsList: Message is from another user, processing notification');
+				
+				// Always update unread count for messages from other users
+				setUnreadCounts(prev => {
+					const newCount = (prev[message.conversationId] || 0) + 1;
+					console.log('ConversationsList: Updating unread count for conversation', message.conversationId, 'to', newCount);
+					return {
+						...prev,
+						[message.conversationId]: newCount
+					};
+				});
 
 				// Only play sound and show animation if it's NOT the currently open conversation
 				if (!isCurrentConversation) {
-					console.log('ConversationsList: Playing notification for different conversation');
+					console.log('ConversationsList: Message is for different conversation - playing notification');
 
 					// Trigger animation for this conversation
-					setNewMessageAnimations(prev => ({
-						...prev,
-						[message.conversationId]: Date.now()
-					}));
+					setNewMessageAnimations(prev => {
+						const updated = {
+							...prev,
+							[message.conversationId]: Date.now()
+						};
+						console.log('ConversationsList: Animation state updated:', updated);
+						return updated;
+					});
 
 					// Play notification sound
 					playNotificationSound();
@@ -234,6 +246,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 						setNewMessageAnimations(prev => {
 							const updated = { ...prev };
 							delete updated[message.conversationId];
+							console.log('ConversationsList: Animation cleared for conversation:', message.conversationId);
 							return updated;
 						});
 					}, 3000);
