@@ -3,7 +3,6 @@ import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { useQuery } from "@tanstack/react-query";
-import Avatar from '../common/Avatar';
 
 const ConversationsList = ({ onSelectConversation, selectedConversation, refreshTrigger }) => {
 	const [conversations, setConversations] = useState([]);
@@ -159,14 +158,17 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 							}}
 						>
 							<div className="flex items-center space-x-3">
-								<div className="flex-shrink-0">
-                <Avatar 
-                  user={otherParticipant} 
-                  size="lg" 
-                  showOnlineStatus={true}
-                  isClickable={true}
-                />
-              </div>
+								<div className="relative">
+									<img
+										src={otherParticipant?.profileImg || otherParticipant?.profilePicture || '/avatar-placeholder.png'}
+										alt={otherParticipant?.username}
+										className="w-12 h-12 rounded-full object-cover"
+									/>
+									{/* Online indicator */}
+									{isUserOnline(otherParticipant?._id) && (
+										<div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+									)}
+								</div>
 								<div className="flex-1 min-w-0">
 									<div className="flex justify-between items-start">
 										<h3 className={`text-sm truncate ${hasUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-900'}`}>

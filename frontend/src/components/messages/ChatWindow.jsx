@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import socketService from '../../services/socket';
@@ -36,30 +37,30 @@ const ChatWindow = ({ conversation, authUser }) => {
     // Check if notification sounds are enabled
     const soundsEnabled = localStorage.getItem('notificationSoundsEnabled') !== 'false';
     if (!soundsEnabled) return;
-
+    
     try {
       // First try to play the notification.mp3 file
       const audio = new Audio('/sounds/notification.mp3');
       audio.volume = 0.3;
       audio.play().catch(e => {
         console.log('Could not play notification.mp3:', e);
-
+        
         // Fallback to web audio API
         if (window.AudioContext || window.webkitAudioContext) {
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
-
+          
           oscillator.connect(gainNode);
           gainNode.connect(audioContext.destination);
-
+          
           oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
           oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
           oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
-
+          
           gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
           gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
+          
           oscillator.start(audioContext.currentTime);
           oscillator.stop(audioContext.currentTime + 0.3);
         }
@@ -117,12 +118,12 @@ const ChatWindow = ({ conversation, authUser }) => {
   useEffect(() => {
     if (conversation?._id) {
       fetchMessages();
-
+      
       // Ensure socket is connected and wait for connection
       if (!socketService.isConnected) {
         console.log('🔌 Socket not connected, connecting...');
         socketService.connect();
-
+        
         // Wait a bit for connection to establish
         setTimeout(() => {
           if (socketService.isConnected) {
@@ -140,11 +141,11 @@ const ChatWindow = ({ conversation, authUser }) => {
 
       const handleNewMessage = (message) => {
         console.log('📨 Received new message:', message);
-
+        
         // Process messages for the current conversation
         if (message.conversationId === conversation._id) {
           console.log('✅ Message is for current conversation');
-
+          
           // Always add the message if it's from another user
           if (message.senderId._id !== currentUserId) {
             setMessages((prev) => {
@@ -154,22 +155,22 @@ const ChatWindow = ({ conversation, authUser }) => {
                 console.log('⚠️ Duplicate message detected, skipping');
                 return prev;
               }
-
+              
               console.log('➕ Adding new message from other user');
               // Play notification sound immediately
               playNotificationSound();
-
+              
               // Add the new message and sort by timestamp to ensure proper order
               const newMessages = [...prev, message].sort((a, b) => 
                 new Date(a.createdAt) - new Date(b.createdAt)
               );
-
+              
               // Scroll to bottom after receiving new message
               setTimeout(scrollToBottom, 100);
-
+              
               return newMessages;
             });
-
+            
             // Mark as read since conversation is open
             setTimeout(markAsRead, 50);
           } else {
@@ -199,7 +200,7 @@ const ChatWindow = ({ conversation, authUser }) => {
     }
   }, [conversation?._id, currentUserId]);
 
-
+  
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -207,7 +208,7 @@ const ChatWindow = ({ conversation, authUser }) => {
 
     const messageContent = newMessage;
     const filesToUpload = [...selectedFiles];
-
+    
     // Clear inputs immediately for better UX
     setNewMessage('');
     setSelectedFiles([]);
@@ -220,7 +221,7 @@ const ChatWindow = ({ conversation, authUser }) => {
       setUploadingFiles(filesToUpload.length > 0);
 
       let attachments = [];
-
+      
       // Upload files if any
       if (filesToUpload.length > 0) {
         attachments = await uploadFiles(filesToUpload);
@@ -252,28 +253,28 @@ const ChatWindow = ({ conversation, authUser }) => {
 
       const messageData = await response.json();
       console.log('📤 Message sent successfully:', messageData);
-
+      
       // Add message to local state immediately for better UX
       setMessages((prev) => {
         // Check if message already exists (shouldn't happen but safety check)
         const exists = prev.some(msg => msg._id === messageData._id);
         if (exists) return prev;
-
+        
         return [...prev, messageData].sort((a, b) => 
           new Date(a.createdAt) - new Date(b.createdAt)
         );
       });
-
+      
       // Send via socket for real-time updates to other participants
       if (socketService.isConnected) {
         socketService.sendMessage(messageData);
       } else {
         console.warn('⚠️ Socket not connected, message sent via API only');
       }
-
+      
       // Scroll to bottom after sending message
       setTimeout(scrollToBottom, 100);
-
+      
       inputRef.current?.focus();
     } catch (err) {
       console.error('Error sending message:', err);
@@ -345,7 +346,7 @@ const ChatWindow = ({ conversation, authUser }) => {
 
   const handleDeleteMessage = async (messageId) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
-
+    
     try {
       const response = await fetch(`/api/messages/conversations/${conversation._id}/messages/${messageId}`, {
         method: 'DELETE',
@@ -380,7 +381,7 @@ const ChatWindow = ({ conversation, authUser }) => {
   const uploadFiles = async (files) => {
     try {
       setUploadingFiles(true);
-
+      
       // Validate file sizes before upload
       for (const file of files) {
         if (file.size > 5 * 1024 * 1024) {
@@ -520,7 +521,7 @@ const ChatWindow = ({ conversation, authUser }) => {
         <source src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAADICE1...=" type="audio/mpeg" />
         {/* Fallback for browsers that don't support MP3 */}
       </audio>
-
+      
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b" style={{ 
         borderColor: 'var(--color-border-default)', 
@@ -585,22 +586,22 @@ const ChatWindow = ({ conversation, authUser }) => {
           messages.map((message, index) => {
             const isOwnMessage = message.senderId._id === currentUserId;
             const showAvatar = index === 0 || messages[index - 1].senderId._id !== message.senderId._id;
-
+            
             return (
               <div key={message._id} className={`flex ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3`}>
                 {/* Avatar */}
                 <div className="w-10 h-10 flex-shrink-0 relative">
                   {showAvatar && !isOwnMessage && (
                     <>
-                      {/* Avatar */}
-                        <div className="flex-shrink-0">
-                          <Avatar 
-                            user={message.senderId} 
-                            size="sm" 
-                            showOnlineStatus={true}
-                            isClickable={true}
-                          />
-                        </div>
+                      <img
+                        src={message.senderId.profileImg || '/avatar-placeholder.png'}
+                        alt={message.senderId.username}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      {/* Online indicator */}
+                      {isUserOnline(message.senderId._id) && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                      )}
                     </>
                   )}
                 </div>
@@ -617,14 +618,14 @@ const ChatWindow = ({ conversation, authUser }) => {
                       </span>
                     </div>
                   )}
-
+                  
                   {/* Always show timestamp on hover or for messages without avatar */}
                   {!showAvatar && (
                     <div className={`text-xs mb-1 opacity-0 group-hover:opacity-100 transition-opacity ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: '#dc3545' }}>
                       {formatDistanceToNow(new Date(message.createdAt))} ago
                     </div>
                   )}
-
+                  
                   <div className="group relative">
                     {editingMessage === message._id ? (
                       <div className="flex gap-2 items-center">
@@ -683,7 +684,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                           {message.content && (
                             <p className="text-sm whitespace-pre-wrap mb-2">{message.content}</p>
                           )}
-
+                          
                           {/* File attachments */}
                           {message.attachments && message.attachments.length > 0 && (
                             <div className="space-y-3 mt-2">
@@ -779,11 +780,11 @@ const ChatWindow = ({ conversation, authUser }) => {
                               ))}
                             </div>
                           )}
-
+                          
                           {message.isEdited && (
                             <span className="text-xs opacity-70 ml-2">(edited)</span>
                           )}
-
+                          
                           {/* Message timestamp - always visible */}
                           <div className={`text-xs mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`} style={{ color: '#dc3545' }}>
                             <span className="opacity-70">
@@ -795,7 +796,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                             </span>
                           </div>
                         </div>
-
+                        
                         {/* Reactions */}
                         {message.reactions && message.reactions.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
@@ -841,7 +842,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                               </div>
                             )}
                           </div>
-
+                          
                           {/* Repost button */}
                           <button
                             onClick={() => handleRepostMessage(message)}
@@ -850,7 +851,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                           >
                             🔄
                           </button>
-
+                          
                           {/* Save/Bookmark button */}
                           <button
                             onClick={() => handleSaveMessage(message)}
@@ -859,7 +860,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                           >
                             📌
                           </button>
-
+                          
                           {/* Edit/Delete buttons for own messages */}
                           {isOwnMessage && (
                             <>
@@ -869,7 +870,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                                 title="Edit message"
                               >
                                 ✏️
-                                                            </button>
+                              </button>
                               <button
                                 onClick={() => handleDeleteMessage(message._id)}
                                 className="p-1 hover:bg-gray-100 rounded text-xs"
@@ -990,7 +991,7 @@ const ChatWindow = ({ conversation, authUser }) => {
             />
             {/* Character count or typing indicator could go here */}
           </div>
-
+          
           {/* File upload button */}
           <button
             type="button"
@@ -1006,7 +1007,7 @@ const ChatWindow = ({ conversation, authUser }) => {
           >
             📎
           </button>
-
+          
           <input
             ref={fileInputRef}
             type="file"
@@ -1015,7 +1016,7 @@ const ChatWindow = ({ conversation, authUser }) => {
             className="hidden"
             accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
           />
-
+          
           <button
             type="submit"
             disabled={(!newMessage.trim() && selectedFiles.length === 0) || sending || uploadingFiles}
@@ -1045,7 +1046,7 @@ const ChatWindow = ({ conversation, authUser }) => {
             )}
           </button>
         </form>
-
+        
         {/* Optional: Typing indicator */}
         <div className="mt-2 h-4">
           {/* Add typing indicator here if needed */}

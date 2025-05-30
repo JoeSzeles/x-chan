@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { useAuthUser } from "../../hooks/useAuthUser";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import Avatar from "./Avatar";
 
 const UserCard = ({ user, isCompact = false }) => {
     const { data: authUser } = useAuthUser();
@@ -48,12 +47,13 @@ const UserCard = ({ user, isCompact = false }) => {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                     {/* Profile Image */}
-                    <Avatar 
-                        user={user} 
-                        size={isCompact ? 'md' : 'lg'} 
-                        showOnlineStatus={true}
-                        className="hover:border-gray-500 transition-colors"
-                    />
+                    <Link to={`/profile/${user.username}`}>
+                        <img
+                            src={user.profileImg || "/avatar-placeholder.png"}
+                            alt={user.fullName}
+                            className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-gray-600 hover:border-gray-500 transition-colors`}
+                        />
+                    </Link>
 
                     {/* User Info */}
                     <div className="flex-1 min-w-0">

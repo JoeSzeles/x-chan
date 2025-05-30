@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { FaCircle } from 'react-icons/fa';
 import LoadingSpinner from './LoadingSpinner';
 
-import Avatar from "./Avatar";
-
 const WhosOnline = () => {
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
     
@@ -36,12 +34,29 @@ const WhosOnline = () => {
                         key={user._id}
                     >
                         <div className='flex gap-2 items-center'>
-                            <Avatar 
-                                user={user} 
-                                size="md" 
-                                showOnlineStatus={true}
-                                className="group-hover:border-blue-500 transition-colors duration-200"
-                            />
+                            <Link 
+                                to={`/profile/${user.username}`}
+                                className='avatar group'
+                            >
+                                <div className='w-10 h-10 relative rounded-full bg-[#1e1e1e] p-0.5'>
+                                    <div className='w-full h-full rounded-full overflow-hidden flex items-center justify-center border-2 border-gray-700 group-hover:border-blue-500 transition-colors duration-200'>
+                                        <img 
+                                            src={user.profileImg || "/avatar-placeholder.png"} 
+                                            className="w-full h-full object-cover" 
+                                            alt={user.fullName}
+                                            onError={(e) => {
+                                                e.target.src = "/avatar-placeholder.png";
+                                            }}
+                                        />
+                                    </div>
+                                    <FaCircle 
+                                        className="absolute bottom-0 right-0 text-green-500 text-xs" 
+                                        style={{ 
+                                            filter: 'drop-shadow(0 0 2px rgba(34, 197, 94, 0.5))'
+                                        }}
+                                    />
+                                </div>
+                            </Link>
                             <div className='flex flex-col'>
                                 <Link 
                                     to={`/profile/${user.username}`}
