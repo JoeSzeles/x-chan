@@ -14,8 +14,12 @@ const MessageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
-    trim: true
+    required: function() {
+      // Content is required only if no attachments are present
+      return !this.attachments || this.attachments.length === 0;
+    },
+    trim: true,
+    default: ''
   },
   readBy: [{
     type: mongoose.Schema.Types.ObjectId,

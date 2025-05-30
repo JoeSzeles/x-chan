@@ -25,7 +25,7 @@ const upload = multer({
             'application/pdf', 'text/plain',
             'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
-        
+
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
@@ -400,7 +400,18 @@ router.post('/:conversationId', protectRoute, async (req, res) => {
         res.status(201).json(populatedMessage);
     } catch (error) {
         console.error('[messages.js] Error sending message:', error);
-        res.status(500).json({ error: 'Failed to send message' });
+        console.error('[messages.js] Error details:', {
+            message: error.message,
+            stack: error.stack,
+            conversationId,
+            content,
+            attachments,
+            userId: req.user._id
+        });
+        res.status(500).json({ 
+            error: 'Failed to send message', 
+            details: error.message 
+        });
     }
 });
 
@@ -491,7 +502,18 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
         res.status(201).json(populatedMessage);
     } catch (error) {
         console.error('[messages.js] Error sending message:', error);
-        res.status(500).json({ error: 'Failed to send message' });
+        console.error('[messages.js] Error details:', {
+            message: error.message,
+            stack: error.stack,
+            conversationId,
+            content,
+            attachments,
+            userId: req.user._id
+        });
+        res.status(500).json({ 
+            error: 'Failed to send message', 
+            details: error.message 
+        });
     }
 });
 
@@ -534,7 +556,7 @@ router.post('/conversations/:conversationId/upload', protectRoute, async (req, r
             try {
                 // Convert buffer to base64 for Cloudinary upload
                 const base64Data = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
-                
+
                 // Upload to Cloudinary
                 const uploadResult = await cloudinary.uploader.upload(base64Data, {
                     folder: 'message_attachments',
