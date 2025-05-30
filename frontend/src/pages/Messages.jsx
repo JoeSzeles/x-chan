@@ -80,27 +80,22 @@ const Messages = () => {
   // Listen for new messages to trigger conversation list refresh
   useEffect(() => {
     if (authUser) {
-      // Connect socket if not already connected
-      // if (!socketService.isConnected) { // Assuming socketService is available globally or imported
-      //   socketService.connect();
-      // }
-
       const handleNewMessage = (message) => {
         console.log('Messages page received new message:', message);
 
-        // If the message is not for the currently open conversation, 
-        // trigger a refresh of the conversations list
-        if (!selectedConversation || message.conversationId !== selectedConversation._id) {
-          console.log('Triggering conversation list refresh');
+        // Always trigger refresh for new messages to update the list order and unread counts
+        // The ConversationsList component will handle the detailed updates
+        if (message.conversationId !== selectedConversation?._id) {
+          console.log('Triggering conversation list refresh for new message');
           setRefreshTrigger(prev => prev + 1);
         }
       };
 
-      // socketService.onNewMessage(handleNewMessage);  // Assuming socketService is available globally or imported
+      socketService.onNewMessage(handleNewMessage);
 
-      // return () => {
-      //   socketService.offNewMessage(handleNewMessage);
-      // };
+      return () => {
+        socketService.offNewMessage(handleNewMessage);
+      };
     }
   }, [authUser, selectedConversation]);
 

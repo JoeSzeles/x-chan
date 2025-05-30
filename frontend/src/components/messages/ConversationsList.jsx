@@ -107,6 +107,53 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		fetchConversations();
 	}, [refreshTrigger]); // Re-fetch when refreshTrigger changes
 
+	// Listen for new messages to update conversation list and unread counts
+	useEffect(() => {
+		if (authUser) {
+			const handleNewMessage = (message) => {
+				console.log('ConversationsList: New message received:', message);
+
+				// Update conversations list with new message
+				setConversations(prevConversations => {
+					const updatedConversations = prevConversations.map(conv => {
+						if (conv._id === message.conversationId) {
+							return {
+								...conv,
+								lastMessage: {
+									content: message.content,
+									senderId: message.senderId._id,
+									timestamp: message.createdAt
+								},
+								lastActivity: message.createdAt,
+								updatedAt: message.createdAt
+							};
+						}
+						return conv;
+					});
+
+					// Sort conversations by last activity (most recent first)
+					return updatedConversations.sort((a, b) => 
+						new Date(b.lastActivity) - new Date(a.lastActivity)
+					);
+				});
+
+				// Update unread count if message is not from current user and not in selected conversation
+				if (message.senderId._id !== authUser._id && 
+					(!selectedConversation || message.conversationId !== selectedConversation._id)) {
+					setUnreadCounts(prev => ({
+						...prev,
+						[message.conversationId]: (prev[message.conversationId] || 0) + 1
+					}));
+				}
+			};
+
+			socketService.onNewMessage(handleNewMessage);
+
+			return () => {
+				socketService.offNewMessage(handleNewMessage);
+			};
+		}
+	}, [authUser, selectedConversation]);
 
 
 	if (loading) {
