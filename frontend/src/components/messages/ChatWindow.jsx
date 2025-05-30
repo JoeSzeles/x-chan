@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import socketService from '../../services/socket';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import Avatar from './Avatar';
+import Avatar from '../common/Avatar';
 
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
