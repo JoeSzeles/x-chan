@@ -20,12 +20,12 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			console.log('ConversationsList: Attempting to play notification sound');
 			const audio = new Audio('/sounds/notification.mp3');
 			audio.volume = 0.3;
-			
+
 			// Add event listeners to track loading
 			audio.addEventListener('canplaythrough', () => {
 				console.log('ConversationsList: Audio loaded successfully');
 			});
-			
+
 			audio.addEventListener('error', (e) => {
 				console.log('ConversationsList: Audio error:', e);
 				// Try backup sound
@@ -33,7 +33,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 				backupAudio.volume = 0.3;
 				backupAudio.play().catch(err => console.log('ConversationsList: Backup sound also failed:', err));
 			});
-			
+
 			audio.play().catch(error => {
 				console.log('ConversationsList: Could not play notification sound:', error);
 				// Try with a simple beep sound using Web Audio API
@@ -41,17 +41,17 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 					const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 					const oscillator = audioContext.createOscillator();
 					const gainNode = audioContext.createGain();
-					
+
 					oscillator.connect(gainNode);
 					gainNode.connect(audioContext.destination);
-					
+
 					oscillator.frequency.value = 800; // 800 Hz frequency
 					gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
 					gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-					
+
 					oscillator.start(audioContext.currentTime);
 					oscillator.stop(audioContext.currentTime + 0.1);
-					
+
 					console.log('ConversationsList: Played fallback beep sound');
 				} catch (beepError) {
 					console.log('ConversationsList: Fallback beep also failed:', beepError);
@@ -203,28 +203,40 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			// Get the actual sender ID
 			const senderId = message.senderId._id || message.senderId;
 			const isFromCurrentUser = senderId === authUser._id;
-			const isCurrentConversation = selectedConversation && message.conversationId === selectedConversation._id;
+			const isCurrentConversation = selectedConversation?._id === message.conversationId;
 
+			console.log('ConversationsList: Message conversation ID:', message.conversationId);
+			console.log('ConversationsList: Selected conversation ID:', selectedConversation?._id);
 			console.log('ConversationsList: Is from current user:', isFromCurrentUser);
 			console.log('ConversationsList: Is current conversation:', isCurrentConversation);
 
 			// Only handle notifications for messages NOT from current user
 			if (!isFromCurrentUser) {
-				// Always update unread count for messages from other users (regardless of selected conversation)
-				setUnreadCounts(prev => ({
-					...prev,
-					[message.conversationId]: (prev[message.conversationId] || 0) + 1
-				}));
+				console.log('ConversationsList: Message is from another user, processing notification');
+				
+				// Always update unread count for messages from other users
+				setUnreadCounts(prev => {
+					const newCount = (prev[message.conversationId] || 0) + 1;
+					console.log('ConversationsList: Updating unread count for conversation', message.conversationId, 'to', newCount);
+					return {
+						...prev,
+						[message.conversationId]: newCount
+					};
+				});
 
 				// Only play sound and show animation if it's NOT the currently open conversation
 				if (!isCurrentConversation) {
-					console.log('ConversationsList: Playing notification for different conversation');
-					
+					console.log('ConversationsList: Message is for different conversation - playing notification');
+
 					// Trigger animation for this conversation
-					setNewMessageAnimations(prev => ({
-						...prev,
-						[message.conversationId]: Date.now()
-					}));
+					setNewMessageAnimations(prev => {
+						const updated = {
+							...prev,
+							[message.conversationId]: Date.now()
+						};
+						console.log('ConversationsList: Animation state updated:', updated);
+						return updated;
+					});
 
 					// Play notification sound
 					playNotificationSound();
@@ -234,6 +246,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 						setNewMessageAnimations(prev => {
 							const updated = { ...prev };
 							delete updated[message.conversationId];
+							console.log('ConversationsList: Animation cleared for conversation:', message.conversationId);
 							return updated;
 						});
 					}, 3000);
@@ -299,14 +312,14 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 							onClick={() => {
 								console.log('ConversationsList: Selecting conversation:', conversation._id);
 								onSelectConversation(conversation);
-								
+
 								// Clear unread count for this conversation
 								setUnreadCounts(prev => {
 									const updated = { ...prev, [conversation._id]: 0 };
 									console.log('ConversationsList: Updated unread counts:', updated);
 									return updated;
 								});
-								
+
 								// Clear animation for this conversation
 								setNewMessageAnimations(prev => {
 									const updated = { ...prev };
