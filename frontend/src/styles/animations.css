@@ -1,4 +1,3 @@
-
 /* Message notification animations */
 @keyframes messageNotification {
   0% {
@@ -111,4 +110,138 @@
 
 .sound-wave::after {
   animation-delay: 0.6s;
+}
+
+/* Notification Animations */
+@keyframes slideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes flash {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: rgba(59, 130, 246, 0.3); }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight 0.3s ease-in forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-flash {
+  animation: flash 0.6s ease-in-out;
+}
+
+/* Twitter Embed Enhancements */
+.twitter-embed {
+  max-width: 550px;
+}
+
+.twitter-embed .twitter-tweet-content {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.twitter-embed .tweet-preview {
+  background: rgba(29, 155, 240, 0.05);
+  border: 1px solid rgba(29, 155, 240, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.twitter-embed .tweet-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.twitter-embed .tweet-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.twitter-embed .tweet-site {
+  color: #1d9bf0;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.twitter-embed .tweet-title {
+  color: #e1e8ed;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.twitter-embed .tweet-description {
+  color: #8b98a5;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.twitter-embed .tweet-media {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  max-height: 300px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.twitter-embed .tweet-media:hover {
+  transform: scale(1.02);
+}
+
+.twitter-embed .tweet-fallback {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.twitter-embed .tweet-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* Twitter widget iframe enhancements */
+.twitter-embed iframe {
+  border-radius: 8px;
+  border: none;
 }

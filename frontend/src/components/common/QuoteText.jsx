@@ -113,6 +113,7 @@ const TwitterEmbed = ({ url }) => {
     const [error, setError] = useState(null);
     const [tweetData, setTweetData] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
+    const [method, setMethod] = useState('unknown');
     const embedContainerRef = useRef(null);
 
     const MAX_RETRIES = 2;
@@ -134,6 +135,7 @@ const TwitterEmbed = ({ url }) => {
                 const cachedData = getCachedTweet(cleanUrl);
                 if (cachedData) {
                         setTweetData(cachedData);
+                        setMethod(cachedData.method || 'cached');
                         setIsLoading(false);
                     return;
                 }
@@ -155,7 +157,8 @@ const TwitterEmbed = ({ url }) => {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    timeout: 15000 // 15 second timeout
                 });
 
                 if (!response.ok) {
@@ -175,45 +178,81 @@ const TwitterEmbed = ({ url }) => {
 
                 const data = await response.json();
 
-                if (data.error) {
+                if (data.error && !data.fallback) {
                     throw new Error(data.error);
                 }
 
-                // Cache the successful response
+                // Cache the successful response (including fallbacks)
                 setCachedTweet(cleanUrl, data);
                     setTweetData(data);
+                    setMethod(data.method || 'unknown');
                     setIsLoading(false);
             setError(null);
             setRetryCount(0);
 
             } catch (err) {
-            // Silently handle errors without logging to console
+            // Handle errors with progressive fallback
             if (retryCount < MAX_RETRIES) {
                 setTimeout(() => {
                     setRetryCount(prev => prev + 1);
                 }, RETRY_DELAY * (retryCount + 1));
             } else {
                     setError(err.message);
-                // Show a more informative fallback UI for failed tweet loads
+                    setMethod('error');
+                    
+                // Create a final fallback with better UX
+                const username = extractUsernameFromUrl(cleanUrl);
+                const tweetId = extractTweetIdFromUrl(cleanUrl);
                     setTweetData({
-                    html: `<div class="tweet-error bg-gray-800 rounded-lg p-4">
-                        <p class="text-gray-300 mb-2">${err.message}</p>
-                        <div class="flex gap-2">
-                            <a href="${url}" target="_blank" rel="noopener noreferrer" 
-                               class="text-blue-400 hover:text-blue-300 transition-colors">
-                                View on Twitter
-                            </a>
-                            <button onclick="window.location.reload()" 
-                                    class="text-blue-400 hover:text-blue-300 transition-colors">
-                                Retry
-                            </button>
+                    html: `
+                        <div class="tweet-error bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-red-400">⚠️</span>
+                                <span class="text-red-300 font-medium">Unable to load tweet</span>
+                            </div>
+                            <p class="text-gray-300 mb-3 text-sm">${err.message}</p>
+                            <div class="flex gap-3 text-sm">
+                                <a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" 
+                                   class="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                                    <span>🐦</span> View on Twitter
+                                </a>
+                                <button onclick="window.location.reload()" 
+                                        class="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+                                    <span>🔄</span> Retry
+                                </button>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-400">
+                                Tweet ID: ${tweetId} • @${username}
+                            </div>
                         </div>
-                        </div>`
+                    `,
+                        fallback: true,
+                        error: err.message,
+                        method: 'error'
                     });
                     setIsLoading(false);
                 }
             }
         };
+
+    // Helper functions
+    const extractUsernameFromUrl = (url) => {
+        try {
+            const match = url.match(/(?:twitter\.com|x\.com)\/([^\/]+)\/status/);
+            return match ? match[1] : 'unknown';
+        } catch (error) {
+            return 'unknown';
+        }
+    };
+
+    const extractTweetIdFromUrl = (url) => {
+        try {
+            const match = url.match(/status\/(\d+)/);
+            return match ? match[1] : 'unknown';
+        } catch (error) {
+            return 'unknown';
+        }
+    };
 
     useEffect(() => {
         fetchTweetData();
@@ -222,26 +261,33 @@ const TwitterEmbed = ({ url }) => {
     if (error) {
         return (
             <div className="twitter-embed my-2">
-                <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 p-3">
+                <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
                     <div className="flex justify-between items-center mb-2">
-                        <div className="text-red-500">{error}</div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-red-400">⚠️</span>
+                            <div className="text-red-400 text-sm">{error}</div>
+                        </div>
                         <button
                             onClick={() => {
                                 setIsLoading(true);
                                 setError(null);
-                                fetchTweetData();
+                                setRetryCount(0);
+                                fetchTweetData(true);
                             }}
-                            className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
+                            className="p-2 text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
                             title="Reload tweet"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                         </button>
                     </div>
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-[#1d9bf0] hover:underline">
-                        View on Twitter
-                    </a>
+                    <div className="flex gap-3 text-sm">
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline flex items-center gap-1">
+                            <span>🐦</span> View on Twitter
+                        </a>
+                        <span className="text-gray-400">Method: {method}</span>
+                    </div>
                 </div>
             </div>
         );
@@ -252,17 +298,21 @@ const TwitterEmbed = ({ url }) => {
             <div className="twitter-embed my-2">
                 <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 p-3">
                     <div className="flex justify-between items-center">
-                        <div className="text-gray-500">Loading tweet...</div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-[#1d9bf0] border-t-transparent rounded-full animate-spin"></div>
+                            <div className="text-gray-400 text-sm">Loading tweet... {retryCount > 0 && `(Retry ${retryCount}/${MAX_RETRIES})`}</div>
+                        </div>
                         <button
                             onClick={() => {
                                 setIsLoading(true);
-                               setError(null);
-                                fetchTweetData();
+                                setError(null);
+                                setRetryCount(0);
+                                fetchTweetData(true);
                             }}
                             className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
                             title="Reload tweet"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                         </button>
@@ -274,16 +324,32 @@ const TwitterEmbed = ({ url }) => {
 
     return (
         <div className="twitter-embed my-2" ref={embedContainerRef}>
-            <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 overflow-hidden">
-                <div className="p-3 flex items-center justify-between border-b border-[#1d9bf0]/20">
+            <div className={`rounded-lg border overflow-hidden ${
+                tweetData?.fallback 
+                    ? 'bg-red-500/10 border-red-500/20' 
+                    : 'bg-[#1d9bf0]/10 border-[#1d9bf0]/20'
+            }`}>
+                <div className={`p-3 flex items-center justify-between border-b ${
+                    tweetData?.fallback 
+                        ? 'border-red-500/20' 
+                        : 'border-[#1d9bf0]/20'
+                }`}>
                     <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-[#1d9bf0] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <svg className={`w-5 h-5 flex-shrink-0 ${
+                            tweetData?.fallback ? 'text-red-400' : 'text-[#1d9bf0]'
+                        }`} viewBox="0 0 24 24" fill="currentColor">
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                         </svg>
                         <div className="flex flex-col">
-                            <a href={tweetData?.author_url || url} target="_blank" rel="noopener noreferrer" className="text-[#1d9bf0] hover:underline">
+                            <a href={tweetData?.author_url || url} target="_blank" rel="noopener noreferrer" className={`hover:underline ${
+                                tweetData?.fallback ? 'text-red-400' : 'text-[#1d9bf0]'
+                            }`}>
                                 {tweetData?.author_name ? `@${tweetData.author_name}` : 'View on Twitter'}
                             </a>
+                            <div className="text-xs text-gray-400 mt-1">
+                                Method: {method} {tweetData?.fallback && '(fallback)'}
+                                {tweetData?.tweet_id && ` • ID: ${tweetData.tweet_id}`}
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -291,15 +357,26 @@ const TwitterEmbed = ({ url }) => {
                             onClick={() => {
                                 setIsLoading(true);
                                 setError(null);
-                                fetchTweetData();
+                                setRetryCount(0);
+                                fetchTweetData(true);
                             }}
-                            className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
+                            className={`p-2 rounded-full transition-colors ${
+                                tweetData?.fallback 
+                                    ? 'text-red-400 hover:bg-red-500/10' 
+                                    : 'text-[#1d9bf0] hover:bg-[#1d9bf0]/10'
+                            }`}
                             title="Reload tweet"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                         </button>
+                        {method === 'cached' && (
+                            <div className="text-xs text-green-400 flex items-center gap-1" title="Loaded from cache">
+                                <span>⚡</span>
+                                <span>Cached</span>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="p-3">
@@ -311,20 +388,26 @@ const TwitterEmbed = ({ url }) => {
                             />
                             {tweetData.media && tweetData.media.length > 0 && (
                                 <div className="grid gap-2 mt-3">
-                                    {tweetData.media.map((url, index) => (
+                                    {tweetData.media.map((mediaUrl, index) => (
                                         <div key={index} className="relative rounded-lg overflow-hidden">
                                             <img 
-                                                src={url} 
+                                                src={mediaUrl} 
                                                 alt={`Tweet media ${index + 1}`}
-                                                className="w-full h-auto object-contain max-h-[400px]"
+                                                className="w-full h-auto object-contain max-h-[400px] cursor-pointer"
                                                 loading="lazy"
+                                                onClick={() => window.open(mediaUrl, '_blank')}
                                                 onError={(e) => {
-                                                    console.error('Failed to load media:', url);
+                                                    console.error('Failed to load media:', mediaUrl);
                                                     e.target.style.display = 'none';
                                                 }}
                                             />
                                         </div>
                                     ))}
+                                </div>
+                            )}
+                            {tweetData.description && method === 'link-preview' && (
+                                <div className="mt-3 p-3 bg-gray-800/20 rounded-lg">
+                                    <p className="text-sm text-gray-300">{tweetData.description}</p>
                                 </div>
                             )}
                         </>
