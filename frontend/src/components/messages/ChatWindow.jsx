@@ -5,37 +5,6 @@ import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
 import QuoteText from '../common/QuoteText';
 
-// TwitterEmbed component (replace with your actual implementation)
-const TwitterEmbed = ({ tweetId }) => {
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://platform.twitter.com/widgets.js';
-    script.async = true;
-    document.head.appendChild(script);
-
-    return () => {
-      const scripts = document.getElementsByTagName('script');
-      for (let i = 0; i < scripts.length; i++) {
-        if (scripts[i].src === 'https://platform.twitter.com/widgets.js') {
-          scripts[i].remove();
-        }
-      }
-
-      // Remove all dynamically added twitter widgets
-      const twitterWidgets = document.getElementsByClassName('twitter-tweet');
-      while(twitterWidgets[0]) {
-        twitterWidgets[0].parentNode.removeChild(twitterWidgets[0]);
-      }
-    };
-  }, [tweetId]);
-
-  return (
-    <blockquote className="twitter-tweet">
-      <a href={`https://twitter.com/user/status/${tweetId}`}></a>
-    </blockquote>
-  );
-};
-
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -717,10 +686,14 @@ const ChatWindow = ({ conversation, authUser }) => {
 
                               {/* Twitter embed processing */}
                               {(() => {
-                                const tweetIdMatch = message.content.match(/https:\/\/x\.com\/\w+\/status\/(\d+)/);
-                                if (tweetIdMatch) {
-                                  const tweetId = tweetIdMatch[1];
-                                  return <TwitterEmbed tweetId={tweetId} />;
+                                const twitterUrlMatch = message.content.match(/(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+)/);
+                                if (twitterUrlMatch) {
+                                  const twitterUrl = twitterUrlMatch[1];
+                                  return (
+                                    <div className="mt-2">
+                                      <QuoteText url={twitterUrl} />
+                                    </div>
+                                  );
                                 }
                                 return null;
                               })()}
