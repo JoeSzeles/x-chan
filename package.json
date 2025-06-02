@@ -9,7 +9,7 @@
 		"dev": "concurrently \"npm run server\" \"npm run client\"",
 		"ngrok": "ngrok start --all --config=ngrok.yml",
 		"install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd frontend && npm run build"
+		"build": "cd frontend && npm run build"
 	},
 	"keywords": [],
 	"author": "",
@@ -47,6 +47,7 @@
 		"socket.io": "^4.8.1",
 		"socket.io-client": "^4.8.1",
 		"tailwindcss": "^4.1.7",
+		"twitter-api-v2": "^1.23.2",
 		"uuid": "^11.1.0"
 	},
 	"devDependencies": {
