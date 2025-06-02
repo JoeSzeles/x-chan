@@ -672,9 +672,15 @@ const ChatWindow = ({ conversation, authUser }) => {
                         >
                           {/* Text content with enhanced link processing */}
                           {message.content && (
-                            <div className="text-sm mb-2">
-                              <QuoteText text={message.content} />
-                            </div>
+                            <div 
+                              className="text-sm whitespace-pre-wrap mb-2"
+                              dangerouslySetInnerHTML={{
+                                __html: message.content
+                                  .replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline break-words font-medium">$1</a>`)
+                                  .replace(/@(\w+)/g, `<a href="/profile/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">@$1</a>`)
+                                  .replace(/#(\w+)/g, `<a href="/hashtag/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">#$1</a>`)
+                              }}
+                            />
                           )}
 
                           {/* File attachments */}
