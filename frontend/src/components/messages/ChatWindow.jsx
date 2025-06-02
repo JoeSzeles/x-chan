@@ -5,6 +5,37 @@ import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
 import QuoteText from '../common/QuoteText';
 
+// TwitterEmbed component (replace with your actual implementation)
+const TwitterEmbed = ({ tweetId }) => {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://platform.twitter.com/widgets.js';
+    script.async = true;
+    document.head.appendChild(script);
+
+    return () => {
+      const scripts = document.getElementsByTagName('script');
+      for (let i = 0; i < scripts.length; i++) {
+        if (scripts[i].src === 'https://platform.twitter.com/widgets.js') {
+          scripts[i].remove();
+        }
+      }
+
+      // Remove all dynamically added twitter widgets
+      const twitterWidgets = document.getElementsByClassName('twitter-tweet');
+      while(twitterWidgets[0]) {
+        twitterWidgets[0].parentNode.removeChild(twitterWidgets[0]);
+      }
+    };
+  }, [tweetId]);
+
+  return (
+    <blockquote className="twitter-tweet">
+      <a href={`https://twitter.com/user/status/${tweetId}`}></a>
+    </blockquote>
+  );
+};
+
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -672,15 +703,28 @@ const ChatWindow = ({ conversation, authUser }) => {
                         >
                           {/* Text content with enhanced link processing */}
                           {message.content && (
-                            <div 
-                              className="text-sm whitespace-pre-wrap mb-2"
-                              dangerouslySetInnerHTML={{
-                                __html: message.content
-                                  .replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline break-words font-medium">$1</a>`)
-                                  .replace(/@(\w+)/g, `<a href="/profile/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">@$1</a>`)
-                                  .replace(/#(\w+)/g, `<a href="/hashtag/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">#$1</a>`)
-                              }}
-                            />
+                            <>
+                              {/* Regular links, mentions, and hashtags */}
+                              <div
+                                className="text-sm whitespace-pre-wrap mb-2"
+                                dangerouslySetInnerHTML={{
+                                  __html: message.content
+                                    .replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline break-words font-medium">$1</a>`)
+                                    .replace(/@(\w+)/g, `<a href="/profile/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">@$1</a>`)
+                                    .replace(/#(\w+)/g, `<a href="/hashtag/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">#$1</a>`)
+                                }}
+                              />
+
+                              {/* Twitter embed processing */}
+                              {(() => {
+                                const tweetIdMatch = message.content.match(/https:\/\/x\.com\/\w+\/status\/(\d+)/);
+                                if (tweetIdMatch) {
+                                  const tweetId = tweetIdMatch[1];
+                                  return <TwitterEmbed tweetId={tweetId} />;
+                                }
+                                return null;
+                              })()}
+                            </>
                           )}
 
                           {/* File attachments */}

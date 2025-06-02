@@ -112,8 +112,7 @@ const TwitterEmbed = ({ url }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [tweetData, setTweetData] = useState(null);
-    const [retryCount, setRetryCount] = useState(0);
-    const [method, setMethod] = useState('unknown');
+    const [method, setMethod] = useState('link-preview');
     const embedContainerRef = useRef(null);
 
     const MAX_RETRIES = 2;
@@ -199,7 +198,7 @@ const TwitterEmbed = ({ url }) => {
             } else {
                     setError(err.message);
                     setMethod('error');
-                    
+
                 // Create a final fallback with better UX
                 const username = extractUsernameFromUrl(cleanUrl);
                 const tweetId = extractTweetIdFromUrl(cleanUrl);
