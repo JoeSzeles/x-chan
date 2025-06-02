@@ -691,7 +691,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                                   const twitterUrl = twitterUrlMatch[1];
                                   return (
                                     <div className="mt-2">
-                                      <QuoteText url={twitterUrl} />
+                                      <QuoteText text={twitterUrl} />
                                     </div>
                                   );
                                 }
