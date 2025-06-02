@@ -23,13 +23,13 @@ const extractImageId = (url) => {
     if (grokMatch) {
         return grokMatch[1];
     }
-    
+
     // Try to extract from direct image URL
     const directMatch = url.split('/').pop();
     if (directMatch) {
         return directMatch;
     }
-    
+
     return null;
 };
 
@@ -57,7 +57,7 @@ const tryImagePatterns = async (imageId) => {
                     'Origin': 'https://x.com'
                 }
             });
-            
+
             if (response.ok) {
                 const buffer = await response.buffer();
                 const contentType = response.headers.get('content-type');
@@ -83,19 +83,19 @@ const fetchFromShareUrl = async (url) => {
                 'Accept-Language': 'en-US,en;q=0.9'
             }
         });
-        
+
         if (!response.ok) return null;
-        
+
         const html = await response.text();
         const dom = new JSDOM(html);
         const document = dom.window.document;
-        
+
         // Look for image URL in meta tags
         const metaImage = document.querySelector('meta[property="og:image"]');
         if (metaImage) {
             const imageUrl = metaImage.getAttribute('content');
             console.log('Found image URL in meta tags:', imageUrl);
-            
+
             const imageResponse = await fetch(imageUrl, {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -105,14 +105,14 @@ const fetchFromShareUrl = async (url) => {
                     'Origin': 'https://x.com'
                 }
             });
-            
+
             if (imageResponse.ok) {
                 const buffer = await imageResponse.buffer();
                 const contentType = imageResponse.headers.get('content-type');
                 return { buffer, contentType };
             }
         }
-        
+
         // Look for image URL in HTML content
         const imgElements = document.querySelectorAll('img');
         for (const img of imgElements) {
@@ -129,7 +129,7 @@ const fetchFromShareUrl = async (url) => {
                             'Origin': 'https://x.com'
                         }
                     });
-                    
+
                     if (imageResponse.ok) {
                         const buffer = await imageResponse.buffer();
                         const contentType = imageResponse.headers.get('content-type');
@@ -150,7 +150,7 @@ const fetchFromShareUrl = async (url) => {
 router.get('/image', async (req, res) => {
     try {
         const { url } = req.query;
-        
+
         if (!url) {
             return res.status(400).json({
                 success: false,
@@ -177,7 +177,7 @@ router.get('/image', async (req, res) => {
 
         // Forward the content type
         res.setHeader('Content-Type', response.headers['content-type']);
-        
+
         // Stream the image data
         response.data.pipe(res);
     } catch (error) {
@@ -193,7 +193,7 @@ router.get('/image', async (req, res) => {
 router.get('/4chan-image', async (req, res) => {
     try {
         const { url } = req.query;
-        
+
         if (!url) {
             return res.status(400).json({ error: 'URL parameter is required' });
         }
@@ -206,7 +206,7 @@ router.get('/4chan-image', async (req, res) => {
         }
 
         console.log('Fetching 4chan image:', url);
-        
+
         const response = await fetch(url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -228,7 +228,7 @@ router.get('/4chan-image', async (req, res) => {
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=31536000');
         res.setHeader('Access-Control-Allow-Origin', '*');
-        
+
         // Send the image
         res.send(buffer);
     } catch (error) {
@@ -242,4 +242,4 @@ router.get('/4chan-image', async (req, res) => {
 });
 
 const proxyRoutes = router;
-export default proxyRoutes; 
+export default proxyRoutes;

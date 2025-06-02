@@ -117,8 +117,39 @@ const TwitterEmbed = ({ url }) => {
 
     const MAX_RETRIES = 2;
     const RETRY_DELAY = 1000; // 1 second
+    const [retryCount, setRetryCount] = useState(0);
 
-    const fetchTweetData = async (forceReload = false) => {
+    const isTwitterUrl = (url) => {
+        try {
+            console.log('[QuoteText] Checking URL:', url);
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname.toLowerCase();
+            const isTwitter = hostname === 'twitter.com' || 
+                   hostname === 'www.twitter.com' || 
+                   hostname === 'x.com' || 
+                   hostname === 'www.x.com' ||
+                   hostname === 'mobile.twitter.com' ||
+                   hostname === 'm.twitter.com';
+            console.log('[QuoteText] Is Twitter URL:', isTwitter, 'Hostname:', hostname);
+            return isTwitter;
+        } catch (error) {
+            console.log('[QuoteText] URL parsing error:', error.message);
+            return false;
+        }
+    };
+
+    const fetchTweetData = async (forceRefresh = false) => {
+        if (!url || !isTwitterUrl(url)) {
+            console.log('[QuoteText] Not a Twitter URL or invalid URL:', url);
+            setError('Invalid Twitter URL');
+            setIsLoading(false);
+            return;
+        }
+
+        const cleanUrl = url.split('?')[0];
+        console.log('[QuoteText] Fetching tweet data for:', cleanUrl);
+        console.log('[QuoteText] Method:', method);
+
             try {
                 // Clean the URL (remove @ if present and ensure proper format)
                 const cleanUrl = url.replace(/^@/, '').trim();
@@ -130,7 +161,7 @@ const TwitterEmbed = ({ url }) => {
                 }
 
             // Check cache first if not forcing reload
-            if (!forceReload) {
+            if (!forceRefresh) {
                 const cachedData = getCachedTweet(cleanUrl);
                 if (cachedData) {
                         setTweetData(cachedData);
@@ -160,34 +191,26 @@ const TwitterEmbed = ({ url }) => {
                     timeout: 15000 // 15 second timeout
                 });
 
-                if (!response.ok) {
-                // Handle specific error cases
-                if (response.status === 404) {
-                    throw new Error('Tweet not found or has been deleted');
-                } else if (response.status === 429) {
-                    throw new Error('Rate limit exceeded. Please try again later.');
-                } else if (response.status === 401) {
-                    throw new Error('Authentication required to view this tweet');
-                } else if (response.status === 500) {
-                    throw new Error('Server error. Please try again later.');
-                }
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.details || `Twitter API error: ${response.status}`);
-                }
+            console.log('[QuoteText] API Response status:', response.status);
 
+            if (response.ok) {
                 const data = await response.json();
+                console.log('[QuoteText] API Response data:', data);
 
-                if (data.error && !data.fallback) {
-                    throw new Error(data.error);
-                }
-
-                // Cache the successful response (including fallbacks)
-                setCachedTweet(cleanUrl, data);
+                if (data.html && data.html.trim()) {
                     setTweetData(data);
-                    setMethod(data.method || 'unknown');
-                    setIsLoading(false);
-            setError(null);
-            setRetryCount(0);
+                    setError(null);
+                    setMethod('link-preview');
+                    console.log('[QuoteText] Successfully loaded tweet data');
+                } else {
+                    console.log('[QuoteText] No tweet content in response:', data);
+                    throw new Error('No tweet content received from API');
+                }
+            } else {
+                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                console.log('[QuoteText] API Error response:', errorData);
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
 
             } catch (err) {
             // Handle errors with progressive fallback
@@ -716,8 +739,7 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
 
     parts.forEach((part, index) => {
         // Handle quote references - match both >>123 and >>0000000123 formats
-        const quoteMatch = part.match(/>>0*(\d+)/);
-        if (quoteMatch) {
+        const quoteMatch = part.match(/>>0*(\d+)/);        if (quoteMatch) {
             // If there's accumulated text, process it first
             if (currentText) {
                 mediaElements.push(
