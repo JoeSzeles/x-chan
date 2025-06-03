@@ -1,5 +1,5 @@
 import List from '../models/List.js';
-import Post from '../models/Post.js';
+import Post from '../models/post.js';
 import Thread from '../models/Thread.js';
 import User from '../models/User.js';
 
