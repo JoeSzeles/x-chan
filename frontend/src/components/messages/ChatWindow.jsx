@@ -664,11 +664,9 @@ const ChatWindow = ({ conversation, authUser }) => {
                           className={`px-4 py-2 rounded-lg break-words ${isOwnMessage ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
                           style={{
                             backgroundColor: isOwnMessage 
-                              ? 'var(--color-primary)' 
+                              ? 'rgba(29, 78, 216, 0.5)' 
                               : 'var(--color-bg-card)',
-                            color: isOwnMessage 
-                              ? 'var(--color-text-light)' 
-                              : 'var(--color-text-primary)',
+                            color: '#ffffff',
                           }}
                         >
                           {/* Text content with YouTube and Twitter embed support */}
