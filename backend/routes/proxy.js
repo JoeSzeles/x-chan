@@ -245,7 +245,10 @@ router.get('/link-preview', async (req, res) => {
     try {
         const { url } = req.query;
 
-        console.log('[Proxy] Link preview request received for URL:', url);
+        console.log('[Proxy] ===== LINK PREVIEW REQUEST =====');
+        console.log('[Proxy] Request URL:', req.url);
+        console.log('[Proxy] Request headers:', req.headers);
+        console.log('[Proxy] URL parameter:', url);
 
         if (!url) {
             console.error('[Proxy] No URL parameter provided');
@@ -260,20 +263,22 @@ router.get('/link-preview', async (req, res) => {
             try {
                 // Make internal request to our Twitter endpoint
                 const twitterEndpoint = `http://localhost:5000/api/twitter/embed?url=${encodeURIComponent(url)}`;
-                console.log('[Proxy] Making request to Twitter endpoint:', twitterEndpoint);
+                console.log('[Proxy] Making internal request to:', twitterEndpoint);
 
                 const twitterResponse = await fetch(twitterEndpoint);
                 console.log('[Proxy] Twitter endpoint response status:', twitterResponse.status);
 
+                if (!twitterResponse.ok) {
+                    const errorText = await twitterResponse.text();
+                    console.error('[Proxy] Twitter endpoint error response:', errorText);
+                    throw new Error(`Twitter endpoint failed: ${twitterResponse.status} ${errorText}`);
+                }
+
                 const twitterData = await twitterResponse.json();
                 console.log('[Proxy] Twitter endpoint response data:', twitterData);
 
-                if (twitterResponse.ok) {
-                    console.log('[Proxy] Successfully returning Twitter data');
-                    return res.json(twitterData);
-                } else {
-                    console.error('[Proxy] Twitter endpoint returned error:', twitterData);
-                }
+                console.log('[Proxy] Successfully returning Twitter data');
+                return res.json(twitterData);
             } catch (twitterError) {
                 console.error('[Proxy] Twitter endpoint failed, falling back to generic preview:', twitterError);
             }

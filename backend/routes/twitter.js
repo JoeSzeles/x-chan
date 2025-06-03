@@ -36,7 +36,13 @@ router.get('/embed', async (req, res) => {
     try {
         const { url } = req.query;
 
+        console.log('[Twitter] ===== TWITTER EMBED REQUEST =====');
+        console.log('[Twitter] Request URL:', req.url);
+        console.log('[Twitter] Request headers:', req.headers);
+        console.log('[Twitter] URL parameter:', url);
+
         if (!url) {
+            console.error('[Twitter] No URL parameter provided');
             return res.status(400).json({ error: 'URL parameter is required' });
         }
 
