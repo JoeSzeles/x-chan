@@ -678,7 +678,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                                 className="text-sm whitespace-pre-wrap mb-2"
                                 dangerouslySetInnerHTML={{
                                   __html: message.content
-                                    .replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline break-words font-medium">$1</a>`)
+                                    .replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-yellow-400 hover:text-yellow-300'} hover:underline break-words font-medium">$1</a>`)
                                     .replace(/@(\w+)/g, `<a href="/profile/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">@$1</a>`)
                                     .replace(/#(\w+)/g, `<a href="/hashtag/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">#$1</a>`)
                                 }}
@@ -837,7 +837,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                           {/* Emoji picker button */}
                           <div className="relative">
                             <button
-                              onClick={() => setShowEmojiPicker(showEmojiPicker === message._id ? null : message._id)}
+                              onClick={()={() => setShowEmojiPicker(showEmojiPicker === message._id ? null : message._id)}
                               className="p-1 hover:bg-gray-100 rounded text-sm"
                               title="Add reaction"
                             >

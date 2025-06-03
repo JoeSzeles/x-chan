@@ -181,7 +181,7 @@ const TwitterEmbed = ({ url }) => {
             const apiUrl = `${apiBaseUrl}/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`;
 
                 // Fetch tweet data through our backend proxy
-            const response = await fetch(apiUrl, {
+            const response = await fetch(`${window.location.origin}/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -363,9 +363,14 @@ const TwitterEmbed = ({ url }) => {
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                         </svg>
                         <div className="flex flex-col">
-                            <a href={tweetData?.author_url || url} target="_blank" rel="noopener noreferrer" className={`hover:underline ${
-                                tweetData?.fallback ? 'text-red-400' : 'text-[#1d9bf0]'
-                            }`}>
+                            <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className={`hover:underline font-medium ${
+                                tweetData?.fallback ? 'text-red-300' : 'text-yellow-400'
+                            }`}
+                        >
                                 {tweetData?.author_name ? `@${tweetData.author_name}` : 'View on Twitter'}
                             </a>
                             <div className="text-xs text-gray-400 mt-1">
@@ -738,7 +743,7 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
     let mediaIndex = 0;
 
     parts.forEach((part, index) => {
-        // Handle quote references - match both >>123 and >>0000000123 formats
+        // Handle quote references - match both >>123 and >>00000000123 formats
         const quoteMatch = part.match(/>>0*(\d+)/);        if (quoteMatch) {
             // If there's accumulated text, process it first
             if (currentText) {
