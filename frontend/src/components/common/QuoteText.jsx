@@ -736,3 +736,4 @@ const styles = `
 `;
 
 export default QuoteText;
+export { TwitterEmbed };
