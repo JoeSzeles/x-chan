@@ -339,7 +339,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 								</div>
 								<div className="flex-1 min-w-0">
 									<div className="flex justify-between items-start">
-										<h3 className={`text-sm truncate ${hasUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-900'}`}>
+										<h3 className={`text-sm truncate ${hasUnread ? 'font-bold text-blue-300' : 'font-medium text-blue-300'}`}>
 											{otherParticipant?.username}
 										</h3>
 										<div className="flex items-center space-x-2">
