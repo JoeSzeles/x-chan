@@ -4,6 +4,7 @@ import socketService from '../../services/socket';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
 import YouTubeEmbed from '../common/YouTubeEmbed';
+import TwitterEmbed from '../TwitterEmbed';
 
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
@@ -670,7 +671,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                               : 'var(--color-text-primary)',
                           }}
                         >
-                          {/* Text content with YouTube embed support */}
+                          {/* Text content with YouTube and Twitter embed support */}
                           {message.content && (
                             <div className="text-sm whitespace-pre-wrap mb-2">
                               {(() => {
@@ -682,9 +683,13 @@ const ChatWindow = ({ conversation, authUser }) => {
                                   if (part.match(/^https?:\/\/[^\s]+$/)) {
                                     // Check if it's a YouTube URL
                                     const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
+                                    // Check if it's a Twitter/X URL
+                                    const isTwitter = part.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/);
                                     
                                     if (isYouTube) {
                                       return <YouTubeEmbed key={index} url={part} />;
+                                    } else if (isTwitter) {
+                                      return <TwitterEmbed key={index} url={part} />;
                                     } else {
                                       // Regular link
                                       return (
