@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import socketService from '../../services/socket';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
+import YouTubeEmbed from '../common/YouTubeEmbed';
 
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
@@ -669,17 +670,51 @@ const ChatWindow = ({ conversation, authUser }) => {
                               : 'var(--color-text-primary)',
                           }}
                         >
-                          {/* Text content */}
+                          {/* Text content with YouTube embed support */}
                           {message.content && (
-                            <div 
-                              className="text-sm whitespace-pre-wrap mb-2"
-                              dangerouslySetInnerHTML={{
-                                __html: message.content
-                                  .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-red-400 hover:text-red-300 hover:underline break-words">$1</a>')
-                                  .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
-                                  .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
-                              }}
-                            />
+                            <div className="text-sm whitespace-pre-wrap mb-2">
+                              {(() => {
+                                const content = message.content;
+                                const parts = content.split(/(https?:\/\/[^\s]+)/g);
+                                
+                                return parts.map((part, index) => {
+                                  // Check if this part is a URL
+                                  if (part.match(/^https?:\/\/[^\s]+$/)) {
+                                    // Check if it's a YouTube URL
+                                    const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
+                                    
+                                    if (isYouTube) {
+                                      return <YouTubeEmbed key={index} url={part} />;
+                                    } else {
+                                      // Regular link
+                                      return (
+                                        <a 
+                                          key={index}
+                                          href={part} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="text-red-400 hover:text-red-300 hover:underline break-words"
+                                        >
+                                          {part}
+                                        </a>
+                                      );
+                                    }
+                                  } else {
+                                    // Regular text with @ and # processing
+                                    return (
+                                      <span 
+                                        key={index}
+                                        dangerouslySetInnerHTML={{
+                                          __html: part
+                                            .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
+                                            .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
+                                        }}
+                                      />
+                                    );
+                                  }
+                                });
+                              })()}
+                            </div>
                           )}
 
                           {/* File attachments */}
