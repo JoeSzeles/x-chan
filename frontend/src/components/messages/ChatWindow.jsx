@@ -4,7 +4,7 @@ import socketService from '../../services/socket';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
 import YouTubeEmbed from '../common/YouTubeEmbed';
-import TwitterEmbed from '../TwitterEmbed';
+import { TwitterEmbed } from '../common/QuoteText';
 
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
