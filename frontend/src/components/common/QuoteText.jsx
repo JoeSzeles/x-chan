@@ -155,15 +155,9 @@ const TwitterEmbed = ({ url }) => {
         setError(null);
 
         try {
-            let response;
-            let apiUrl;
-
-            if (method === 'link-preview') {
-                apiUrl = `/api/proxy/link-preview?url=${encodeURIComponent(url)}`;
-            } else {
-                apiUrl = `/api/twitter/embed?url=${encodeURIComponent(url)}`;
-            }
-
+            // Always use Twitter endpoint for Twitter URLs
+            const apiUrl = `/api/twitter/embed?url=${encodeURIComponent(url)}`;
+            
             const fullApiUrl = window.location.origin + apiUrl;
             console.log('[QuoteText] Full API URL:', fullApiUrl);
             console.log('[QuoteText] Making fetch request to:', apiUrl);
@@ -173,45 +167,84 @@ const TwitterEmbed = ({ url }) => {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'User-Agent': 'TwitterEmbed-Frontend'
+                    'Cache-Control': 'no-cache'
                 },
-                credentials: 'include',
-                // Add timeout using AbortController
-                signal: AbortSignal.timeout(15000) // 15 second timeout
+                credentials: 'include'
             };
 
             console.log('[QuoteText] Fetch options:', fetchOptions);
             console.log('[QuoteText] Starting fetch at:', new Date().toISOString());
 
             const fetchStartTime = Date.now();
-            response = await fetch(apiUrl, fetchOptions);
-            const fetchDuration = Date.now() - fetchStartTime;
+            
+            // Create timeout promise
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+            });
 
+            // Race between fetch and timeout
+            const response = await Promise.race([
+                fetch(apiUrl, fetchOptions),
+                timeoutPromise
+            ]);
+            
+            const fetchDuration = Date.now() - fetchStartTime;
             console.log('[QuoteText] Fetch completed in:', fetchDuration, 'ms');
 
             console.log('[QuoteText] ===== RESPONSE RECEIVED =====');
             console.log('[QuoteText] Response status:', response.status);
             console.log('[QuoteText] Response statusText:', response.statusText);
-            console.log('[QuoteText] Response headers:', Object.fromEntries(response.headers.entries()));
-            console.log('[QuoteText] Response URL:', response.url);
+            console.log('[QuoteText] Response ok:', response.ok);
+            console.log('[QuoteText] Response type:', response.type);
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('[QuoteText] ===== ERROR RESPONSE =====');
-                console.error('[QuoteText] Error status:', response.status);
-                console.error('[QuoteText] Error text:', errorText);
+                let errorText;
+                try {
+                    errorText = await response.text();
+                    console.error('[QuoteText] ===== ERROR RESPONSE =====');
+                    console.error('[QuoteText] Error status:', response.status);
+                    console.error('[QuoteText] Error text:', errorText);
+                } catch (textError) {
+                    console.error('[QuoteText] Could not read error response:', textError);
+                    errorText = 'Unable to read error response';
+                }
                 throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
             }
 
-            const data = await response.json();
+            const responseText = await response.text();
+            console.log('[QuoteText] Raw response text:', responseText.substring(0, 500) + '...');
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('[QuoteText] JSON parse error:', parseError);
+                console.error('[QuoteText] Response was not valid JSON:', responseText);
+                throw new Error('Invalid JSON response from server');
+            }
+
             console.log('[QuoteText] ===== SUCCESS RESPONSE =====');
-            console.log('[QuoteText] Response data:', data);
+            console.log('[QuoteText] Parsed data:', data);
             console.log('[QuoteText] Data type:', typeof data);
             console.log('[QuoteText] Data keys:', Object.keys(data || {}));
 
             if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
                 console.warn('[QuoteText] Received empty or invalid data');
                 throw new Error('Received empty response from API');
+            }
+
+            // Validate required fields
+            if (!data.html && !data.error) {
+                console.warn('[QuoteText] Response missing html content:', data);
+                // Create fallback content
+                data.html = `
+                    <div class="twitter-fallback p-3 bg-blue-900/20 border border-blue-500/30 rounded">
+                        <div class="text-blue-400 mb-2">Tweet Preview</div>
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline">
+                            View on Twitter/X
+                        </a>
+                    </div>
+                `;
             }
 
             setTweetData(data);
@@ -234,18 +267,21 @@ const TwitterEmbed = ({ url }) => {
             if (err instanceof TypeError && err.message.includes('fetch')) {
                 console.error('[QuoteText] Network error detected - possible CORS or connectivity issue');
                 setError('Network error: Unable to reach the API');
+            } else if (err.message.includes('timeout')) {
+                console.error('[QuoteText] Request timeout detected');
+                setError('Request timeout - please try again');
             } else {
                 setError(err.message);
             }
 
-            if (retryCount < MAX_RETRIES) {
+            if (retryCount < MAX_RETRIES && !err.message.includes('timeout')) {
                 console.log(`[QuoteText] ===== RETRYING =====`);
                 console.log(`[QuoteText] Retry attempt: ${retryCount + 1}/${MAX_RETRIES}`);
                 setRetryCount(prev => prev + 1);
-                setTimeout(() => fetchTweetData(forceRefresh), RETRY_DELAY);
+                setTimeout(() => fetchTweetData(forceRefresh), RETRY_DELAY * (retryCount + 1));
             } else {
-                console.error('[QuoteText] ===== MAX RETRIES REACHED =====');
-                console.error('[QuoteText] Giving up after', MAX_RETRIES, 'attempts');
+                console.error('[QuoteText] ===== MAX RETRIES REACHED OR NON-RETRYABLE ERROR =====');
+                console.error('[QuoteText] Giving up after', retryCount, 'attempts');
             }
         } finally {
             setIsLoading(false);
