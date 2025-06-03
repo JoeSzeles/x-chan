@@ -837,7 +837,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                           {/* Emoji picker button */}
                           <div className="relative">
                             <button
-                              onClick={()={() => setShowEmojiPicker(showEmojiPicker === message._id ? null : message._id)}
+                              onClick={() => setShowEmojiPicker(showEmojiPicker === message._id ? null : message._id)}
                               className="p-1 hover:bg-gray-100 rounded text-sm"
                               title="Add reaction"
                             >
