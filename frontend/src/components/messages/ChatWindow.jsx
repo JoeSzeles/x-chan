@@ -675,9 +675,9 @@ const ChatWindow = ({ conversation, authUser }) => {
                               className="text-sm whitespace-pre-wrap mb-2"
                               dangerouslySetInnerHTML={{
                                 __html: message.content
-                                  .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-words">$1</a>')
-                                  .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-blue-400 hover:underline">@$1</a>')
-                                  .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-blue-400 hover:underline">#$1</a>')
+                                  .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-red-400 hover:text-red-300 hover:underline break-words">$1</a>')
+                                  .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
+                                  .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
                               }}
                             />
                           )}
