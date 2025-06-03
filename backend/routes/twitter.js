@@ -3,6 +3,20 @@ import fetch from 'node-fetch';
 
 const router = express.Router();
 
+// Test endpoint for debugging
+router.get('/test', (req, res) => {
+    console.log('[Twitter] Test endpoint hit at:', new Date().toISOString());
+    console.log('[Twitter] Request headers:', req.headers);
+    console.log('[Twitter] Query params:', req.query);
+    
+    res.json({
+        message: 'Twitter API is working',
+        timestamp: new Date().toISOString(),
+        headers: req.headers,
+        query: req.query
+    });
+});
+
 // Helper function to extract username from Twitter URL
 function extractUsernameFromUrl(url) {
     try {
@@ -33,37 +47,60 @@ function isTwitterUrl(url) {
 
 // Twitter embed endpoint
 router.get('/embed', async (req, res) => {
+    console.log('[Twitter] ===== TWITTER EMBED REQUEST START =====');
+    console.log('[Twitter] Request method:', req.method);
+    console.log('[Twitter] Request URL:', req.url);
+    console.log('[Twitter] Request headers:', JSON.stringify(req.headers, null, 2));
+    console.log('[Twitter] Query parameters:', JSON.stringify(req.query, null, 2));
+    console.log('[Twitter] Request timestamp:', new Date().toISOString());
+    console.log('[Twitter] Request from IP:', req.ip || req.connection?.remoteAddress);
+
     try {
         const { url } = req.query;
 
-        console.log('[Twitter] ===== TWITTER EMBED REQUEST =====');
-        console.log('[Twitter] Request URL:', req.url);
-        console.log('[Twitter] Request headers:', req.headers);
-        console.log('[Twitter] URL parameter:', url);
-
         if (!url) {
-            console.error('[Twitter] No URL parameter provided');
-            return res.status(400).json({ error: 'URL parameter is required' });
+            console.error('[Twitter] ===== ERROR: NO URL PARAMETER =====');
+            return res.status(400).json({ 
+                error: 'URL parameter is required',
+                timestamp: new Date().toISOString()
+            });
         }
 
-        console.log('[Twitter] Processing Twitter URL:', url);
+        console.log('[Twitter] ===== URL VALIDATION =====');
+        console.log('[Twitter] URL value:', url);
+        console.log('[Twitter] URL type:', typeof url);
+        console.log('[Twitter] URL length:', url.length);
 
         // Validate Twitter URL
-        if (!isTwitterUrl(url)) {
-            console.error('[Twitter] Invalid Twitter URL format:', url);
-            return res.status(400).json({ error: 'Invalid Twitter URL' });
+        const isValidTwitterUrl = isTwitterUrl(url);
+        console.log('[Twitter] isTwitterUrl result:', isValidTwitterUrl);
+
+        if (!isValidTwitterUrl) {
+            console.error('[Twitter] ===== INVALID TWITTER URL =====');
+            console.error('[Twitter] URL does not match Twitter pattern:', url);
+            return res.status(400).json({ 
+                error: 'Invalid Twitter URL',
+                provided_url: url,
+                timestamp: new Date().toISOString()
+            });
         }
 
         // Extract tweet ID and username
         const tweetId = extractTweetIdFromUrl(url);
         const username = extractUsernameFromUrl(url);
 
+        console.log('[Twitter] ===== EXTRACTION RESULTS =====');
         console.log('[Twitter] Extracted tweet ID:', tweetId);
         console.log('[Twitter] Extracted username:', username);
 
         if (!tweetId) {
+            console.error('[Twitter] ===== TWEET ID EXTRACTION FAILED =====');
             console.error('[Twitter] Could not extract tweet ID from URL:', url);
-            return res.status(400).json({ error: 'Could not extract tweet ID from URL' });
+            return res.status(400).json({ 
+                error: 'Could not extract tweet ID from URL',
+                provided_url: url,
+                timestamp: new Date().toISOString()
+            });
         }
 
         // Create a simple fallback embed

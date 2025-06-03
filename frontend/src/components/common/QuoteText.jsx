@@ -149,6 +149,7 @@ const TwitterEmbed = ({ url }) => {
         console.log('[QuoteText] URL:', url);
         console.log('[QuoteText] Method:', method);
         console.log('[QuoteText] Force refresh:', forceRefresh);
+        console.log('[QuoteText] Current origin:', window.location.origin);
 
         setIsLoading(true);
         setError(null);
@@ -163,21 +164,30 @@ const TwitterEmbed = ({ url }) => {
                 apiUrl = `/api/twitter/embed?url=${encodeURIComponent(url)}`;
             }
 
-            console.log('[QuoteText] Full API URL:', window.location.origin + apiUrl);
+            const fullApiUrl = window.location.origin + apiUrl;
+            console.log('[QuoteText] Full API URL:', fullApiUrl);
             console.log('[QuoteText] Making fetch request to:', apiUrl);
 
             const fetchOptions = {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'TwitterEmbed-Frontend'
                 },
-                credentials: 'include'
+                credentials: 'include',
+                // Add timeout using AbortController
+                signal: AbortSignal.timeout(15000) // 15 second timeout
             };
 
             console.log('[QuoteText] Fetch options:', fetchOptions);
+            console.log('[QuoteText] Starting fetch at:', new Date().toISOString());
 
+            const fetchStartTime = Date.now();
             response = await fetch(apiUrl, fetchOptions);
+            const fetchDuration = Date.now() - fetchStartTime;
+
+            console.log('[QuoteText] Fetch completed in:', fetchDuration, 'ms');
 
             console.log('[QuoteText] ===== RESPONSE RECEIVED =====');
             console.log('[QuoteText] Response status:', response.status);
@@ -263,6 +273,24 @@ const TwitterEmbed = ({ url }) => {
     };
 
     useEffect(() => {
+        // Test backend connectivity first
+        const testBackend = async () => {
+            try {
+                console.log('[QuoteText] Testing backend connectivity...');
+                const testResponse = await fetch('/api/twitter/test');
+                console.log('[QuoteText] Backend test response status:', testResponse.status);
+                if (testResponse.ok) {
+                    const testData = await testResponse.json();
+                    console.log('[QuoteText] Backend test successful:', testData);
+                } else {
+                    console.error('[QuoteText] Backend test failed with status:', testResponse.status);
+                }
+            } catch (testError) {
+                console.error('[QuoteText] Backend connectivity test failed:', testError);
+            }
+        };
+
+        testBackend();
         fetchTweetData();
     }, [url, retryCount]);
 
