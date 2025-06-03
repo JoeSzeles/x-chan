@@ -3,7 +3,6 @@ import { formatDistanceToNow } from 'date-fns';
 import socketService from '../../services/socket';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
-import QuoteText from '../common/QuoteText';
 
 const ChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
@@ -670,34 +669,17 @@ const ChatWindow = ({ conversation, authUser }) => {
                               : 'var(--color-text-primary)',
                           }}
                         >
-                          {/* Text content with enhanced link processing */}
+                          {/* Text content */}
                           {message.content && (
-                            <>
-                              {/* Regular links, mentions, and hashtags */}
-                              <div
-                                className="text-sm whitespace-pre-wrap mb-2"
-                                dangerouslySetInnerHTML={{
-                                  __html: message.content
-                                    .replace(/(https?:\/\/[^\s]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-yellow-400 hover:text-yellow-300'} hover:underline break-words font-medium">$1</a>`)
-                                    .replace(/@(\w+)/g, `<a href="/profile/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">@$1</a>`)
-                                    .replace(/#(\w+)/g, `<a href="/hashtag/$1" class="${isOwnMessage ? 'text-cyan-200 hover:text-cyan-100' : 'text-cyan-400 hover:text-cyan-300'} hover:underline font-medium">#$1</a>`)
-                                }}
-                              />
-
-                              {/* Twitter embed processing */}
-                              {(() => {
-                                const twitterUrlMatch = message.content.match(/(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+)/);
-                                if (twitterUrlMatch) {
-                                  const twitterUrl = twitterUrlMatch[1];
-                                  return (
-                                    <div className="mt-2">
-                                      <QuoteText text={twitterUrl} />
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              })()}
-                            </>
+                            <div 
+                              className="text-sm whitespace-pre-wrap mb-2"
+                              dangerouslySetInnerHTML={{
+                                __html: message.content
+                                  .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:underline break-words">$1</a>')
+                                  .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-blue-400 hover:underline">@$1</a>')
+                                  .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-blue-400 hover:underline">#$1</a>')
+                              }}
+                            />
                           )}
 
                           {/* File attachments */}

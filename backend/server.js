@@ -23,25 +23,23 @@ const __dirname = dirname(__filename);
 import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
 import postRoutes from './routes/post.route.js';
-import notificationRoutes from './routes/notification.route.js';
-import commentRoutes from './routes/comment.route.js';
-import bookmarkRoutes from './routes/bookmark.route.js';
-import serviceRoutes from './routes/service.route.js';
-import uploadRoutes from './routes/upload.route.js';
-import ratingRoutes from './routes/rating.routes.js';
-import listRoutes from './routes/listRoutes.js';
-import searchRoutes from './routes/searchRoutes.js';
-import coverPhotoRoutes from './routes/cover-photo.route.js';
-import newsRoutes from './routes/news.js';
-import newsBotRoutes from './routes/newsBot.js';
-import liveBoardRoutes from './routes/liveBoard.js';
-import messagesRoutes from './routes/messages.js';
 import proxyRoutes from './routes/proxy.js';
-import boardRoutes from './routes/board.route.js';
-import grokRoutes from './routes/grok.js';
-import leechRoutes from './routes/leech.js';
-import connectMongoDB from "./db/connectMongoDB.js";
+import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
+import notificationRoutes from "./routes/notification.route.js";
+import bookmarkRoutes from './routes/bookmark.route.js';
+import ratingRoutes from './routes/rating.routes.js';
+import commentRoutes from './routes/comment.route.js';
+import grokRoutes from './routes/grok.js';
+import newsBotRoutes from './routes/newsBot.js';
+import boardRoutes from './routes/board.route.js';
+import uploadRoutes from './routes/upload.route.js';
+import leechRoutes from './routes/leech.js';
+import serviceRoutes from './routes/service.route.js';
+import liveBoardRoutes from './routes/liveBoard.js';
+import connectMongoDB from "./db/connectMongoDB.js";
+import coverPhotoRoutes from './routes/cover-photo.route.js';
+import messagesRoutes from './routes/messages.js'; // Import cover photo route
 
 dotenv.config();
 
@@ -74,21 +72,7 @@ if (fs.existsSync(frontendBuildPath)) {
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
 }
 
-// Middleware
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(cookieParser());
-
-// Request logging middleware
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    if (req.url.includes('/api/proxy/') || req.url.includes('/api/twitter/')) {
-        console.log('[Request] Headers:', req.headers);
-        console.log('[Request] Query:', req.query);
-    }
-    next();
-});
-
+// Configure CORS for Express
 app.use(cors({
     origin: function(origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
@@ -120,6 +104,9 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     // Keep the server running despite promise rejections
 });
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cookieParser());
 
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
