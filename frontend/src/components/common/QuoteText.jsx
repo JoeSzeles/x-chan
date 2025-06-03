@@ -140,10 +140,15 @@ const TwitterEmbed = ({ url }) => {
     };
 
     const fetchTweetData = async (forceRefresh = false) => {
-        if (!url || isLoading) return;
+        if (!url || isLoading) {
+            console.log('[QuoteText] Skipping fetch - URL:', url, 'isLoading:', isLoading);
+            return;
+        }
 
-        console.log('[QuoteText] Fetching tweet data for:', url);
+        console.log('[QuoteText] ===== STARTING TWEET FETCH =====');
+        console.log('[QuoteText] URL:', url);
         console.log('[QuoteText] Method:', method);
+        console.log('[QuoteText] Force refresh:', forceRefresh);
 
         setIsLoading(true);
         setError(null);
@@ -158,21 +163,41 @@ const TwitterEmbed = ({ url }) => {
                 apiUrl = `/api/twitter/embed?url=${encodeURIComponent(url)}`;
             }
 
-            console.log('[QuoteText] Fetching from API:', apiUrl);
+            console.log('[QuoteText] Full API URL:', window.location.origin + apiUrl);
+            console.log('[QuoteText] Making fetch request to:', apiUrl);
 
-            response = await fetch(apiUrl);
+            const fetchOptions = {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            };
 
-            console.log('[QuoteText] API Response status:', response.status);
-            console.log('[QuoteText] API Response headers:', Object.fromEntries(response.headers.entries()));
+            console.log('[QuoteText] Fetch options:', fetchOptions);
+
+            response = await fetch(apiUrl, fetchOptions);
+
+            console.log('[QuoteText] ===== RESPONSE RECEIVED =====');
+            console.log('[QuoteText] Response status:', response.status);
+            console.log('[QuoteText] Response statusText:', response.statusText);
+            console.log('[QuoteText] Response headers:', Object.fromEntries(response.headers.entries()));
+            console.log('[QuoteText] Response URL:', response.url);
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('[QuoteText] API Error response:', errorText);
+                console.error('[QuoteText] ===== ERROR RESPONSE =====');
+                console.error('[QuoteText] Error status:', response.status);
+                console.error('[QuoteText] Error text:', errorText);
                 throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
             }
 
             const data = await response.json();
-            console.log('[QuoteText] API Response data:', data);
+            console.log('[QuoteText] ===== SUCCESS RESPONSE =====');
+            console.log('[QuoteText] Response data:', data);
+            console.log('[QuoteText] Data type:', typeof data);
+            console.log('[QuoteText] Data keys:', Object.keys(data || {}));
 
             if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
                 console.warn('[QuoteText] Received empty or invalid data');
@@ -180,29 +205,41 @@ const TwitterEmbed = ({ url }) => {
             }
 
             setTweetData(data);
-            console.log('[QuoteText] Tweet data set successfully:', data);
+            console.log('[QuoteText] ===== TWEET DATA SET =====');
+            console.log('[QuoteText] Tweet data set successfully');
 
             // Cache the result
             if (url) {
-                cacheTweetData(url, data, method);
+                setCachedTweet(url, data);
                 console.log('[QuoteText] Data cached for URL:', url);
             }
 
         } catch (err) {
-            console.error('[QuoteText] Error fetching tweet data:', err);
+            console.error('[QuoteText] ===== FETCH ERROR =====');
+            console.error('[QuoteText] Error type:', err.constructor.name);
+            console.error('[QuoteText] Error message:', err.message);
             console.error('[QuoteText] Error stack:', err.stack);
-            setError(err.message);
+            
+            // Check if it's a network error
+            if (err instanceof TypeError && err.message.includes('fetch')) {
+                console.error('[QuoteText] Network error detected - possible CORS or connectivity issue');
+                setError('Network error: Unable to reach the API');
+            } else {
+                setError(err.message);
+            }
 
             if (retryCount < MAX_RETRIES) {
-                console.log(`[QuoteText] Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+                console.log(`[QuoteText] ===== RETRYING =====`);
+                console.log(`[QuoteText] Retry attempt: ${retryCount + 1}/${MAX_RETRIES}`);
                 setRetryCount(prev => prev + 1);
                 setTimeout(() => fetchTweetData(forceRefresh), RETRY_DELAY);
             } else {
-                console.error('[QuoteText] Max retries reached, giving up');
+                console.error('[QuoteText] ===== MAX RETRIES REACHED =====');
+                console.error('[QuoteText] Giving up after', MAX_RETRIES, 'attempts');
             }
         } finally {
             setIsLoading(false);
-            console.log('[QuoteText] fetchTweetData completed, isLoading set to false');
+            console.log('[QuoteText] ===== FETCH COMPLETED =====');
         }
     };
 
