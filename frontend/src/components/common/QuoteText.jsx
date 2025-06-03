@@ -133,129 +133,78 @@ const TwitterEmbed = ({ url }) => {
             console.log('[QuoteText] Is Twitter URL:', isTwitter, 'Hostname:', hostname);
             return isTwitter;
         } catch (error) {
+            console.error('[QuoteText] Error checking if Twitter URL:', error);
             console.log('[QuoteText] URL parsing error:', error.message);
             return false;
         }
     };
 
     const fetchTweetData = async (forceRefresh = false) => {
-        if (!url || !isTwitterUrl(url)) {
-            console.log('[QuoteText] Not a Twitter URL or invalid URL:', url);
-            setError('Invalid Twitter URL');
-            setIsLoading(false);
-            return;
-        }
+        if (!url || isLoading) return;
 
-        const cleanUrl = url.split('?')[0];
-        console.log('[QuoteText] Fetching tweet data for:', cleanUrl);
+        console.log('[QuoteText] Fetching tweet data for:', url);
         console.log('[QuoteText] Method:', method);
 
-            try {
-                // Clean the URL (remove @ if present and ensure proper format)
-                const cleanUrl = url.replace(/^@/, '').trim();
+        setIsLoading(true);
+        setError(null);
 
-                // Extract tweet ID
-                const tweetId = cleanUrl.match(/status\/(\d+)/)?.[1];
-                if (!tweetId) {
-                    throw new Error('Invalid tweet URL');
-                }
+        try {
+            let response;
+            let apiUrl;
 
-            // Check cache first if not forcing reload
-            if (!forceRefresh) {
-                const cachedData = getCachedTweet(cleanUrl);
-                if (cachedData) {
-                        setTweetData(cachedData);
-                        setMethod(cachedData.method || 'cached');
-                        setIsLoading(false);
-                    return;
-                }
+            if (method === 'link-preview') {
+                apiUrl = `/api/proxy/link-preview?url=${encodeURIComponent(url)}`;
+            } else {
+                apiUrl = `/api/twitter/embed?url=${encodeURIComponent(url)}`;
             }
 
-            // Get API URL from environment variable, with fallback
-            const apiBaseUrl = import.meta.env.VITE_API_URL || '';
-            if (!apiBaseUrl) {
-                throw new Error('API URL not configured');
-            }
+            console.log('[QuoteText] Fetching from API:', apiUrl);
 
-            // Construct API URL properly
-            const apiUrl = `${apiBaseUrl}/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`;
-
-                // Fetch tweet data through our backend proxy
-            const response = await fetch(`${window.location.origin}/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    timeout: 15000 // 15 second timeout
-                });
+            response = await fetch(apiUrl);
 
             console.log('[QuoteText] API Response status:', response.status);
+            console.log('[QuoteText] API Response headers:', Object.fromEntries(response.headers.entries()));
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log('[QuoteText] API Response data:', data);
-
-                if (data.html && data.html.trim()) {
-                    setTweetData(data);
-                    setError(null);
-                    setMethod('link-preview');
-                    console.log('[QuoteText] Successfully loaded tweet data');
-                } else {
-                    console.log('[QuoteText] No tweet content in response:', data);
-                    throw new Error('No tweet content received from API');
-                }
-            } else {
-                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                console.log('[QuoteText] API Error response:', errorData);
-                throw new Error(errorData.error || `HTTP ${response.status}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[QuoteText] API Error response:', errorText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
             }
 
-            } catch (err) {
-            // Handle errors with progressive fallback
+            const data = await response.json();
+            console.log('[QuoteText] API Response data:', data);
+
+            if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+                console.warn('[QuoteText] Received empty or invalid data');
+                throw new Error('Received empty response from API');
+            }
+
+            setTweetData(data);
+            console.log('[QuoteText] Tweet data set successfully:', data);
+
+            // Cache the result
+            if (url) {
+                cacheTweetData(url, data, method);
+                console.log('[QuoteText] Data cached for URL:', url);
+            }
+
+        } catch (err) {
+            console.error('[QuoteText] Error fetching tweet data:', err);
+            console.error('[QuoteText] Error stack:', err.stack);
+            setError(err.message);
+
             if (retryCount < MAX_RETRIES) {
-                setTimeout(() => {
-                    setRetryCount(prev => prev + 1);
-                }, RETRY_DELAY * (retryCount + 1));
+                console.log(`[QuoteText] Retrying... (${retryCount + 1}/${MAX_RETRIES})`);
+                setRetryCount(prev => prev + 1);
+                setTimeout(() => fetchTweetData(forceRefresh), RETRY_DELAY);
             } else {
-                    setError(err.message);
-                    setMethod('error');
-
-                // Create a final fallback with better UX
-                const username = extractUsernameFromUrl(cleanUrl);
-                const tweetId = extractTweetIdFromUrl(cleanUrl);
-                    setTweetData({
-                    html: `
-                        <div class="tweet-error bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="text-red-400">⚠️</span>
-                                <span class="text-red-300 font-medium">Unable to load tweet</span>
-                            </div>
-                            <p class="text-gray-300 mb-3 text-sm">${err.message}</p>
-                            <div class="flex gap-3 text-sm">
-                                <a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" 
-                                   class="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
-                                    <span>🐦</span> View on Twitter
-                                </a>
-                                <button onclick="window.location.reload()" 
-                                        class="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
-                                    <span>🔄</span> Retry
-                                </button>
-                            </div>
-                            <div class="mt-2 text-xs text-gray-400">
-                                Tweet ID: ${tweetId} • @${username}
-                            </div>
-                        </div>
-                    `,
-                        fallback: true,
-                        error: err.message,
-                        method: 'error'
-                    });
-                    setIsLoading(false);
-                }
+                console.error('[QuoteText] Max retries reached, giving up');
             }
-        };
+        } finally {
+            setIsLoading(false);
+            console.log('[QuoteText] fetchTweetData completed, isLoading set to false');
+        }
+    };
 
     // Helper functions
     const extractUsernameFromUrl = (url) => {
@@ -280,7 +229,35 @@ const TwitterEmbed = ({ url }) => {
         fetchTweetData();
     }, [url, retryCount]);
 
+    if (isLoading) {
+        console.log('[TwitterEmbed] Rendering loading state for URL:', url);
+        return (
+            <div className="twitter-embed my-2">
+                <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 p-3">
+                    <div className="flex justify-between items-center">
+                        <div className="text-gray-400 text-sm">Loading tweet... {retryCount > 0 && `(Retry ${retryCount}/${MAX_RETRIES})`}</div>
+                        <button
+                            onClick={() => {
+                                setIsLoading(true);
+                                setError(null);
+                                setRetryCount(0);
+                                fetchTweetData(true);
+                            }}
+                            className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
+                            title="Reload tweet"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (error) {
+        console.log('[TwitterEmbed] Rendering error state:', error);
         return (
             <div className="twitter-embed my-2">
                 <div className="bg-red-500/10 rounded-lg border border-red-500/20 p-3">
@@ -315,34 +292,7 @@ const TwitterEmbed = ({ url }) => {
         );
     }
 
-    if (isLoading) {
-        return (
-            <div className="twitter-embed my-2">
-                <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 p-3">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-[#1d9bf0] border-t-transparent rounded-full animate-spin"></div>
-                            <div className="text-gray-400 text-sm">Loading tweet... {retryCount > 0 && `(Retry ${retryCount}/${MAX_RETRIES})`}</div>
-                        </div>
-                        <button
-                            onClick={() => {
-                                setIsLoading(true);
-                                setError(null);
-                                setRetryCount(0);
-                                fetchTweetData(true);
-                            }}
-                            className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
-                            title="Reload tweet"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    console.log('[TwitterEmbed] Rendering success state with tweetData:', tweetData);
 
     return (
         <div className="twitter-embed my-2" ref={embedContainerRef}>
@@ -735,8 +685,10 @@ const PostPreview = ({ url }) => {
 const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
     if (!text) return null;
 
+    console.log('[QuoteText] Rendering content for text:', text);
+
     // Split text into parts and extract all interactive elements
-    // This regex captures both >>123 and >>0000000123 formats, plus @username mentions
+    // This regex captures both >>123 and >>00000000123 formats, plus @username mentions
     const parts = text.split(/(>>0*\d+|@[a-zA-Z0-9_]+)/g);
     const mediaElements = [];
     let currentText = '';
@@ -807,7 +759,7 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
             // Handle different types of URLs
             if (url.includes('youtube.com') || url.includes('youtu.be')) {
                 mediaElements.push(
-                    <div key={`youtube-${mediaIndex}`} className="mb-4">
+<div key={`youtube-${mediaIndex}`} className="mb-4">
                         <YouTubeEmbed url={url} />
                     </div>
                 );
@@ -861,6 +813,48 @@ const QuoteText = ({ text, onQuoteClick, onUserClick }) => {
         </div>
     );
 };
+
+const renderContent = () => {
+        if (!text) {
+            console.log('[QuoteText] No text provided, returning null');
+            return null;
+        }
+
+        console.log('[QuoteText] Rendering content for text:', text);
+
+        return text.split('\n').map((line, lineIndex) => {
+            const elements = [];
+            let lastIndex = 0;
+
+            console.log('[QuoteText] Processing line:', line);
+
+            // Twitter URL regex
+            const twitterMatch = line.match(/(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+)/);
+            if (twitterMatch) {
+                console.log('[QuoteText] Found Twitter URL in line:', twitterMatch[1]);
+                return (
+                    <div key={lineIndex}>
+                        <TwitterEmbed url={twitterMatch[1]} />
+                    </div>
+                );
+            }
+
+            // Post number links (e.g., >>123)
+            const postNumberMatch = line.match(/(>>\d+)/g);
+            if (postNumberMatch) {
+                postNumberMatch.forEach(match => {
+                    const postNumber = match.substring(2);
+                    const link = <PostNumberLink key={match} postNumber={postNumber} />;
+                    elements.push(link);
+                });
+            }
+
+            const textParts = processText(line);
+            elements.push(<span key={`line-${lineIndex}`} dangerouslySetInnerHTML={{ __html: textParts }} />);
+
+            return <div key={lineIndex}>{elements}</div>;
+        });
+    };
 
 // Add error handling for post views
 const handlePostView = async (postId) => {
