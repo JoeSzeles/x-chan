@@ -72,21 +72,7 @@ if (fs.existsSync(frontendBuildPath)) {
     console.warn('Make sure to build the frontend with "cd frontend && npm run build"');
 }
 
-// Middleware
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(cookieParser());
-
-// Request logging middleware
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    if (req.url.includes('/api/proxy/') || req.url.includes('/api/twitter/')) {
-        console.log('[Request] Headers:', req.headers);
-        console.log('[Request] Query:', req.query);
-    }
-    next();
-});
-
+// Configure CORS for Express
 app.use(cors({
     origin: function(origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
@@ -118,6 +104,9 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     // Keep the server running despite promise rejections
 });
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cookieParser());
 
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
