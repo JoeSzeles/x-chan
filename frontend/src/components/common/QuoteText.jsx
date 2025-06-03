@@ -115,137 +115,83 @@ const TwitterEmbed = ({ url }) => {
     const [retryCount, setRetryCount] = useState(0);
     const embedContainerRef = useRef(null);
 
-    const MAX_RETRIES = 2;
-    const RETRY_DELAY = 1000; // 1 second
+    console.log('[TwitterEmbed] Rendering for URL:', url);
 
-    const fetchTweetData = async (forceReload = false) => {
-            try {
-                // Clean the URL (remove @ if present and ensure proper format)
-                const cleanUrl = url.replace(/^@/, '').trim();
+    const loadTweetData = async (forceReload = false) => {
+        setIsLoading(true);
+        setError(null);
 
-                // Extract tweet ID
-                const tweetId = cleanUrl.match(/status\/(\d+)/)?.[1];
-                if (!tweetId) {
-                    throw new Error('Invalid tweet URL');
+        try {
+            const cleanUrl = url.replace(/\?.*$/, '');
+            console.log('[TwitterEmbed] Loading tweet data for:', cleanUrl);
+
+            // Try the Twitter embed API endpoint first
+            const response = await fetch(`/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`, {
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
                 }
+            });
 
-            // Check cache first if not forcing reload
-            if (!forceReload) {
-                const cachedData = getCachedTweet(cleanUrl);
-                if (cachedData) {
-                        setTweetData(cachedData);
-                        setIsLoading(false);
-                    return;
-                }
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: Failed to fetch tweet data`);
             }
 
-            // Get API URL from environment variable, with fallback
-            const apiBaseUrl = import.meta.env.VITE_API_URL || '';
-            if (!apiBaseUrl) {
-                throw new Error('API URL not configured');
-            }
+            const data = await response.json();
+            console.log('[TwitterEmbed] Tweet data loaded:', data);
 
-            // Construct API URL properly
-            const apiUrl = `${apiBaseUrl}/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`;
+            if (data.html) {
+                setTweetData(data);
+                setIsLoading(false);
 
-                // Fetch tweet data through our backend proxy
-            const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                // Load Twitter widgets script after content is set
+                setTimeout(() => {
+                    if (window.twttr && window.twttr.widgets) {
+                        window.twttr.widgets.load(embedContainerRef.current);
+                    } else {
+                        loadTwitterScript();
                     }
-                });
+                }, 100);
+            } else {
+                throw new Error('No tweet content received');
+            }
 
-                if (!response.ok) {
-                // Handle specific error cases
-                if (response.status === 404) {
-                    throw new Error('Tweet not found or has been deleted');
-                } else if (response.status === 429) {
-                    throw new Error('Rate limit exceeded. Please try again later.');
-                } else if (response.status === 401) {
-                    throw new Error('Authentication required to view this tweet');
-                } else if (response.status === 500) {
-                    throw new Error('Server error. Please try again later.');
-                }
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.details || `Twitter API error: ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Cache the successful response
-                setCachedTweet(cleanUrl, data);
-                    setTweetData(data);
-                    setIsLoading(false);
-            setError(null);
-            setRetryCount(0);
-
-            } catch (err) {
-            // Silently handle errors without logging to console
-            if (retryCount < MAX_RETRIES) {
+        } catch (err) {
+            console.error('[TwitterEmbed] Error loading tweet:', err);
+            if (retryCount < 2) {
                 setTimeout(() => {
                     setRetryCount(prev => prev + 1);
-                }, RETRY_DELAY * (retryCount + 1));
+                    loadTweetData();
+                }, 1000 * (retryCount + 1));
             } else {
-                    setError(err.message);
-                // Show a more informative fallback UI for failed tweet loads
-                    setTweetData({
-                    html: `<div class="tweet-error bg-gray-800 rounded-lg p-4">
-                        <p class="text-gray-300 mb-2">${err.message}</p>
-                        <div class="flex gap-2">
-                            <a href="${url}" target="_blank" rel="noopener noreferrer" 
-                               class="text-blue-400 hover:text-blue-300 transition-colors">
-                                View on Twitter
-                            </a>
-                            <button onclick="window.location.reload()" 
-                                    class="text-blue-400 hover:text-blue-300 transition-colors">
-                                Retry
-                            </button>
-                        </div>
-                        </div>`
-                    });
-                    setIsLoading(false);
-                }
+                setError(err.message || 'Failed to load tweet');
+                setIsLoading(false);
+            }
+        }
+    };
+
+    const loadTwitterScript = () => {
+        if (document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
+            if (window.twttr && window.twttr.widgets) {
+                window.twttr.widgets.load(embedContainerRef.current);
+            }
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.onload = () => {
+            if (window.twttr && window.twttr.widgets && embedContainerRef.current) {
+                window.twttr.widgets.load(embedContainerRef.current);
             }
         };
+        document.body.appendChild(script);
+    };
 
     useEffect(() => {
-        fetchTweetData();
-    }, [url, retryCount]);
-
-    if (error) {
-        return (
-            <div className="twitter-embed my-2">
-                <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 p-3">
-                    <div className="flex justify-between items-center mb-2">
-                        <div className="text-red-500">{error}</div>
-                        <button
-                            onClick={() => {
-                                setIsLoading(true);
-                                setError(null);
-                                fetchTweetData();
-                            }}
-                            className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
-                            title="Reload tweet"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-                    </div>
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-[#1d9bf0] hover:underline">
-                        View on Twitter
-                    </a>
-                </div>
-            </div>
-        );
-    }
+        loadTweetData();
+    }, [url]);
 
     if (isLoading) {
         return (
@@ -253,18 +199,11 @@ const TwitterEmbed = ({ url }) => {
                 <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 p-3">
                     <div className="flex justify-between items-center">
                         <div className="text-gray-500">Loading tweet...</div>
-                        <button
-                            onClick={() => {
-                                setIsLoading(true);
-                               setError(null);
-                                fetchTweetData();
-                            }}
-                            className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
-                            title="Reload tweet"
+                        <button 
+                            onClick={() => loadTweetData(true)}
+                            className="text-blue-500 hover:text-blue-600"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                            Retry
                         </button>
                     </div>
                 </div>
@@ -272,64 +211,56 @@ const TwitterEmbed = ({ url }) => {
         );
     }
 
-    return (
-        <div className="twitter-embed my-2" ref={embedContainerRef}>
-            <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 overflow-hidden">
-                <div className="p-3 flex items-center justify-between border-b border-[#1d9bf0]/20">
-                    <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-[#1d9bf0] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                        <div className="flex flex-col">
-                            <a href={tweetData?.author_url || url} target="_blank" rel="noopener noreferrer" className="text-[#1d9bf0] hover:underline">
-                                {tweetData?.author_name ? `@${tweetData.author_name}` : 'View on Twitter'}
-                            </a>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
+    if (error) {
+        return (
+            <div className="twitter-embed my-2">
+                <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 p-3">
+                    <div className="text-red-500 mb-2">{error}</div>
+                    <div className="flex gap-2">
+                        <button 
                             onClick={() => {
-                                setIsLoading(true);
-                                setError(null);
-                                fetchTweetData();
+                                setRetryCount(0);
+                                loadTweetData(true);
                             }}
-                            className="p-2 text-[#1d9bf0] hover:bg-[#1d9bf0]/10 rounded-full transition-colors"
-                            title="Reload tweet"
+                            className="text-blue-500 hover:text-blue-600"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                            Retry
                         </button>
+                        <a 
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-600"
+                        >
+                            View on Twitter
+                        </a>
                     </div>
                 </div>
-                <div className="p-3">
-                    {tweetData && (
-                        <>
-                            <div 
-                                className="twitter-tweet-content mb-3"
-                                dangerouslySetInnerHTML={{ __html: tweetData.html }}
-                            />
-                            {tweetData.media && tweetData.media.length > 0 && (
-                                <div className="grid gap-2 mt-3">
-                                    {tweetData.media.map((url, index) => (
-                                        <div key={index} className="relative rounded-lg overflow-hidden">
-                                            <img 
-                                                src={url} 
-                                                alt={`Tweet media ${index + 1}`}
-                                                className="w-full h-auto object-contain max-h-[400px]"
-                                                loading="lazy"
-                                                onError={(e) => {
-                                                    console.error('Failed to load media:', url);
-                                                    e.target.style.display = 'none';
-                                                }}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="twitter-embed my-2">
+            <div className="bg-[#1d9bf0]/10 rounded-lg border border-[#1d9bf0]/20 overflow-hidden">
+                <div className="p-3 flex items-center gap-2 border-b border-[#1d9bf0]/20">
+                    <svg className="w-5 h-5 text-[#1d9bf0] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <a 
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#1d9bf0] hover:underline"
+                    >
+                        View on Twitter
+                    </a>
                 </div>
+                <div 
+                    className="p-3"
+                    ref={embedContainerRef}
+                    dangerouslySetInnerHTML={{ __html: tweetData?.html || '' }}
+                />
             </div>
         </div>
     );
