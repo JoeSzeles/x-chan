@@ -241,5 +241,88 @@ router.get('/4chan-image', async (req, res) => {
     }
 });
 
+router.get('/link-preview', async (req, res) => {
+    try {
+        const { url } = req.query;
+
+        console.log('[Proxy] Link preview request received for URL:', url);
+
+        if (!url) {
+            console.error('[Proxy] No URL parameter provided');
+            return res.status(400).json({ error: 'URL parameter is required' });
+        }
+
+        console.log('[Proxy] Generating link preview for:', url);
+
+        // For Twitter/X URLs, use our Twitter embed endpoint
+        if (url.match(/^https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/)) {
+            console.log('[Proxy] Detected Twitter URL, forwarding to Twitter endpoint');
+            try {
+                // Make internal request to our Twitter endpoint
+                const twitterEndpoint = `http://localhost:5000/api/twitter/embed?url=${encodeURIComponent(url)}`;
+                console.log('[Proxy] Making request to Twitter endpoint:', twitterEndpoint);
+
+                const twitterResponse = await fetch(twitterEndpoint);
+                console.log('[Proxy] Twitter endpoint response status:', twitterResponse.status);
+
+                const twitterData = await twitterResponse.json();
+                console.log('[Proxy] Twitter endpoint response data:', twitterData);
+
+                if (twitterResponse.ok) {
+                    console.log('[Proxy] Successfully returning Twitter data');
+                    return res.json(twitterData);
+                } else {
+                    console.error('[Proxy] Twitter endpoint returned error:', twitterData);
+                }
+            } catch (twitterError) {
+                console.error('[Proxy] Twitter endpoint failed, falling back to generic preview:', twitterError);
+            }
+        }
+
+        console.log('[Proxy] Using generic link preview for non-Twitter URL or fallback');
+
+        // Generic link preview for non-Twitter URLs
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            timeout: 10000
+        });
+
+        console.log('[Proxy] Generic fetch response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const html = await response.text();
+        console.log('[Proxy] Received HTML length:', html.length);
+
+        // Extract basic metadata
+        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        const descMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+        const imageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+
+        const preview = {
+            url: url,
+            title: titleMatch ? titleMatch[1].trim() : 'Link Preview',
+            description: descMatch ? descMatch[1].trim() : '',
+            image: imageMatch ? imageMatch[1] : null,
+            html: `<div class="link-preview"><h3>${titleMatch ? titleMatch[1].trim() : 'Link Preview'}</h3><p>${descMatch ? descMatch[1].trim() : ''}</p></div>`
+        };
+
+        console.log('[Proxy] Generated preview data:', preview);
+        res.json(preview);
+
+    } catch (error) {
+        console.error('[Proxy] Link preview error:', error);
+        console.error('[Proxy] Error stack:', error.stack);
+        res.status(500).json({ 
+            error: 'Failed to generate link preview',
+            details: error.message 
+        });
+    }
+});
+
 const proxyRoutes = router;
 export default proxyRoutes;

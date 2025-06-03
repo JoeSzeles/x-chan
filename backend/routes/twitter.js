@@ -40,10 +40,11 @@ router.get('/embed', async (req, res) => {
             return res.status(400).json({ error: 'URL parameter is required' });
         }
 
-        console.log('Processing Twitter URL:', url);
+        console.log('[Twitter] Processing Twitter URL:', url);
 
         // Validate Twitter URL
         if (!isTwitterUrl(url)) {
+            console.error('[Twitter] Invalid Twitter URL format:', url);
             return res.status(400).json({ error: 'Invalid Twitter URL' });
         }
 
@@ -51,7 +52,11 @@ router.get('/embed', async (req, res) => {
         const tweetId = extractTweetIdFromUrl(url);
         const username = extractUsernameFromUrl(url);
 
+        console.log('[Twitter] Extracted tweet ID:', tweetId);
+        console.log('[Twitter] Extracted username:', username);
+
         if (!tweetId) {
+            console.error('[Twitter] Could not extract tweet ID from URL:', url);
             return res.status(400).json({ error: 'Could not extract tweet ID from URL' });
         }
 
@@ -81,7 +86,9 @@ router.get('/embed', async (req, res) => {
             tweet_id: tweetId,
             method: 'fallback'
         };
-console.log('Returning tweet data');
+
+        console.log('[Twitter] Generated tweet data:', tweetData);
+        console.log('[Twitter] Returning tweet data to client');
 
         res.json({
             ...tweetData,
