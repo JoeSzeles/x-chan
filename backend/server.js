@@ -40,11 +40,7 @@ import proxyRoutes from './routes/proxy.js';
 import boardRoutes from './routes/board.route.js';
 import grokRoutes from './routes/grok.js';
 import leechRoutes from './routes/leech.js';
-import serviceRoutes from './routes/service.route.js';
-import liveBoardRoutes from './routes/liveBoard.js';
 import connectMongoDB from "./db/connectMongoDB.js";
-import coverPhotoRoutes from './routes/cover-photo.route.js';
-import messagesRoutes from './routes/messages.js'; // Import cover photo route
 import twitterRoutes from './routes/twitter.js';
 
 dotenv.config();
