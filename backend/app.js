@@ -83,7 +83,7 @@ app.get('/api/test', (req, res) => {
 app.get('/api/debug/routes', (req, res) => {
     const routes = [];
     const middlewares = [];
-    
+
     app._router.stack.forEach((middleware, index) => {
         if (middleware.route) {
             routes.push({
@@ -97,7 +97,7 @@ app.get('/api/debug/routes', (req, res) => {
                 .replace(/^\^\\?/, '')
                 .replace(/\$.*/, '')
                 .replace(/\\\//g, '/');
-            
+
             middlewares.push({
                 type: 'middleware',
                 baseUrl: baseUrl || 'unknown',
@@ -105,7 +105,7 @@ app.get('/api/debug/routes', (req, res) => {
                 hasStack: !!middleware.handle?.stack,
                 stackLength: middleware.handle?.stack?.length || 0
             });
-            
+
             if (middleware.handle?.stack) {
                 middleware.handle.stack.forEach((handler, handlerIndex) => {
                     if (handler.route) {
@@ -123,7 +123,7 @@ app.get('/api/debug/routes', (req, res) => {
             }
         }
     });
-    
+
     res.json({ 
         routes, 
         middlewares, 
