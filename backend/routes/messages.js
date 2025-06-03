@@ -600,6 +600,343 @@ router.post('/conversations/:conversationId/upload', protectRoute, async (req, r
     }
 });
 
+// GROUP CONVERSATION ROUTES
+
+// Create a new group conversation
+router.post('/create-group', protectRoute, async (req, res) => {
+    console.log('[messages.js] ✓ POST /create-group - ROUTE ACCESSED');
+    
+    try {
+        const { name, participants } = req.body;
+
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Group name is required' });
+        }
+
+        if (!participants || !Array.isArray(participants) || participants.length === 0) {
+            return res.status(400).json({ error: 'At least one participant is required' });
+        }
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        // Add the creator to participants if not already included
+        const allParticipants = [...new Set([req.user._id, ...participants])];
+
+        // Create new group conversation
+        const groupConversation = new GroupConversation({
+            name: name.trim(),
+            participants: allParticipants,
+            createdBy: req.user._id,
+            admins: [req.user._id] // Creator is automatically an admin
+        });
+
+        await groupConversation.save();
+
+        // Populate participants data
+        await groupConversation.populate('participants', 'username fullName profileImg');
+
+        console.log('[messages.js] ✓ Created new group conversation:', groupConversation._id);
+        res.status(201).json(groupConversation);
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error in create-group:', error);
+        res.status(500).json({ error: 'Failed to create group conversation', details: error.message });
+    }
+});
+
+// Get all group conversations for a user
+router.get('/group-conversations', protectRoute, async (req, res) => {
+    try {
+        console.log(`[messages.js] Getting group conversations for user: ${req.user._id}`);
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        const groupConversations = await GroupConversation.find({
+            participants: req.user._id,
+            isActive: true
+        })
+        .populate('participants', 'username fullName profileImg')
+        .populate('createdBy', 'username fullName profileImg')
+        .sort({ lastActivity: -1 });
+
+        console.log(`[messages.js] Found ${groupConversations.length} group conversations`);
+        res.json(groupConversations);
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error fetching group conversations:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+// Get messages for a specific group conversation
+router.get('/group/:conversationId', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        console.log(`[messages.js] Getting group messages for conversation: ${conversationId}`);
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: req.user._id,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        const messages = await Message.find({ conversationId: conversationId })
+            .populate('senderId', 'username fullName profileImg')
+            .sort({ createdAt: 1 });
+
+        console.log(`[messages.js] Found ${messages.length} group messages`);
+        res.json(messages);
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error fetching group messages:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+// Send a message to a group conversation
+router.post('/group/:conversationId/messages', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const { content, attachments } = req.body;
+
+        console.log(`[messages.js] Sending group message to conversation: ${conversationId}`);
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: req.user._id,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        if (!content && (!attachments || attachments.length === 0)) {
+            return res.status(400).json({ error: 'Message content or attachments are required' });
+        }
+
+        // Create the message
+        const message = new Message({
+            conversationId: conversationId,
+            senderId: req.user._id,
+            content: content || '',
+            attachments: attachments || []
+        });
+
+        await message.save();
+
+        // Update group conversation's last message and activity
+        groupConversation.lastMessage = {
+            content: content || '',
+            senderId: req.user._id,
+            timestamp: message.createdAt
+        };
+        groupConversation.lastActivity = new Date();
+        await groupConversation.save();
+
+        // Populate sender data
+        await message.populate('senderId', 'username fullName profileImg');
+
+        console.log(`[messages.js] ✓ Group message sent successfully: ${message._id}`);
+        res.status(201).json(message);
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error sending group message:', error);
+        res.status(500).json({ error: 'Failed to send message', details: error.message });
+    }
+});
+
+// Add member to group conversation
+router.post('/group/:conversationId/add-member', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const { userId } = req.body;
+
+        console.log(`[messages.js] Adding member ${userId} to group conversation: ${conversationId}`);
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        // Check if user is admin of this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            admins: req.user._id,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or insufficient permissions' });
+        }
+
+        // Check if user is already a participant
+        if (groupConversation.participants.includes(userId)) {
+            return res.status(400).json({ error: 'User is already a member of this group' });
+        }
+
+        // Add user to participants
+        groupConversation.participants.push(userId);
+        await groupConversation.save();
+
+        // Populate participants data
+        await groupConversation.populate('participants', 'username fullName profileImg');
+
+        console.log(`[messages.js] ✓ Member added successfully to group: ${conversationId}`);
+        res.json(groupConversation);
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error adding member to group:', error);
+        res.status(500).json({ error: 'Failed to add member', details: error.message });
+    }
+});
+
+// Get unread count for group conversation
+router.get('/group/:conversationId/unread-count', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user._id;
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: userId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        const unreadCount = await Message.countDocuments({
+            conversationId: conversationId,
+            senderId: { $ne: userId },
+            readBy: { $ne: userId }
+        });
+
+        res.json({ unreadCount });
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error fetching group unread count:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+// Mark group messages as read
+router.put('/group/:conversationId/mark-read', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user._id;
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: userId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        // Mark all unread messages as read
+        await Message.updateMany(
+            {
+                conversationId: conversationId,
+                senderId: { $ne: userId },
+                readBy: { $ne: userId }
+            },
+            {
+                $addToSet: { readBy: userId }
+            }
+        );
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error marking group messages as read:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+// File upload for group conversations
+router.post('/group/:conversationId/upload', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+
+        console.log(`[messages.js] Group file upload for conversation: ${conversationId}`);
+
+        // Import GroupConversation model
+        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: req.user._id,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No files uploaded' });
+        }
+
+        const attachments = [];
+
+        for (const file of req.files) {
+            // Determine file type
+            let fileType = 'file';
+            if (file.mimetype.startsWith('image/')) {
+                fileType = 'image';
+            } else if (file.mimetype.startsWith('video/')) {
+                fileType = 'video';
+            } else if (file.mimetype.startsWith('audio/')) {
+                fileType = 'audio';
+            }
+
+            // In a real application, you would upload to cloud storage
+            // For now, we'll create a mock URL
+            const fileUrl = `/uploads/group-${conversationId}/${Date.now()}-${file.originalname}`;
+
+            attachments.push({
+                url: fileUrl,
+                filename: file.originalname,
+                fileType: fileType,
+                fileSize: file.size,
+                mimeType: file.mimetype
+            });
+        }
+
+        console.log(`[messages.js] ✓ Group files uploaded successfully: ${attachments.length} files`);
+        res.json({ attachments });
+
+    } catch (error) {
+        console.error('[messages.js] ❌ Error uploading group files:', error);
+        res.status(500).json({ error: 'Failed to upload files', details: error.message });
+    }
+});
+
 console.log('[messages.js] ========================================');
 console.log('[messages.js] ALL ROUTES REGISTERED SUCCESSFULLY');
 console.log('[messages.js] Available routes:');
@@ -609,6 +946,14 @@ console.log('[messages.js] - GET  /conversations');
 console.log('[messages.js] - GET  /conversations/:id/messages');
 console.log('[messages.js] - POST /conversations/:id/messages');
 console.log('[messages.js] - POST /conversations/:id/upload');
+console.log('[messages.js] - POST /create-group');
+console.log('[messages.js] - GET  /group-conversations');
+console.log('[messages.js] - GET  /group/:conversationId');
+console.log('[messages.js] - POST /group/:conversationId/messages');
+console.log('[messages.js] - POST /group/:conversationId/add-member');
+console.log('[messages.js] - GET  /group/:conversationId/unread-count');
+console.log('[messages.js] - PUT  /group/:conversationId/mark-read');
+console.log('[messages.js] - POST /group/:conversationId/upload');
 console.log('[messages.js] ========================================');
 
 export default router;

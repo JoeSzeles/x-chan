@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import ConversationsList from '../components/messages/ConversationsList';
+import GroupConversationsList from '../components/messages/GroupConversationsList';
 import MessageContacts from '../components/messages/MessageContacts';
 import ChatWindow from '../components/messages/ChatWindow';
+import GroupChatWindow from '../components/messages/GroupChatWindow';
 import PageHeader from '../components/common/PageHeader';
 import Breadcrumb from '../components/common/Breadcrumb';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -11,6 +13,7 @@ import socketService from '../services/socket';
 const Messages = () => {
   const [activeTab, setActiveTab] = useState('conversations');
   const [selectedConversation, setSelectedConversation] = useState(null);
+  const [selectedGroupConversation, setSelectedGroupConversation] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [notificationSoundsEnabled, setNotificationSoundsEnabled] = useState(
     localStorage.getItem('notificationSoundsEnabled') !== 'false' // Default to true
@@ -82,7 +85,14 @@ const Messages = () => {
 
   const handleStartConversation = async (conversation) => {
     setSelectedConversation(conversation);
+    setSelectedGroupConversation(null); // Clear group selection
     setActiveTab('conversations');
+  };
+
+  const handleSelectGroupConversation = (conversation) => {
+    setSelectedGroupConversation(conversation);
+    setSelectedConversation(null); // Clear regular conversation selection
+    setActiveTab('groups');
   };
 
   return (
@@ -95,8 +105,11 @@ const Messages = () => {
         {/* Tab navigation */}
         <div className="flex border-b" style={{ borderColor: 'var(--color-border-default)' }}>
           <button
-            onClick={() => setActiveTab('conversations')}
-            className={`flex-1 py-3 px-4 text-center transition-colors duration-300 ${
+            onClick={() => {
+              setActiveTab('conversations');
+              setSelectedGroupConversation(null);
+            }}
+            className={`flex-1 py-3 px-2 text-center transition-colors duration-300 ${
               activeTab === 'conversations'
                 ? ''
                 : 'hover:opacity-80'
@@ -106,11 +119,32 @@ const Messages = () => {
               color: activeTab === 'conversations' ? 'var(--color-text-light)' : 'var(--color-text-secondary)'
             }}
           >
-            Conversations
+            <span className="text-sm">Conversations</span>
           </button>
           <button
-            onClick={() => setActiveTab('contacts')}
-            className={`flex-1 py-3 px-4 text-center transition-colors duration-300 ${
+            onClick={() => {
+              setActiveTab('groups');
+              setSelectedConversation(null);
+            }}
+            className={`flex-1 py-3 px-2 text-center transition-colors duration-300 ${
+              activeTab === 'groups'
+                ? ''
+                : 'hover:opacity-80'
+            }`}
+            style={{
+              backgroundColor: activeTab === 'groups' ? 'var(--color-primary)' : 'var(--color-bg-card)',
+              color: activeTab === 'groups' ? 'var(--color-text-light)' : 'var(--color-text-secondary)'
+            }}
+          >
+            <span className="text-sm">Group Chat</span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('contacts');
+              setSelectedConversation(null);
+              setSelectedGroupConversation(null);
+            }}
+            className={`flex-1 py-3 px-2 text-center transition-colors duration-300 ${
               activeTab === 'contacts'
                 ? ''
                 : 'hover:opacity-80'
@@ -120,7 +154,7 @@ const Messages = () => {
               color: activeTab === 'contacts' ? 'var(--color-text-light)' : 'var(--color-text-secondary)'
             }}
           >
-            Contacts
+            <span className="text-sm">Contacts</span>
           </button>
         </div>
 
@@ -157,6 +191,13 @@ const Messages = () => {
                   refreshTrigger={refreshTrigger}
                   onUnreadCountChange={() => {}}
                 />
+              ) : activeTab === 'groups' ? (
+                <GroupConversationsList
+                  authUser={authUser}
+                  onSelectConversation={handleSelectGroupConversation}
+                  selectedConversation={selectedGroupConversation}
+                  refreshTrigger={refreshTrigger}
+                />
               ) : (
                 <MessageContacts 
                   authUser={authUser}
@@ -173,11 +214,20 @@ const Messages = () => {
               conversation={selectedConversation} 
               authUser={authUser}
             />
+        ) : selectedGroupConversation ? (
+          <GroupChatWindow 
+              conversation={selectedGroupConversation} 
+              authUser={authUser}
+            />
         ) : (
           <div className="flex items-center justify-center h-full" style={{ color: 'var(--color-text-secondary)' }}>
             <div className="text-center">
               <h3 className="text-xl mb-2" style={{ color: 'var(--color-text-primary)' }}>Select a conversation</h3>
-              <p>Choose a conversation to start messaging</p>
+              <p>
+                {activeTab === 'conversations' && 'Choose a conversation to start messaging'}
+                {activeTab === 'groups' && 'Select a group chat or create a new one'}
+                {activeTab === 'contacts' && 'Select a contact to start a conversation'}
+              </p>
             </div>
           </div>
         )}
