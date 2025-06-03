@@ -1,8 +1,7 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
-
 @import './styles/animations.css';
+@tailwind utilities;
 
 /* Thread connector styles */
 .thread-connector {
