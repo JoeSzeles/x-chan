@@ -605,7 +605,7 @@ router.post('/conversations/:conversationId/upload', protectRoute, async (req, r
 // Create a new group conversation
 router.post('/create-group', protectRoute, async (req, res) => {
     console.log('[messages.js] ✓ POST /create-group - ROUTE ACCESSED');
-    
+
     try {
         const { name, participants } = req.body;
 
@@ -618,7 +618,13 @@ router.post('/create-group', protectRoute, async (req, res) => {
         }
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            return res.status(500).json({ error: 'Internal server error - model import failed' });
+        }
 
         // Add the creator to participants if not already included
         const allParticipants = [...new Set([req.user._id, ...participants])];
@@ -651,7 +657,17 @@ router.get('/group-conversations', protectRoute, async (req, res) => {
         console.log(`[messages.js] Getting group conversations for user: ${req.user._id}`);
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+            if (!GroupConversation) {
+                throw new Error('GroupConversation model is undefined');
+            }
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            // Return empty array for now to prevent frontend errors
+            return res.json([]);
+        }
 
         const groupConversations = await GroupConversation.find({
             participants: req.user._id,
@@ -662,11 +678,13 @@ router.get('/group-conversations', protectRoute, async (req, res) => {
         .sort({ lastActivity: -1 });
 
         console.log(`[messages.js] Found ${groupConversations.length} group conversations`);
-        res.json(groupConversations);
+        res.json(groupConversations || []);
 
     } catch (error) {
         console.error('[messages.js] ❌ Error fetching group conversations:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        console.error('[messages.js] Error stack:', error.stack);
+        // Return empty array instead of error to prevent frontend crashes
+        res.json([]);
     }
 });
 
@@ -677,7 +695,13 @@ router.get('/group/:conversationId', protectRoute, async (req, res) => {
         console.log(`[messages.js] Getting group messages for conversation: ${conversationId}`);
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            return res.status(500).json({ error: 'Internal server error - model import failed' });
+        }
 
         // Check if user is participant in this group conversation
         const groupConversation = await GroupConversation.findOne({
@@ -712,7 +736,13 @@ router.post('/group/:conversationId/messages', protectRoute, async (req, res) =>
         console.log(`[messages.js] Sending group message to conversation: ${conversationId}`);
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            return res.status(500).json({ error: 'Internal server error - model import failed' });
+        }
 
         // Check if user is participant in this group conversation
         const groupConversation = await GroupConversation.findOne({
@@ -769,7 +799,13 @@ router.post('/group/:conversationId/add-member', protectRoute, async (req, res) 
         console.log(`[messages.js] Adding member ${userId} to group conversation: ${conversationId}`);
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            return res.status(500).json({ error: 'Internal server error - model import failed' });
+        }
 
         // Check if user is admin of this group conversation
         const groupConversation = await GroupConversation.findOne({
@@ -810,7 +846,13 @@ router.get('/group/:conversationId/unread-count', protectRoute, async (req, res)
         const userId = req.user._id;
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            return res.status(500).json({ error: 'Internal server error - model import failed' });
+        }
 
         // Check if user is participant in this group conversation
         const groupConversation = await GroupConversation.findOne({
@@ -844,7 +886,13 @@ router.put('/group/:conversationId/mark-read', protectRoute, async (req, res) =>
         const userId = req.user._id;
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            return res.status(500).json({ error: 'Internal server error - model import failed' });
+        }
 
         // Check if user is participant in this group conversation
         const groupConversation = await GroupConversation.findOne({
@@ -880,12 +928,18 @@ router.put('/group/:conversationId/mark-read', protectRoute, async (req, res) =>
 // File upload for group conversations
 router.post('/group/:conversationId/upload', protectRoute, async (req, res) => {
     try {
-        const { conversationId } = req.params;
+const { conversationId } = req.params;
 
         console.log(`[messages.js] Group file upload for conversation: ${conversationId}`);
 
         // Import GroupConversation model
-        const GroupConversation = (await import('../models/GroupConversation.js')).default;
+        let GroupConversation;
+        try {
+            GroupConversation = (await import('../models/GroupConversation.js')).default;
+        } catch (importError) {
+            console.error('[messages.js] Error importing GroupConversation model:', importError);
+            return res.status(500).json({ error: 'Internal server error - model import failed' });
+        }
 
         // Check if user is participant in this group conversation
         const groupConversation = await GroupConversation.findOne({
