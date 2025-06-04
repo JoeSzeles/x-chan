@@ -63,7 +63,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
       setLoading(true);
       console.log('GroupConversationsList: Fetching group conversations...');
 
-      const response = await fetch('/api/messages/group-conversations', {
+      const response = await fetch('/api/group-messages', {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -102,7 +102,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
       const counts = {};
 
       for (const conversationId of conversationIds) {
-        const response = await fetch(`/api/messages/group/${conversationId}/unread-count`, {
+        const response = await fetch(`/api/group-messages/${conversationId}/unread-count`, {
           credentials: 'include',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -125,7 +125,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
   const createGroupConversation = async (groupData) => {
     try {
-      const response = await fetch('/api/messages/create-group', {
+      const response = await fetch('/api/group-messages/create', {
         method: 'POST',
         credentials: 'include',
         headers: {

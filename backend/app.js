@@ -30,6 +30,7 @@ const app = express();
 
 // Import messageRoutes after app is created
 import messageRoutes from "./routes/messages.js";
+import groupMessageRoutes from "./routes/groupMessages.js";
 
 // Middleware
 app.use(express.json({ limit: "50mb" }));
@@ -72,6 +73,7 @@ console.log('messageRoutes type:', typeof messageRoutes);
 console.log('messageRoutes is function:', typeof messageRoutes === 'function');
 
 app.use("/api/messages", messageRoutes);
+app.use("/api/group-messages", groupMessageRoutes);
 console.log('✓ Messages routes registered at /api/messages');
 
 // Test endpoint to verify server is running
