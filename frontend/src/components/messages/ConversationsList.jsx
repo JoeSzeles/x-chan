@@ -277,15 +277,19 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			});
 
 			if (response.ok) {
-				setConversations(prev => prev.filter(conv => conv._id !== conversationId));
-				console.log('Conversation deleted successfully');
+				// Remove the conversation from the list
+				setConversations(prevConversations =>
+					prevConversations.filter(conv => conv._id !== conversationId)
+				);
+				// Optionally, clear the selected conversation if it was deleted
+				if (selectedConversation?._id === conversationId) {
+					onSelectConversation(null);
+				}
 			} else {
-				const errorData = await response.json();
-				alert(`Failed to delete conversation: ${errorData.error}`);
+				console.error('Failed to delete conversation');
 			}
 		} catch (error) {
 			console.error('Error deleting conversation:', error);
-			alert('Failed to delete conversation');
 		}
 	};
 
@@ -378,6 +382,16 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 													{hasNewMessage && <div className="sound-wave"></div>}
 												</div>
 											)}
+											<button
+												onClick={(e) => {
+													e.stopPropagation();
+													deleteConversation(conversation._id);
+												}}
+												className="text-red-500 hover:text-red-700 text-xs p-1 rounded hover:bg-red-50 transition-colors"
+												title="Delete conversation"
+											>
+												🗑️
+											</button>
 										</div>
 									</div>
 									<p className={`text-sm truncate ${hasUnread ? 'font-medium text-gray-700' : 'text-gray-500'}`}>
