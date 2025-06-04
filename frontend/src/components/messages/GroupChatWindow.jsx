@@ -722,12 +722,15 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                         borderColor: 'var(--color-border-default)',
                         backgroundColor: isCurrentUser ? 'rgba(29, 78, 216, 0.1)' : 'transparent'
                       }}
-                      title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''}`}
+                      title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''} - ${isOnline ? 'Online' : 'Offline'}`}
                     >
                       <div className="relative">
                         <Avatar user={participant} size="xs" showOnlineStatus={false} />
+                        {/* Online status indicator */}
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                        {/* Admin badge */}
                         {isAdmin && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white flex items-center justify-center">
+                          <div className="absolute -top-1 -left-1 w-3 h-3 bg-yellow-500 rounded-full border border-white flex items-center justify-center">
                             <span className="text-xs text-white font-bold">★</span>
                           </div>
                         )}
