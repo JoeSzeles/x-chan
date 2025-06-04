@@ -417,7 +417,12 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
                 console.log('GroupConversationsList: Selecting group conversation:', conversation._id);
                 onSelectConversation(conversation);
 
-                // Only clear animation, unread count will be cleared when messages are actually loaded
+                setUnreadCounts(prev => {
+                  const updated = { ...prev, [conversation._id]: 0 };
+                  console.log('GroupConversationsList: Updated unread counts:', updated);
+                  return updated;
+                });
+
                 setNewMessageAnimations(prev => {
                   const updated = { ...prev };
                   delete updated[conversation._id];

@@ -100,20 +100,13 @@ const ChatWindow = ({ conversation, authUser }) => {
 
   const markAsRead = async () => {
     try {
-      const response = await fetch(`/api/messages/conversations/${conversation._id}/mark-read`, {
+      await fetch(`/api/messages/conversations/${conversation._id}/mark-read`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-
-      if (response.ok) {
-        // Clear unread count in conversations list
-        if (window.clearUnreadCount) {
-          window.clearUnreadCount(conversation._id);
-        }
-      }
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
@@ -670,7 +663,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                               {(() => {
                                 const content = message.content;
                                 const parts = content.split(/(https?:\/\/[^\s]+)/g);
-
+                                
                                 return parts.map((part, index) => {
                                   // Check if this part is a URL
                                   if (part.match(/^https?:\/\/[^\s]+$/)) {
@@ -678,7 +671,7 @@ const ChatWindow = ({ conversation, authUser }) => {
                                     const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
                                     // Check if it's a Twitter/X URL
                                     const isTwitter = part.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/);
-
+                                    
                                     if (isYouTube) {
                                       return <YouTubeEmbed key={index} url={part} />;
                                     } else if (isTwitter) {

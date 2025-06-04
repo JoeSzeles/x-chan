@@ -237,11 +237,6 @@ const GroupChatWindow = ({ conversation, authUser }) => {
 
       markAsRead();
 
-      // Clear unread count in group conversations list
-      if (window.clearGroupUnreadCount) {
-        window.clearGroupUnreadCount(conversation._id);
-      }
-
       const handleNewMessage = (message) => {
         console.log('📨 Received new group message:', message);
 

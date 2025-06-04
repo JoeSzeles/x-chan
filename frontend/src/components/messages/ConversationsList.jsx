@@ -266,24 +266,6 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		};
 	}, [authUser, selectedConversation]);
 
-	// Function to clear unread count for a specific conversation (called from ChatWindow)
-	const clearUnreadCount = (conversationId) => {
-		setUnreadCounts(prev => {
-			const updated = { ...prev, [conversationId]: 0 };
-			console.log('ConversationsList: Cleared unread count for conversation:', conversationId);
-			return updated;
-		});
-	};
-
-	// Expose clearUnreadCount method to parent component
-	React.useEffect(() => {
-		if (window.clearUnreadCount) {
-			window.clearUnreadCount = clearUnreadCount;
-		} else {
-			window.clearUnreadCount = clearUnreadCount;
-		}
-	}, []);
-
 	const deleteConversation = async (conversationId) => {
 		try {
 			const response = await fetch(`/api/messages/conversations/${conversationId}`, {
@@ -357,9 +339,13 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 								console.log('ConversationsList: Selecting conversation:', conversation._id);
 								onSelectConversation(conversation);
 
-								// Only clear unread count when conversation is actually selected and opened
-								// This will be handled by the ChatWindow component when messages are loaded
-								
+								// Clear unread count for this conversation
+								setUnreadCounts(prev => {
+									const updated = { ...prev, [conversation._id]: 0 };
+									console.log('ConversationsList: Updated unread counts:', updated);
+									return updated;
+								});
+
 								// Clear animation for this conversation
 								setNewMessageAnimations(prev => {
 									const updated = { ...prev };
@@ -376,10 +362,6 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 										showOnlineStatus={true}
 										clickable={false}
 									/>
-									{/* Additional online indicator for emphasis */}
-									{isUserOnline(otherParticipant?._id) && (
-										<div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full animate-pulse"></div>
-									)}
 								</div>
 								<div className="flex-1 min-w-0">
 									<div className="flex justify-between items-start">
