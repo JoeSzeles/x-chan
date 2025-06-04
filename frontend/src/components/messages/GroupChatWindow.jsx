@@ -6,6 +6,34 @@ import Avatar from '../common/Avatar';
 import YouTubeEmbed from '../common/YouTubeEmbed';
 import { TwitterEmbed } from '../common/QuoteText';
 
+// Error Boundary component
+class MessageErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Message rendering error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-sm text-red-400 p-2 border border-red-300 rounded">
+          Failed to render message content
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const GroupChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -669,48 +697,63 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                         >
                           {/* Text content with YouTube and Twitter embed support */}
                           {message.content && (
-                            <div className="text-sm whitespace-pre-wrap mb-2">
+                            <MessageErrorBoundary>
+                              <div className="text-sm whitespace-pre-wrap mb-2">
                               {(() => {
-                                const content = message.content;
-                                const parts = content.split(/(https?:\/\/[^\s]+)/g);
+                                try {
+                                  const content = message.content;
+                                  const parts = content.split(/(https?:\/\/[^\s]+)/g);
 
-                                return parts.map((part, index) => {
-                                  if (part.match(/^https?:\/\/[^\s]+$/)) {
-                                    const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
-                                    const isTwitter = part.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/);
+                                  return parts.map((part, index) => {
+                                    if (part.match(/^https?:\/\/[^\s]+$/)) {
+                                      const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
+                                      const isTwitter = part.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/);
 
-                                    if (isYouTube) {
-                                      return <YouTubeEmbed key={index} url={part} />;
-                                    } else if (isTwitter) {
-                                      return <TwitterEmbed key={index} url={part} />;
+                                      if (isYouTube) {
+                                        return (
+                                          <div key={`youtube-${index}-${message._id}`}>
+                                            <YouTubeEmbed url={part} />
+                                          </div>
+                                        );
+                                      } else if (isTwitter) {
+                                        return (
+                                          <div key={`twitter-${index}-${message._id}`}>
+                                            <TwitterEmbed url={part} />
+                                          </div>
+                                        );
+                                      } else {
+                                        return (
+                                          <a 
+                                            key={`link-${index}-${message._id}`}
+                                            href={part} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="text-red-400 hover:text-red-300 hover:underline break-words"
+                                          >
+                                            {part}
+                                          </a>
+                                        );
+                                      }
                                     } else {
                                       return (
-                                        <a 
-                                          key={index}
-                                          href={part} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer" 
-                                          className="text-red-400 hover:text-red-300 hover:underline break-words"
-                                        >
-                                          {part}
-                                        </a>
+                                        <span 
+                                          key={`text-${index}-${message._id}`}
+                                          dangerouslySetInnerHTML={{
+                                            __html: part
+                                              .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
+                                              .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
+                                          }}
+                                        />
                                       );
                                     }
-                                  } else {
-                                    return (
-                                      <span 
-                                        key={index}
-                                        dangerouslySetInnerHTML={{
-                                          __html: part
-                                            .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
-                                            .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
-                                        }}
-                                      />
-                                    );
-                                  }
-                                });
+                                  });
+                                } catch (error) {
+                                  console.error('Error rendering message content:', error);
+                                  return <span>{message.content}</span>;
+                                }
                               })()}
-                            </div>
+                              </div>
+                            </MessageErrorBoundary>
                           )}
 
                           {/* File attachments */}
