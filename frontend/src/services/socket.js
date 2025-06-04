@@ -34,29 +34,19 @@ class SocketService {
       this.socket = null;
     }
     
-    // Use different URL for Replit environment
-    let socketUrl = window.location.origin;
-    if (window.location.hostname.includes('replit.dev')) {
-      socketUrl = window.location.origin;
-    }
-    
-    console.log('🔌 Socket connecting to:', socketUrl);
-    
-    this.socket = io(socketUrl, {
+    this.socket = io(window.location.origin, {
       auth: {
         token: token
       },
-      transports: ['polling', 'websocket'], // Try polling first for better Replit compatibility
+      transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000, // Reduced timeout for faster fallback
-      forceNew: true,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
+      timeout: 20000,
+      forceNew: false,
       upgrade: true,
-      rememberUpgrade: false, // Don't remember upgrade to avoid transport issues
-      autoConnect: true,
-      closeOnBeforeunload: false
+      rememberUpgrade: true
     });
 
     this.socket.on('connect', () => {
@@ -215,24 +205,23 @@ class SocketService {
 
   onNewMessage(callback) {
     if (this.socket) {
-      // Add callback to set
-      this.messageCallbacks.add(callback);
+      // Remove existing listener for this callback to prevent duplicates
+      this.socket.off('new_message');
       
-      // Only set up socket listener if this is the first callback
-      if (this.messageCallbacks.size === 1) {
-        this.socket.on('new_message', (message) => {
-          console.log('📨 Received new message via socket:', message);
-          
-          // Call all registered callbacks
-          this.messageCallbacks.forEach(cb => {
-            try {
-              cb(message);
-            } catch (error) {
-              console.error('Error in message callback:', error);
-            }
-          });
+      this.socket.on('new_message', (message) => {
+        console.log('📨 Received new message via socket:', message);
+        
+        // Call all registered callbacks
+        this.messageCallbacks.forEach(cb => {
+          try {
+            cb(message);
+          } catch (error) {
+            console.error('Error in message callback:', error);
+          }
         });
-      }
+      });
+      
+      this.messageCallbacks.add(callback);
     }
   }
 
