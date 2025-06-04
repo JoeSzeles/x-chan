@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaCircle } from 'react-icons/fa';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
+import { useQuery } from '@tanstack/react-query';
 
 const Avatar = ({ 
   user, 
@@ -12,11 +12,23 @@ const Avatar = ({
   clickable = true,
   showBorder = true
 }) => {
-  const { isUserOnline } = useOnlineStatus();
+  const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+  
+  const { data: onlineUsers } = useQuery({
+    queryKey: ["onlineUsers"],
+    queryFn: async () => {
+      const res = await fetch('/api/users/online');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch online users");
+      return data;
+    },
+    enabled: !!authUser && showOnlineStatus,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
   
   if (!user) return null;
   
-  const isOnline = showOnlineStatus && isUserOnline(user._id);
+  const isOnline = showOnlineStatus && onlineUsers?.some(onlineUser => onlineUser._id === user._id);
   
   const sizeClasses = {
     xs: 'w-6 h-6',
