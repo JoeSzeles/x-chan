@@ -1,0 +1,496 @@
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 287ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 283ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 278ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 286ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 282ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 275ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 281ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 277ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 275ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 277ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 280ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 286ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 274ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 276ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 291ms]
+
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    setTimeout handler*h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+    h https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-CQPuxpdw.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+XHRGET
+https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/api/twitter/embed?url=https://x.com/lepe_eth/status/1923980861470540025
+[HTTP/1.1 500 Internal Server Error 287ms]
+
