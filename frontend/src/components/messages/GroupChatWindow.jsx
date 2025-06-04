@@ -23,6 +23,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionCursorPosition, setMentionCursorPosition] = useState(0);
   const [filteredMembers, setFilteredMembers] = useState([]);
+  const [showMembersList, setShowMembersList] = useState(true);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
@@ -618,13 +619,17 @@ const GroupChatWindow = ({ conversation, authUser }) => {
           <div className="flex items-center space-x-3">
             <div className="flex -space-x-2">
               {conversation.participants.slice(0, 3).map((participant, index) => (
-                <Avatar
-                  key={participant._id}
-                  user={participant}
-                  size="sm"
-                  showOnlineStatus={true}
-                  className={`border-2 border-white ${index > 0 ? 'ml-0' : ''}`}
-                />
+                <div key={participant._id} className="relative">
+                  <Avatar
+                    user={participant}
+                    size="sm"
+                    showOnlineStatus={false}
+                    className={`border-2 border-white ${index > 0 ? 'ml-0' : ''}`}
+                  />
+                  {isUserOnline(participant._id) && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                  )}
+                </div>
               ))}
               {conversation.participants.length > 3 && (
                 <div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-xs text-white">
@@ -668,15 +673,26 @@ const GroupChatWindow = ({ conversation, authUser }) => {
           )}
         </div>
 
-        {/* Members List - Always visible */}
+        {/* Members List - Expandable/Retractable */}
         <div className="mt-4 p-3 border rounded-lg" style={{
           backgroundColor: 'var(--color-bg-main)',
           borderColor: 'var(--color-border-default)'
         }}>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-              Group Members ({conversation.participants.length})
-            </h4>
+            <button
+              onClick={() => setShowMembersList(!showMembersList)}
+              className="flex items-center space-x-2 text-sm font-medium hover:bg-gray-100 px-2 py-1 rounded transition-colors"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              <span>Group Members ({conversation.participants.length})</span>
+              <svg 
+                className={`w-4 h-4 transition-transform ${showMembersList ? 'rotate-180' : ''}`} 
+                fill="currentColor" 
+                viewBox="0 0 20 20"
+              >
+                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
             <button
               onClick={() => setShowAddMember(!showAddMember)}
               className="text-xs px-2 py-1 rounded transition-colors"
@@ -689,73 +705,77 @@ const GroupChatWindow = ({ conversation, authUser }) => {
             </button>
           </div>
           
-          {/* Members Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-            {conversation.participants.map(participant => {
-              const isOnline = isUserOnline(participant._id);
-              const isAdmin = conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id;
-              const isCurrentUser = participant._id === currentUserId;
-              
-              return (
-                <div
-                  key={participant._id}
-                  className="flex items-center space-x-2 p-2 rounded-lg border transition-colors hover:bg-gray-50"
-                  style={{
-                    borderColor: 'var(--color-border-default)',
-                    backgroundColor: isCurrentUser ? 'rgba(29, 78, 216, 0.1)' : 'transparent'
-                  }}
-                  title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''}`}
-                >
-                  <div className="relative">
-                    <Avatar user={participant} size="xs" showOnlineStatus={true} />
-                    {isAdmin && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white flex items-center justify-center">
-                        <span className="text-xs text-white font-bold">★</span>
+          {/* Collapsible Members Grid */}
+          {showMembersList && (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                {conversation.participants.map(participant => {
+                  const isOnline = isUserOnline(participant._id);
+                  const isAdmin = conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id;
+                  const isCurrentUser = participant._id === currentUserId;
+                  
+                  return (
+                    <div
+                      key={participant._id}
+                      className="flex items-center space-x-2 p-2 rounded-lg border transition-colors hover:bg-gray-50"
+                      style={{
+                        borderColor: 'var(--color-border-default)',
+                        backgroundColor: isCurrentUser ? 'rgba(29, 78, 216, 0.1)' : 'transparent'
+                      }}
+                      title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''}`}
+                    >
+                      <div className="relative">
+                        <Avatar user={participant} size="xs" showOnlineStatus={false} />
+                        {isAdmin && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white flex items-center justify-center">
+                            <span className="text-xs text-white font-bold">★</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
-                      {participant.username}
-                      {isCurrentUser && ' (You)'}
-                    </p>
-                    <div className="flex items-center space-x-1">
-                      <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                      <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
-                        {isOnline ? 'Online' : 'Offline'}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                          {participant.username}
+                          {isCurrentUser && ' (You)'}
+                        </p>
+                        <div className="flex items-center space-x-1">
+                          <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                          <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                            {isOnline ? 'Online' : 'Offline'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
 
-          {/* Quick mention buttons */}
-          <div className="border-t pt-2" style={{ borderColor: 'var(--color-border-default)' }}>
-            <p className="text-xs mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-              Quick mention:
-            </p>
-            <div className="flex flex-wrap gap-1">
-              {conversation.participants.filter(p => p._id !== currentUserId).map(participant => (
-                <button
-                  key={participant._id}
-                  onClick={() => {
-                    const mention = `@${participant.username} `;
-                    setNewMessage(prev => prev + mention);
-                    inputRef.current?.focus();
-                  }}
-                  className="text-xs px-2 py-1 rounded-full border transition-colors hover:bg-blue-50"
-                  style={{
-                    borderColor: 'var(--color-border-default)',
-                    color: 'var(--color-primary)'
-                  }}
-                >
-                  @{participant.username}
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* Quick mention buttons */}
+              <div className="border-t pt-2" style={{ borderColor: 'var(--color-border-default)' }}>
+                <p className="text-xs mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  Quick mention:
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {conversation.participants.filter(p => p._id !== currentUserId).map(participant => (
+                    <button
+                      key={participant._id}
+                      onClick={() => {
+                        const mention = `@${participant.username} `;
+                        setNewMessage(prev => prev + mention);
+                        inputRef.current?.focus();
+                      }}
+                      className="text-xs px-2 py-1 rounded-full border transition-colors hover:bg-blue-50"
+                      style={{
+                        borderColor: 'var(--color-border-default)',
+                        color: 'var(--color-primary)'
+                      }}
+                    >
+                      @{participant.username}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Add Member Panel - Only show for admins when toggled */}
