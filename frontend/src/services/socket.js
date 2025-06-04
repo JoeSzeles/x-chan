@@ -1,4 +1,3 @@
-
 import io from 'socket.io-client';
 
 class SocketService {
@@ -35,31 +34,20 @@ class SocketService {
       this.socket = null;
     }
     
-    try {
-      this.socket = io(window.location.origin, {
-        auth: {
-          token: token
-        },
-        transports: ['polling', 'websocket'],
-        reconnection: true,
-        reconnectionAttempts: this.maxReconnectAttempts,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        timeout: 15000,
-        forceNew: true,
-        upgrade: true,
-        rememberUpgrade: false
-      });
-
-      this.setupSocketListeners();
-    } catch (error) {
-      console.error('❌ Error creating socket:', error);
-      this.scheduleReconnect();
-    }
-  }
-
-  setupSocketListeners() {
-    if (!this.socket) return;
+    this.socket = io(window.location.origin, {
+      auth: {
+        token: token
+      },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: this.maxReconnectAttempts,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
+      timeout: 20000,
+      forceNew: false,
+      upgrade: true,
+      rememberUpgrade: true
+    });
 
     this.socket.on('connect', () => {
       console.log('✅ Socket connected successfully');
@@ -74,22 +62,6 @@ class SocketService {
 
       // Start heartbeat to keep connection alive
       this.startHeartbeat();
-
-      // Re-register message callbacks if any were added before connection
-      if (this.messageCallbacks.size > 0) {
-        this.socket.off('new_message');
-        this.socket.on('new_message', (message) => {
-          console.log('📨 Received new message via socket:', message);
-          
-          this.messageCallbacks.forEach(cb => {
-            try {
-              cb(message);
-            } catch (error) {
-              console.error('Error in message callback:', error);
-            }
-          });
-        });
-      }
     });
 
     this.socket.on('disconnect', (reason) => {
@@ -125,37 +97,19 @@ class SocketService {
     this.socket.on('user_online', (userId) => {
       console.log('👤 User came online:', userId);
       this.onlineUsers.add(userId);
-      this.presenceCallbacks.forEach(callback => {
-        try {
-          callback({ type: 'online', userId });
-        } catch (error) {
-          console.error('Error in presence callback:', error);
-        }
-      });
+      this.presenceCallbacks.forEach(callback => callback({ type: 'online', userId }));
     });
 
     this.socket.on('user_offline', (userId) => {
       console.log('👤 User went offline:', userId);
       this.onlineUsers.delete(userId);
-      this.presenceCallbacks.forEach(callback => {
-        try {
-          callback({ type: 'offline', userId });
-        } catch (error) {
-          console.error('Error in presence callback:', error);
-        }
-      });
+      this.presenceCallbacks.forEach(callback => callback({ type: 'offline', userId }));
     });
 
     this.socket.on('online_users', (users) => {
       console.log('👥 Online users list:', users);
       this.onlineUsers = new Set(users);
-      this.presenceCallbacks.forEach(callback => {
-        try {
-          callback({ type: 'list', users });
-        } catch (error) {
-          console.error('Error in presence callback:', error);
-        }
-      });
+      this.presenceCallbacks.forEach(callback => callback({ type: 'list', users }));
     });
   }
 
@@ -183,11 +137,7 @@ class SocketService {
     this.stopHeartbeat();
     this.heartbeatInterval = setInterval(() => {
       if (this.socket && this.isConnected) {
-        try {
-          this.socket.emit('ping', Date.now());
-        } catch (error) {
-          console.error('Error sending heartbeat:', error);
-        }
+        this.socket.emit('ping', Date.now());
       }
     }, 25000); // Send ping every 25 seconds
   }
@@ -214,104 +164,63 @@ class SocketService {
 
   joinConversation(conversationId) {
     if (this.socket && this.isConnected) {
-      try {
-        this.socket.emit('join_conversation', conversationId);
-      } catch (error) {
-        console.error('Error joining conversation:', error);
-      }
+      this.socket.emit('join_conversation', conversationId);
     }
   }
 
   leaveConversation(conversationId) {
     if (this.socket && this.isConnected) {
-      try {
-        this.socket.emit('leave_conversation', conversationId);
-      } catch (error) {
-        console.error('Error leaving conversation:', error);
-      }
+      this.socket.emit('leave_conversation', conversationId);
     }
   }
 
   sendMessage(message) {
     if (this.socket && this.isConnected) {
-      try {
-        console.log('📤 Sending message via socket:', message);
-        this.socket.emit('new_message', message, (acknowledgment) => {
-          if (acknowledgment) {
-            console.log('📬 Message sent acknowledgment:', acknowledgment);
-          }
-        });
-      } catch (error) {
-        console.error('Error sending message:', error);
-      }
-    } else {
-      console.warn('⚠️ Cannot send message: socket not connected or invalid');
-      // Try to reconnect if not connected
-      if (!this.isConnected) {
-        this.connect();
-      }
+      // Emit to specific conversation room
+      this.socket.emit('send_message', {
+        conversationId: message.conversationId,
+        message: message
+      });
     }
   }
 
   // Listen for typing indicators
   onTyping(callback) {
     if (this.socket) {
-      try {
-        this.socket.on('user_typing', callback);
-      } catch (error) {
-        console.error('Error setting up typing listener:', error);
-      }
+      this.socket.on('user_typing', callback);
     }
   }
 
   offTyping(callback) {
     if (this.socket) {
-      try {
-        this.socket.off('user_typing', callback);
-      } catch (error) {
-        console.error('Error removing typing listener:', error);
-      }
+      this.socket.off('user_typing', callback);
     }
   }
 
   sendTyping(conversationId, isTyping) {
     if (this.socket && this.isConnected) {
-      try {
-        this.socket.emit('typing', { conversationId, isTyping });
-      } catch (error) {
-        console.error('Error sending typing indicator:', error);
-      }
+      this.socket.emit('typing', { conversationId, isTyping });
     }
   }
 
   onNewMessage(callback) {
     if (this.socket) {
-      try {
-        // Only remove and re-add if this is the first callback
-        if (this.messageCallbacks.size === 0) {
-          this.socket.off('new_message');
-          
-          this.socket.on('new_message', (message) => {
-            console.log('📨 Received new message via socket:', message);
-            
-            // Call all registered callbacks
-            this.messageCallbacks.forEach(cb => {
-              try {
-                cb(message);
-              } catch (error) {
-                console.error('Error in message callback:', error);
-              }
-            });
-          });
-        }
+      // Remove existing listener for this callback to prevent duplicates
+      this.socket.off('new_message');
+      
+      this.socket.on('new_message', (message) => {
+        console.log('📨 Received new message via socket:', message);
         
-        this.messageCallbacks.add(callback);
-      } catch (error) {
-        console.error('Error setting up message listener:', error);
-        this.messageCallbacks.add(callback);
-      }
-    } else {
-      console.warn('⚠️ Socket not ready for onNewMessage, storing callback for later');
+        // Call all registered callbacks
+        this.messageCallbacks.forEach(cb => {
+          try {
+            cb(message);
+          } catch (error) {
+            console.error('Error in message callback:', error);
+          }
+        });
+      });
+      
       this.messageCallbacks.add(callback);
     }
   }
@@ -322,11 +231,25 @@ class SocketService {
       
       // If no more callbacks, remove the socket listener
       if (this.messageCallbacks.size === 0) {
-        try {
-          this.socket.off('new_message');
-        } catch (error) {
-          console.error('Error removing message listener:', error);
+        this.socket.off('new_message');
+      }
+    }
+  }
+
+  // Improved message sending with acknowledgment
+  sendMessage(message) {
+    if (this.socket && this.isConnected) {
+      console.log('📤 Sending message via socket:', message);
+      this.socket.emit('new_message', message, (acknowledgment) => {
+        if (acknowledgment) {
+          console.log('📬 Message sent acknowledgment:', acknowledgment);
         }
+      });
+    } else {
+      console.warn('⚠️ Cannot send message: socket not connected');
+      // Try to reconnect if not connected
+      if (!this.isConnected) {
+        this.connect();
       }
     }
   }
@@ -351,11 +274,7 @@ class SocketService {
   // Request current online users list
   requestOnlineUsers() {
     if (this.socket && this.isConnected) {
-      try {
-        this.socket.emit('get_online_users');
-      } catch (error) {
-        console.error('Error requesting online users:', error);
-      }
+      this.socket.emit('get_online_users');
     }
   }
 }
