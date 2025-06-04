@@ -31,7 +31,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
   const notificationSoundRef = useRef(null);
   const mentionDropdownRef = useRef(null);
   const currentUserId = authUser?._id;
-  const { isUserOnline } = useOnlineStatus();
+  const { isUserOnline, onlineUsers } = useOnlineStatus();
 
   // Auto-scroll to bottom function
   const scrollToBottom = () => {
@@ -618,21 +618,24 @@ const GroupChatWindow = ({ conversation, authUser }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="flex -space-x-2">
-              {conversation.participants.slice(0, 3).map((participant, index) => (
-                <div key={participant._id} className="relative">
-                  <Avatar
-                    user={participant}
-                    size="sm"
-                    showOnlineStatus={false}
-                    className={`${index > 0 ? 'ml-0' : ''} border-0`}
-                  />
-                  {isUserOnline(participant._id) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                  )}
-                </div>
-              ))}
+              {conversation.participants.slice(0, 3).map((participant, index) => {
+                const isOnline = isUserOnline(participant._id);
+                return (
+                  <div key={participant._id} className="relative">
+                    <Avatar
+                      user={participant}
+                      size="sm"
+                      showOnlineStatus={false}
+                      className={`${index > 0 ? 'ml-0' : ''} border-2 border-white`}
+                    />
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-white rounded-full ${
+                      isOnline ? 'bg-green-500' : 'bg-gray-400'
+                    }`}></div>
+                  </div>
+                );
+              })}
               {conversation.participants.length > 3 && (
-                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white">
+                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white border-2 border-white">
                   +{conversation.participants.length - 3}
                 </div>
               )}
@@ -710,7 +713,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
                 {conversation.participants.map(participant => {
-                  const isOnline = isUserOnline(participant._id);
+                  const isOnline = isUserOnline(participant._id) || participant._id === currentUserId;
                   const isAdmin = conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id;
                   const isCurrentUser = participant._id === currentUserId;
 
@@ -722,7 +725,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                         borderColor: 'var(--color-border-default)',
                         backgroundColor: isCurrentUser ? 'rgba(29, 78, 216, 0.1)' : 'transparent'
                       }}
-                      title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''}`}
+                      title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''}${isOnline ? ' - Online' : ' - Offline'}`}
                     >
                       <div className="relative">
                         <Avatar user={participant} size="xs" showOnlineStatus={false} />
@@ -731,6 +734,9 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                             <span className="text-xs text-white font-bold">★</span>
                           </div>
                         )}
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border border-white rounded-full ${
+                          isOnline ? 'bg-green-500' : 'bg-gray-400'
+                        }`}></div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
