@@ -8,17 +8,31 @@ class SocketService {
     this.presenceCallbacks = new Set();
     this.onlineUsers = new Set();
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 10;
+    this.maxReconnectAttempts = 5;
+    this.reconnectTimer = null;
+    this.heartbeatInterval = null;
   }
 
   connect() {
     if (this.socket && this.isConnected) {
-      console.log('Socket already connected');
+      console.log('✅ Socket already connected');
       return;
     }
 
+    // Clear any existing reconnect timer
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+
     const token = localStorage.getItem('token');
-    console.log('Connecting socket with token:', !!token);
+    console.log('🔌 Connecting socket with token:', !!token);
+    
+    // Disconnect existing socket if any
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
     
     this.socket = io(window.location.origin, {
       auth: {
@@ -27,43 +41,56 @@ class SocketService {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
       timeout: 20000,
-      forceNew: true
+      forceNew: false,
+      upgrade: true,
+      rememberUpgrade: true
     });
 
     this.socket.on('connect', () => {
       console.log('✅ Socket connected successfully');
       this.isConnected = true;
       this.reconnectAttempts = 0;
+      
+      // Clear reconnect timer on successful connection
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+
+      // Start heartbeat to keep connection alive
+      this.startHeartbeat();
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log('🔌 Socket disconnected:', reason);
       this.isConnected = false;
       
-      // Auto-reconnect for certain disconnect reasons
-      if (reason === 'io server disconnect' || reason === 'io client disconnect') {
-        setTimeout(() => {
-          if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            console.log('🔄 Attempting to reconnect...');
-            this.reconnectAttempts++;
-            this.connect();
-          }
-        }, 2000);
+      // Stop heartbeat
+      this.stopHeartbeat();
+      
+      // Only auto-reconnect for specific reasons
+      if (reason === 'transport close' || reason === 'transport error' || reason === 'ping timeout') {
+        this.scheduleReconnect();
       }
     });
 
     this.socket.on('connect_error', (error) => {
       console.error('❌ Socket connection error:', error);
       this.isConnected = false;
+      this.scheduleReconnect();
     });
 
     this.socket.on('reconnect', (attemptNumber) => {
       console.log('🔄 Socket reconnected after', attemptNumber, 'attempts');
       this.isConnected = true;
       this.reconnectAttempts = 0;
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('❌ Reconnection failed:', error);
     });
 
     // Handle user presence events
@@ -86,7 +113,48 @@ class SocketService {
     });
   }
 
+  scheduleReconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.log('❌ Max reconnection attempts reached');
+      return;
+    }
+
+    if (this.reconnectTimer) {
+      return; // Already scheduled
+    }
+
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+    console.log(`⏰ Scheduling reconnect in ${delay}ms (attempt ${this.reconnectAttempts + 1})`);
+    
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      this.reconnectAttempts++;
+      this.connect();
+    }, delay);
+  }
+
+  startHeartbeat() {
+    this.stopHeartbeat();
+    this.heartbeatInterval = setInterval(() => {
+      if (this.socket && this.isConnected) {
+        this.socket.emit('ping', Date.now());
+      }
+    }, 25000); // Send ping every 25 seconds
+  }
+
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
+
   disconnect() {
+    this.stopHeartbeat();
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
@@ -137,19 +205,34 @@ class SocketService {
 
   onNewMessage(callback) {
     if (this.socket) {
-      // Don't remove existing listeners, just add the new one
+      // Remove existing listener for this callback to prevent duplicates
+      this.socket.off('new_message');
+      
       this.socket.on('new_message', (message) => {
         console.log('📨 Received new message via socket:', message);
-        callback(message);
+        
+        // Call all registered callbacks
+        this.messageCallbacks.forEach(cb => {
+          try {
+            cb(message);
+          } catch (error) {
+            console.error('Error in message callback:', error);
+          }
+        });
       });
+      
       this.messageCallbacks.add(callback);
     }
   }
 
   offNewMessage(callback) {
-    if (this.socket) {
-      this.socket.off('new_message', callback);
+    if (this.socket && this.messageCallbacks.has(callback)) {
       this.messageCallbacks.delete(callback);
+      
+      // If no more callbacks, remove the socket listener
+      if (this.messageCallbacks.size === 0) {
+        this.socket.off('new_message');
+      }
     }
   }
 
@@ -157,14 +240,17 @@ class SocketService {
   sendMessage(message) {
     if (this.socket && this.isConnected) {
       console.log('📤 Sending message via socket:', message);
-      this.socket.emit('send_message', {
-        conversationId: message.conversationId,
-        message: message
-      }, (acknowledgment) => {
-        console.log('📬 Message sent acknowledgment:', acknowledgment);
+      this.socket.emit('new_message', message, (acknowledgment) => {
+        if (acknowledgment) {
+          console.log('📬 Message sent acknowledgment:', acknowledgment);
+        }
       });
     } else {
       console.warn('⚠️ Cannot send message: socket not connected');
+      // Try to reconnect if not connected
+      if (!this.isConnected) {
+        this.connect();
+      }
     }
   }
 

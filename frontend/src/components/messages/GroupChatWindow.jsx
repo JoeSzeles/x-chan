@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import socketService from '../../services/socket';
@@ -76,7 +75,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/messages/group/${conversation._id}`, {
+      const response = await fetch(`/api/group-messages/${conversation._id}/messages`, {
         credentials: 'include',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -122,7 +121,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
 
   const markAsRead = async () => {
     try {
-      await fetch(`/api/messages/group/${conversation._id}/mark-read`, {
+      await fetch(`/api/group-messages/${conversation._id}/mark-read`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -259,7 +258,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
         attachments = await uploadFiles(filesToUpload);
       }
 
-      const response = await fetch(`/api/messages/group/${conversation._id}/messages`, {
+      const response = await fetch(`/api/group-messages/${conversation._id}/messages`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -419,9 +418,9 @@ const GroupChatWindow = ({ conversation, authUser }) => {
         formData.append('files', file);
       });
 
-      console.log('📎 Uploading files to:', `/api/messages/group/${conversation._id}/upload`);
+      console.log('📎 Uploading files to:', `/api/group-messages/${conversation._id}/upload`);
 
-      const response = await fetch(`/api/messages/group/${conversation._id}/upload`, {
+      const response = await fetch(`/api/group-messages/${conversation._id}/upload`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -503,7 +502,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
               </p>
             </div>
           </div>
-          
+
           <button
             onClick={() => setShowAddMember(!showAddMember)}
             className="px-3 py-1 rounded-lg text-sm transition-colors"
@@ -674,12 +673,12 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                               {(() => {
                                 const content = message.content;
                                 const parts = content.split(/(https?:\/\/[^\s]+)/g);
-                                
+
                                 return parts.map((part, index) => {
                                   if (part.match(/^https?:\/\/[^\s]+$/)) {
                                     const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
                                     const isTwitter = part.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/);
-                                    
+
                                     if (isYouTube) {
                                       return <YouTubeEmbed key={index} url={part} />;
                                     } else if (isTwitter) {
