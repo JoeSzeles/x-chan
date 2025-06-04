@@ -289,8 +289,6 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		}
 	};
 
-	useEffect(() => {
-
 	if (loading) {
 		return (
 			<div className="p-4 flex justify-center items-center">
