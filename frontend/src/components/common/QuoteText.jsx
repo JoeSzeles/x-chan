@@ -115,6 +115,9 @@ const TwitterEmbed = ({ url }) => {
     const [retryCount, setRetryCount] = useState(0);
     const embedContainerRef = useRef(null);
 
+    const maxRetries = 3;
+    const retryDelayMs = 1000;
+
     console.log('[TwitterEmbed] Rendering for URL:', url);
 
     const loadTweetData = async (forceReload = false) => {
@@ -153,19 +156,22 @@ const TwitterEmbed = ({ url }) => {
                     }
                 }, 100);
             } else {
-                throw new Error('No tweet content received');
+                throw new Error('No tweet HTML content received');
             }
+        } catch (error) {
+            console.error('[TwitterEmbed] Error loading tweet:', error);
+            setError(error.message || 'Failed to load tweet');
+            setIsLoading(false);
 
-        } catch (err) {
-            console.error('[TwitterEmbed] Error loading tweet:', err);
-            if (retryCount < 2) {
+            // Auto-retry with exponential backoff if under retry limit
+            if (retryCount < maxRetries - 1) {
+                const delay = retryDelayMs * Math.pow(2, retryCount); // Exponential backoff
                 setTimeout(() => {
                     setRetryCount(prev => prev + 1);
                     loadTweetData();
-                }, 1000 * (retryCount + 1));
+                }, delay);
             } else {
-                setError(err.message || 'Failed to load tweet');
-                setIsLoading(false);
+                setRetryCount(maxRetries); // Mark as max retries reached
             }
         }
     };
@@ -220,17 +226,18 @@ const TwitterEmbed = ({ url }) => {
                         <button 
                             onClick={() => {
                                 setRetryCount(0);
+                                setError(null);
                                 loadTweetData(true);
                             }}
-                            className="text-blue-500 hover:text-blue-600"
+                            className="text-blue-500 hover:text-blue-600 text-sm"
                         >
-                            Retry
+                            Retry Loading
                         </button>
                         <a 
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-500 hover:text-blue-600"
+                            className="text-blue-500 hover:text-blue-600 text-sm"
                         >
                             View on Twitter
                         </a>
