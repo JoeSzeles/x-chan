@@ -954,37 +954,4 @@ console.log('[messages.js] - PUT  /group/:conversationId/mark-read');
 console.log('[messages.js] - POST /group/:conversationId/upload');
 console.log('[messages.js] ========================================');
 
-// Delete a conversation
-router.delete('/conversations/:conversationId', protectRoute, async (req, res) => {
-    try {
-        const { conversationId } = req.params;
-        const userId = req.user._id;
-
-        console.log(`[messages.js] Deleting conversation: ${conversationId} for user: ${userId}`);
-
-        // Check if user is participant in this conversation
-        const conversation = await Conversation.findOne({
-            _id: conversationId,
-            participants: userId
-        });
-
-        if (!conversation) {
-            return res.status(404).json({ error: 'Conversation not found or access denied' });
-        }
-
-        // Delete all messages in this conversation
-        await Message.deleteMany({ conversationId: conversationId });
-
-        // Delete the conversation
-        await Conversation.findByIdAndDelete(conversationId);
-
-        console.log(`[messages.js] ✓ Conversation deleted successfully: ${conversationId}`);
-        res.json({ success: true, message: 'Conversation deleted successfully' });
-
-    } catch (error) {
-        console.error('[messages.js] ❌ Error deleting conversation:', error);
-        res.status(500).json({ error: 'Failed to delete conversation', details: error.message });
-    }
-});
-
 export default router;

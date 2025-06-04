@@ -213,7 +213,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			// Only handle notifications for messages NOT from current user
 			if (!isFromCurrentUser) {
 				console.log('ConversationsList: Message is from another user, processing notification');
-
+				
 				// Always update unread count for messages from other users
 				setUnreadCounts(prev => {
 					const newCount = (prev[message.conversationId] || 0) + 1;
@@ -266,28 +266,6 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		};
 	}, [authUser, selectedConversation]);
 
-	const deleteConversation = async (conversationId) => {
-		try {
-			const response = await fetch(`/api/messages/conversations/${conversationId}`, {
-				method: 'DELETE',
-				credentials: 'include',
-				headers: {
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				}
-			});
-
-			if (response.ok) {
-				setConversations(prev => prev.filter(conv => conv._id !== conversationId));
-				console.log('Conversation deleted successfully');
-			} else {
-				const errorData = await response.json();
-				alert(`Failed to delete conversation: ${errorData.error}`);
-			}
-		} catch (error) {
-			console.error('Error deleting conversation:', error);
-			alert('Failed to delete conversation');
-		}
-	};
 
 	if (loading) {
 		return (

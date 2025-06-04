@@ -4,48 +4,7 @@ import socketService from '../../services/socket';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
 import YouTubeEmbed from '../common/YouTubeEmbed';
-import TwitterEmbed from '../TwitterEmbed';
-
-// Error Boundary component
-class MessageErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, errorMessage: '' };
-  }
-
-  static getDerivedStateFromError(error) {
-    console.error('MessageErrorBoundary caught error:', error);
-    return { hasError: true, errorMessage: error?.message || 'Unknown error' };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('Message rendering error:', error, errorInfo);
-    // Reset error boundary after a delay to allow recovery
-    setTimeout(() => {
-      if (this.setState) {
-        this.setState({ hasError: false, errorMessage: '' });
-      }
-    }, 3000);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="text-sm text-gray-500 p-2 border border-gray-300 rounded bg-gray-50">
-          <div>Content failed to load</div>
-          <button 
-            onClick={() => this.setState({ hasError: false, errorMessage: '' })}
-            className="text-xs mt-1 text-blue-500 hover:text-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
+import { TwitterEmbed } from '../common/QuoteText';
 
 const GroupChatWindow = ({ conversation, authUser }) => {
   const [messages, setMessages] = useState([]);
@@ -710,67 +669,48 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                         >
                           {/* Text content with YouTube and Twitter embed support */}
                           {message.content && (
-                            <MessageErrorBoundary>
-                              <div className="text-sm whitespace-pre-wrap mb-2">
+                            <div className="text-sm whitespace-pre-wrap mb-2">
                               {(() => {
-                                try {
-                                  const content = message.content;
-                                  const parts = content.split(/(https?:\/\/[^\s]+)/g);
+                                const content = message.content;
+                                const parts = content.split(/(https?:\/\/[^\s]+)/g);
 
-                                  return parts.map((part, index) => {
-                                    if (part.match(/^https?:\/\/[^\s]+$/)) {
-                                      const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
-                                      const isTwitter = part.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/);
+                                return parts.map((part, index) => {
+                                  if (part.match(/^https?:\/\/[^\s]+$/)) {
+                                    const isYouTube = part.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)/);
+                                    const isTwitter = part.match(/(?:twitter\.com|x\.com)\/\w+\/status\/\d+/);
 
-                                      if (isYouTube) {
-                                        return (
-                                          <MessageErrorBoundary key={`youtube-${index}-${message._id}`}>
-                                            <div className="my-2">
-                                              <YouTubeEmbed url={part} />
-                                            </div>
-                                          </MessageErrorBoundary>
-                                        );
-                                      } else if (isTwitter) {
-                                        return (
-                                          <MessageErrorBoundary key={`twitter-${index}-${message._id}`}>
-                                            <div className="my-2">
-                                              <TwitterEmbed url={part} />
-                                            </div>
-                                          </MessageErrorBoundary>
-                                        );
-                                      } else {
-                                        return (
-                                          <a 
-                                            key={`link-${index}-${message._id}`}
-                                            href={part} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer" 
-                                            className="text-red-400 hover:text-red-300 hover:underline break-words"
-                                          >
-                                            {part}
-                                          </a>
-                                        );
-                                      }
+                                    if (isYouTube) {
+                                      return <YouTubeEmbed key={index} url={part} />;
+                                    } else if (isTwitter) {
+                                      return <TwitterEmbed key={index} url={part} />;
                                     } else {
                                       return (
-                                        <span 
-                                          key={`text-${index}-${message._id}`}
-                                          dangerouslySetInnerHTML={{
-                                            __html: part
-                                              .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
-                                              .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
-                                          }}
-                                        />
+                                        <a 
+                                          key={index}
+                                          href={part} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="text-red-400 hover:text-red-300 hover:underline break-words"
+                                        >
+                                          {part}
+                                        </a>
                                       );
                                     }
-                                  });
-                                } catch (error) {
-                                  console.error('Error rendering message content:', error);
-                                  return <span>{message.content}</span>;
-                                }
+                                  } else {
+                                    return (
+                                      <span 
+                                        key={index}
+                                        dangerouslySetInnerHTML={{
+                                          __html: part
+                                            .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
+                                            .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
+                                        }}
+                                      />
+                                    );
+                                  }
+                                });
                               })()}
-                              </div>
-                            </MessageErrorBoundary>
+                            </div>
                           )}
 
                           {/* File attachments */}

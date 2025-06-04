@@ -1,6 +1,6 @@
-@import './styles/animations.css';
 @tailwind base;
 @tailwind components;
+@import './styles/animations.css';
 @tailwind utilities;
 
 /* Thread connector styles */

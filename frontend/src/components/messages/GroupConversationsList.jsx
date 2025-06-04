@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -125,7 +126,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
   const createGroupConversation = async (groupData) => {
     try {
       console.log('Creating group with data:', groupData);
-
+      
       const response = await fetch('/api/group-messages/create', {
         method: 'POST',
         credentials: 'include',
@@ -155,12 +156,12 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
       const newGroup = JSON.parse(responseText);
       console.log('Created new group:', newGroup);
-
+      
       setGroupConversations(prev => [newGroup, ...prev]);
-
+      
       // Auto-select the new group
       onSelectConversation(newGroup);
-
+      
       console.log('Group created successfully');
     } catch (error) {
       console.error('Error creating group:', error);
@@ -216,7 +217,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
       if (!isFromCurrentUser) {
         console.log('GroupConversationsList: Message is from another user, processing notification');
-
+        
         setUnreadCounts(prev => {
           const newCount = (prev[message.conversationId] || 0) + 1;
           console.log('GroupConversationsList: Updating unread count for group conversation', message.conversationId, 'to', newCount);
@@ -285,7 +286,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
             <span>Create Group Chat</span>
           </button>
         </div>
-
+        
         {/* Error State */}
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
@@ -308,7 +309,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
             </button>
           </div>
         </div>
-
+        
         {/* Create Group Modal */}
         <CreateGroupModal
           isOpen={showCreateModal}
@@ -319,65 +320,6 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
       </div>
     );
   }
-
-  const deleteGroup = async (conversationId) => {
-    try {
-      const response = await fetch(`/api/group-messages/${conversationId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'API endpoint not found' }));
-        console.error('GroupConversationsList: Error response:', errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to delete group conversation`);
-      }
-
-      // Update the state to remove the deleted group conversation
-      setGroupConversations(prevConversations =>
-        prevConversations.filter(conv => conv._id !== conversationId)
-      );
-
-      console.log('Group conversation deleted successfully');
-    } catch (error) {
-      console.error('GroupConversationsList: Error deleting group conversation:', error);
-      alert(`Error deleting group: ${error.message}`);
-    }
-  };
-
-  const leaveGroup = async (conversationId) => {
-    try {
-      const response = await fetch(`/api/group-messages/${conversationId}/leave`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'API endpoint not found' }));
-        console.error('GroupConversationsList: Error response:', errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}: Failed to leave group conversation`);
-      }
-
-      // Update the state to remove the left group conversation
-      setGroupConversations(prevConversations =>
-        prevConversations.filter(conv => conv._id !== conversationId)
-      );
-
-      console.log('Group conversation left successfully');
-    } catch (error) {
-      console.error('GroupConversationsList: Error leaving group conversation:', error);
-      alert(`Error leaving group: ${error.message}`);
-    }
-  };
-
-  const [showManageMembersModal, setShowManageMembersModal] = useState(null);
 
   return (
     <div className="h-full overflow-y-auto">
@@ -439,9 +381,9 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
           return (
             <div
-								key={conversation._id}
-								className={`group p-4 border-b hover:bg-gray-50 cursor-pointer relative transition-all duration-300 ${hasUnread ? 'bg-blue-50' : ''} ${animationClass}`}
-								onClick={() => {
+              key={conversation._id}
+              className={`p-4 border-b hover:bg-gray-50 cursor-pointer relative transition-all duration-300 ${hasUnread ? 'bg-blue-50' : ''} ${animationClass}`}
+              onClick={() => {
                 console.log('GroupConversationsList: Selecting group conversation:', conversation._id);
                 onSelectConversation(conversation);
 
@@ -459,99 +401,55 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
               }}
             >
               <div className="flex items-center space-x-3">
-								{/* Group Avatar */}
-								<div className="relative">
-									<div className="flex -space-x-2">
-										{displayParticipants.slice(0, 2).map((participant, index) => (
-											<Avatar
-												key={participant._id}
-												user={participant}
-												size="sm"
-												showOnlineStatus={false}
-												className={`border-2 border-white ${index > 0 ? 'ml-0' : ''}`}
-											/>
-										))}
-										{conversation.participants.length > 3 && (
-											<div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-xs text-white">
-												+{conversation.participants.length - 3}
-											</div>
-										)}
-									</div>
-								</div>
+                {/* Group Avatar */}
+                <div className="relative">
+                  <div className="flex -space-x-2">
+                    {displayParticipants.slice(0, 2).map((participant, index) => (
+                      <Avatar
+                        key={participant._id}
+                        user={participant}
+                        size="sm"
+                        showOnlineStatus={false}
+                        className={`border-2 border-white ${index > 0 ? 'ml-0' : ''}`}
+                      />
+                    ))}
+                    {conversation.participants.length > 3 && (
+                      <div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-xs text-white">
+                        +{conversation.participants.length - 3}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-								<div className="flex-1 min-w-0">
-									<div className="flex justify-between items-start">
-										<h3 className={`text-sm truncate ${hasUnread ? 'font-bold text-blue-300' : 'font-medium text-blue-300'}`}>
-											{conversation.name || 'Group Chat'}
-										</h3>
-										<div className="flex items-center space-x-2">
-											<span className="text-xs text-gray-500">
-												{formatDistanceToNow(new Date(conversation.updatedAt), {
-													addSuffix: true
-												})}
-											</span>
-											{hasUnread && (
-												<div className="flex items-center space-x-1">
-													<span className={`text-xs bg-red-500 text-white rounded-full px-2 py-1 font-bold min-w-[20px] text-center ${hasNewMessage ? 'pulse-green' : ''}`}>
-														{unreadCount}
-													</span>
-													{hasNewMessage && <div className="sound-wave"></div>}
-												</div>
-											)}
-											{/* Group Actions */}
-											<div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-1">
-												{/* Manage Members (Admin only) */}
-												{conversation.admins?.includes(authUser?._id) && (
-													<button
-														onClick={(e) => {
-															e.stopPropagation();
-															setShowManageMembersModal(conversation._id);
-														}}
-														className="text-blue-500 hover:text-blue-700 p-1"
-														title="Manage members"
-													>
-														👥
-													</button>
-												)}
-												{/* Leave Group */}
-												<button
-													onClick={(e) => {
-														e.stopPropagation();
-														if (window.confirm(`Leave "${conversation.name}"?`)) {
-															leaveGroup(conversation._id);
-														}
-													}}
-													className="text-yellow-500 hover:text-yellow-700 p-1"
-													title="Leave group"
-												>
-													🚪
-												</button>
-												{/* Delete Group (Admin only) */}
-												{conversation.admins?.includes(authUser?._id) && (
-													<button
-														onClick={(e) => {
-															e.stopPropagation();
-															if (window.confirm(`Delete group "${conversation.name}"? This action cannot be undone.`)) {
-																deleteGroup(conversation._id);
-															}
-														}}
-														className="text-red-500 hover:text-red-700 p-1"
-														title="Delete group"
-													>
-														🗑️
-													</button>
-												)}
-											</div>
-										</div>
-									</div>
-									<p className={`text-xs text-gray-400 mb-1`}>
-										{conversation.participants.length} members
-									</p>
-									<p className={`text-sm truncate ${hasUnread ? 'font-medium text-gray-700' : 'text-gray-500'}`}>
-										{conversation.lastMessage?.content || 'No messages yet'}
-									</p>
-								</div>
-							</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <h3 className={`text-sm truncate ${hasUnread ? 'font-bold text-blue-300' : 'font-medium text-blue-300'}`}>
+                      {conversation.name || 'Group Chat'}
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-gray-500">
+                        {formatDistanceToNow(new Date(conversation.updatedAt), {
+                          addSuffix: true
+                        })}
+                      </span>
+                      {hasUnread && (
+                        <div className="flex items-center space-x-1">
+                          <span className={`text-xs bg-red-500 text-white rounded-full px-2 py-1 font-bold min-w-[20px] text-center ${hasNewMessage ? 'pulse-green' : ''}`}>
+                            {unreadCount}
+                          </span>
+                          {hasNewMessage && <div className="sound-wave"></div>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <p className={`text-xs text-gray-400 mb-1`}>
+                    {conversation.participants.length} members
+                  </p>
+                  <p className={`text-sm truncate ${hasUnread ? 'font-medium text-gray-700' : 'text-gray-500'}`}>
+                    {conversation.lastMessage?.content || 'No messages yet'}
+                  </p>
+                </div>
+              </div>
             </div>
           );
         })
