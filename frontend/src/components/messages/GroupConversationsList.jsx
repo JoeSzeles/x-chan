@@ -435,11 +435,11 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
                         user={participant}
                         size="sm"
                         showOnlineStatus={false}
-                        className={`border-2 border-white ${index > 0 ? 'ml-0' : ''}`}
+                        className={`border-0 ${index > 0 ? 'ml-0' : ''}`}
                       />
                     ))}
                     {conversation.participants.length > 3 && (
-                      <div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-xs text-white">
+                      <div className="w-8 h-8 rounded-full bg-gray-500 border-0 flex items-center justify-center text-xs text-white">
                         +{conversation.participants.length - 3}
                       </div>
                     )}
