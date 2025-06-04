@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import LoadingSpinner from '../common/LoadingSpinner';
@@ -126,7 +125,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
   const createGroupConversation = async (groupData) => {
     try {
       console.log('Creating group with data:', groupData);
-      
+
       const response = await fetch('/api/group-messages/create', {
         method: 'POST',
         credentials: 'include',
@@ -156,17 +155,48 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
       const newGroup = JSON.parse(responseText);
       console.log('Created new group:', newGroup);
-      
+
       setGroupConversations(prev => [newGroup, ...prev]);
-      
+
       // Auto-select the new group
       onSelectConversation(newGroup);
-      
+
       console.log('Group created successfully');
     } catch (error) {
       console.error('Error creating group:', error);
       console.error('Error stack:', error.stack);
       alert(`Error creating group: ${error.message}`);
+    }
+  };
+
+  const deleteGroupConversation = async (conversationId) => {
+    try {
+      console.log(`Deleting group conversation with ID: ${conversationId}`);
+
+      const response = await fetch(`/api/group-messages/${conversationId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'API endpoint not found' }));
+        console.error('Group deletion failed:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to delete group`);
+      }
+
+      console.log('Group conversation deleted successfully');
+
+      // Update the group conversations list after deletion
+      setGroupConversations(prev => prev.filter(conv => conv._id !== conversationId));
+
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      console.error('Error stack:', error.stack);
+      alert(`Error deleting group: ${error.message}`);
     }
   };
 
@@ -217,7 +247,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
       if (!isFromCurrentUser) {
         console.log('GroupConversationsList: Message is from another user, processing notification');
-        
+
         setUnreadCounts(prev => {
           const newCount = (prev[message.conversationId] || 0) + 1;
           console.log('GroupConversationsList: Updating unread count for group conversation', message.conversationId, 'to', newCount);
@@ -286,7 +316,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
             <span>Create Group Chat</span>
           </button>
         </div>
-        
+
         {/* Error State */}
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center">
@@ -309,7 +339,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
             </button>
           </div>
         </div>
-        
+
         {/* Create Group Modal */}
         <CreateGroupModal
           isOpen={showCreateModal}
@@ -440,8 +470,18 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
                           {hasNewMessage && <div className="sound-wave"></div>}
                         </div>
                       )}
-                    </div>
-                  </div>
+											<button
+												onClick={(e) => {
+													e.stopPropagation();
+													deleteGroupConversation(conversation._id);
+												}}
+												className="text-red-500 hover:text-red-700 text-xs p-1 rounded hover:bg-red-50 transition-colors"
+												title="Delete group chat"
+											>
+												🗑️
+											</button>
+										</div>
+									</div>
                   <p className={`text-xs text-gray-400 mb-1`}>
                     {conversation.participants.length} members
                   </p>

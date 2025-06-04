@@ -213,7 +213,7 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 			// Only handle notifications for messages NOT from current user
 			if (!isFromCurrentUser) {
 				console.log('ConversationsList: Message is from another user, processing notification');
-				
+
 				// Always update unread count for messages from other users
 				setUnreadCounts(prev => {
 					const newCount = (prev[message.conversationId] || 0) + 1;
@@ -266,6 +266,32 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 		};
 	}, [authUser, selectedConversation]);
 
+	const deleteConversation = async (conversationId) => {
+		try {
+			const response = await fetch(`/api/messages/conversations/${conversationId}`, {
+				method: 'DELETE',
+				credentials: 'include',
+				headers: {
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				}
+			});
+
+			if (response.ok) {
+				// Remove the conversation from the list
+				setConversations(prevConversations =>
+					prevConversations.filter(conv => conv._id !== conversationId)
+				);
+				// Optionally, clear the selected conversation if it was deleted
+				if (selectedConversation?._id === conversationId) {
+					onSelectConversation(null);
+				}
+			} else {
+				console.error('Failed to delete conversation');
+			}
+		} catch (error) {
+			console.error('Error deleting conversation:', error);
+		}
+	};
 
 	if (loading) {
 		return (
@@ -356,6 +382,16 @@ const ConversationsList = ({ onSelectConversation, selectedConversation, refresh
 													{hasNewMessage && <div className="sound-wave"></div>}
 												</div>
 											)}
+											<button
+												onClick={(e) => {
+													e.stopPropagation();
+													deleteConversation(conversation._id);
+												}}
+												className="text-red-500 hover:text-red-700 text-xs p-1 rounded hover:bg-red-50 transition-colors"
+												title="Delete conversation"
+											>
+												🗑️
+											</button>
 										</div>
 									</div>
 									<p className={`text-sm truncate ${hasUnread ? 'font-medium text-gray-700' : 'text-gray-500'}`}>

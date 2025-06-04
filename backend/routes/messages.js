@@ -341,6 +341,36 @@ router.delete('/conversations/:conversationId/messages/:messageId', protectRoute
   }
 });
 
+// Delete conversation
+router.delete('/conversations/:conversationId', protectRoute, async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user._id;
+
+    // Check if user is part of the conversation
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      participants: userId
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    // Delete all messages in the conversation
+    await Message.deleteMany({ conversationId: conversationId });
+
+    // Delete the conversation
+    await Conversation.findByIdAndDelete(conversationId);
+
+    console.log(`Conversation ${conversationId} deleted by user ${userId}`);
+    res.json({ message: 'Conversation deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Send a message (alternative route for compatibility)
 router.post('/:conversationId', protectRoute, async (req, res) => {
     try {

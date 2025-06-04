@@ -449,6 +449,130 @@ router.post('/:conversationId/upload', upload.array('files', 5), protectRoute, a
     }
 });
 
+// Delete group conversation
+router.delete('/:conversationId', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user._id;
+
+        console.log(`[groupMessages.js] Deleting group conversation: ${conversationId} by user: ${userId}`);
+
+        // Check if user is admin of this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            admins: userId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or insufficient permissions' });
+        }
+
+        // Delete all messages in the group conversation
+        await Message.deleteMany({ conversationId: conversationId });
+
+        // Mark group conversation as inactive instead of deleting (for data integrity)
+        groupConversation.isActive = false;
+        await groupConversation.save();
+
+        console.log(`[groupMessages.js] ✓ Group conversation ${conversationId} deleted successfully`);
+        res.json({ message: 'Group conversation deleted successfully' });
+
+    } catch (error) {
+        console.error('[groupMessages.js] ❌ Error deleting group conversation:', error);
+        res.status(500).json({ error: 'Failed to delete group conversation', details: error.message });
+    }
+});
+
+// Remove member from group conversation
+router.delete('/:conversationId/members/:userId', protectRoute, async (req, res) => {
+    try {
+        const { conversationId, userId: memberToRemove } = req.params;
+        const currentUserId = req.user._id;
+
+        console.log(`[groupMessages.js] Removing member ${memberToRemove} from group conversation: ${conversationId}`);
+
+        // Check if current user is admin of this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            admins: currentUserId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or insufficient permissions' });
+        }
+
+        // Check if member to remove is part of the group
+        if (!groupConversation.participants.includes(memberToRemove)) {
+            return res.status(400).json({ error: 'User is not a member of this group' });
+        }
+
+        // Remove user from participants and admins (if applicable)
+        groupConversation.participants = groupConversation.participants.filter(
+            id => id.toString() !== memberToRemove.toString()
+        );
+        groupConversation.admins = groupConversation.admins.filter(
+            id => id.toString() !== memberToRemove.toString()
+        );
+
+        await groupConversation.save();
+
+        // Populate participants data
+        await groupConversation.populate('participants', 'username fullName profileImg');
+
+        console.log(`[groupMessages.js] ✓ Member removed successfully from group: ${conversationId}`);
+        res.json(groupConversation);
+
+    } catch (error) {
+        console.error('[groupMessages.js] ❌ Error removing member from group:', error);
+        res.status(500).json({ error: 'Failed to remove member', details: error.message });
+    }
+});
+
+// Leave group conversation
+router.post('/:conversationId/leave', protectRoute, async (req, res) => {
+    try {
+        const { conversationId } = req.params;
+        const userId = req.user._id;
+
+        console.log(`[groupMessages.js] User ${userId} leaving group conversation: ${conversationId}`);
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: userId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        // Remove user from participants and admins (if applicable)
+        groupConversation.participants = groupConversation.participants.filter(
+            id => id.toString() !== userId.toString()
+        );
+        groupConversation.admins = groupConversation.admins.filter(
+            id => id.toString() !== userId.toString()
+        );
+
+        // If no participants left, mark group as inactive
+        if (groupConversation.participants.length === 0) {
+            groupConversation.isActive = false;
+        }
+
+        await groupConversation.save();
+
+        console.log(`[groupMessages.js] ✓ User left group conversation successfully: ${conversationId}`);
+        res.json({ message: 'Left group conversation successfully' });
+
+    } catch (error) {
+        console.error('[groupMessages.js] ❌ Error leaving group conversation:', error);
+        res.status(500).json({ error: 'Failed to leave group conversation', details: error.message });
+    }
+});
+
 console.log('[groupMessages.js] ========================================');
 console.log('[groupMessages.js] ALL GROUP ROUTES REGISTERED SUCCESSFULLY');
 console.log('[groupMessages.js] Available routes:');
@@ -460,6 +584,9 @@ console.log('[groupMessages.js] - POST /:conversationId/add-member');
 console.log('[groupMessages.js] - GET  /:conversationId/unread-count');
 console.log('[groupMessages.js] - PUT  /:conversationId/mark-read');
 console.log('[groupMessages.js] - POST /:conversationId/upload');
+console.log('[groupMessages.js] - DELETE /:conversationId');
+console.log('[groupMessages.js] - DELETE /:conversationId/members/:userId');
+console.log('[groupMessages.js] - POST /:conversationId/leave');
 console.log('[groupMessages.js] ========================================');
 
 export default router;
