@@ -4,7 +4,7 @@ import socketService from '../../services/socket';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import Avatar from '../common/Avatar';
 import YouTubeEmbed from '../common/YouTubeEmbed';
-import { TwitterEmbed } from '../common/QuoteText';
+import TwitterEmbed from '../TwitterEmbed';
 
 // Error Boundary component
 class MessageErrorBoundary extends React.Component {

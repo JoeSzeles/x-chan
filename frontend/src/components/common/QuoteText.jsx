@@ -114,97 +114,76 @@ const TwitterEmbed = ({ url }) => {
     const [tweetData, setTweetData] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const embedContainerRef = useRef(null);
-    const mountedRef = useRef(true);
+    const mountedRef = useRef(false);
 
-    console.log('[TwitterEmbed] Rendering for URL:', url);
-
+    // Debounced loading function
     const loadTweetData = useCallback(async (forceReload = false) => {
         if (!mountedRef.current) return;
-        
-        setIsLoading(true);
-        setError(null);
 
         try {
-            const cleanUrl = url.replace(/\?.*$/, '');
-            console.log('[TwitterEmbed] Loading tweet data for:', cleanUrl);
+            setError(null);
 
-            // Try the Twitter embed API endpoint first
-            const response = await fetch(`/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`, {
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json'
+            // Check cache first (unless forcing reload)
+            if (!forceReload) {
+                const cached = getCachedTweet(url);
+                if (cached) {
+                    if (mountedRef.current) {
+                        setTweetData(cached);
+                        setIsLoading(false);
+                    }
+                    return;
                 }
-            });
+            }
 
+            const response = await fetch(`/api/twitter/embed?url=${encodeURIComponent(url)}`);
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: Failed to fetch tweet data`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const data = await response.json();
-            console.log('[TwitterEmbed] Tweet data loaded:', data);
-
-            if (!mountedRef.current) return;
-
-            if (data.html) {
+            if (mountedRef.current) {
+                setCachedTweet(url, data);
                 setTweetData(data);
                 setIsLoading(false);
-
-                // Load Twitter widgets script after content is set
-                setTimeout(() => {
-                    if (mountedRef.current && window.twttr && window.twttr.widgets && embedContainerRef.current) {
-                        window.twttr.widgets.load(embedContainerRef.current);
-                    } else if (mountedRef.current) {
-                        loadTwitterScript();
-                    }
-                }, 100);
-            } else {
-                throw new Error('No tweet content received');
             }
-
         } catch (err) {
             console.error('[TwitterEmbed] Error loading tweet:', err);
-            if (!mountedRef.current) return;
-            
-            if (retryCount < 2) {
+            if (mountedRef.current && retryCount < MAX_RETRIES) {
                 setTimeout(() => {
                     if (mountedRef.current) {
                         setRetryCount(prev => prev + 1);
                     }
-                }, 1000 * (retryCount + 1));
-            } else {
+                }, RETRY_DELAY * (retryCount + 1));
+            } else if (mountedRef.current) {
                 setError(err.message || 'Failed to load tweet');
                 setIsLoading(false);
             }
         }
     }, [url, retryCount]);
 
-    const loadTwitterScript = useCallback(() => {
-        if (document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
-            if (window.twttr && window.twttr.widgets && embedContainerRef.current) {
-                window.twttr.widgets.load(embedContainerRef.current);
-            }
-            return;
+    // Load Twitter widgets script
+    useEffect(() => {
+        if (typeof window !== 'undefined' && !document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
+            const script = document.createElement('script');
+            script.src = 'https://platform.twitter.com/widgets.js';
+            script.async = true;
+            script.onload = () => {
+                if (mountedRef.current && window.twttr && window.twttr.widgets && embedContainerRef.current) {
+                    window.twttr.widgets.load(embedContainerRef.current);
+                }
+            };
+            document.body.appendChild(script);
         }
-
-        const script = document.createElement('script');
-        script.src = 'https://platform.twitter.com/widgets.js';
-        script.async = true;
-        script.onload = () => {
-            if (mountedRef.current && window.twttr && window.twttr.widgets && embedContainerRef.current) {
-                window.twttr.widgets.load(embedContainerRef.current);
-            }
-        };
-        document.body.appendChild(script);
     }, []);
 
     useEffect(() => {
         mountedRef.current = true;
         loadTweetData();
-        
+
         return () => {
             mountedRef.current = false;
         };
-    }, [loadTweetData]);
+    }, [url]);
 
     if (isLoading) {
         return (
