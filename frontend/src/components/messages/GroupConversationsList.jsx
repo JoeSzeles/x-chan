@@ -125,6 +125,8 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
   const createGroupConversation = async (groupData) => {
     try {
+      console.log('Creating group with data:', groupData);
+      
       const response = await fetch('/api/group-messages/create', {
         method: 'POST',
         credentials: 'include',
@@ -135,18 +137,35 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
         body: JSON.stringify(groupData)
       });
 
+      console.log('Create group response status:', response.status);
+      console.log('Create group response headers:', response.headers);
+
+      const responseText = await response.text();
+      console.log('Create group response text:', responseText);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create group');
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          errorData = { error: responseText || 'Failed to create group' };
+        }
+        console.error('Group creation failed:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create group`);
       }
 
-      const newGroup = await response.json();
+      const newGroup = JSON.parse(responseText);
+      console.log('Created new group:', newGroup);
+      
       setGroupConversations(prev => [newGroup, ...prev]);
       
       // Auto-select the new group
       onSelectConversation(newGroup);
+      
+      console.log('Group created successfully');
     } catch (error) {
       console.error('Error creating group:', error);
+      console.error('Error stack:', error.stack);
       alert(`Error creating group: ${error.message}`);
     }
   };
