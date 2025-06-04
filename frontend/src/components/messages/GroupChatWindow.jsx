@@ -619,15 +619,14 @@ const GroupChatWindow = ({ conversation, authUser }) => {
           <div className="flex items-center space-x-3">
             <div className="flex -space-x-2">
               {conversation.participants.slice(0, 3).map((participant, index) => (
-                
-                      <Avatar
-                        key={participant._id}
-                        user={participant}
-                        size="sm"
-                        showOnlineStatus={false}
-                        className={`${index > 0 ? 'ml-0' : ''}`}
-                      />
-                    
+                <Avatar
+                  key={participant._id}
+                  user={participant}
+                  size="sm"
+                  showOnlineStatus={false}
+                  showBorder={false}
+                  className={`${index > 0 ? 'ml-0' : ''}`}
+                />
               ))}
               {conversation.participants.length > 3 && (
                 <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white">
@@ -723,7 +722,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                       title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''} - ${isOnline ? 'Online' : 'Offline'}`}
                     >
                       <div className="relative">
-                        <Avatar user={participant} size="xs" showOnlineStatus={false} />
+                        <Avatar user={participant} size="xs" showOnlineStatus={false} showBorder={false} />
                         {/* Online status indicator */}
                         <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                         {/* Admin badge */}
@@ -796,7 +795,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                     availableContacts.map(contact => (
                       <div key={contact._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
                         <div className="flex items-center space-x-2">
-                          <Avatar user={contact} size="xs" />
+                          <Avatar user={contact} size="xs" showBorder={false} />
                           <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                             {contact.username}
                           </span>
@@ -834,7 +833,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                     return (
                       <div key={participant._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
                         <div className="flex items-center space-x-2">
-                          <Avatar user={participant} size="xs" />
+                          <Avatar user={participant} size="xs" showBorder={false} />
                           <div className="flex flex-col">
                             <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                               {participant.username}
@@ -910,7 +909,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                       user={message.senderId}
                       size="sm"
                       showOnlineStatus={true}
-                      showBorder={true}
+                      showBorder={false}
                     />
                   )}
                 </div>
@@ -1342,7 +1341,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                         backgroundColor: index === 0 ? 'var(--color-bg-main)' : 'transparent'
                       }}
                     >
-                      <Avatar user={member} size="xs" showOnlineStatus={true} />
+                      <Avatar user={member} size="xs" showOnlineStatus={true} showBorder={false} />
                       <div className="flex-1">
                         <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                           @{member.username}
