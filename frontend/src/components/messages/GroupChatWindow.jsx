@@ -641,11 +641,11 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                       user={participant}
                       size="sm"
                       showOnlineStatus={false}
-                      className={`${index > 0 ? 'ml-0' : ''} border-2 border-white`}
+                      className={`${index > 0 ? 'ml-0' : ''}`}
                     />
-                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-white rounded-full ${
-                      isOnline ? 'bg-green-500' : 'bg-gray-400'
-                    }`}></div>
+                    {isOnline && (
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border border-white rounded-full bg-green-500"></div>
+                    )}
                   </div>
                 );
               })}
