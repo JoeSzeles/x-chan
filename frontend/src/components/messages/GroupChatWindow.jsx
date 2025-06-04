@@ -19,11 +19,16 @@ const GroupChatWindow = ({ conversation, authUser }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [showAddMember, setShowAddMember] = useState(false);
   const [availableContacts, setAvailableContacts] = useState([]);
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionCursorPosition, setMentionCursorPosition] = useState(0);
+  const [filteredMembers, setFilteredMembers] = useState([]);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
   const notificationSoundRef = useRef(null);
+  const mentionDropdownRef = useRef(null);
   const currentUserId = authUser?._id;
   const { isUserOnline } = useOnlineStatus();
 
@@ -371,12 +376,88 @@ const GroupChatWindow = ({ conversation, authUser }) => {
     }
   };
 
+  // Handle @ mentions
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    const cursorPosition = e.target.selectionStart;
+    
+    setNewMessage(value);
+    
+    // Check for @ mention
+    const beforeCursor = value.substring(0, cursorPosition);
+    const mentionMatch = beforeCursor.match(/@(\w*)$/);
+    
+    if (mentionMatch) {
+      const query = mentionMatch[1].toLowerCase();
+      setMentionQuery(query);
+      setMentionCursorPosition(cursorPosition);
+      setShowMentionDropdown(true);
+      
+      // Filter group members based on query
+      const filtered = conversation.participants.filter(participant => 
+        participant._id !== currentUserId && 
+        participant.username.toLowerCase().includes(query)
+      );
+      setFilteredMembers(filtered);
+    } else {
+      setShowMentionDropdown(false);
+      setMentionQuery('');
+    }
+  };
+
+  const handleMentionSelect = (user) => {
+    const beforeMention = newMessage.substring(0, mentionCursorPosition - mentionQuery.length - 1);
+    const afterMention = newMessage.substring(mentionCursorPosition);
+    const newValue = `${beforeMention}@${user.username} ${afterMention}`;
+    
+    setNewMessage(newValue);
+    setShowMentionDropdown(false);
+    setMentionQuery('');
+    
+    // Focus back to input
+    setTimeout(() => {
+      inputRef.current?.focus();
+      const newCursorPosition = beforeMention.length + user.username.length + 2;
+      inputRef.current?.setSelectionRange(newCursorPosition, newCursorPosition);
+    }, 0);
+  };
+
   const handleKeyPress = (e) => {
+    if (showMentionDropdown) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        // Handle arrow navigation in mention dropdown
+        return;
+      } else if (e.key === 'Enter' && filteredMembers.length > 0) {
+        e.preventDefault();
+        handleMentionSelect(filteredMembers[0]);
+        return;
+      } else if (e.key === 'Escape') {
+        setShowMentionDropdown(false);
+        setMentionQuery('');
+        return;
+      }
+    }
+    
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
     }
   };
+
+  // Close mention dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mentionDropdownRef.current && !mentionDropdownRef.current.contains(event.target)) {
+        setShowMentionDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleReaction = async (messageId, emoji) => {
     try {
@@ -587,7 +668,97 @@ const GroupChatWindow = ({ conversation, authUser }) => {
           )}
         </div>
 
-        {/* Add Member Panel - Only show for admins */}
+        {/* Members List - Always visible */}
+        <div className="mt-4 p-3 border rounded-lg" style={{
+          backgroundColor: 'var(--color-bg-main)',
+          borderColor: 'var(--color-border-default)'
+        }}>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+              Group Members ({conversation.participants.length})
+            </h4>
+            <button
+              onClick={() => setShowAddMember(!showAddMember)}
+              className="text-xs px-2 py-1 rounded transition-colors"
+              style={{
+                backgroundColor: showAddMember ? 'var(--color-secondary)' : 'var(--color-primary)',
+                color: 'var(--color-text-light)'
+              }}
+            >
+              {showAddMember ? 'Hide' : 'Manage'}
+            </button>
+          </div>
+          
+          {/* Members Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+            {conversation.participants.map(participant => {
+              const isOnline = isUserOnline(participant._id);
+              const isAdmin = conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id;
+              const isCurrentUser = participant._id === currentUserId;
+              
+              return (
+                <div
+                  key={participant._id}
+                  className="flex items-center space-x-2 p-2 rounded-lg border transition-colors hover:bg-gray-50"
+                  style={{
+                    borderColor: 'var(--color-border-default)',
+                    backgroundColor: isCurrentUser ? 'rgba(29, 78, 216, 0.1)' : 'transparent'
+                  }}
+                  title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''}`}
+                >
+                  <div className="relative">
+                    <Avatar user={participant} size="xs" showOnlineStatus={true} />
+                    {isAdmin && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white flex items-center justify-center">
+                        <span className="text-xs text-white font-bold">★</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
+                      {participant.username}
+                      {isCurrentUser && ' (You)'}
+                    </p>
+                    <div className="flex items-center space-x-1">
+                      <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                      <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                        {isOnline ? 'Online' : 'Offline'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Quick mention buttons */}
+          <div className="border-t pt-2" style={{ borderColor: 'var(--color-border-default)' }}>
+            <p className="text-xs mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+              Quick mention:
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {conversation.participants.filter(p => p._id !== currentUserId).map(participant => (
+                <button
+                  key={participant._id}
+                  onClick={() => {
+                    const mention = `@${participant.username} `;
+                    setNewMessage(prev => prev + mention);
+                    inputRef.current?.focus();
+                  }}
+                  className="text-xs px-2 py-1 rounded-full border transition-colors hover:bg-blue-50"
+                  style={{
+                    borderColor: 'var(--color-border-default)',
+                    color: 'var(--color-primary)'
+                  }}
+                >
+                  @{participant.username}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Add Member Panel - Only show for admins when toggled */}
         {showAddMember && (conversation.admins?.includes(currentUserId) || conversation.createdBy === currentUserId) && (
           <div className="mt-4 p-3 border rounded-lg" style={{
             backgroundColor: 'var(--color-bg-main)',
@@ -629,33 +800,32 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                 </div>
               </div>
 
-              {/* Current Members Section - Only show if user is admin */}
-              {(conversation.admins?.includes(currentUserId) || conversation.createdBy === currentUserId) && (
-                <div>
-                  <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
-                    Current Members
-                  </h4>
-                  <div className="max-h-40 overflow-y-auto space-y-2">
-                    {conversation.participants.map(participant => (
+              {/* Admin Actions */}
+              <div>
+                <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  Admin Actions
+                </h4>
+                <div className="max-h-40 overflow-y-auto space-y-2">
+                  {conversation.participants.filter(p => p._id !== currentUserId).map(participant => {
+                    const isAdmin = conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id;
+                    const canRemove = participant._id !== conversation.createdBy && !conversation.admins?.includes(participant._id);
+                    
+                    return (
                       <div key={participant._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
                         <div className="flex items-center space-x-2">
                           <Avatar user={participant} size="xs" />
                           <div className="flex flex-col">
                             <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                               {participant.username}
-                              {participant._id === currentUserId && ' (You)'}
                             </span>
-                            {(conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id) && (
+                            {isAdmin && (
                               <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
                                 Admin
                               </span>
                             )}
                           </div>
                         </div>
-                        {/* Only show remove button for non-admin members and not for current user */}
-                        {participant._id !== currentUserId && 
-                         participant._id !== conversation.createdBy && 
-                         !conversation.admins?.includes(participant._id) && (
+                        {canRemove && (
                           <button
                             onClick={() => removeMemberFromGroup(participant._id)}
                             className="px-2 py-1 text-xs rounded transition-colors"
@@ -669,10 +839,10 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                           </button>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}
@@ -824,7 +994,14 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                                         key={index}
                                         dangerouslySetInnerHTML={{
                                           __html: part
-                                            .replace(/@(\w+)/g, '<a href="/profile/$1" class="text-red-400 hover:text-red-300 hover:underline">@$1</a>')
+                                            .replace(/@(\w+)/g, (match, username) => {
+                                              // Check if this username is a group member
+                                              const isMember = conversation.participants.some(p => p.username === username);
+                                              const mentionClass = isMember ? 
+                                                'text-blue-400 hover:text-blue-300 hover:underline font-semibold bg-blue-100 bg-opacity-20 px-1 rounded' :
+                                                'text-red-400 hover:text-red-300 hover:underline';
+                                              return `<a href="/profile/${username}" class="${mentionClass}" title="${isMember ? 'Group member' : 'User'}: @${username}">@${username}</a>`;
+                                            })
                                             .replace(/#(\w+)/g, '<a href="/hashtag/$1" class="text-red-400 hover:text-red-300 hover:underline">#$1</a>')
                                         }}
                                       />
@@ -1105,9 +1282,9 @@ const GroupChatWindow = ({ conversation, authUser }) => {
               ref={inputRef}
               type="text"
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={`Message group...`}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+              placeholder={`Message group... (type @ to mention members)`}
               disabled={sending}
               className="w-full px-4 py-3 rounded-lg border focus:outline-none transition-colors duration-300 disabled:opacity-50"
               style={{
@@ -1119,6 +1296,48 @@ const GroupChatWindow = ({ conversation, authUser }) => {
               onFocus={(e) => e.target.style.borderColor = 'var(--color-border-focus)'}
               onBlur={(e) => e.target.style.borderColor = 'var(--color-input-border)'}
             />
+            
+            {/* Mention Dropdown */}
+            {showMentionDropdown && filteredMembers.length > 0 && (
+              <div
+                ref={mentionDropdownRef}
+                className="absolute bottom-full mb-2 left-0 right-0 bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto z-50"
+                style={{
+                  backgroundColor: 'var(--color-bg-card)',
+                  borderColor: 'var(--color-border-default)'
+                }}
+              >
+                <div className="p-2">
+                  <p className="text-xs mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                    Mention a group member:
+                  </p>
+                  {filteredMembers.map((member, index) => (
+                    <button
+                      key={member._id}
+                      type="button"
+                      onClick={() => handleMentionSelect(member)}
+                      className="w-full flex items-center space-x-2 p-2 rounded hover:bg-gray-100 transition-colors text-left"
+                      style={{
+                        backgroundColor: index === 0 ? 'var(--color-bg-main)' : 'transparent'
+                      }}
+                    >
+                      <Avatar user={member} size="xs" showOnlineStatus={true} />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                          @{member.username}
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                          {member.fullName || 'Group Member'}
+                        </p>
+                      </div>
+                      {isUserOnline(member._id) && (
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* File upload button */}
