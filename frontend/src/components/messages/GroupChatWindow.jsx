@@ -14,7 +14,8 @@ class MessageErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, errorMessage: error.message };
+    console.error('MessageErrorBoundary caught error:', error);
+    return { hasError: true, errorMessage: error?.message || 'Unknown error' };
   }
 
   componentDidCatch(error, errorInfo) {
@@ -24,17 +25,20 @@ class MessageErrorBoundary extends React.Component {
       if (this.setState) {
         this.setState({ hasError: false, errorMessage: '' });
       }
-    }, 5000);
+    }, 3000);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="text-sm text-red-400 p-2 border border-red-300 rounded">
-          <div>Failed to render message content</div>
-          {this.state.errorMessage && (
-            <div className="text-xs mt-1 opacity-70">{this.state.errorMessage}</div>
-          )}
+        <div className="text-sm text-gray-500 p-2 border border-gray-300 rounded bg-gray-50">
+          <div>Content failed to load</div>
+          <button 
+            onClick={() => this.setState({ hasError: false, errorMessage: '' })}
+            className="text-xs mt-1 text-blue-500 hover:text-blue-700"
+          >
+            Retry
+          </button>
         </div>
       );
     }
@@ -720,15 +724,19 @@ const GroupChatWindow = ({ conversation, authUser }) => {
 
                                       if (isYouTube) {
                                         return (
-                                          <div key={`youtube-${index}-${message._id}`}>
-                                            <YouTubeEmbed url={part} />
-                                          </div>
+                                          <MessageErrorBoundary key={`youtube-${index}-${message._id}`}>
+                                            <div className="my-2">
+                                              <YouTubeEmbed url={part} />
+                                            </div>
+                                          </MessageErrorBoundary>
                                         );
                                       } else if (isTwitter) {
                                         return (
-                                          <div key={`twitter-${index}-${message._id}`}>
-                                            <TwitterEmbed url={part} />
-                                          </div>
+                                          <MessageErrorBoundary key={`twitter-${index}-${message._id}`}>
+                                            <div className="my-2">
+                                              <TwitterEmbed url={part} />
+                                            </div>
+                                          </MessageErrorBoundary>
                                         );
                                       } else {
                                         return (
