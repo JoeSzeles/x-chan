@@ -624,18 +624,18 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                   <div key={participant._id} className="relative">
                     <Avatar
                       user={participant}
-                      size="sm"
+                      size="xs"
                       showOnlineStatus={false}
                       className={`${index > 0 ? 'ml-0' : ''} border-2 border-white`}
                     />
-                    <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-white rounded-full ${
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 border border-white rounded-full ${
                       isOnline ? 'bg-green-500' : 'bg-gray-400'
                     }`}></div>
                   </div>
                 );
               })}
               {conversation.participants.length > 3 && (
-                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white border-2 border-white">
+                <div className="w-6 h-6 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white border-2 border-white">
                   +{conversation.participants.length - 3}
                 </div>
               )}
@@ -728,15 +728,21 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                       title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''}${isOnline ? ' - Online' : ' - Offline'}`}
                     >
                       <div className="relative">
-                        <Avatar user={participant} size="xs" showOnlineStatus={false} />
-                        {isAdmin && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border border-white flex items-center justify-center">
-                            <span className="text-xs text-white font-bold">★</span>
-                          </div>
-                        )}
-                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border border-white rounded-full ${
-                          isOnline ? 'bg-green-500' : 'bg-gray-400'
-                        }`}></div>
+                        <div className="w-6 h-6 relative">
+                          <img
+                            src={participant.profileImg || "/avatar-placeholder.png"}
+                            alt={`${participant.fullName || participant.username}'s avatar`}
+                            className="w-6 h-6 rounded-full object-cover border border-gray-300"
+                          />
+                          {isAdmin && (
+                            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-500 rounded-full border border-white flex items-center justify-center">
+                              <span className="text-xs text-white font-bold text-[8px]">★</span>
+                            </div>
+                          )}
+                          <div className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 border border-white rounded-full ${
+                            isOnline ? 'bg-green-500' : 'bg-gray-400'
+                          }`}></div>
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>
