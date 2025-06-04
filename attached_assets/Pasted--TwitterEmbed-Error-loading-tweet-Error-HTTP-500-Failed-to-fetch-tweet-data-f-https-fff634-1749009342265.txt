@@ -1,0 +1,71 @@
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Rendering for URL: https://x.com/Howlingmutant0/status/1929954771433030135 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Rendering for URL: https://x.com/Howlingmutant0/status/1929954771433030135 Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Rendering for URL: https://x.com/Howlingmutant0/status/1929954771433030135 Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Rendering for URL: https://x.com/Howlingmutant0/status/1929954771433030135 Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
+[TwitterEmbed] Loading tweet data for: https://x.com/lepe_eth/status/1923980861470540025 Console.js:61:14
+[TwitterEmbed] Error loading tweet: Error: HTTP 500: Failed to fetch tweet data
+    f https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-QLjfMuOf.js:958
+Console.js:61:14
