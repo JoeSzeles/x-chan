@@ -1,29 +1,60 @@
 
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import socketService from '../services/socket';
 
 export const useOnlineStatus = () => {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
   const [currentUserId, setCurrentUserId] = useState(null);
 
-  useEffect(() => {
-    // Get current user ID from auth token or localStorage
-    const getCurrentUserId = () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          return payload.userId;
-        }
-      } catch (error) {
-        console.log('Error getting current user ID:', error);
+  // Get current user ID from auth token
+  const getCurrentUserId = () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.userId;
       }
-      return null;
-    };
+    } catch (error) {
+      console.log('Error getting current user ID:', error);
+    }
+    return null;
+  };
 
+  // Fetch online users from API (same as WhosOnline)
+  const { data: apiOnlineUsers } = useQuery({
+    queryKey: ["onlineUsers"],
+    queryFn: async () => {
+      const res = await fetch('/api/users/online');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch online users");
+      return data;
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 25000, // Consider data stale after 25 seconds
+  });
+
+  useEffect(() => {
     const userId = getCurrentUserId();
     setCurrentUserId(userId);
 
+    // Update online users from API data
+    if (apiOnlineUsers && Array.isArray(apiOnlineUsers)) {
+      const userIds = apiOnlineUsers.map(user => user._id);
+      const newSet = new Set(userIds);
+      
+      // Always consider current user as online
+      if (userId) {
+        newSet.add(userId);
+      }
+      
+      setOnlineUsers(newSet);
+    }
+  }, [apiOnlineUsers]);
+
+  useEffect(() => {
+    const userId = getCurrentUserId();
+    
     const handlePresenceChange = (event) => {
       setOnlineUsers(prev => {
         const newSet = new Set(prev);
@@ -55,17 +86,12 @@ export const useOnlineStatus = () => {
       });
     };
 
-    // Subscribe to presence changes
+    // Subscribe to presence changes for real-time updates
     socketService.onPresenceChange(handlePresenceChange);
     
     // Request current online users when component mounts
     if (socketService.isConnected) {
       socketService.requestOnlineUsers();
-    }
-
-    // Also set current user as online immediately
-    if (userId) {
-      setOnlineUsers(prev => new Set([...prev, userId]));
     }
 
     return () => {
