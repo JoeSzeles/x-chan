@@ -364,6 +364,175 @@ router.put('/:conversationId/mark-read', protectRoute, async (req, res) => {
     }
 });
 
+// Add reaction to group message
+router.post('/:conversationId/messages/:messageId/reactions', protectRoute, async (req, res) => {
+    try {
+        const { conversationId, messageId } = req.params;
+        const { emoji } = req.body;
+        const userId = req.user._id;
+
+        console.log(`[groupMessages.js] Adding reaction ${emoji} to message ${messageId} in group ${conversationId}`);
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: userId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        // Find the message
+        const message = await Message.findOne({
+            _id: messageId,
+            conversationId: conversationId
+        }).populate('senderId', 'username fullName profileImg');
+
+        if (!message) {
+            return res.status(404).json({ error: 'Message not found' });
+        }
+
+        // Initialize reactions array if it doesn't exist
+        if (!message.reactions) {
+            message.reactions = [];
+        }
+
+        // Find existing reaction with this emoji
+        const existingReaction = message.reactions.find(r => r.emoji === emoji);
+
+        if (existingReaction) {
+            // Check if user already reacted with this emoji
+            const userIndex = existingReaction.users.indexOf(userId);
+            
+            if (userIndex > -1) {
+                // Remove user's reaction
+                existingReaction.users.splice(userIndex, 1);
+                existingReaction.count = existingReaction.users.length;
+                
+                // Remove reaction if no users left
+                if (existingReaction.count === 0) {
+                    message.reactions = message.reactions.filter(r => r.emoji !== emoji);
+                }
+            } else {
+                // Add user's reaction
+                existingReaction.users.push(userId);
+                existingReaction.count = existingReaction.users.length;
+            }
+        } else {
+            // Create new reaction
+            message.reactions.push({
+                emoji: emoji,
+                users: [userId],
+                count: 1
+            });
+        }
+
+        await message.save();
+
+        console.log(`[groupMessages.js] ✅ Reaction updated for group message ${messageId}`);
+        res.json(message);
+
+    } catch (error) {
+        console.error('[groupMessages.js] ❌ Error adding reaction to group message:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+// Edit group message
+router.put('/:conversationId/messages/:messageId', protectRoute, async (req, res) => {
+    try {
+        const { conversationId, messageId } = req.params;
+        const { content } = req.body;
+        const userId = req.user._id;
+
+        console.log(`[groupMessages.js] Editing message ${messageId} in group ${conversationId}`);
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: userId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        // Find and update the message (only if user is the sender)
+        const message = await Message.findOne({
+            _id: messageId,
+            conversationId: conversationId,
+            senderId: userId
+        }).populate('senderId', 'username fullName profileImg');
+
+        if (!message) {
+            return res.status(404).json({ error: 'Message not found or not authorized to edit' });
+        }
+
+        message.content = content;
+        message.isEdited = true;
+        await message.save();
+
+        console.log(`[groupMessages.js] ✅ Message edited successfully`);
+        res.json(message);
+
+    } catch (error) {
+        console.error('[groupMessages.js] ❌ Error editing group message:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
+// Delete group message
+router.delete('/:conversationId/messages/:messageId', protectRoute, async (req, res) => {
+    try {
+        const { conversationId, messageId } = req.params;
+        const userId = req.user._id;
+
+        console.log(`[groupMessages.js] Deleting message ${messageId} in group ${conversationId}`);
+
+        // Check if user is participant in this group conversation
+        const groupConversation = await GroupConversation.findOne({
+            _id: conversationId,
+            participants: userId,
+            isActive: true
+        });
+
+        if (!groupConversation) {
+            return res.status(404).json({ error: 'Group conversation not found or access denied' });
+        }
+
+        // Find and delete the message (only if user is the sender or admin)
+        const message = await Message.findOne({
+            _id: messageId,
+            conversationId: conversationId
+        });
+
+        if (!message) {
+            return res.status(404).json({ error: 'Message not found' });
+        }
+
+        // Check if user can delete (sender or group admin)
+        const canDelete = message.senderId.toString() === userId.toString() || 
+                         groupConversation.admins.includes(userId) ||
+                         groupConversation.createdBy.toString() === userId.toString();
+
+        if (!canDelete) {
+            return res.status(403).json({ error: 'Not authorized to delete this message' });
+        }
+
+        await Message.findByIdAndDelete(messageId);
+
+        console.log(`[groupMessages.js] ✅ Message deleted successfully`);
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('[groupMessages.js] ❌ Error deleting group message:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+});
+
 // File upload for group conversations
 router.post('/:conversationId/upload', upload.array('files', 5), protectRoute, async (req, res) => {
     try {

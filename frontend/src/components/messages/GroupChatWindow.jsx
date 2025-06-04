@@ -322,7 +322,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
 
   const handleReaction = async (messageId, emoji) => {
     try {
-      const response = await fetch(`/api/messages/group/${conversation._id}/messages/${messageId}/reactions`, {
+      const response = await fetch(`/api/group-messages/${conversation._id}/messages/${messageId}/reactions`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -346,7 +346,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
 
   const handleEditMessage = async (messageId) => {
     try {
-      const response = await fetch(`/api/messages/group/${conversation._id}/messages/${messageId}`, {
+      const response = await fetch(`/api/group-messages/${conversation._id}/messages/${messageId}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -373,7 +373,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
 
     try {
-      const response = await fetch(`/api/messages/group/${conversation._id}/messages/${messageId}`, {
+      const response = await fetch(`/api/group-messages/${conversation._id}/messages/${messageId}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: {
