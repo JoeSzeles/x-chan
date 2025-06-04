@@ -56,6 +56,11 @@ GroupConversationSchema.pre('save', function(next) {
   next();
 });
 
-const GroupConversation = mongoose.model("GroupConversation", GroupConversationSchema);
+let GroupConversation;
+try {
+  GroupConversation = mongoose.model("GroupConversation");
+} catch (error) {
+  GroupConversation = mongoose.model("GroupConversation", GroupConversationSchema);
+}
 
 export default GroupConversation;

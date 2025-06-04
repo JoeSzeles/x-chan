@@ -252,14 +252,52 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
 
   if (error) {
     return (
-      <div className="p-4 text-center">
-        <p className="text-red-500 mb-2">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
-        >
-          Retry
-        </button>
+      <div className="h-full flex flex-col">
+        {/* Create Group Button - still show even with error */}
+        <div className="p-4 border-b" style={{ borderColor: 'var(--color-border-default)' }}>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="w-full py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 hover:shadow-md font-medium"
+            style={{
+              backgroundColor: 'var(--color-primary)',
+              color: 'var(--color-text-light)'
+            }}
+          >
+            <span className="text-lg">➕</span>
+            <span>Create Group Chat</span>
+          </button>
+        </div>
+        
+        {/* Error State */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="text-4xl mb-4">⚠️</div>
+            <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+              Failed to load group chats
+            </h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--color-error-text)' }}>
+              {error}
+            </p>
+            <button
+              onClick={fetchGroupConversations}
+              className="px-4 py-2 rounded-lg transition-colors duration-300"
+              style={{
+                backgroundColor: 'var(--color-primary)',
+                color: 'var(--color-text-light)'
+              }}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+        
+        {/* Create Group Modal */}
+        <CreateGroupModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onCreateGroup={createGroupConversation}
+          authUser={authUser}
+        />
       </div>
     );
   }
@@ -270,26 +308,47 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
       <div className="p-4 border-b" style={{ borderColor: 'var(--color-border-default)' }}>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="w-full py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center space-x-2"
+          className="w-full py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 hover:shadow-md font-medium"
           style={{
             backgroundColor: 'var(--color-primary)',
             color: 'var(--color-text-light)'
           }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = 'var(--color-primary-dark)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'var(--color-primary)';
+          }}
         >
-          <span>➕</span>
+          <span className="text-lg">➕</span>
           <span>Create Group Chat</span>
         </button>
       </div>
 
       {/* Group Conversations List */}
-      {groupConversations.length === 0 ? (
-        <div className="p-4 text-gray-500">
-          <div className="text-center">
-            <p className="mb-2">No group conversations yet</p>
-            <p className="text-sm">Create your first group chat to get started!</p>
+      {groupConversations.length === 0 && !loading && !error ? (
+        <div className="p-4 text-center" style={{ color: 'var(--color-text-secondary)' }}>
+          <div className="py-8">
+            <div className="text-6xl mb-4">💬</div>
+            <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+              No group conversations yet
+            </h3>
+            <p className="text-sm mb-4">
+              Create your first group chat to start collaborating with multiple people!
+            </p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 rounded-lg transition-colors duration-300"
+              style={{
+                backgroundColor: 'var(--color-primary)',
+                color: 'var(--color-text-light)'
+              }}
+            >
+              Create Your First Group
+            </button>
           </div>
         </div>
-      ) : (
+      ) : groupConversations.length > 0 ? (
         groupConversations.map((conversation) => {
           const unreadCount = unreadCounts[conversation._id] || 0;
           const hasUnread = unreadCount > 0;
@@ -375,7 +434,7 @@ const GroupConversationsList = ({ onSelectConversation, selectedConversation, au
             </div>
           );
         })
-      )}
+      ) : null}
 
       {/* Create Group Modal */}
       <CreateGroupModal
