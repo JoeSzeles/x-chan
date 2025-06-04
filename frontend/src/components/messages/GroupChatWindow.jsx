@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import socketService from '../../services/socket';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
+import { useQuery } from '@tanstack/react-query';
 import Avatar from '../common/Avatar';
 import YouTubeEmbed from '../common/YouTubeEmbed';
 import { TwitterEmbed } from '../common/QuoteText';
@@ -31,7 +31,22 @@ const GroupChatWindow = ({ conversation, authUser }) => {
   const notificationSoundRef = useRef(null);
   const mentionDropdownRef = useRef(null);
   const currentUserId = authUser?._id;
-  const { isUserOnline, onlineUsers } = useOnlineStatus();
+  
+  const { data: onlineUsers } = useQuery({
+    queryKey: ["onlineUsers"],
+    queryFn: async () => {
+      const res = await fetch('/api/users/online');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch online users");
+      return data;
+    },
+    enabled: !!authUser,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  const isUserOnline = (userId) => {
+    return onlineUsers?.some(onlineUser => onlineUser._id === userId) || false;
+  };
 
   // Auto-scroll to bottom function
   const scrollToBottom = () => {
