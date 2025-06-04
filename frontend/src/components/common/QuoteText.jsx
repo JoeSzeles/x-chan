@@ -114,19 +114,36 @@ const TwitterEmbed = ({ url }) => {
     const [tweetData, setTweetData] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const embedContainerRef = useRef(null);
+    const mountedRef = useRef(true);
+    const currentUrlRef = useRef(url);
 
     const maxRetries = 3;
     const retryDelayMs = 1000;
 
-    console.log('[TwitterEmbed] Rendering for URL:', url);
+    // Update current URL ref when URL changes
+    useEffect(() => {
+        currentUrlRef.current = url;
+    }, [url]);
 
-    const loadTweetData = async (forceReload = false) => {
+    // Set up cleanup on unmount
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+        };
+    }, []);
+
+    const loadTweetData = useCallback(async (forceReload = false) => {
+        // Don't start new requests if component is unmounted or URL changed
+        if (!mountedRef.current || currentUrlRef.current !== url) {
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
         try {
             const cleanUrl = url.replace(/\?.*$/, '');
-            console.log('[TwitterEmbed] Loading tweet data for:', cleanUrl);
 
             // Try the Twitter embed API endpoint first
             const response = await fetch(`/api/twitter/embed?url=${encodeURIComponent(cleanUrl)}`, {
@@ -136,22 +153,32 @@ const TwitterEmbed = ({ url }) => {
                 }
             });
 
+            // Check again if component is still mounted and URL hasn't changed
+            if (!mountedRef.current || currentUrlRef.current !== url) {
+                return;
+            }
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: Failed to fetch tweet data`);
             }
 
             const data = await response.json();
-            console.log('[TwitterEmbed] Tweet data loaded:', data);
+
+            // Final check before setting state
+            if (!mountedRef.current || currentUrlRef.current !== url) {
+                return;
+            }
 
             if (data.html) {
                 setTweetData(data);
                 setIsLoading(false);
+                setRetryCount(0); // Reset retry count on success
 
                 // Load Twitter widgets script after content is set
                 setTimeout(() => {
-                    if (window.twttr && window.twttr.widgets) {
+                    if (mountedRef.current && window.twttr && window.twttr.widgets) {
                         window.twttr.widgets.load(embedContainerRef.current);
-                    } else {
+                    } else if (mountedRef.current) {
                         loadTwitterScript();
                     }
                 }, 100);
@@ -159,22 +186,34 @@ const TwitterEmbed = ({ url }) => {
                 throw new Error('No tweet HTML content received');
             }
         } catch (error) {
-            console.error('[TwitterEmbed] Error loading tweet:', error);
+            // Only handle error if component is still mounted and URL hasn't changed
+            if (!mountedRef.current || currentUrlRef.current !== url) {
+                return;
+            }
+
+            // Only log errors in development or first few retries to reduce spam
+            if (process.env.NODE_ENV === 'development' && retryCount < 2) {
+                console.warn('[TwitterEmbed] Error loading tweet:', error.message);
+            }
+
             setError(error.message || 'Failed to load tweet');
             setIsLoading(false);
 
             // Auto-retry with exponential backoff if under retry limit
             if (retryCount < maxRetries - 1) {
-                const delay = retryDelayMs * Math.pow(2, retryCount); // Exponential backoff
+                const delay = retryDelayMs * Math.pow(2, retryCount);
                 setTimeout(() => {
-                    setRetryCount(prev => prev + 1);
-                    loadTweetData();
+                    // Only retry if component is still mounted and URL hasn't changed
+                    if (mountedRef.current && currentUrlRef.current === url) {
+                        setRetryCount(prev => prev + 1);
+                        loadTweetData();
+                    }
                 }, delay);
             } else {
                 setRetryCount(maxRetries); // Mark as max retries reached
             }
         }
-    };
+    }, [url, retryCount]);
 
     const loadTwitterScript = () => {
         if (document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
@@ -196,8 +235,15 @@ const TwitterEmbed = ({ url }) => {
     };
 
     useEffect(() => {
+        // Reset state when URL changes
+        setIsLoading(true);
+        setError(null);
+        setTweetData(null);
+        setRetryCount(0);
+        
+        // Load new tweet data
         loadTweetData();
-    }, [url]);
+    }, [url, loadTweetData]);
 
     if (isLoading) {
         return (
