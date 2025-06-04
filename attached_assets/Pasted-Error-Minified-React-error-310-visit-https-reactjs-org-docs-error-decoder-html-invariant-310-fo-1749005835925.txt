@@ -1,0 +1,29 @@
+Error: Minified React error #310; visit https://reactjs.org/docs/error-decoder.html?invariant=310 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
+    ut https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:38
+    Qc https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:38
+    useState https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:38
+    useState https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:9
+    JP https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:1008
+    th https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:38
+    hu https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:40
+    z2 https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:40
+    A2 https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:40
+    Z4 https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:40
+    id https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:40
+    ju https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:40
+    R2 https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:40
+    C https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:25
+    S https://fff6347a-2f7a-4a30-9c37-f671081f70f3-00-3n4jkaon19ywr.worf.replit.dev:5000/assets/index-0kXruNlF.js:25
+Console.js:61:14
+    o Console.js:61
+    uu index-0kXruNlF.js:40
+    callback index-0kXruNlF.js:40
+    Xm index-0kXruNlF.js:38
+    pp index-0kXruNlF.js:40
+    L2 index-0kXruNlF.js:40
+    Y4 index-0kXruNlF.js:40
+    n3 index-0kXruNlF.js:40
+    ir index-0kXruNlF.js:40
+    R2 index-0kXruNlF.js:40
+    C index-0kXruNlF.js:25
+    S index-0kXruNlF.js:25
