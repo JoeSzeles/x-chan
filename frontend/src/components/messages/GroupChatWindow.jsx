@@ -381,19 +381,19 @@ const GroupChatWindow = ({ conversation, authUser }) => {
   const handleInputChange = (e) => {
     const value = e.target.value;
     const cursorPosition = e.target.selectionStart;
-    
+
     setNewMessage(value);
-    
+
     // Check for @ mention
     const beforeCursor = value.substring(0, cursorPosition);
     const mentionMatch = beforeCursor.match(/@(\w*)$/);
-    
+
     if (mentionMatch) {
       const query = mentionMatch[1].toLowerCase();
       setMentionQuery(query);
       setMentionCursorPosition(cursorPosition);
       setShowMentionDropdown(true);
-      
+
       // Filter group members based on query
       const filtered = conversation.participants.filter(participant => 
         participant._id !== currentUserId && 
@@ -410,11 +410,11 @@ const GroupChatWindow = ({ conversation, authUser }) => {
     const beforeMention = newMessage.substring(0, mentionCursorPosition - mentionQuery.length - 1);
     const afterMention = newMessage.substring(mentionCursorPosition);
     const newValue = `${beforeMention}@${user.username} ${afterMention}`;
-    
+
     setNewMessage(newValue);
     setShowMentionDropdown(false);
     setMentionQuery('');
-    
+
     // Focus back to input
     setTimeout(() => {
       inputRef.current?.focus();
@@ -439,7 +439,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
         return;
       }
     }
-    
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage(e);
@@ -619,20 +619,18 @@ const GroupChatWindow = ({ conversation, authUser }) => {
           <div className="flex items-center space-x-3">
             <div className="flex -space-x-2">
               {conversation.participants.slice(0, 3).map((participant, index) => (
-                <div key={participant._id} className="relative">
-                  <Avatar
-                    user={participant}
-                    size="sm"
-                    showOnlineStatus={false}
-                    className={`border-2 border-white ${index > 0 ? 'ml-0' : ''}`}
-                  />
-                  {isUserOnline(participant._id) && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                  )}
-                </div>
+                
+                      <Avatar
+                        key={participant._id}
+                        user={participant}
+                        size="sm"
+                        showOnlineStatus={false}
+                        className={`${index > 0 ? 'ml-0' : ''}`}
+                      />
+                    
               ))}
               {conversation.participants.length > 3 && (
-                <div className="w-8 h-8 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center text-xs text-white">
+                <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-xs text-white">
                   +{conversation.participants.length - 3}
                 </div>
               )}
@@ -704,7 +702,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
               {showAddMember ? 'Hide' : 'Manage'}
             </button>
           </div>
-          
+
           {/* Collapsible Members Grid */}
           {showMembersList && (
             <>
@@ -713,7 +711,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                   const isOnline = isUserOnline(participant._id);
                   const isAdmin = conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id;
                   const isCurrentUser = participant._id === currentUserId;
-                  
+
                   return (
                     <div
                       key={participant._id}
@@ -832,7 +830,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                   {conversation.participants.filter(p => p._id !== currentUserId).map(participant => {
                     const isAdmin = conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id;
                     const canRemove = participant._id !== conversation.createdBy && !conversation.admins?.includes(participant._id);
-                    
+
                     return (
                       <div key={participant._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
                         <div className="flex items-center space-x-2">
@@ -1319,7 +1317,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
               onFocus={(e) => e.target.style.borderColor = 'var(--color-border-focus)'}
               onBlur={(e) => e.target.style.borderColor = 'var(--color-input-border)'}
             />
-            
+
             {/* Mention Dropdown */}
             {showMentionDropdown && filteredMembers.length > 0 && (
               <div
