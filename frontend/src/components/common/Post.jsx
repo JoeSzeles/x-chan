@@ -472,7 +472,7 @@ const Post = ({ post, isComment = false, isCompact = false }) => {
 							
 				<Avatar 
 					user={postOwner}
-					size="xs"
+					size="xxs"
 					showOnlineStatus={true}
 				/>
 			

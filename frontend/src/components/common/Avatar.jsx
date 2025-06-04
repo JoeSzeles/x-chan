@@ -18,6 +18,7 @@ const Avatar = ({
   }
 
   const sizeClasses = {
+    xxs: 'w-4 h-4',
     xs: 'w-6 h-6',
     sm: 'w-8 h-8',
     md: 'w-12 h-12',
