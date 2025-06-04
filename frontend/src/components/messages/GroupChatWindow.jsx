@@ -624,7 +624,8 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                     user={participant}
                     size="sm"
                     showOnlineStatus={false}
-                    className={`border-2 border-white ${index > 0 ? 'ml-0' : ''}`}
+                    showBorder={false}
+                    className={`${index > 0 ? 'ml-0' : ''}`}
                   />
                   {isUserOnline(participant._id) && (
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
@@ -725,7 +726,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                       title={`@${participant.username}${isAdmin ? ' (Admin)' : ''}${isCurrentUser ? ' (You)' : ''} - ${isOnline ? 'Online' : 'Offline'}`}
                     >
                       <div className="relative">
-                        <Avatar user={participant} size="xs" showOnlineStatus={false} />
+                        <Avatar user={participant} size="xs" showOnlineStatus={false} showBorder={false} />
                         {/* Online status indicator */}
                         <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                         {/* Admin badge */}

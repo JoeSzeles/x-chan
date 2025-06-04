@@ -18,6 +18,43 @@ const Messages = () => {
   const [notificationSoundsEnabled, setNotificationSoundsEnabled] = useState(
     localStorage.getItem('notificationSoundsEnabled') !== 'false' // Default to true
   );
+  const [showGroupContacts, setShowGroupContacts] = useState(false);
+  const { isUserOnline } = useOnlineStatus();
+
+  // Enhanced notification sound functionality
+  const playNotificationSound = () => {
+    const soundsEnabled = localStorage.getItem('notificationSoundsEnabled') !== 'false';
+    if (!soundsEnabled) return;
+
+    try {
+      const audio = new Audio('/sounds/notification.mp3');
+      audio.volume = 0.3;
+      audio.play().catch(e => {
+        console.log('Could not play notification.mp3:', e);
+
+        if (window.AudioContext || window.webkitAudioContext) {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+          oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+          oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.3);
+        }
+      });
+    } catch (error) {
+      console.log('Notification sound error:', error);
+    }
+  };
 
   const { data: authUser, isLoading: authUserLoading } = useQuery({
     queryKey: ["authUser"],
@@ -42,20 +79,38 @@ const Messages = () => {
     retry: false,
   });
 
-  // Initialize socket service when user is authenticated
   useEffect(() => {
-    if (authUser && !authUserLoading) {
+    if (!socketService.isConnected) {
       console.log('🔌 Initializing socket service for Messages page');
-      if (!socketService.isConnected) {
-        socketService.connect();
-      }
+      socketService.connect();
     }
 
-    return () => {
-      // Don't disconnect socket when leaving Messages page
-      // Keep it connected for real-time notifications
+    // Listen for new messages to play notification sound
+    const handleNewMessage = (message) => {
+      console.log('📨 Messages page received new message:', message);
+
+      // Only play sound if message is not from current user
+      if (message.senderId._id !== authUser._id) {
+        // Check if any conversation/group chat window is currently open
+        const isConversationOpen = selectedConversation !== null;
+        const isGroupConversationOpen = selectedGroupConversation !== null;
+
+        // Only play sound if no conversation window is open
+        if (!isConversationOpen && !isGroupConversationOpen) {
+          console.log('🔊 Playing notification sound - no conversation window open');
+          playNotificationSound();
+        } else {
+          console.log('🔇 Not playing sound - conversation window is open');
+        }
+      }
     };
-  }, [authUser, authUserLoading]);
+
+    socketService.onNewMessage(handleNewMessage);
+
+    return () => {
+      socketService.offNewMessage(handleNewMessage);
+    };
+  }, [authUser, selectedConversation, selectedGroupConversation]);
 
   // Show loading if we're still waiting for auth user
   if (authUserLoading) {
