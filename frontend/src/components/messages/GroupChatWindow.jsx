@@ -185,6 +185,31 @@ const GroupChatWindow = ({ conversation, authUser }) => {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    if (!confirm('Are you sure you want to leave this group? You will no longer receive messages from this group.')) return;
+
+    try {
+      const response = await fetch(`/api/group-messages/${conversation._id}/leave`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        // Redirect to messages page or close the conversation
+        window.location.href = '/messages';
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || 'Failed to leave group');
+      }
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      alert('Failed to leave group');
+    }
+  };
+
   // Auto-scroll when messages change
   useEffect(() => {
     scrollToBottom();
@@ -531,20 +556,34 @@ const GroupChatWindow = ({ conversation, authUser }) => {
             </div>
           </div>
 
-          <button
-            onClick={() => setShowAddMember(!showAddMember)}
-            className="px-3 py-1 rounded-lg text-sm transition-colors"
-            style={{
-              backgroundColor: 'var(--color-primary)',
-              color: 'var(--color-text-light)'
-            }}
-          >
-            Add Member
-          </button>
+          {/* Show different buttons based on admin status */}
+          {(conversation.admins?.includes(currentUserId) || conversation.createdBy === currentUserId) ? (
+            <button
+              onClick={() => setShowAddMember(!showAddMember)}
+              className="px-3 py-1 rounded-lg text-sm transition-colors"
+              style={{
+                backgroundColor: 'var(--color-primary)',
+                color: 'var(--color-text-light)'
+              }}
+            >
+              Add Member
+            </button>
+          ) : (
+            <button
+              onClick={handleLeaveGroup}
+              className="px-3 py-1 rounded-lg text-sm transition-colors"
+              style={{
+                backgroundColor: 'var(--color-secondary-red)',
+                color: 'var(--color-text-light)'
+              }}
+            >
+              Leave Group
+            </button>
+          )}
         </div>
 
-        {/* Add Member Panel */}
-        {showAddMember && (
+        {/* Add Member Panel - Only show for admins */}
+        {showAddMember && (conversation.admins?.includes(currentUserId) || conversation.createdBy === currentUserId) && (
           <div className="mt-4 p-3 border rounded-lg" style={{
             backgroundColor: 'var(--color-bg-main)',
             borderColor: 'var(--color-border-default)'
