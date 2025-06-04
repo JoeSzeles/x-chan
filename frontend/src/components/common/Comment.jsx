@@ -502,11 +502,19 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 					<div className='flex gap-2'>
 						{!isCompact && <div className='avatar relative flex flex-col items-center'>
 				{/* Current Commenter's Profile Picture */}
-				<Avatar 
-					user={commentOwner}
-					size="xxs"
-					showOnlineStatus={true}
-				/>
+				<div className="w-12 h-12 relative z-10 rounded-full bg-[#1e1e1e] p-0.5">
+					<Link 
+						to={`/profile/${commentOwner.username || 'unknown'}`} 
+						className='w-full h-full rounded-full overflow-hidden flex items-center justify-center border-2 border-gray-700' 
+						onClick={(e) => e.stopPropagation()}
+					>
+						<CachedImage 
+							src={commentOwner.profileImg}
+							className="w-full h-full object-cover" 
+							alt="Profile"
+						/>
+					</Link>
+				</div>
 
 				{/* Connecting Line with Arrow */}
 				{comment.post && comment.post.user && (
@@ -517,11 +525,19 @@ const Comment = ({ comment, postId, parentCommentId = null, disableNavigation = 
 
 				{/* Post Author's Profile Picture */}
 				{comment.post && comment.post.user && (
-					<Avatar 
-						user={comment.post.user}
-						size="xxs"
-						showOnlineStatus={false}
-					/>
+					<div className="w-10 h-10 relative z-10 rounded-full bg-[#1e1e1e] p-0.5">
+						<Link 
+							to={`/profile/${comment.post.user.username}`} 
+							className='w-full h-full rounded-full overflow-hidden flex items-center justify-center border-2 border-gray-700' 
+							onClick={(e) => e.stopPropagation()}
+						>
+							<CachedImage 
+								src={comment.post.user.profileImg}
+								className="w-full h-full object-cover" 
+								alt="Post Author"
+							/>
+						</Link>
+					</div>
 				)}
 			</div>}
 
