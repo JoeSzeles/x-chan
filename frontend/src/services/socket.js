@@ -51,10 +51,12 @@ class SocketService {
       reconnectionAttempts: this.maxReconnectAttempts,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      timeout: 30000,
+      timeout: 20000, // Reduced timeout for faster fallback
       forceNew: true,
       upgrade: true,
-      rememberUpgrade: false // Don't remember upgrade to avoid transport issues
+      rememberUpgrade: false, // Don't remember upgrade to avoid transport issues
+      autoConnect: true,
+      closeOnBeforeunload: false
     });
 
     this.socket.on('connect', () => {

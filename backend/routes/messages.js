@@ -544,6 +544,14 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
         // Emit to conversation room
         req.io.to(conversationId).emit('new_message', messageWithPopulatedSender);
 
+        // Emit the message to all participants via socket
+        if (req.io) {
+            console.log('[messages.js] 📤 Emitting message to conversation room:', conversationId);
+            req.io.to(conversationId).emit('new_message', messageWithPopulatedSender);
+        } else {
+            console.warn('[messages.js] ⚠️ Socket.io not available for message emission');
+        }
+
         console.log('[messages.js] Message sent successfully');
         res.status(201).json(messageWithPopulatedSender);
     } catch (error) {
