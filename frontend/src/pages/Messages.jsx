@@ -9,6 +9,7 @@ import PageHeader from '../components/common/PageHeader';
 import Breadcrumb from '../components/common/Breadcrumb';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import socketService from '../services/socket';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 const Messages = () => {
   const [activeTab, setActiveTab] = useState('conversations');
@@ -19,7 +20,6 @@ const Messages = () => {
     localStorage.getItem('notificationSoundsEnabled') !== 'false' // Default to true
   );
   const [showGroupContacts, setShowGroupContacts] = useState(false);
-  const { isUserOnline } = useOnlineStatus();
 
   // Enhanced notification sound functionality
   const playNotificationSound = () => {
@@ -82,26 +82,34 @@ const Messages = () => {
   useEffect(() => {
     if (!socketService.isConnected) {
       console.log('🔌 Initializing socket service for Messages page');
-      socketService.connect();
+      try {
+        socketService.connect();
+      } catch (error) {
+        console.error('Failed to initialize socket service:', error);
+      }
     }
 
     // Listen for new messages to play notification sound
     const handleNewMessage = (message) => {
-      console.log('📨 Messages page received new message:', message);
+      try {
+        console.log('📨 Messages page received new message:', message);
 
-      // Only play sound if message is not from current user
-      if (message.senderId._id !== authUser._id) {
-        // Check if any conversation/group chat window is currently open
-        const isConversationOpen = selectedConversation !== null;
-        const isGroupConversationOpen = selectedGroupConversation !== null;
+        // Only play sound if message is not from current user and authUser exists
+        if (authUser && message.senderId._id !== authUser._id) {
+          // Check if any conversation/group chat window is currently open
+          const isConversationOpen = selectedConversation !== null;
+          const isGroupConversationOpen = selectedGroupConversation !== null;
 
-        // Only play sound if no conversation window is open
-        if (!isConversationOpen && !isGroupConversationOpen) {
-          console.log('🔊 Playing notification sound - no conversation window open');
-          playNotificationSound();
-        } else {
-          console.log('🔇 Not playing sound - conversation window is open');
+          // Only play sound if no conversation window is open
+          if (!isConversationOpen && !isGroupConversationOpen) {
+            console.log('🔊 Playing notification sound - no conversation window open');
+            playNotificationSound();
+          } else {
+            console.log('🔇 Not playing sound - conversation window is open');
+          }
         }
+      } catch (error) {
+        console.error('Error handling new message:', error);
       }
     };
 

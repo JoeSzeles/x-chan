@@ -38,15 +38,15 @@ class SocketService {
       auth: {
         token: token
       },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'], // Start with polling for better stability
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: 2000,
-      reconnectionDelayMax: 10000,
-      timeout: 20000,
-      forceNew: false,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 15000,
+      forceNew: true, // Force new connection to avoid stale connections
       upgrade: true,
-      rememberUpgrade: true
+      rememberUpgrade: false // Don't remember upgrades to avoid issues
     });
 
     this.socket.on('connect', () => {
