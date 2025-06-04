@@ -41,32 +41,54 @@ router.post('/create', protectRoute, async (req, res) => {
     console.log('[groupMessages.js] ✓ POST /create - ROUTE ACCESSED');
     console.log('[groupMessages.js] Request body:', req.body);
     console.log('[groupMessages.js] User:', req.user ? req.user._id : 'NO USER');
+    console.log('[groupMessages.js] Request headers:', req.headers);
 
     try {
         const { name, participants } = req.body;
 
-        if (!name || !name.trim()) {
-            console.log('[groupMessages.js] ❌ No group name provided');
-            return res.status(400).json({ error: 'Group name is required' });
+        // Validate user is authenticated
+        if (!req.user || !req.user._id) {
+            console.log('[groupMessages.js] ❌ User not authenticated');
+            return res.status(401).json({ error: 'User not authenticated' });
         }
 
-        if (!participants || !Array.isArray(participants) || participants.length === 0) {
-            console.log('[groupMessages.js] ❌ No participants provided');
-            return res.status(400).json({ error: 'At least one participant is required' });
+        if (!name || typeof name !== 'string' || !name.trim()) {
+            console.log('[groupMessages.js] ❌ No group name provided or invalid');
+            return res.status(400).json({ error: 'Group name is required and must be a valid string' });
+        }
+
+        if (!participants || !Array.isArray(participants)) {
+            console.log('[groupMessages.js] ❌ Participants must be an array');
+            return res.status(400).json({ error: 'Participants must be an array' });
+        }
+
+        // Allow empty participants array - just the creator
+        if (participants.length === 0) {
+            console.log('[groupMessages.js] ℹ️ Creating group with only creator');
         }
 
         console.log('[groupMessages.js] Creating group with name:', name.trim());
         console.log('[groupMessages.js] Participants:', participants);
 
         // Add the creator to participants if not already included
-        const allParticipants = [...new Set([req.user._id.toString(), ...participants])];
+        const creatorId = req.user._id.toString();
+        const participantIds = participants.filter(p => p && p.toString() !== creatorId);
+        const allParticipants = [creatorId, ...participantIds];
+        
         console.log('[groupMessages.js] All participants (including creator):', allParticipants);
 
         // Validate that all participants exist
-        const validUsers = await User.find({ _id: { $in: allParticipants } });
-        if (validUsers.length !== allParticipants.length) {
-            console.log('[groupMessages.js] ❌ Some participants not found');
-            return res.status(400).json({ error: 'Some participants were not found' });
+        if (participantIds.length > 0) {
+            const validUsers = await User.find({ _id: { $in: participantIds } });
+            if (validUsers.length !== participantIds.length) {
+                console.log('[groupMessages.js] ❌ Some participants not found');
+                const foundIds = validUsers.map(u => u._id.toString());
+                const missingIds = participantIds.filter(id => !foundIds.includes(id.toString()));
+                return res.status(400).json({ 
+                    error: 'Some participants were not found',
+                    missingIds: missingIds
+                });
+            }
         }
 
         // Create new group conversation
@@ -85,12 +107,29 @@ router.post('/create', protectRoute, async (req, res) => {
         await groupConversation.populate('createdBy', 'username fullName profileImg');
 
         console.log('[groupMessages.js] ✓ Created new group conversation:', groupConversation._id);
+        console.log('[groupMessages.js] ✓ Group conversation data:', JSON.stringify(groupConversation, null, 2));
+        
         res.status(201).json(groupConversation);
 
     } catch (error) {
         console.error('[groupMessages.js] ❌ Error in create:', error);
+        console.error('[groupMessages.js] Error name:', error.name);
+        console.error('[groupMessages.js] Error message:', error.message);
         console.error('[groupMessages.js] Error stack:', error.stack);
-        res.status(500).json({ error: 'Failed to create group conversation', details: error.message });
+        
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ 
+                error: 'Validation error', 
+                details: error.message,
+                validationErrors: error.errors
+            });
+        }
+        
+        res.status(500).json({ 
+            error: 'Failed to create group conversation', 
+            details: error.message,
+            errorType: error.name
+        });
     }
 });
 
