@@ -114,10 +114,13 @@ const TwitterEmbed = ({ url }) => {
     const [tweetData, setTweetData] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
     const embedContainerRef = useRef(null);
+    const mountedRef = useRef(true);
 
     console.log('[TwitterEmbed] Rendering for URL:', url);
 
-    const loadTweetData = async (forceReload = false) => {
+    const loadTweetData = useCallback(async (forceReload = false) => {
+        if (!mountedRef.current) return;
+        
         setIsLoading(true);
         setError(null);
 
@@ -140,15 +143,17 @@ const TwitterEmbed = ({ url }) => {
             const data = await response.json();
             console.log('[TwitterEmbed] Tweet data loaded:', data);
 
+            if (!mountedRef.current) return;
+
             if (data.html) {
                 setTweetData(data);
                 setIsLoading(false);
 
                 // Load Twitter widgets script after content is set
                 setTimeout(() => {
-                    if (window.twttr && window.twttr.widgets) {
+                    if (mountedRef.current && window.twttr && window.twttr.widgets && embedContainerRef.current) {
                         window.twttr.widgets.load(embedContainerRef.current);
-                    } else {
+                    } else if (mountedRef.current) {
                         loadTwitterScript();
                     }
                 }, 100);
@@ -158,21 +163,24 @@ const TwitterEmbed = ({ url }) => {
 
         } catch (err) {
             console.error('[TwitterEmbed] Error loading tweet:', err);
+            if (!mountedRef.current) return;
+            
             if (retryCount < 2) {
                 setTimeout(() => {
-                    setRetryCount(prev => prev + 1);
-                    loadTweetData();
+                    if (mountedRef.current) {
+                        setRetryCount(prev => prev + 1);
+                    }
                 }, 1000 * (retryCount + 1));
             } else {
                 setError(err.message || 'Failed to load tweet');
                 setIsLoading(false);
             }
         }
-    };
+    }, [url, retryCount]);
 
-    const loadTwitterScript = () => {
+    const loadTwitterScript = useCallback(() => {
         if (document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')) {
-            if (window.twttr && window.twttr.widgets) {
+            if (window.twttr && window.twttr.widgets && embedContainerRef.current) {
                 window.twttr.widgets.load(embedContainerRef.current);
             }
             return;
@@ -182,16 +190,21 @@ const TwitterEmbed = ({ url }) => {
         script.src = 'https://platform.twitter.com/widgets.js';
         script.async = true;
         script.onload = () => {
-            if (window.twttr && window.twttr.widgets && embedContainerRef.current) {
+            if (mountedRef.current && window.twttr && window.twttr.widgets && embedContainerRef.current) {
                 window.twttr.widgets.load(embedContainerRef.current);
             }
         };
         document.body.appendChild(script);
-    };
+    }, []);
 
     useEffect(() => {
+        mountedRef.current = true;
         loadTweetData();
-    }, [url]);
+        
+        return () => {
+            mountedRef.current = false;
+        };
+    }, [loadTweetData]);
 
     if (isLoading) {
         return (
@@ -200,7 +213,10 @@ const TwitterEmbed = ({ url }) => {
                     <div className="flex justify-between items-center">
                         <div className="text-gray-500">Loading tweet...</div>
                         <button 
-                            onClick={() => loadTweetData(true)}
+                            onClick={() => {
+                                setError(null);
+                                setTimeout(() => loadTweetData(true), 100);
+                            }}
                             className="text-blue-500 hover:text-blue-600"
                         >
                             Retry
@@ -220,7 +236,9 @@ const TwitterEmbed = ({ url }) => {
                         <button 
                             onClick={() => {
                                 setRetryCount(0);
-                                loadTweetData(true);
+                                setError(null);
+                                setIsLoading(true);
+                                setTimeout(() => loadTweetData(true), 100);
                             }}
                             className="text-blue-500 hover:text-blue-600"
                         >
