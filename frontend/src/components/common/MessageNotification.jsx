@@ -12,11 +12,18 @@ const MessageNotification = ({ authUser }) => {
   useEffect(() => {
     if (!authUser) return;
 
+    console.log('📮 MessageNotification: Setting up listener for user:', authUser._id);
+
     const handleNewMessage = (message) => {
+      console.log('📮 MessageNotification: Received message:', message);
+      console.log('📮 Message sender ID:', message.senderId._id);
+      console.log('📮 Current user ID:', authUser._id);
+      
       // Only show notification if message is from another user
       if (message.senderId._id !== authUser._id) {
         // Check if we're currently on the messages page
         const isOnMessagesPage = window.location.pathname === '/messages';
+        console.log('📮 Is on messages page:', isOnMessagesPage);
         
         // Only show popup if not on messages page
         if (!isOnMessagesPage) {
@@ -26,13 +33,18 @@ const MessageNotification = ({ authUser }) => {
             timestamp: Date.now()
           };
 
+          console.log('📮 Creating notification:', notification);
           setNotifications(prev => [...prev, notification]);
 
           // Auto-remove after 5 seconds
           setTimeout(() => {
             setNotifications(prev => prev.filter(n => n.id !== notification.id));
           }, 5000);
+        } else {
+          console.log('📮 Not showing notification - user is on messages page');
         }
+      } else {
+        console.log('📮 Not showing notification - message is from current user');
       }
     };
 
@@ -40,6 +52,7 @@ const MessageNotification = ({ authUser }) => {
     socketService.onNewMessage(handleNewMessage);
 
     return () => {
+      console.log('📮 MessageNotification: Cleaning up listener');
       socketService.offNewMessage(handleNewMessage);
     };
   }, [authUser]);

@@ -249,6 +249,9 @@ router.post('/:conversationId/messages', protectRoute, async (req, res) => {
         console.log(`[groupMessages.js] ✓ Group message sent successfully: ${message._id}`);
         res.status(201).json(message);
 
+        console.log(`[groupMessages.js] ✓ Group message sent successfully: ${message._id}`);
+        res.status(201).json(message);
+
         // Emit the message to all participants via socket
         const messageWithPopulatedSender = await Message.findById(message._id)
           .populate('senderId', 'username fullName profileImg')
@@ -257,6 +260,15 @@ router.post('/:conversationId/messages', protectRoute, async (req, res) => {
         // Add conversation type and group name for frontend notifications
         messageWithPopulatedSender.conversationType = 'group';
         messageWithPopulatedSender.groupName = groupConversation.name;
+
+        console.log('[groupMessages.js] 📤 Emitting group message to room:', conversationId);
+        console.log('[groupMessages.js] 📤 Group message data:', {
+            id: messageWithPopulatedSender._id,
+            senderId: messageWithPopulatedSender.senderId._id,
+            content: messageWithPopulatedSender.content,
+            conversationType: messageWithPopulatedSender.conversationType,
+            groupName: messageWithPopulatedSender.groupName
+        });
 
         // Emit to group conversation room
         req.io.to(conversationId).emit('new_message', messageWithPopulatedSender);

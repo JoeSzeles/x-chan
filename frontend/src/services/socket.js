@@ -34,19 +34,27 @@ class SocketService {
       this.socket = null;
     }
     
-    this.socket = io(window.location.origin, {
+    // Use different URL for Replit environment
+    let socketUrl = window.location.origin;
+    if (window.location.hostname.includes('replit.dev')) {
+      socketUrl = window.location.origin;
+    }
+    
+    console.log('🔌 Socket connecting to:', socketUrl);
+    
+    this.socket = io(socketUrl, {
       auth: {
         token: token
       },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'], // Try polling first for better Replit compatibility
       reconnection: true,
       reconnectionAttempts: this.maxReconnectAttempts,
-      reconnectionDelay: 2000,
-      reconnectionDelayMax: 10000,
-      timeout: 20000,
-      forceNew: false,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 30000,
+      forceNew: true,
       upgrade: true,
-      rememberUpgrade: true
+      rememberUpgrade: false // Don't remember upgrade to avoid transport issues
     });
 
     this.socket.on('connect', () => {
@@ -205,23 +213,24 @@ class SocketService {
 
   onNewMessage(callback) {
     if (this.socket) {
-      // Remove existing listener for this callback to prevent duplicates
-      this.socket.off('new_message');
-      
-      this.socket.on('new_message', (message) => {
-        console.log('📨 Received new message via socket:', message);
-        
-        // Call all registered callbacks
-        this.messageCallbacks.forEach(cb => {
-          try {
-            cb(message);
-          } catch (error) {
-            console.error('Error in message callback:', error);
-          }
-        });
-      });
-      
+      // Add callback to set
       this.messageCallbacks.add(callback);
+      
+      // Only set up socket listener if this is the first callback
+      if (this.messageCallbacks.size === 1) {
+        this.socket.on('new_message', (message) => {
+          console.log('📨 Received new message via socket:', message);
+          
+          // Call all registered callbacks
+          this.messageCallbacks.forEach(cb => {
+            try {
+              cb(message);
+            } catch (error) {
+              console.error('Error in message callback:', error);
+            }
+          });
+        });
+      }
     }
   }
 

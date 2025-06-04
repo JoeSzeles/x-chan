@@ -533,6 +533,14 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
         // Add conversation type for frontend notifications
         messageWithPopulatedSender.conversationType = 'direct';
 
+        console.log('[messages.js] 📤 Emitting message to conversation room:', conversationId);
+        console.log('[messages.js] 📤 Message data:', {
+            id: messageWithPopulatedSender._id,
+            senderId: messageWithPopulatedSender.senderId._id,
+            content: messageWithPopulatedSender.content,
+            conversationType: messageWithPopulatedSender.conversationType
+        });
+
         // Emit to conversation room
         req.io.to(conversationId).emit('new_message', messageWithPopulatedSender);
 
