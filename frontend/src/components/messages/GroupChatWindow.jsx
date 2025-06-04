@@ -10,22 +10,31 @@ import { TwitterEmbed } from '../common/QuoteText';
 class MessageErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, errorMessage: '' };
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, errorMessage: error.message };
   }
 
   componentDidCatch(error, errorInfo) {
     console.error('Message rendering error:', error, errorInfo);
+    // Reset error boundary after a delay to allow recovery
+    setTimeout(() => {
+      if (this.setState) {
+        this.setState({ hasError: false, errorMessage: '' });
+      }
+    }, 5000);
   }
 
   render() {
     if (this.state.hasError) {
       return (
         <div className="text-sm text-red-400 p-2 border border-red-300 rounded">
-          Failed to render message content
+          <div>Failed to render message content</div>
+          {this.state.errorMessage && (
+            <div className="text-xs mt-1 opacity-70">{this.state.errorMessage}</div>
+          )}
         </div>
       );
     }
