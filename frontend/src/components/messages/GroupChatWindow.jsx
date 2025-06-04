@@ -157,6 +157,34 @@ const GroupChatWindow = ({ conversation, authUser }) => {
     }
   };
 
+  const removeMemberFromGroup = async (userId) => {
+    if (!confirm('Are you sure you want to remove this member from the group?')) return;
+
+    try {
+      const response = await fetch(`/api/group-messages/${conversation._id}/members/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const updatedConversation = await response.json();
+        // Update conversation participants
+        conversation.participants = updatedConversation.participants;
+        // Add removed user back to available contacts
+        fetchAvailableContacts();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.error || 'Failed to remove member');
+      }
+    } catch (error) {
+      console.error('Error removing member:', error);
+      alert('Failed to remove member');
+    }
+  };
+
   // Auto-scroll when messages change
   useEffect(() => {
     scrollToBottom();
@@ -521,35 +549,85 @@ const GroupChatWindow = ({ conversation, authUser }) => {
             backgroundColor: 'var(--color-bg-main)',
             borderColor: 'var(--color-border-default)'
           }}>
-            <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
-              Add Members
-            </h4>
-            <div className="max-h-40 overflow-y-auto space-y-2">
-              {availableContacts.length > 0 ? (
-                availableContacts.map(contact => (
-                  <div key={contact._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
-                    <div className="flex items-center space-x-2">
-                      <Avatar user={contact} size="xs" />
-                      <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
-                        {contact.username}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => addMemberToGroup(contact._id)}
-                      className="px-2 py-1 text-xs rounded transition-colors"
-                      style={{
-                        backgroundColor: 'var(--color-primary)',
-                        color: 'var(--color-text-light)'
-                      }}
-                    >
-                      Add
-                    </button>
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Add Members Section */}
+              <div>
+                <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  Add Members
+                </h4>
+                <div className="max-h-40 overflow-y-auto space-y-2">
+                  {availableContacts.length > 0 ? (
+                    availableContacts.map(contact => (
+                      <div key={contact._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <Avatar user={contact} size="xs" />
+                          <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                            {contact.username}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => addMemberToGroup(contact._id)}
+                          className="px-2 py-1 text-xs rounded transition-colors"
+                          style={{
+                            backgroundColor: 'var(--color-primary)',
+                            color: 'var(--color-text-light)'
+                          }}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                      No available contacts to add
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Current Members Section - Only show if user is admin */}
+              {(conversation.admins?.includes(currentUserId) || conversation.createdBy === currentUserId) && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                    Current Members
+                  </h4>
+                  <div className="max-h-40 overflow-y-auto space-y-2">
+                    {conversation.participants.map(participant => (
+                      <div key={participant._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <Avatar user={participant} size="xs" />
+                          <div className="flex flex-col">
+                            <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                              {participant.username}
+                              {participant._id === currentUserId && ' (You)'}
+                            </span>
+                            {(conversation.admins?.includes(participant._id) || conversation.createdBy === participant._id) && (
+                              <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                                Admin
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {/* Only show remove button for non-admin members and not for current user */}
+                        {participant._id !== currentUserId && 
+                         participant._id !== conversation.createdBy && 
+                         !conversation.admins?.includes(participant._id) && (
+                          <button
+                            onClick={() => removeMemberFromGroup(participant._id)}
+                            className="px-2 py-1 text-xs rounded transition-colors"
+                            style={{
+                              backgroundColor: 'var(--color-secondary-red)',
+                              color: 'var(--color-text-light)'
+                            }}
+                            title="Remove member"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))
-              ) : (
-                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  No available contacts to add
-                </p>
+                </div>
               )}
             </div>
           </div>
