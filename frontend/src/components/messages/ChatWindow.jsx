@@ -121,78 +121,59 @@ const ChatWindow = ({ conversation, authUser }) => {
     if (conversation?._id) {
       fetchMessages();
 
-      // Ensure socket is connected and wait for connection
+      // Ensure socket is connected
       if (!socketService.isConnected) {
         console.log('🔌 Socket not connected, connecting...');
         socketService.connect();
-
-        // Wait a bit for connection to establish
-        setTimeout(() => {
-          if (socketService.isConnected) {
-            console.log('✅ Socket connected, joining conversation');
-            socketService.joinConversation(conversation._id);
-          }
-        }, 1000);
-      } else {
-        console.log('✅ Socket already connected, joining conversation');
-        socketService.joinConversation(conversation._id);
       }
+
+      // Always join conversation (socket service handles if not connected yet)
+      socketService.joinConversation(conversation._id);
 
       // Mark messages as read when opening conversation
       markAsRead();
 
       const handleNewMessage = (message) => {
-        console.log('📨 Received new message:', message);
+        console.log('📨 Received new message in ChatWindow:', message);
 
-        // Process messages for the current conversation
+        // Only process messages for the current conversation
         if (message.conversationId === conversation._id) {
           console.log('✅ Message is for current conversation');
 
-          // Always add the message if it's from another user
-          if (message.senderId._id !== currentUserId) {
-            setMessages((prev) => {
-              // Check for duplicates more efficiently
-              const isDuplicate = prev.some(msg => msg._id === message._id);
-              if (isDuplicate) {
-                console.log('⚠️ Duplicate message detected, skipping');
-                return prev;
-              }
-
-              console.log('➕ Adding new message from other user');
-              // Play notification sound immediately
-              playNotificationSound();
-
-              // Add the new message and sort by timestamp to ensure proper order
-              const newMessages = [...prev, message].sort((a, b) => 
-                new Date(a.createdAt) - new Date(b.createdAt)
-              );
-
-              // Scroll to bottom after receiving new message
-              setTimeout(scrollToBottom, 100);
-
-              return newMessages;
-            });
-
-            // Mark as read since conversation is open
-            setTimeout(markAsRead, 50);
-          } else {
-            console.log('📤 Message from current user, checking if already displayed');
-            setMessages((prev) => {
-              const exists = prev.some(msg => msg._id === message._id);
-              if (!exists) {
-                console.log('➕ Adding own message (socket confirmation)');
-                return [...prev, message].sort((a, b) => 
-                  new Date(a.createdAt) - new Date(b.createdAt)
-                );
-              }
+          setMessages((prev) => {
+            // Check for duplicates
+            const isDuplicate = prev.some(msg => msg._id === message._id);
+            if (isDuplicate) {
+              console.log('⚠️ Duplicate message detected, skipping');
               return prev;
-            });
+            }
+
+            console.log('➕ Adding new message to conversation');
+
+            // Play notification sound for messages from other users
+            if (message.senderId._id !== currentUserId) {
+              playNotificationSound();
+            }
+
+            // Add the new message and sort by timestamp
+            const newMessages = [...prev, message].sort((a, b) => 
+              new Date(a.createdAt) - new Date(b.createdAt)
+            );
+
+            // Scroll to bottom after adding message
+            setTimeout(scrollToBottom, 100);
+
+            return newMessages;
+          });
+
+          // Mark as read if message is from another user
+          if (message.senderId._id !== currentUserId) {
+            setTimeout(markAsRead, 100);
           }
-        } else {
-          console.log('📍 Message for different conversation:', message.conversationId);
         }
       };
 
+      // Register message handler
       socketService.onNewMessage(handleNewMessage);
 
       return () => {
@@ -271,7 +252,14 @@ const ChatWindow = ({ conversation, authUser }) => {
       if (socketService.isConnected) {
         socketService.sendMessage(messageData);
       } else {
-        console.warn('⚠️ Socket not connected, message sent via API only');
+        console.warn('⚠️ Socket not connected, attempting to reconnect...');
+        socketService.connect();
+        // Try to send after a brief delay if connection is established
+        setTimeout(() => {
+          if (socketService.isConnected) {
+            socketService.sendMessage(messageData);
+          }
+        }, 1000);
       }
 
       // Scroll to bottom after sending message

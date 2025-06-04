@@ -301,31 +301,29 @@ io.on('connection', socket => {
     });
 
     // Handle new message - improved broadcasting
-    socket.on('new_message', (message) => {
-        // Broadcast to all users in the conversation including sender
-        io.to(message.conversationId).emit('new_message', message);
-        console.log(`Broadcasting message to conversation ${message.conversationId}`);
+    socket.on('new_message', (message, callback) => {
+        console.log('📨 Server received new message:', message);
+        
+        try {
+            // Broadcast to all users in the conversation room (including sender for confirmation)
+            io.to(message.conversationId).emit('new_message', message);
+            console.log(`📤 Broadcasting message to conversation ${message.conversationId}`);
+            
+            // Send acknowledgment back to sender
+            if (callback) {
+                callback({ success: true, timestamp: new Date() });
+            }
+        } catch (error) {
+            console.error('❌ Error broadcasting message:', error);
+            if (callback) {
+                callback({ success: false, error: error.message });
+            }
+        }
     });
 
-    // Handle new message with acknowledgment
-    socket.on('send_message', (data, callback) => {
-      console.log('📨 Message received via socket:', data);
-
-      try {
-        // Broadcast to all users in the conversation except sender
-        socket.to(data.conversationId).emit('new_message', data.message);
-        console.log('📤 Message broadcasted to conversation:', data.conversationId);
-
-        // Send acknowledgment back to sender
-        if (callback) {
-          callback({ success: true, timestamp: new Date() });
-        }
-      } catch (error) {
-        console.error('❌ Error broadcasting message:', error);
-        if (callback) {
-          callback({ success: false, error: error.message });
-        }
-      }
+    // Handle ping for heartbeat
+    socket.on('ping', (timestamp) => {
+        socket.emit('pong', timestamp);
     });
 
     // Handle typing indicators
