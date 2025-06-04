@@ -39,7 +39,8 @@ import serviceRoutes from './routes/service.route.js';
 import liveBoardRoutes from './routes/liveBoard.js';
 import connectMongoDB from "./db/connectMongoDB.js";
 import coverPhotoRoutes from './routes/cover-photo.route.js';
-import messagesRoutes from './routes/messages.js'; // Import cover photo route
+import messagesRoutes from './routes/messages.js';
+import groupMessagesRoutes from './routes/groupMessages.js';
 
 dotenv.config();
 
@@ -136,6 +137,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/liveboard', liveBoardRoutes);
 app.use('/api/cover-photo', coverPhotoRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/group-messages', groupMessagesRoutes);
 
 // Catch-all route to serve the frontend for any non-API routes
 app.get('*', (req, res) => {
