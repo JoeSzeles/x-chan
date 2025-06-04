@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { protectRoute } from '../middleware/protectRoute.js';
 import GroupConversation from '../models/GroupConversation.js';
@@ -74,7 +73,7 @@ router.post('/create', protectRoute, async (req, res) => {
         const creatorId = req.user._id.toString();
         const participantIds = participants.filter(p => p && p.toString() !== creatorId);
         const allParticipants = [creatorId, ...participantIds];
-        
+
         console.log('[groupMessages.js] All participants (including creator):', allParticipants);
 
         // Validate that all participants exist
@@ -108,7 +107,7 @@ router.post('/create', protectRoute, async (req, res) => {
 
         console.log('[groupMessages.js] ✓ Created new group conversation:', groupConversation._id);
         console.log('[groupMessages.js] ✓ Group conversation data:', JSON.stringify(groupConversation, null, 2));
-        
+
         res.status(201).json(groupConversation);
 
     } catch (error) {
@@ -116,7 +115,7 @@ router.post('/create', protectRoute, async (req, res) => {
         console.error('[groupMessages.js] Error name:', error.name);
         console.error('[groupMessages.js] Error message:', error.message);
         console.error('[groupMessages.js] Error stack:', error.stack);
-        
+
         if (error.name === 'ValidationError') {
             return res.status(400).json({ 
                 error: 'Validation error', 
@@ -124,7 +123,7 @@ router.post('/create', protectRoute, async (req, res) => {
                 validationErrors: error.errors
             });
         }
-        
+
         res.status(500).json({ 
             error: 'Failed to create group conversation', 
             details: error.message,
@@ -249,6 +248,30 @@ router.post('/:conversationId/messages', protectRoute, async (req, res) => {
 
         console.log(`[groupMessages.js] ✓ Group message sent successfully: ${message._id}`);
         res.status(201).json(message);
+
+        console.log(`[groupMessages.js] ✓ Group message sent successfully: ${message._id}`);
+        res.status(201).json(message);
+
+        // Emit the message to all participants via socket
+        const messageWithPopulatedSender = await Message.findById(message._id)
+          .populate('senderId', 'username fullName profileImg')
+          .populate('conversationId');
+
+        // Add conversation type and group name for frontend notifications
+        messageWithPopulatedSender.conversationType = 'group';
+        messageWithPopulatedSender.groupName = groupConversation.name;
+
+        console.log('[groupMessages.js] 📤 Emitting group message to room:', conversationId);
+        console.log('[groupMessages.js] 📤 Group message data:', {
+            id: messageWithPopulatedSender._id,
+            senderId: messageWithPopulatedSender.senderId._id,
+            content: messageWithPopulatedSender.content,
+            conversationType: messageWithPopulatedSender.conversationType,
+            groupName: messageWithPopulatedSender.groupName
+        });
+
+        // Emit to group conversation room
+        req.io.to(conversationId).emit('new_message', messageWithPopulatedSender);
 
     } catch (error) {
         console.error('[groupMessages.js] ❌ Error sending group message:', error);
@@ -405,12 +428,12 @@ router.post('/:conversationId/messages/:messageId/reactions', protectRoute, asyn
         if (existingReaction) {
             // Check if user already reacted with this emoji
             const userIndex = existingReaction.users.indexOf(userId);
-            
+
             if (userIndex > -1) {
                 // Remove user's reaction
                 existingReaction.users.splice(userIndex, 1);
                 existingReaction.count = existingReaction.users.length;
-                
+
                 // Remove reaction if no users left
                 if (existingReaction.count === 0) {
                     message.reactions = message.reactions.filter(r => r.emoji !== emoji);

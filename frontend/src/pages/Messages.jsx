@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import ConversationsList from '../components/messages/ConversationsList';
 import GroupConversationsList from '../components/messages/GroupConversationsList';
 import MessageContacts from '../components/messages/MessageContacts';
@@ -11,9 +12,10 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import socketService from '../services/socket';
 
 const Messages = () => {
-  const [activeTab, setActiveTab] = useState('conversations');
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [selectedGroupConversation, setSelectedGroupConversation] = useState(null);
+  const [activeTab, setActiveTab] = useState('conversations');
+  const location = useLocation();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [notificationSoundsEnabled, setNotificationSoundsEnabled] = useState(
     localStorage.getItem('notificationSoundsEnabled') !== 'false' // Default to true
@@ -42,10 +44,12 @@ const Messages = () => {
     retry: false,
   });
 
-  // Initialize socket service when user is authenticated
+  // Initialize socket connection when Messages component mounts
   useEffect(() => {
     if (authUser && !authUserLoading) {
       console.log('🔌 Initializing socket service for Messages page');
+
+      // Ensure socket is connected
       if (!socketService.isConnected) {
         socketService.connect();
       }
@@ -56,6 +60,30 @@ const Messages = () => {
       // Keep it connected for real-time notifications
     };
   }, [authUser, authUserLoading]);
+
+  // Handle navigation from popup notifications
+  useEffect(() => {
+    if (location.state) {
+      const { selectedConversation: navConversation, selectedGroupConversation: navGroupConversation, tab } = location.state;
+
+      if (navConversation) {
+        setSelectedConversation({ _id: navConversation });
+        setSelectedGroupConversation(null);
+        setActiveTab('conversations');
+      } else if (navGroupConversation) {
+        setSelectedGroupConversation({ _id: navGroupConversation });
+        setSelectedConversation(null);
+        setActiveTab('groups');
+      }
+
+      if (tab) {
+        setActiveTab(tab);
+      }
+
+      // Clear the navigation state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Show loading if we're still waiting for auth user
   if (authUserLoading) {

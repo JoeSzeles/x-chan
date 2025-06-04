@@ -481,7 +481,7 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
 
         console.log(`[messages.js] Sending message to conversation: ${conversationId}`);
 
-        // Check if user is part of the conversation
+         // Check if user is part of the conversation
         const conversation = await Conversation.findOne({
             _id: conversationId,
             participants: req.user._id
@@ -525,11 +525,27 @@ router.post('/conversations/:conversationId/messages', protectRoute, async (req,
         conversation.lastActivity = new Date();
         await conversation.save();
 
-        const populatedMessage = await Message.findById(message._id)
-            .populate('senderId', 'username fullName profileImg');
+        // Emit the message to all participants via socket
+        const messageWithPopulatedSender = await Message.findById(message._id)
+            .populate('senderId', 'username fullName profileImg')
+            .populate('conversationId');
+
+        // Add conversation type for frontend notifications
+        messageWithPopulatedSender.conversationType = 'direct';
+
+        console.log('[messages.js] 📤 Emitting message to conversation room:', conversationId);
+        console.log('[messages.js] 📤 Message data:', {
+            id: messageWithPopulatedSender._id,
+            senderId: messageWithPopulatedSender.senderId._id,
+            content: messageWithPopulatedSender.content,
+            conversationType: messageWithPopulatedSender.conversationType
+        });
+
+        // Emit to conversation room
+        req.io.to(conversationId).emit('new_message', messageWithPopulatedSender);
 
         console.log('[messages.js] Message sent successfully');
-        res.status(201).json(populatedMessage);
+        res.status(201).json(messageWithPopulatedSender);
     } catch (error) {
         console.error('[messages.js] Error sending message:', error);
         console.error('[messages.js] Error details:', {
@@ -791,8 +807,19 @@ router.post('/group/:conversationId/messages', protectRoute, async (req, res) =>
         // Populate sender data
         await message.populate('senderId', 'username fullName profileImg');
 
+        // Emit the message to all participants via socket
+        const messageWithPopulatedSender = await Message.findById(message._id)
+            .populate('senderId', 'username fullName profileImg')
+            .populate('conversationId');
+
+        // Add conversation type for frontend notifications
+        messageWithPopulatedSender.conversationType = 'group';
+
+        // Emit to conversation room
+        req.io.to(conversationId).emit('new_message', messageWithPopulatedSender);
+
         console.log(`[messages.js] ✓ Group message sent successfully: ${message._id}`);
-        res.status(201).json(message);
+        res.status(201).json(messageWithPopulatedSender);
 
     } catch (error) {
         console.error('[messages.js] ❌ Error sending group message:', error);

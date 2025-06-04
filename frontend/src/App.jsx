@@ -26,10 +26,12 @@ import FollowingPage from './pages/FollowingPage';
 
 import Sidebar from "./components/common/Sidebar";
 import RightPanel from "./components/common/RightPanel";
+import MessageNotification from "./components/common/MessageNotification";
 
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./components/common/LoadingSpinner";
+import socketService from './services/socket';
 
 function App() {
 	const { data: authUser } = useQuery({
@@ -62,6 +64,14 @@ function App() {
 			setIsWideMode(authUser.settings.appearance.wideMode);
 		}
 	}, [authUser?.settings?.appearance?.wideMode]);
+
+	useEffect(() => {
+		if (authUser) {
+			socketService.connect();
+		}
+		return () => {
+		};
+	}, [authUser]);
 
 	if (authUser === undefined) {
 		return (
@@ -98,12 +108,13 @@ function App() {
 						<Route path="/thread/:board/:threadId" element={<ThreadPage />} />
 						<Route path="/services" element={<ServicesPage />} />
 						<Route path="/youtube-test" element={<YouTubeTestPage />} />
-					</Routes>
+						</Routes>
 					{authUser && <RightPanel isWideMode={isWideMode} />}
 					<Toaster />
 				</div>
 				{authUser && (
 					<>
+						<MessageNotification authUser={authUser} />
 						<ThemeToggle />
 						<button
 							onClick={() => setIsWideMode(!isWideMode)}
