@@ -26,6 +26,7 @@ import FollowingPage from './pages/FollowingPage';
 
 import Sidebar from "./components/common/Sidebar";
 import RightPanel from "./components/common/RightPanel";
+import MessageNotification from "./components/common/MessageNotification";
 
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -104,6 +105,7 @@ function App() {
 				</div>
 				{authUser && (
 					<>
+						<MessageNotification authUser={authUser} />
 						<ThemeToggle />
 						<button
 							onClick={() => setIsWideMode(!isWideMode)}
