@@ -624,7 +624,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                     user={participant}
                     size="sm"
                     showOnlineStatus={false}
-                    className={`${index > 0 ? 'ml-0' : ''}`}
+                    className={`${index > 0 ? 'ml-0' : ''} border-0`}
                   />
                   {isUserOnline(participant._id) && (
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
@@ -833,7 +833,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                     return (
                       <div key={participant._id} className="flex items-center justify-between p-2 rounded hover:bg-gray-100">
                         <div className="flex items-center space-x-2">
-                          <Avatar user={participant} size="xs" />
+                          <Avatar user={participant} size="xs" className="border-0" />
                           <div className="flex flex-col">
                             <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                               {participant.username}
@@ -909,7 +909,7 @@ const GroupChatWindow = ({ conversation, authUser }) => {
                       user={message.senderId}
                       size="sm"
                       showOnlineStatus={true}
-                      showBorder={true}
+                      showBorder={false}
                     />
                   )}
                 </div>
