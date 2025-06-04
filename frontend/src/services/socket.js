@@ -62,6 +62,11 @@ class SocketService {
 
       // Start heartbeat to keep connection alive
       this.startHeartbeat();
+
+      // Request online users list after connecting
+      setTimeout(() => {
+        this.requestOnlineUsers();
+      }, 1000);
     });
 
     this.socket.on('disconnect', (reason) => {
