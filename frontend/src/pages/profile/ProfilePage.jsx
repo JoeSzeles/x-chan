@@ -41,7 +41,6 @@ const ProfilePage = () => {
 
 	const { follow, isPending } = useFollow();
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
-
 	const {
 		data: user,
 		isLoading,
@@ -63,6 +62,41 @@ const ProfilePage = () => {
 			}
 		},
 	});
+
+	// Listen for profile image updates
+	useEffect(() => {
+		const handleProfileImageUpdate = (event) => {
+			if (event.detail?.user && event.detail.user.username === username) {
+				// Update the query cache immediately
+				queryClient.setQueryData(['user', username], (oldData) => ({
+					...oldData,
+					profileImg: event.detail.url,
+					...event.detail.user
+				}));
+			}
+		};
+
+		const handleStorageUpdate = (event) => {
+			if (event.key === 'profileImageUpdate') {
+				const updateData = JSON.parse(event.newValue || '{}');
+				if (updateData.user && updateData.user.username === username) {
+					queryClient.setQueryData(['user', username], (oldData) => ({
+						...oldData,
+						profileImg: updateData.url,
+						...updateData.user
+					}));
+				}
+			}
+		};
+
+		window.addEventListener('profileImageUpdated', handleProfileImageUpdate);
+		window.addEventListener('storage', handleStorageUpdate);
+
+		return () => {
+			window.removeEventListener('profileImageUpdated', handleProfileImageUpdate);
+			window.removeEventListener('storage', handleStorageUpdate);
+		};
+	}, [username, queryClient]);
 
 	const { isUpdatingProfile, updateProfile } = useUpdateUserProfile();
 
@@ -91,7 +125,7 @@ const ProfilePage = () => {
                 console.log('ProfilePage: Skipping background update');
                 return;
             }
-            
+
             console.log('ProfilePage: handleCoverUpdate called with data:', data);
             setCoverData(data);
 

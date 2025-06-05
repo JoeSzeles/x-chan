@@ -91,16 +91,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 onUpdate({ type: 'image', content: data.user.profileImg });
             }
 
-            // Force immediate refresh of user data in React Query cache
+            // Trigger immediate UI updates through multiple methods
             if (window.location.pathname.includes('/profile/')) {
-                // Invalidate all user-related queries to force refetch
-                const queryClient = window.queryClient;
-                if (queryClient) {
-                    queryClient.invalidateQueries({ queryKey: ["authUser"] });
-                    queryClient.invalidateQueries({ queryKey: ["user"] });
-                }
-                
-                // Also dispatch custom event for immediate UI updates
+                // Dispatch custom event for immediate UI updates
                 window.dispatchEvent(new CustomEvent('profileImageUpdated', { 
                     detail: { 
                         url: data.user?.profileImg, 
@@ -108,14 +101,35 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                         user: data.user
                     } 
                 }));
-            }
 
-            // Force page refresh as last resort to ensure UI updates
-            setTimeout(() => {
-                if (window.location.pathname.includes('/profile/')) {
-                    window.location.reload();
+                // Try to access React Query client from global scope or context
+                try {
+                    // Check if we can access the query client through React DevTools or global
+                    const queryClient = window.__REACT_QUERY_CLIENT__ || 
+                                      window.queryClient || 
+                                      document.querySelector('[data-query-client]')?.__queryClient__;
+                    
+                    if (queryClient) {
+                        queryClient.invalidateQueries({ queryKey: ["authUser"] });
+                        queryClient.invalidateQueries({ queryKey: ["user"] });
+                        queryClient.refetchQueries({ queryKey: ["authUser"] });
+                    }
+                } catch (err) {
+                    console.log('Could not access query client:', err);
                 }
-            }, 1000);
+
+                // Force immediate DOM update by triggering a storage event
+                localStorage.setItem('profileImageUpdate', JSON.stringify({
+                    url: data.user?.profileImg,
+                    timestamp: Date.now(),
+                    user: data.user
+                }));
+                
+                // Remove the storage item after a brief moment
+                setTimeout(() => {
+                    localStorage.removeItem('profileImageUpdate');
+                }, 100);
+            }
 
             toast.success('Profile picture updated successfully');
 
