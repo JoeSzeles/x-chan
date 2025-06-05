@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaCircle, FaEnvelope } from 'react-icons/fa';
+import { FaCircle, FaEnvelope, FaUser } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 
 const Avatar = ({ 
@@ -15,6 +15,7 @@ const Avatar = ({
 }) => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
   const navigate = useNavigate();
+  const [showDropdown, setShowDropdown] = useState(false);
   
   const { data: onlineUsers } = useQuery({
     queryKey: ["onlineUsers"],
@@ -74,10 +75,14 @@ const Avatar = ({
   const avatarSize = sizeClasses[size] || sizeClasses.md;
   
   const avatarContent = (
-    <div className={`relative group ${avatarSize} ${className}`}>
+    <div 
+      className={`relative group ${avatarSize} ${className}`}
+      onMouseEnter={() => setShowDropdown(true)}
+      onMouseLeave={() => setShowDropdown(false)}
+    >
       <div className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center ${
         showBorder ? 'border-2 border-gray-700 hover:border-gray-500' : ''
-      } transition-colors duration-200`}>
+      } transition-colors duration-200 cursor-pointer`}>
         <img 
           src={user.profileImg || "/avatar-placeholder.png"} 
           className="w-full h-full object-cover" 
@@ -96,35 +101,38 @@ const Avatar = ({
           }}
         />
       )}
-      {showMessageIcon && authUser && authUser._id !== user._id && (
-        <button
-          onClick={handleStartConversation}
-          className="absolute top-0 left-0 w-full h-full rounded-full bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          title={`Message ${user.username}`}
-        >
-          <FaEnvelope 
-            className="text-white" 
-            style={{ 
-              fontSize: size === 'xs' || size === 'sm' ? '10px' : '14px' 
-            }} 
-          />
-        </button>
+      
+      {/* Dropdown Menu */}
+      {showDropdown && authUser && authUser._id !== user._id && (
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 min-w-max">
+          <div className="py-1">
+            <Link
+              to={`/profile/${user.username}`}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
+              onClick={() => setShowDropdown(false)}
+            >
+              <FaUser className="text-xs" />
+              View Profile
+            </Link>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowDropdown(false);
+                handleStartConversation(e);
+              }}
+              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors text-left"
+            >
+              <FaEnvelope className="text-xs" />
+              Send Message
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
   
-  if (!clickable) {
-    return avatarContent;
-  }
-  
-  return (
-    <Link 
-      to={`/profile/${user.username}`}
-      className="inline-block"
-    >
-      {avatarContent}
-    </Link>
-  );
+  return avatarContent;
 };
 
 export default Avatar;
