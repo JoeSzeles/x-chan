@@ -31,8 +31,22 @@ const profileStorage = new CloudinaryStorage({
 });
 
 // Configure multer with different storages
-const boardUpload = multer({ storage: boardStorage });
-const profileUpload = multer({ storage: profileStorage });
+const boardUpload = multer({ 
+    storage: boardStorage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
+
+const profileUpload = multer({ 
+    storage: profileStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'), false);
+        }
+    }
+});
 
 // Upload image
 router.post('/', protectRoute, boardUpload.single('file'), async (req, res) => {
@@ -57,53 +71,62 @@ router.post('/', protectRoute, boardUpload.single('file'), async (req, res) => {
 });
 
 // Upload profile image
-router.post('/profile', protectRoute, profileUpload.single('profileImg'), async (req, res) => {
-    try {
-        console.log('Profile upload request received:', {
-            file: req.file,
-            userId: req.user?._id
-        });
+router.post('/profile', protectRoute, (req, res, next) => {
+    // Set JSON header early
+    res.setHeader('Content-Type', 'application/json');
+    
+    profileUpload.single('profileImg')(req, res, async (uploadError) => {
+        try {
+            if (uploadError) {
+                console.error('Multer upload error:', uploadError);
+                return res.status(400).json({
+                    success: false,
+                    error: uploadError.message || 'File upload failed'
+                });
+            }
 
-        if (!req.file) {
-            console.log('No file uploaded in request');
-            return res.status(400).json({ 
+            console.log('Profile upload request received:', {
+                file: req.file,
+                userId: req.user?._id
+            });
+
+            if (!req.file) {
+                console.log('No file uploaded in request');
+                return res.status(400).json({ 
+                    success: false,
+                    error: 'Please upload an image' 
+                });
+            }
+
+            // The image is already uploaded to Cloudinary via multer-storage-cloudinary
+            // req.file.path contains the Cloudinary URL
+            const imageUrl = req.file.path;
+            console.log('Image uploaded to Cloudinary:', imageUrl);
+
+            // Update user's profile image in database
+            const User = (await import('../models/user.model.js')).default;
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user._id,
+                { profileImg: imageUrl },
+                { new: true }
+            ).select('-password');
+
+            console.log('User profile updated successfully');
+
+            res.status(200).json({ 
+                success: true, 
+                url: imageUrl,
+                user: updatedUser
+            });
+        } catch (error) {
+            console.error('Profile image upload error:', error);
+            
+            res.status(500).json({ 
                 success: false,
-                error: 'Please upload an image' 
+                error: error.message || 'Failed to upload profile image'
             });
         }
-
-        // The image is already uploaded to Cloudinary via multer-storage-cloudinary
-        // req.file.path contains the Cloudinary URL
-        const imageUrl = req.file.path;
-        console.log('Image uploaded to Cloudinary:', imageUrl);
-
-        // Update user's profile image in database
-        const User = (await import('../models/user.model.js')).default;
-        const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            { profileImg: imageUrl },
-            { new: true }
-        ).select('-password');
-
-        console.log('User profile updated successfully');
-
-        // Ensure we always return JSON
-        res.setHeader('Content-Type', 'application/json');
-        res.status(200).json({ 
-            success: true, 
-            url: imageUrl,
-            user: updatedUser
-        });
-    } catch (error) {
-        console.error('Profile image upload error:', error);
-        
-        // Ensure we always return JSON even for errors
-        res.setHeader('Content-Type', 'application/json');
-        res.status(500).json({ 
-            success: false,
-            error: error.message || 'Failed to upload profile image'
-        });
-    }
+    });
 });
 
 export default router; 

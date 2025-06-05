@@ -82,24 +82,40 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 throw new Error(data.error || 'Upload failed');
             }
 
-            // Force refresh of the image by updating timestamp
+            // Force complete image refresh with new timestamp
             const newVersion = Date.now();
             setImageVersion(newVersion);
 
-            // Update the parent component if callback provided
+            // Update the parent component immediately
             if (onUpdate && data.user?.profileImg) {
                 onUpdate({ type: 'image', content: data.user.profileImg });
             }
 
-            // Also trigger a broader cache invalidation if needed
+            // Force immediate refresh of user data in React Query cache
             if (window.location.pathname.includes('/profile/')) {
-                // Force a brief delay then reload user data
-                setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent('profileImageUpdated', { 
-                        detail: { url: data.user?.profileImg, version: newVersion } 
-                    }));
-                }, 100);
+                // Invalidate all user-related queries to force refetch
+                const queryClient = window.queryClient;
+                if (queryClient) {
+                    queryClient.invalidateQueries({ queryKey: ["authUser"] });
+                    queryClient.invalidateQueries({ queryKey: ["user"] });
+                }
+                
+                // Also dispatch custom event for immediate UI updates
+                window.dispatchEvent(new CustomEvent('profileImageUpdated', { 
+                    detail: { 
+                        url: data.user?.profileImg, 
+                        version: newVersion,
+                        user: data.user
+                    } 
+                }));
             }
+
+            // Force page refresh as last resort to ensure UI updates
+            setTimeout(() => {
+                if (window.location.pathname.includes('/profile/')) {
+                    window.location.reload();
+                }
+            }, 1000);
 
             toast.success('Profile picture updated successfully');
 
