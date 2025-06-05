@@ -59,13 +59,23 @@ router.post('/', protectRoute, boardUpload.single('file'), async (req, res) => {
 // Upload profile image
 router.post('/profile', protectRoute, profileUpload.single('profileImg'), async (req, res) => {
     try {
+        console.log('Profile upload request received:', {
+            file: req.file,
+            userId: req.user?._id
+        });
+
         if (!req.file) {
-            return res.status(400).json({ error: 'Please upload an image' });
+            console.log('No file uploaded in request');
+            return res.status(400).json({ 
+                success: false,
+                error: 'Please upload an image' 
+            });
         }
 
         // The image is already uploaded to Cloudinary via multer-storage-cloudinary
         // req.file.path contains the Cloudinary URL
         const imageUrl = req.file.path;
+        console.log('Image uploaded to Cloudinary:', imageUrl);
 
         // Update user's profile image in database
         const User = (await import('../models/user.model.js')).default;
@@ -75,6 +85,10 @@ router.post('/profile', protectRoute, profileUpload.single('profileImg'), async 
             { new: true }
         ).select('-password');
 
+        console.log('User profile updated successfully');
+
+        // Ensure we always return JSON
+        res.setHeader('Content-Type', 'application/json');
         res.status(200).json({ 
             success: true, 
             url: imageUrl,
@@ -82,7 +96,13 @@ router.post('/profile', protectRoute, profileUpload.single('profileImg'), async 
         });
     } catch (error) {
         console.error('Profile image upload error:', error);
-        res.status(500).json({ error: error.message });
+        
+        // Ensure we always return JSON even for errors
+        res.setHeader('Content-Type', 'application/json');
+        res.status(500).json({ 
+            success: false,
+            error: error.message || 'Failed to upload profile image'
+        });
     }
 });
 
