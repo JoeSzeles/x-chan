@@ -203,15 +203,20 @@ const ProfilePage = () => {
 		try {
 			const res = await fetch(`/api/users/follow/${userId}`, {
 				method: "POST",
+				credentials: "include",
 			});
 			const data = await res.json();
 			if (!res.ok) {
 				throw new Error(data.error || "Something went wrong");
 			}
-			toast.success(
-				amIFollowing ? "Unfollowed successfully" : "Followed successfully"
+			toast.success(data.message || 
+				(amIFollowing ? "Unfollowed successfully" : "Followed successfully")
 			);
+			// Invalidate multiple queries to ensure UI updates
 			queryClient.invalidateQueries({ queryKey: ["user", username] });
+			queryClient.invalidateQueries({ queryKey: ["authUser"] });
+			queryClient.invalidateQueries({ queryKey: ["following"] });
+			queryClient.invalidateQueries({ queryKey: ["followers"] });
 		} catch (error) {
 			toast.error(error.message);
 		}
@@ -328,7 +333,7 @@ const ProfilePage = () => {
 										{!isMyProfile && (
 											<div className='flex gap-2'>
 												<button
-													className={`btn btn-xs rounded-full ${
+													className={`btn btn-sm rounded-full ${
 														amIFollowing 
 															? 'btn-outline border-red-500 text-red-500 hover:bg-red-500 hover:text-white' 
 															: 'btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white'
@@ -339,7 +344,7 @@ const ProfilePage = () => {
 													{isPending ? "..." : amIFollowing ? "Unfollow" : "Follow"}
 												</button>
 												<button
-													className='btn btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white btn-xs rounded-full'
+													className='btn btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white btn-sm rounded-full'
 													onClick={() => handleStartConversation(user?._id)}
 												>
 													Message
@@ -348,7 +353,7 @@ const ProfilePage = () => {
 										)}
 										{isMyProfile && (
 											<button
-												className='btn btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white btn-xs rounded-full'
+												className='btn btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white btn-sm rounded-full'
 												onClick={() => setShowEditProfileModal(true)}
 											>
 												Edit profile
