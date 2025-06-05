@@ -1,13 +1,11 @@
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
-import { useQueryClient } from '@tanstack/react-query';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
-    const queryClient = useQueryClient();
     // Use a state to force image refresh when updated
     const [imageVersion, setImageVersion] = useState(Date.now());
 
@@ -23,7 +21,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             formData.append('profileImg', file);
 
             // Upload the image
-            const response = await fetch('/api/users/upload/profile', {
+            const response = await fetch('/api/upload/profile', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -37,28 +35,41 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 throw new Error('Failed to upload profile picture');
             }
 
-            const data = await response.json();
+            // Only try to parse JSON if the content type is JSON
+            const contentType = response.headers.get('content-type');
+            let data;
 
-            if (!data.success) {
-                throw new Error('Failed to upload profile picture');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                console.warn('Non-JSON response received');
+                data = { success: true };
             }
 
-            // Force refresh of the image by updating timestamp
-            setImageVersion(Date.now());
+            // Update profile picture in the database
+            if (data.url) {
+                // Now call the user profile update endpoint to save the URL
+                const updateResponse = await fetch('/api/users/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ profileImg: data.url })
+                });
 
-            // Update the user data in the query cache immediately
-            if (data.user) {
-                queryClient.setQueryData(['authUser'], data.user);
-                queryClient.setQueryData(['user', user.username], data.user);
-                
-                // Invalidate queries to trigger refetch
-                queryClient.invalidateQueries({ queryKey: ['authUser'] });
-                queryClient.invalidateQueries({ queryKey: ['user', user.username] });
-            }
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to update user profile with new image');
+                }
 
-            // Update parent component with new profile image
-            if (onUpdate && data.user?.profileImg) {
-                onUpdate({ type: 'image', content: data.user.profileImg });
+                const updateData = await updateResponse.json();
+
+                // Force refresh of the image by updating timestamp
+                setImageVersion(Date.now());
+
+                if (onUpdate && updateData.user?.profileImg) {
+                    onUpdate({ type: 'image', content: updateData.user.profileImg });
+                }
             }
 
             toast.success('Profile picture updated successfully');
@@ -81,20 +92,25 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     return (
         <div 
-            className="relative w-32 h-32 group -mt-16 ml-4"
+            className="relative -mt-16 ml-4 group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="relative w-full h-full rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="relative w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
-                    className="w-full h-full object-cover object-center rounded-full"
+                    className="w-full h-full object-cover object-center"
+                    style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%'
+                    }}
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
-
+                
                 {isMyProfile && (
                     <div
                         className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
