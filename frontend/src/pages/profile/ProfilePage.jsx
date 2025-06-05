@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -38,6 +38,7 @@ const ProfilePage = () => {
 	const profileImgRef = useRef(null);
 
 	const { username } = useParams();
+	const navigate = useNavigate();
 
 	const { follow, isPending } = useFollow();
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -217,6 +218,43 @@ const ProfilePage = () => {
 		}
 	};
 
+	const handleStartConversation = async () => {
+		try {
+			console.log('ProfilePage: Starting conversation with user:', user._id);
+			
+			const response = await fetch('/api/messages/start-conversation', {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				},
+				body: JSON.stringify({ userId: user._id })
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({ error: 'Failed to start conversation' }));
+				throw new Error(errorData.error || `HTTP ${response.status}: Failed to start conversation`);
+			}
+
+			const conversation = await response.json();
+			console.log('ProfilePage: Started conversation:', conversation);
+			
+			// Navigate to messages page with the conversation selected
+			navigate('/messages', { 
+				state: { 
+					selectedConversation: conversation,
+					openChat: true 
+				} 
+			});
+			
+			toast.success(`Started conversation with ${user.username}`);
+		} catch (error) {
+			console.error('ProfilePage: Error starting conversation:', error);
+			toast.error(error.message || 'Failed to start conversation');
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className='flex justify-center items-center h-screen'>
@@ -309,8 +347,24 @@ const ProfilePage = () => {
 
 							<div className='flex flex-col gap-4 mt-14 px-4'>
 								<div className='flex flex-col'>
-									<span className='font-bold text-lg'>{user?.fullName}</span>
-									<span className='text-sm text-slate-500'>@{user?.username}</span>
+									<div className='flex items-center gap-3'>
+										<div className='flex flex-col'>
+											<span className='font-bold text-lg'>{user?.fullName}</span>
+											<span className='text-sm text-slate-500'>@{user?.username}</span>
+										</div>
+										{!isMyProfile && (
+											<button
+												onClick={handleStartConversation}
+												className='px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors duration-200 flex items-center gap-1'
+												title={`Send message to ${user?.username}`}
+											>
+												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+												</svg>
+												Message
+											</button>
+										)}
+									</div>
 									<span className='text-sm my-1'>{user?.bio}</span>
 								</div>
 

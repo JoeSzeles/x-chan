@@ -8,12 +8,17 @@ import GroupChatWindow from '../components/messages/GroupChatWindow';
 import MessageContacts from '../components/messages/MessageContacts';
 import CreateGroupModal from '../components/messages/CreateGroupModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import socketService from '../services/socket';
+import Breadcrumb from '../components/common/Breadcrumb';
+import PageHeader from '../components/common/PageHeader';
 
 const Messages = () => {
+  console.log('Messages: Component rendering');
+
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('conversations');
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [selectedGroupConversation, setSelectedGroupConversation] = useState(null);
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [notificationSoundsEnabled, setNotificationSoundsEnabled] = useState(
     localStorage.getItem('notificationSoundsEnabled') !== 'false' // Default to true
@@ -41,6 +46,19 @@ const Messages = () => {
     },
     retry: false,
   });
+
+  // Handle conversation selection from navigation state (e.g., from profile page)
+  useEffect(() => {
+    if (location.state?.selectedConversation && location.state?.openChat) {
+      console.log('Messages: Auto-selecting conversation from navigation:', location.state.selectedConversation);
+      setSelectedConversation(location.state.selectedConversation);
+      setSelectedGroupConversation(null);
+      setActiveTab('conversations');
+
+      // Clear the navigation state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Initialize socket service when user is authenticated
   useEffect(() => {
@@ -95,17 +113,6 @@ const Messages = () => {
     setActiveTab('groups');
   };
 
-    const location = useLocation();
-
-  // Handle selected conversation from navigation state
-  useEffect(() => {
-    if (location.state?.selectedConversation) {
-      setSelectedConversation(location.state.selectedConversation);
-      setActiveTab('conversations'); // Switch to direct messages tab
-      // Clear the navigation state after using it
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
 
   return (
     <div className="flex-1 flex h-screen" style={{ backgroundColor: 'var(--color-bg-main)' }}>
