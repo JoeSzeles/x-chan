@@ -6,7 +6,6 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
-    // Use a state to force image refresh when updated
     const [imageVersion, setImageVersion] = useState(Date.now());
 
     const handleFileChange = async (e) => {
@@ -16,11 +15,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         try {
             setIsUploading(true);
 
-            // Create FormData to send the file
             const formData = new FormData();
             formData.append('profileImg', file);
 
-            // Upload the image to the correct endpoint
             const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
@@ -29,22 +26,34 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
+            // Log the response to see what we're getting
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Upload failed:', errorText);
-                throw new Error('Failed to upload profile picture');
+                console.error('Upload failed with status:', response.status);
+                console.error('Error response:', errorText);
+                throw new Error(`Upload failed: ${response.status}`);
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                const responseText = await response.text();
+                console.error('Failed to parse JSON response:', responseText);
+                throw new Error('Server returned invalid response format');
+            }
 
             if (!data.success) {
-                throw new Error(data.error || 'Failed to upload profile picture');
+                throw new Error(data.error || 'Upload failed');
             }
 
-            // Force refresh of the image by updating timestamp
+            // Update image version to force refresh
             setImageVersion(Date.now());
 
-            // Update the parent component if callback provided
+            // Call the update callback if provided
             if (onUpdate && data.user?.profileImg) {
                 onUpdate({ type: 'image', content: data.user.profileImg });
             }
@@ -59,7 +68,6 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         }
     };
 
-    // Get the profile image URL with cache busting
     const getProfileImageUrl = () => {
         const baseUrl = user?.profileImg || "/avatar-placeholder.png";
         return baseUrl.includes('?') 
@@ -73,26 +81,26 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e] relative">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
-                    className="w-full h-full object-cover object-center"
-                    style={{
-                        objectFit: 'cover',
-                        width: '100%',
-                        height: '100%'
-                    }}
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
+
+                {/* Online status indicator - positioned on top of avatar */}
+                {user?.isOnline && (
+                    <div className="absolute top-1 right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full z-10"></div>
+                )}
             </div>
 
             {isMyProfile && (
                 <div
                     className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-                    onClick={() => fileInputRef.current.click()}
+                    onClick={() => fileInputRef.current?.click()}
                 >
                     <MdEdit className="w-5 h-5 text-white" />
                 </div>
