@@ -292,20 +292,24 @@ const ProfilePage = () => {
 								</div>
 							</PageHeader>
 							{/* COVER IMG */}
-							<InteractiveCoverPhoto 
-								user={user}
-								isMyProfile={isMyProfile}
-								onUpdate={handleCoverUpdate}
+							<div className='relative'>
+								<InteractiveCoverPhoto 
+									user={user}
+									isMyProfile={isMyProfile}
+									onUpdate={handleCoverUpdate}
 								/>
+								
+								{/* PROFILE PICTURE - Positioned to overlap cover photo */}
+								<div className='absolute -bottom-16 left-4'>
+									<ProfilePicture
+										user={user}
+										isMyProfile={isMyProfile}
+										onUpdate={handleProfileUpdate}
+									/>
+								</div>
+							</div>
 
-							{/* PROFILE PICTURE */}
-							<ProfilePicture
-								user={user}
-								isMyProfile={isMyProfile}
-								onUpdate={handleProfileUpdate}
-												/>
-
-							<div className='flex justify-end px-4 mt-5'>
+							<div className='flex justify-end px-4 mt-20'>
 								{isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
