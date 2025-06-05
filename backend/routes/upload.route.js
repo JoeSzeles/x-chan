@@ -55,12 +55,23 @@ router.post('/profile', protectRoute, upload.single('profileImg'), async (req, r
         const result = await cloudinary.uploader.upload(req.file.path, {
             folder: "profile_images",
             transformation: [
-                { width: 400, height: 400, gravity: "face", crop: "fill", quality: "auto" },
-                { radius: "max" }
+                { width: 400, height: 400, gravity: "face", crop: "fill", quality: "auto" }
             ]
         });
 
-        res.status(200).json({ success: true, url: result.secure_url });
+        // Update user's profile image in database
+        const User = (await import('../models/user.model.js')).default;
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            { profileImg: result.secure_url },
+            { new: true }
+        ).select('-password');
+
+        res.status(200).json({ 
+            success: true, 
+            url: result.secure_url,
+            user: updatedUser
+        });
     } catch (error) {
         console.error('Profile image upload error:', error);
         res.status(500).json({ error: error.message });
