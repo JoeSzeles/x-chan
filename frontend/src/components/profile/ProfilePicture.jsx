@@ -99,7 +99,6 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         >
             <div className="relative w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
-                    key={`profile-${user?._id}-${imageVersion}`}
                     src={getProfileImageUrl()}
                     alt="Profile"
                     className="w-full h-full object-cover object-center"
