@@ -365,7 +365,7 @@ const ProfilePage = () => {
 													{isPending ? "..." : amIFollowing ? "Unfollow" : "Follow"}
 												</button>
 												<button
-													className='btn btn-primary btn-xs rounded-full'
+													className='btn btn-outline btn-xs rounded-full'
 													onClick={() => handleStartConversation(user?._id)}
 												>
 													Message
