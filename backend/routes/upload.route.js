@@ -10,8 +10,8 @@ const router = express.Router();
 // Configuration is already done in server.js, no need to duplicate here
 // This prevents configuration conflicts in different parts of the app
 
-// Configure Cloudinary storage
-const storage = new CloudinaryStorage({
+// Configure Cloudinary storage for board images
+const boardStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'board_images',
@@ -20,11 +20,22 @@ const storage = new CloudinaryStorage({
     }
 });
 
-// Configure multer with Cloudinary storage
-const upload = multer({ storage: storage });
+// Configure Cloudinary storage for profile images
+const profileStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'profile_images',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+        transformation: [{ width: 400, height: 400, gravity: 'face', crop: 'fill', quality: 'auto' }]
+    }
+});
+
+// Configure multer with different storages
+const boardUpload = multer({ storage: boardStorage });
+const profileUpload = multer({ storage: profileStorage });
 
 // Upload image
-router.post('/', protectRoute, upload.single('file'), async (req, res) => {
+router.post('/', protectRoute, boardUpload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -46,30 +57,27 @@ router.post('/', protectRoute, upload.single('file'), async (req, res) => {
 });
 
 // Upload profile image
-router.post('/profile', protectRoute, upload.single('profileImg'), async (req, res) => {
+router.post('/profile', protectRoute, profileUpload.single('profileImg'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Please upload an image' });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: "profile_images",
-            transformation: [
-                { width: 400, height: 400, gravity: "face", crop: "fill", quality: "auto" }
-            ]
-        });
+        // The image is already uploaded to Cloudinary via multer-storage-cloudinary
+        // req.file.path contains the Cloudinary URL
+        const imageUrl = req.file.path;
 
         // Update user's profile image in database
         const User = (await import('../models/user.model.js')).default;
         const updatedUser = await User.findByIdAndUpdate(
             req.user._id,
-            { profileImg: result.secure_url },
+            { profileImg: imageUrl },
             { new: true }
         ).select('-password');
 
         res.status(200).json({ 
             success: true, 
-            url: result.secure_url,
+            url: imageUrl,
             user: updatedUser
         });
     } catch (error) {
