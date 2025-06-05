@@ -7,6 +7,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
+    // Use a state to force image refresh when updated
     const [imageVersion, setImageVersion] = useState(Date.now());
 
     const handleFileChange = async (e) => {
@@ -16,106 +17,61 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         try {
             setIsUploading(true);
 
+            // Create FormData to send the file
             const formData = new FormData();
             formData.append('profileImg', file);
 
-            console.log('Uploading file:', file.name, file.type, file.size);
-
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('Authentication token not found');
-            }
-
+            // Upload the image
             const response = await fetch('/api/upload/profile', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
                 body: formData
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response content-type:', response.headers.get('content-type'));
-
-            const contentType = response.headers.get('content-type');
-            console.log('Full response headers:', [...response.headers.entries()]);
-            
             if (!response.ok) {
-                let errorMessage = `Upload failed: ${response.status}`;
-                try {
-                    if (contentType && contentType.includes('application/json')) {
-                        const errorData = await response.json();
-                        errorMessage = errorData.error || errorMessage;
-                    } else {
-                        const errorText = await response.text();
-                        console.error('Non-JSON error response:', errorText);
-                        errorMessage = errorText || errorMessage;
-                    }
-                } catch (parseError) {
-                    console.error('Error parsing response:', parseError);
-                    errorMessage = `Server error: ${response.status}`;
-                }
-                throw new Error(errorMessage);
+                const text = await response.text();
+                console.error('Error response:', text);
+                throw new Error('Failed to upload profile picture');
             }
 
+            // Only try to parse JSON if the content type is JSON
+            const contentType = response.headers.get('content-type');
             let data;
             
             if (contentType && contentType.includes('application/json')) {
-                try {
-                    data = await response.json();
-                } catch (parseError) {
-                    console.error('Failed to parse JSON response:', parseError);
-                    const responseText = await response.text();
-                    console.error('Raw response text:', responseText);
-                    throw new Error('Server returned invalid JSON format');
-                }
+                data = await response.json();
             } else {
-                const responseText = await response.text();
-                console.error('Non-JSON response received:', responseText);
-                console.error('Content-Type:', contentType);
-                throw new Error('Server returned non-JSON response');
+                console.warn('Non-JSON response received');
+                data = { success: true };
             }
 
-            console.log('Upload response data:', data);
-
-            if (!data.success) {
-                throw new Error(data.error || 'Upload failed');
-            }
-
-            // Force complete image refresh with new timestamp
-            const newVersion = Date.now();
-            setImageVersion(newVersion);
-
-            // Update the parent component immediately
-            if (onUpdate && data.user?.profileImg) {
-                onUpdate({ type: 'image', content: data.user.profileImg });
-            }
-
-            // Force immediate refresh of user data in React Query cache
-            if (window.location.pathname.includes('/profile/')) {
-                // Invalidate all user-related queries to force refetch
-                const queryClient = window.queryClient;
-                if (queryClient) {
-                    queryClient.invalidateQueries({ queryKey: ["authUser"] });
-                    queryClient.invalidateQueries({ queryKey: ["user"] });
+            // Update profile picture in the database
+            if (data.url) {
+                // Now call the user profile update endpoint to save the URL
+                const updateResponse = await fetch('/api/users/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ profileImg: data.url })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to update user profile with new image');
                 }
                 
-                // Also dispatch custom event for immediate UI updates
-                window.dispatchEvent(new CustomEvent('profileImageUpdated', { 
-                    detail: { 
-                        url: data.user?.profileImg, 
-                        version: newVersion,
-                        user: data.user
-                    } 
-                }));
-            }
-
-            // Force page refresh as last resort to ensure UI updates
-            setTimeout(() => {
-                if (window.location.pathname.includes('/profile/')) {
-                    window.location.reload();
+                const updateData = await updateResponse.json();
+                
+                // Force refresh of the image by updating timestamp
+                setImageVersion(Date.now());
+                
+                if (onUpdate && updateData.user?.profileImg) {
+                    onUpdate({ type: 'image', content: updateData.user.profileImg });
                 }
-            }, 1000);
+            }
 
             toast.success('Profile picture updated successfully');
 
@@ -127,6 +83,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         }
     };
 
+    // Get the profile image URL with cache busting
     const getProfileImageUrl = () => {
         const baseUrl = user?.profileImg || "/avatar-placeholder.png";
         return baseUrl.includes('?') 
@@ -140,26 +97,26 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e] relative">
+            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
+                    style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%'
+                    }}
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
-
-                {/* Online status indicator - positioned at top-right of avatar */}
-                {user?.isOnline && (
-                    <div className="absolute top-2 right-2 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                )}
             </div>
 
             {isMyProfile && (
                 <div
                     className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => fileInputRef.current.click()}
                 >
                     <MdEdit className="w-5 h-5 text-white" />
                 </div>
