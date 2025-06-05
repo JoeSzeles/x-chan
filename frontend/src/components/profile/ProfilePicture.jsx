@@ -96,7 +96,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="relative w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
@@ -110,16 +110,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
+                
+                {isMyProfile && (
+                    <div
+                        className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        <MdEdit className="w-5 h-5 text-white" />
+                    </div>
+                )}
             </div>
-
-            {isMyProfile && (
-                <div
-                    className={`absolute top-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-                    onClick={() => fileInputRef.current.click()}
-                >
-                    <MdEdit className="w-5 h-5 text-white" />
-                </div>
-            )}
 
             <input
                 type="file"
