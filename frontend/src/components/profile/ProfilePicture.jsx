@@ -1,9 +1,13 @@
+The code has been modified to remove the syntax error (backticks) at the end of the file and to add the missing Avatar import.
+```
+```replit_final_file
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
-import { FaEnvelope, FaCircle } from "react-icons/fa";
+import { FaEnvelope } from "react-icons/fa";
 import { toast } from 'react-hot-toast';
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from 'react-router-dom';
+import Avatar from '../common/Avatar';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isUploading, setIsUploading] = useState(false);
@@ -198,4 +202,3 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 };
 
 export default ProfilePicture;
-```
