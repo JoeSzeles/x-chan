@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
@@ -26,34 +27,22 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
-            // Log the response to see what we're getting
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers.get('content-type'));
-
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Upload failed with status:', response.status);
-                console.error('Error response:', errorText);
-                throw new Error(`Upload failed: ${response.status}`);
+                console.error('Upload failed:', errorText);
+                throw new Error('Failed to upload profile picture');
             }
 
-            let data;
-            try {
-                data = await response.json();
-            } catch (parseError) {
-                const responseText = await response.text();
-                console.error('Failed to parse JSON response:', responseText);
-                throw new Error('Server returned invalid response format');
-            }
+            const data = await response.json();
 
             if (!data.success) {
-                throw new Error(data.error || 'Upload failed');
+                throw new Error(data.error || 'Failed to upload profile picture');
             }
 
-            // Update image version to force refresh
+            // Force refresh of the image by updating timestamp
             setImageVersion(Date.now());
 
-            // Call the update callback if provided
+            // Update the parent component if callback provided
             if (onUpdate && data.user?.profileImg) {
                 onUpdate({ type: 'image', content: data.user.profileImg });
             }
@@ -91,9 +80,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     }}
                 />
 
-                {/* Online status indicator - positioned on top of avatar */}
+                {/* Online status indicator - positioned at top-right of avatar */}
                 {user?.isOnline && (
-                    <div className="absolute top-1 right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full z-10"></div>
+                    <div className="absolute top-2 right-2 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                 )}
             </div>
 
