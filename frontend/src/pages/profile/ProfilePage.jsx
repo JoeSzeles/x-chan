@@ -260,50 +260,44 @@ const ProfilePage = () => {
 								onUpdate={handleCoverUpdate}
 								/>
 
-							{/* PROFILE PICTURE SECTION */}
-							<div className="relative flex items-end px-4">
-								{/* PROFILE PICTURE */}
-								<ProfilePicture
-									user={user}
-									isMyProfile={isMyProfile}
-									onUpdate={handleProfileUpdate}
-								/>
-								
-								{/* Buttons - Right side */}
-								<div className='flex justify-end flex-1 mb-4 gap-2'>
-									{/* Edit Profile Button - Right of profile picture */}
-									{isMyProfile && (
-										<button
-											className='btn btn-outline rounded-full btn-sm'
-											onClick={() => setShowEditProfileModal(true)}
-										>
-											Edit profile
-										</button>
-									)}
-									
-									{!isMyProfile && (
-										<button
-											className='btn btn-outline rounded-full btn-sm'
-											onClick={() => handleFollow(user?._id)}
-										>
-											{isPending && "Loading..."}
-											{!isPending && amIFollowing && "Unfollow"}
-											{!isPending && !amIFollowing && "Follow"}
-										</button>
-									)}
-									{(coverImg || profileImg) && (
-										<button
-											className='btn btn-primary rounded-full btn-sm text-white px-4'
-											onClick={async () => {
-												await updateProfile({ coverImg, profileImg });
-												setProfileImg(null);
-												setCoverImg(null);
-											}}
-										>
-											{isUpdatingProfile ? "Updating..." : "Update"}
-										</button>
-									)}
-								</div>
+							{/* PROFILE PICTURE */}
+							<ProfilePicture
+								user={user}
+								isMyProfile={isMyProfile}
+								onUpdate={handleProfileUpdate}
+												/>
+
+							<div className='flex justify-end px-4 mt-5'>
+								{isMyProfile && (
+									<button
+										className='btn btn-outline rounded-full btn-sm'
+										onClick={() => setShowEditProfileModal(true)}
+									>
+										Edit profile
+									</button>
+								)}
+								{!isMyProfile && (
+									<button
+										className='btn btn-outline rounded-full btn-sm'
+										onClick={() => handleFollow(user?._id)}
+									>
+										{isPending && "Loading..."}
+										{!isPending && amIFollowing && "Unfollow"}
+										{!isPending && !amIFollowing && "Follow"}
+									</button>
+								)}
+								{(coverImg || profileImg) && (
+									<button
+										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
+										onClick={async () => {
+											await updateProfile({ coverImg, profileImg });
+											setProfileImg(null);
+											setCoverImg(null);
+										}}
+									>
+										{isUpdatingProfile ? "Updating..." : "Update"}
+									</button>
+								)}
 							</div>
 
 							{showEditProfileModal && (
