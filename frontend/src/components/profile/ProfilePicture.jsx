@@ -93,11 +93,11 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     return (
         <div 
-            className="relative -mt-16 ml-4 group"
+            className="relative w-32 h-32 -mt-16 ml-4 group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="w-full h-full rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
