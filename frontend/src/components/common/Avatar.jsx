@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { FaCircle } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaCircle, FaEnvelope } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
 
 const Avatar = ({ 
@@ -10,9 +10,11 @@ const Avatar = ({
   showOnlineStatus = true, 
   className = '', 
   clickable = true,
-  showBorder = true
+  showBorder = true,
+  showMessageIcon = true
 }) => {
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+  const navigate = useNavigate();
   
   const { data: onlineUsers } = useQuery({
     queryKey: ["onlineUsers"],
@@ -38,11 +40,41 @@ const Avatar = ({
     xl: 'w-16 h-16',
     xxl: 'w-20 h-20'
   };
+
+  const handleStartConversation = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const response = await fetch('/api/messages/start-conversation', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ userId: user._id })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to start conversation' }));
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to start conversation`);
+      }
+
+      const conversation = await response.json();
+      
+      // Navigate to messages page with the conversation selected
+      navigate('/messages', { state: { selectedConversation: conversation } });
+    } catch (err) {
+      console.error('Error starting conversation:', err);
+      alert(`Error starting conversation: ${err.message}`);
+    }
+  };
   
   const avatarSize = sizeClasses[size] || sizeClasses.md;
   
   const avatarContent = (
-    <div className={`relative ${avatarSize} ${className}`}>
+    <div className={`relative group ${avatarSize} ${className}`}>
       <div className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center ${
         showBorder ? 'border-2 border-gray-700 hover:border-gray-500' : ''
       } transition-colors duration-200`}>
@@ -63,6 +95,20 @@ const Avatar = ({
             fontSize: size === 'xs' || size === 'sm' ? '8px' : '12px'
           }}
         />
+      )}
+      {showMessageIcon && authUser && authUser._id !== user._id && (
+        <button
+          onClick={handleStartConversation}
+          className="absolute top-0 left-0 w-full h-full rounded-full bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          title={`Message ${user.username}`}
+        >
+          <FaEnvelope 
+            className="text-white" 
+            style={{ 
+              fontSize: size === 'xs' || size === 'sm' ? '10px' : '14px' 
+            }} 
+          />
+        </button>
       )}
     </div>
   );
