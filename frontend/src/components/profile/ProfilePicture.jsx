@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
+    const queryClient = useQueryClient();
     // Use a state to force image refresh when updated
     const [imageVersion, setImageVersion] = useState(Date.now());
 
@@ -44,6 +46,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             // Force refresh of the image by updating timestamp
             setImageVersion(Date.now());
 
+            // Update the user data in the query cache immediately
+            if (data.user) {
+                queryClient.setQueryData(['authUser'], data.user);
+                queryClient.setQueryData(['user', user.username], data.user);
+                
+                // Invalidate queries to trigger refetch
+                queryClient.invalidateQueries({ queryKey: ['authUser'] });
+                queryClient.invalidateQueries({ queryKey: ['user', user.username] });
+            }
+
             // Update parent component with new profile image
             if (onUpdate && data.user?.profileImg) {
                 onUpdate({ type: 'image', content: data.user.profileImg });
@@ -69,7 +81,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     return (
         <div 
-            className="relative w-32 h-32 group"
+            className="relative w-32 h-32 group -mt-16 ml-4"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
