@@ -56,19 +56,20 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 throw new Error('Failed to upload profile picture');
             }
 
-            // Only try to parse JSON if the content type is JSON
-            const contentType = response.headers.get('content-type');
+            // Try to parse JSON, but handle non-JSON responses gracefully
             let data;
+            const responseText = await response.text();
             
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                console.warn('Non-JSON response received');
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.warn('Non-JSON response received:', responseText);
+                // If it's not JSON, assume success and extract URL if present
                 data = { success: true };
             }
 
             // Update profile picture in the database
-            if (data.url) {
+            if (data && data.url) {
                 // Now call the user profile update endpoint to save the URL
                 const updateResponse = await fetch('/api/users/update', {
                     method: 'POST',
