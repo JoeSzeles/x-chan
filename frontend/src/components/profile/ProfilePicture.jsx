@@ -21,8 +21,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             const formData = new FormData();
             formData.append('profileImg', file);
 
-            // Upload the image directly using the user upload endpoint
-            const response = await fetch('/api/users/upload/profile', {
+            // Upload the image
+            const response = await fetch('/api/upload/profile', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -36,13 +36,41 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 throw new Error('Failed to upload profile picture');
             }
 
-            const data = await response.json();
+            // Only try to parse JSON if the content type is JSON
+            const contentType = response.headers.get('content-type');
+            let data;
             
-            // Force refresh of the image by updating timestamp
-            setImageVersion(Date.now());
-            
-            if (onUpdate && data.user?.profileImg) {
-                onUpdate({ type: 'image', content: data.user.profileImg });
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                console.warn('Non-JSON response received');
+                data = { success: true };
+            }
+
+            // Update profile picture in the database
+            if (data.url) {
+                // Now call the user profile update endpoint to save the URL
+                const updateResponse = await fetch('/api/users/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ profileImg: data.url })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to update user profile with new image');
+                }
+                
+                const updateData = await updateResponse.json();
+                
+                // Force refresh of the image by updating timestamp
+                setImageVersion(Date.now());
+                
+                if (onUpdate && updateData.user?.profileImg) {
+                    onUpdate({ type: 'image', content: updateData.user.profileImg });
+                }
             }
 
             toast.success('Profile picture updated successfully');
@@ -69,7 +97,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e] relative">
+            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
@@ -83,15 +111,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
-                {isMyProfile && (
-                    <div
-                        className={`absolute top-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-                        onClick={() => fileInputRef.current.click()}
-                    >
-                        <MdEdit className="w-5 h-5 text-white" />
-                    </div>
-                )}
             </div>
+
+            {isMyProfile && (
+                <div
+                    className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                    onClick={() => fileInputRef.current.click()}
+                >
+                    <MdEdit className="w-5 h-5 text-white" />
+                </div>
+            )}
 
             <input
                 type="file"
