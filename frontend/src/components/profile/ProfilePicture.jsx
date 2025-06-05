@@ -43,21 +43,34 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             }
 
             // Force refresh of the image by updating timestamp
-            setImageVersion(Date.now());
+            const newImageVersion = Date.now();
+            setImageVersion(newImageVersion);
 
             // Update the user data in the query cache immediately
             if (data.user) {
-                queryClient.setQueryData(['authUser'], data.user);
-                queryClient.setQueryData(['user', user.username], data.user);
+                // Update both auth user and specific user queries
+                queryClient.setQueryData(['authUser'], (oldData) => ({
+                    ...oldData,
+                    ...data.user
+                }));
                 
-                // Invalidate queries to trigger refetch
+                queryClient.setQueryData(['user', user.username], (oldData) => ({
+                    ...oldData,
+                    ...data.user
+                }));
+                
+                // Invalidate all related queries to ensure consistency
                 queryClient.invalidateQueries({ queryKey: ['authUser'] });
-                queryClient.invalidateQueries({ queryKey: ['user', user.username] });
+                queryClient.invalidateQueries({ queryKey: ['user'] });
+                queryClient.invalidateQueries({ queryKey: ['userProfile'] });
             }
 
             // Update parent component with new profile image
             if (onUpdate && data.user?.profileImg) {
-                onUpdate({ type: 'image', content: data.user.profileImg });
+                onUpdate({ 
+                    type: 'image', 
+                    content: `${data.user.profileImg}?v=${newImageVersion}` 
+                });
             }
 
             toast.success('Profile picture updated successfully');
@@ -73,6 +86,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     // Get the profile image URL with cache busting
     const getProfileImageUrl = () => {
         const baseUrl = user?.profileImg || "/avatar-placeholder.png";
+        if (baseUrl === "/avatar-placeholder.png") {
+            return baseUrl;
+        }
         return baseUrl.includes('?') 
             ? `${baseUrl}&v=${imageVersion}` 
             : `${baseUrl}?v=${imageVersion}`;
@@ -86,6 +102,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         >
             <div className="relative w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
+                    key={`profile-${user?._id}-${imageVersion}`}
                     src={getProfileImageUrl()}
                     alt="Profile"
                     className="w-full h-full object-cover object-center"
