@@ -21,7 +21,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             formData.append('profileImg', file);
 
             // Upload the image
-            const response = await fetch('/api/upload/profile', {
+            const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -35,41 +35,18 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 throw new Error('Failed to upload profile picture');
             }
 
-            // Only try to parse JSON if the content type is JSON
-            const contentType = response.headers.get('content-type');
-            let data;
+            const data = await response.json();
 
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                console.warn('Non-JSON response received');
-                data = { success: true };
+            if (!data.success) {
+                throw new Error('Failed to upload profile picture');
             }
 
-            // Update profile picture in the database
-            if (data.url) {
-                // Now call the user profile update endpoint to save the URL
-                const updateResponse = await fetch('/api/users/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ profileImg: data.url })
-                });
+            // Force refresh of the image by updating timestamp
+            setImageVersion(Date.now());
 
-                if (!updateResponse.ok) {
-                    throw new Error('Failed to update user profile with new image');
-                }
-
-                const updateData = await updateResponse.json();
-
-                // Force refresh of the image by updating timestamp
-                setImageVersion(Date.now());
-
-                if (onUpdate && updateData.user?.profileImg) {
-                    onUpdate({ type: 'image', content: updateData.user.profileImg });
-                }
+            // Update parent component with new profile image
+            if (onUpdate && data.user?.profileImg) {
+                onUpdate({ type: 'image', content: data.user.profileImg });
             }
 
             toast.success('Profile picture updated successfully');
@@ -92,11 +69,11 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     return (
         <div 
-            className="relative -mt-16 ml-4 group"
+            className="relative w-32 h-32 group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="relative w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="relative w-full h-full rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
@@ -110,7 +87,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
-                
+
                 {isMyProfile && (
                     <div
                         className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
