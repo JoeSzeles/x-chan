@@ -1,15 +1,13 @@
-
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
-import { useQueryClient } from '@tanstack/react-query';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const fileInputRef = useRef(null);
+    // Use a state to force image refresh when updated
     const [imageVersion, setImageVersion] = useState(Date.now());
-    const queryClient = useQueryClient();
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -22,52 +20,56 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             const formData = new FormData();
             formData.append('profileImg', file);
 
-            // Upload the image to the correct endpoint
-            const response = await fetch('/api/users/upload/profile', {
+            // Upload the image
+            const response = await fetch('/api/upload/profile', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
                 body: formData
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to upload profile picture');
+                const text = await response.text();
+                console.error('Error response:', text);
+                throw new Error('Failed to upload profile picture');
             }
 
-            const data = await response.json();
+            // Only try to parse JSON if the content type is JSON
+            const contentType = response.headers.get('content-type');
+            let data;
 
-            if (!data.success || !data.user) {
-                throw new Error('Invalid response from server');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                console.warn('Non-JSON response received');
+                data = { success: true };
             }
 
-            // Force refresh of the image by updating timestamp
-            const newImageVersion = Date.now();
-            setImageVersion(newImageVersion);
-
-            // Update the user data in the query cache immediately
-            if (data.user) {
-                // Update both auth user and specific user queries
-                queryClient.setQueryData(['authUser'], (oldData) => ({
-                    ...oldData,
-                    ...data.user
-                }));
-                
-                queryClient.setQueryData(['user', user.username], (oldData) => ({
-                    ...oldData,
-                    ...data.user
-                }));
-                
-                // Invalidate all related queries to ensure consistency
-                queryClient.invalidateQueries({ queryKey: ['authUser'] });
-                queryClient.invalidateQueries({ queryKey: ['user'] });
-                queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-            }
-
-            // Update parent component with new profile image
-            if (onUpdate && data.user?.profileImg) {
-                onUpdate({ 
-                    type: 'image', 
-                    content: `${data.user.profileImg}?v=${newImageVersion}` 
+            // Update profile picture in the database
+            if (data.url) {
+                // Now call the user profile update endpoint to save the URL
+                const updateResponse = await fetch('/api/users/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ profileImg: data.url })
                 });
+
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to update user profile with new image');
+                }
+
+                const updateData = await updateResponse.json();
+
+                // Force refresh of the image by updating timestamp
+                setImageVersion(Date.now());
+
+                if (onUpdate && updateData.user?.profileImg) {
+                    onUpdate({ type: 'image', content: updateData.user.profileImg });
+                }
             }
 
             toast.success('Profile picture updated successfully');
@@ -83,9 +85,6 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     // Get the profile image URL with cache busting
     const getProfileImageUrl = () => {
         const baseUrl = user?.profileImg || "/avatar-placeholder.png";
-        if (baseUrl === "/avatar-placeholder.png") {
-            return baseUrl;
-        }
         return baseUrl.includes('?') 
             ? `${baseUrl}&v=${imageVersion}` 
             : `${baseUrl}?v=${imageVersion}`;
@@ -93,15 +92,20 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     return (
         <div 
-            className="relative -mt-16 ml-4 group"
+            className="relative w-32 h-32 group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="relative w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="relative w-full h-full rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
                     className="w-full h-full object-cover object-center"
+                    style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%'
+                    }}
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
