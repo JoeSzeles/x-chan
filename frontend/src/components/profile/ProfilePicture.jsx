@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
@@ -21,8 +20,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             const formData = new FormData();
             formData.append('profileImg', file);
 
-            // Upload the image
-            const response = await fetch('/api/upload/profile', {
+            // Upload the image to the correct endpoint
+            const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -31,46 +30,23 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             });
 
             if (!response.ok) {
-                const text = await response.text();
-                console.error('Error response:', text);
+                const errorText = await response.text();
+                console.error('Upload failed:', errorText);
                 throw new Error('Failed to upload profile picture');
             }
 
-            // Only try to parse JSON if the content type is JSON
-            const contentType = response.headers.get('content-type');
-            let data;
-            
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                console.warn('Non-JSON response received');
-                data = { success: true };
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to upload profile picture');
             }
 
-            // Update profile picture in the database
-            if (data.url) {
-                // Now call the user profile update endpoint to save the URL
-                const updateResponse = await fetch('/api/users/update', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ profileImg: data.url })
-                });
-                
-                if (!updateResponse.ok) {
-                    throw new Error('Failed to update user profile with new image');
-                }
-                
-                const updateData = await updateResponse.json();
-                
-                // Force refresh of the image by updating timestamp
-                setImageVersion(Date.now());
-                
-                if (onUpdate && updateData.user?.profileImg) {
-                    onUpdate({ type: 'image', content: updateData.user.profileImg });
-                }
+            // Force refresh of the image by updating timestamp
+            setImageVersion(Date.now());
+
+            // Update the parent component if callback provided
+            if (onUpdate && data.user?.profileImg) {
+                onUpdate({ type: 'image', content: data.user.profileImg });
             }
 
             toast.success('Profile picture updated successfully');
