@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
@@ -38,7 +39,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             // Only try to parse JSON if the content type is JSON
             const contentType = response.headers.get('content-type');
             let data;
-
+            
             if (contentType && contentType.includes('application/json')) {
                 data = await response.json();
             } else {
@@ -57,16 +58,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     },
                     body: JSON.stringify({ profileImg: data.url })
                 });
-
+                
                 if (!updateResponse.ok) {
                     throw new Error('Failed to update user profile with new image');
                 }
-
+                
                 const updateData = await updateResponse.json();
-
+                
                 // Force refresh of the image by updating timestamp
                 setImageVersion(Date.now());
-
+                
                 if (onUpdate && updateData.user?.profileImg) {
                     onUpdate({ type: 'image', content: updateData.user.profileImg });
                 }
@@ -92,11 +93,11 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
     return (
         <div 
-            className="relative w-32 h-32 group"
+            className="relative -mt-16 ml-4 group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="relative w-full h-full rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
+            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e]">
                 <img
                     src={getProfileImageUrl()}
                     alt="Profile"
@@ -110,16 +111,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
-                
-                {isMyProfile && (
-                    <div
-                        className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
-                        onClick={() => fileInputRef.current.click()}
-                    >
-                        <MdEdit className="w-5 h-5 text-white" />
-                    </div>
-                )}
             </div>
+
+            {isMyProfile && (
+                <div
+                    className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                    onClick={() => fileInputRef.current.click()}
+                >
+                    <MdEdit className="w-5 h-5 text-white" />
+                </div>
+            )}
 
             <input
                 type="file"
