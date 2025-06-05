@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
@@ -35,19 +36,41 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 throw new Error('Failed to upload profile picture');
             }
 
-            // Parse the JSON response
-            const data = await response.json();
-
-            if (!data.success) {
-                throw new Error(data.error || 'Failed to upload profile picture');
+            // Only try to parse JSON if the content type is JSON
+            const contentType = response.headers.get('content-type');
+            let data;
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                console.warn('Non-JSON response received');
+                data = { success: true };
             }
 
-            // Force refresh of the image by updating timestamp
-            setImageVersion(Date.now());
-
-            // Update the parent component if callback provided
-            if (onUpdate && data.user?.profileImg) {
-                onUpdate({ type: 'image', content: data.user.profileImg });
+            // Update profile picture in the database
+            if (data.url) {
+                // Now call the user profile update endpoint to save the URL
+                const updateResponse = await fetch('/api/users/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ profileImg: data.url })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error('Failed to update user profile with new image');
+                }
+                
+                const updateData = await updateResponse.json();
+                
+                // Force refresh of the image by updating timestamp
+                setImageVersion(Date.now());
+                
+                if (onUpdate && updateData.user?.profileImg) {
+                    onUpdate({ type: 'image', content: updateData.user.profileImg });
+                }
             }
 
             toast.success('Profile picture updated successfully');
