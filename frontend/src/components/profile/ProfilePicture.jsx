@@ -1,12 +1,10 @@
 
-
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
-import { FaEnvelope } from "react-icons/fa";
+import { FaEnvelope, FaCircle } from "react-icons/fa";
 import { toast } from 'react-hot-toast';
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from 'react-router-dom';
-import Avatar from '../common/Avatar';
 
 const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const [isUploading, setIsUploading] = useState(false);
@@ -17,6 +15,20 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     const navigate = useNavigate();
     
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+    
+    const { data: onlineUsers } = useQuery({
+        queryKey: ["onlineUsers"],
+        queryFn: async () => {
+            const res = await fetch('/api/users/online');
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to fetch online users");
+            return data;
+        },
+        enabled: !!authUser,
+        refetchInterval: 30000, // Refetch every 30 seconds
+    });
+    
+    const isOnline = onlineUsers?.some(onlineUser => onlineUser._id === user._id);
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -124,29 +136,33 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             : `${baseUrl}?v=${imageVersion}`;
     };
 
-    // Create a user object with updated profile image for the Avatar component
-    const userWithUpdatedImage = {
-        ...user,
-        profileImg: getProfileImageUrl()
-    };
-
     return (
         <div 
             className="relative -mt-16 ml-4 group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {/* Use Avatar component with online status - same as WhosOnline */}
-            <div className="w-32 h-32 border-4 border-[#1e1e1e] rounded-full overflow-hidden bg-[#1e1e1e] relative">
-                <Avatar 
-                    user={userWithUpdatedImage}
-                    size="xxl"
-                    showOnlineStatus={true}
-                    className="w-full h-full"
-                    clickable={false}
-                    showBorder={false}
-                    showMessageIcon={false}
+            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e] relative">
+                <img
+                    src={getProfileImageUrl()}
+                    alt="Profile"
+                    className="w-full h-full object-cover object-center"
+                    style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%'
+                    }}
+                    onError={(e) => {
+                        e.target.src = "/avatar-placeholder.png";
+                    }}
                 />
+                
+                {/* Online/Offline Status Indicator */}
+                <div className={`absolute bottom-2 right-2 w-4 h-4 border-2 border-[#1e1e1e] rounded-full ${
+                    isOnline ? 'bg-green-500' : 'bg-gray-400'
+                }`} style={{ 
+                    filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))'
+                }}></div>
             </div>
 
             {/* Edit Profile Picture Icon - Top of image */}
@@ -188,4 +204,3 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 };
 
 export default ProfilePicture;
-

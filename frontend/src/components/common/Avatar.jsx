@@ -40,7 +40,7 @@ const Avatar = ({
     md: 'w-10 h-10',
     lg: 'w-12 h-12',
     xl: 'w-16 h-16',
-    xxl: 'w-32 h-32'
+    xxl: 'w-20 h-20'
   };
 
   const handleMouseEnter = () => {
