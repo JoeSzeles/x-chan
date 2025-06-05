@@ -262,16 +262,6 @@ const ProfilePage = () => {
 
 							{/* PROFILE PICTURE SECTION */}
 							<div className="relative flex items-end px-4">
-								{/* Edit Profile Button - Left of profile picture */}
-								{isMyProfile && (
-									<button
-										className='btn btn-outline rounded-full btn-sm mr-4 mb-4'
-										onClick={() => setShowEditProfileModal(true)}
-									>
-										Edit profile
-									</button>
-								)}
-								
 								{/* PROFILE PICTURE */}
 								<ProfilePicture
 									user={user}
@@ -279,8 +269,18 @@ const ProfilePage = () => {
 									onUpdate={handleProfileUpdate}
 								/>
 								
-								{/* Follow/Unfollow Button - Right side */}
-								<div className='flex justify-end flex-1 mb-4'>
+								{/* Buttons - Right side */}
+								<div className='flex justify-end flex-1 mb-4 gap-2'>
+									{/* Edit Profile Button - Right of profile picture */}
+									{isMyProfile && (
+										<button
+											className='btn btn-outline rounded-full btn-sm'
+											onClick={() => setShowEditProfileModal(true)}
+										>
+											Edit profile
+										</button>
+									)}
+									
 									{!isMyProfile && (
 										<button
 											className='btn btn-outline rounded-full btn-sm'
@@ -293,7 +293,7 @@ const ProfilePage = () => {
 									)}
 									{(coverImg || profileImg) && (
 										<button
-											className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
+											className='btn btn-primary rounded-full btn-sm text-white px-4'
 											onClick={async () => {
 												await updateProfile({ coverImg, profileImg });
 												setProfileImg(null);
