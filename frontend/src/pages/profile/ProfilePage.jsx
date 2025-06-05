@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -38,7 +38,6 @@ const ProfilePage = () => {
 	const profileImgRef = useRef(null);
 
 	const { username } = useParams();
-	const navigate = useNavigate();
 
 	const { follow, isPending } = useFollow();
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
@@ -218,56 +217,6 @@ const ProfilePage = () => {
 		}
 	};
 
-	const handleStartConversation = async () => {
-		// Check if user data is loaded and valid
-		if (!user || !user._id) {
-			console.error('ProfilePage: User data not available for conversation');
-			toast.error('User data not loaded. Please wait and try again.');
-			return;
-		}
-
-		// Check if trying to message yourself
-		if (user._id === authUser?._id) {
-			toast.error('You cannot send a message to yourself.');
-			return;
-		}
-
-		try {
-			console.log('ProfilePage: Starting conversation with user:', user._id);
-			
-			const response = await fetch('/api/messages/start-conversation', {
-				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${localStorage.getItem('token')}`
-				},
-				body: JSON.stringify({ userId: user._id })
-			});
-
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({ error: 'Failed to start conversation' }));
-				throw new Error(errorData.error || `HTTP ${response.status}: Failed to start conversation`);
-			}
-
-			const conversation = await response.json();
-			console.log('ProfilePage: Started conversation:', conversation);
-			
-			// Navigate to messages page with the conversation selected
-			navigate('/messages', { 
-				state: { 
-					selectedConversation: conversation,
-					openChat: true 
-				} 
-			});
-			
-			toast.success(`Started conversation with ${user.username}`);
-		} catch (error) {
-			console.error('ProfilePage: Error starting conversation:', error);
-			toast.error(error.message || 'Failed to start conversation');
-		}
-	};
-
 	if (isLoading) {
 		return (
 			<div className='flex justify-center items-center h-screen'>
@@ -305,30 +254,36 @@ const ProfilePage = () => {
 								</div>
 							</PageHeader>
 							{/* COVER IMG */}
-							<div className='relative'>
-								<InteractiveCoverPhoto 
-									user={user}
-									isMyProfile={isMyProfile}
-									onUpdate={handleCoverUpdate}
+							<InteractiveCoverPhoto 
+								user={user}
+								isMyProfile={isMyProfile}
+								onUpdate={handleCoverUpdate}
 								/>
-								
-								{/* PROFILE PICTURE - Positioned to overlap cover photo */}
-								<div className='absolute -bottom-16 left-4'>
-									<ProfilePicture
-										user={user}
-										isMyProfile={isMyProfile}
-										onUpdate={handleProfileUpdate}
-									/>
-								</div>
-							</div>
 
-							<div className='flex justify-end px-4 mt-20'>
+							{/* PROFILE PICTURE */}
+							<ProfilePicture
+								user={user}
+								isMyProfile={isMyProfile}
+								onUpdate={handleProfileUpdate}
+												/>
+
+							<div className='flex justify-end px-4 mt-5'>
 								{isMyProfile && (
 									<button
 										className='btn btn-outline rounded-full btn-sm'
 										onClick={() => setShowEditProfileModal(true)}
 									>
 										Edit profile
+									</button>
+								)}
+								{!isMyProfile && (
+									<button
+										className='btn btn-outline rounded-full btn-sm'
+										onClick={() => handleFollow(user?._id)}
+									>
+										{isPending && "Loading..."}
+										{!isPending && amIFollowing && "Unfollow"}
+										{!isPending && !amIFollowing && "Follow"}
 									</button>
 								)}
 								{(coverImg || profileImg) && (
@@ -354,63 +309,8 @@ const ProfilePage = () => {
 
 							<div className='flex flex-col gap-4 mt-14 px-4'>
 								<div className='flex flex-col'>
-									<div className='flex items-center gap-3'>
-										<div className='flex flex-col'>
-											<span className='font-bold text-lg'>{user?.fullName}</span>
-											<span className='text-sm text-slate-500'>@{user?.username}</span>
-										</div>
-										{!isMyProfile && (
-											<div className='flex items-center gap-2'>
-												<button
-													onClick={handleStartConversation}
-													disabled={isLoading || !user || !user._id}
-													className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
-														isLoading || !user || !user._id
-															? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-															: 'bg-blue-600 text-white hover:bg-blue-700'
-													}`}
-													title={
-														isLoading || !user || !user._id 
-															? 'Loading user data...' 
-															: `Send message to ${user?.username}`
-													}
-												>
-													<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-													</svg>
-													{isLoading ? 'Loading...' : 'Message'}
-												</button>
-												<button
-													onClick={() => handleFollow(user?._id)}
-													disabled={isPending}
-													className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
-														amIFollowing
-															? 'bg-transparent border border-gray-600 text-white hover:bg-red-600 hover:border-red-600 hover:text-white'
-															: 'bg-gray-800 border border-gray-600 text-white hover:bg-gray-700'
-													} ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
-													title={amIFollowing ? `Unfollow ${user?.username}` : `Follow ${user?.username}`}
-												>
-													{isPending ? (
-														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-													) : amIFollowing ? (
-														<>
-															<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-																<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-															</svg>
-															Unfollow
-														</>
-													) : (
-														<>
-															<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-																<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-															</svg>
-															Follow
-														</>
-													)}
-												</button>
-											</div>
-										)}
-									</div>
+									<span className='font-bold text-lg'>{user?.fullName}</span>
+									<span className='text-sm text-slate-500'>@{user?.username}</span>
 									<span className='text-sm my-1'>{user?.bio}</span>
 								</div>
 
