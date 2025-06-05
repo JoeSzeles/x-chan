@@ -21,44 +21,67 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
             console.log('Uploading file:', file.name, file.type, file.size);
 
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Authentication token not found');
+            }
+
             const response = await fetch('/api/upload/profile', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: formData
             });
 
             console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers.get('content-type'));
-
-            const responseText = await response.text();
-            console.log('Raw response:', responseText);
+            console.log('Response content-type:', response.headers.get('content-type'));
 
             if (!response.ok) {
-                console.error('Upload failed with status:', response.status);
-                throw new Error(`Upload failed: ${response.status}`);
+                let errorMessage = `Upload failed: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch {
+                    errorMessage = await response.text() || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
 
             let data;
-            try {
-                data = JSON.parse(responseText);
-            } catch (parseError) {
-                console.error('Failed to parse JSON:', parseError);
-                console.error('Response was:', responseText);
-                throw new Error('Server returned invalid response');
+            const contentType = response.headers.get('content-type');
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const responseText = await response.text();
+                console.error('Non-JSON response received:', responseText);
+                throw new Error('Server returned invalid response format');
             }
+
+            console.log('Upload response data:', data);
 
             if (!data.success) {
                 throw new Error(data.error || 'Upload failed');
             }
 
             // Force refresh of the image by updating timestamp
-            setImageVersion(Date.now());
+            const newVersion = Date.now();
+            setImageVersion(newVersion);
 
             // Update the parent component if callback provided
-            if (onUpdate && data.url) {
-                onUpdate({ type: 'image', content: data.url });
+            if (onUpdate && data.user?.profileImg) {
+                onUpdate({ type: 'image', content: data.user.profileImg });
+            }
+
+            // Also trigger a broader cache invalidation if needed
+            if (window.location.pathname.includes('/profile/')) {
+                // Force a brief delay then reload user data
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('profileImageUpdated', { 
+                        detail: { url: data.user?.profileImg, version: newVersion } 
+                    }));
+                }, 100);
             }
 
             toast.success('Profile picture updated successfully');
