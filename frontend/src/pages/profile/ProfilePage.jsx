@@ -297,35 +297,9 @@ const ProfilePage = () => {
 												/>
 
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && (
-									<button
-										className='btn btn-outline rounded-full btn-sm'
-										onClick={() => setShowEditProfileModal(true)}
-									>
-										Edit profile
-									</button>
-								)}
-								{!isMyProfile && (
-									<>
-										<button
-											className='btn btn-outline rounded-full btn-sm mr-2'
-											onClick={() => handleFollow(user?._id)}
-										>
-											{isPending && "Loading..."}
-											{!isPending && amIFollowing && "Unfollow"}
-											{!isPending && !amIFollowing && "Follow"}
-										</button>
-										<button
-											className='btn btn-primary rounded-full btn-sm'
-											onClick={() => handleStartConversation(user?._id)}
-										>
-											Message
-										</button>
-									</>
-								)}
 								{(coverImg || profileImg) && (
 									<button
-										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
+										className='btn btn-primary rounded-full btn-sm text-white px-4'
 										onClick={async () => {
 											await updateProfile({ coverImg, profileImg });
 											setProfileImg(null);
@@ -357,7 +331,7 @@ const ProfilePage = () => {
 													className={`btn btn-xs rounded-full ${
 														amIFollowing 
 															? 'btn-outline border-red-500 text-red-500 hover:bg-red-500 hover:text-white' 
-															: 'btn-outline'
+															: 'btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white'
 													}`}
 													onClick={() => handleFollow(user?._id)}
 													disabled={isPending}
@@ -365,7 +339,7 @@ const ProfilePage = () => {
 													{isPending ? "..." : amIFollowing ? "Unfollow" : "Follow"}
 												</button>
 												<button
-													className='btn btn-outline btn-xs rounded-full'
+													className='btn btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white btn-xs rounded-full'
 													onClick={() => handleStartConversation(user?._id)}
 												>
 													Message
@@ -374,7 +348,7 @@ const ProfilePage = () => {
 										)}
 										{isMyProfile && (
 											<button
-												className='btn btn-outline btn-xs rounded-full'
+												className='btn btn-outline border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white btn-xs rounded-full'
 												onClick={() => setShowEditProfileModal(true)}
 											>
 												Edit profile
