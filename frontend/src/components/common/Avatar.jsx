@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaCircle, FaEnvelope, FaUser } from 'react-icons/fa';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ const Avatar = ({
   const { data: authUser } = useQuery({ queryKey: ["authUser"] });
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const timeoutRef = useRef(null);
   
   const { data: onlineUsers } = useQuery({
     queryKey: ["onlineUsers"],
@@ -40,6 +41,19 @@ const Avatar = ({
     lg: 'w-12 h-12',
     xl: 'w-16 h-16',
     xxl: 'w-20 h-20'
+  };
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setShowDropdown(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setShowDropdown(false);
+    }, 300); // 300ms delay before closing
   };
 
   const handleStartConversation = async (e) => {
@@ -77,8 +91,8 @@ const Avatar = ({
   const avatarContent = (
     <div 
       className={`relative group ${avatarSize} ${className}`}
-      onMouseEnter={() => setShowDropdown(true)}
-      onMouseLeave={() => setShowDropdown(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className={`w-full h-full rounded-full overflow-hidden flex items-center justify-center ${
         showBorder ? 'border-2 border-gray-700 hover:border-gray-500' : ''
@@ -104,7 +118,11 @@ const Avatar = ({
       
       {/* Dropdown Menu */}
       {showDropdown && authUser && authUser._id !== user._id && (
-        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 min-w-max">
+        <div 
+          className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 min-w-max"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           <div className="py-1">
             <Link
               to={`/profile/${user.username}`}
