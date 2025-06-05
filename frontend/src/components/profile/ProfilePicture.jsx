@@ -103,11 +103,6 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     src={getProfileImageUrl()}
                     alt="Profile"
                     className="w-full h-full object-cover object-center"
-                    style={{
-                        objectFit: 'cover',
-                        width: '100%',
-                        height: '100%'
-                    }}
                     onError={(e) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
