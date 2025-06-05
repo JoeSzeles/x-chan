@@ -36,14 +36,13 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 throw new Error('Failed to upload profile picture');
             }
 
-            // Only try to parse JSON if the content type is JSON
-            const contentType = response.headers.get('content-type');
+            // Try to parse JSON, but handle non-JSON responses gracefully
             let data;
-            
-            if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                console.warn('Non-JSON response received');
+            try {
+                const responseText = await response.text();
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.warn('Non-JSON response received, assuming success');
                 data = { success: true };
             }
 
