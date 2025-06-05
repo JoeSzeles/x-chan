@@ -354,15 +354,18 @@ const ProfilePage = () => {
 										{!isMyProfile && (
 											<div className='flex gap-2'>
 												<button
-													className='btn btn-outline btn-xs rounded-full'
+													className={`btn btn-xs rounded-full ${
+														amIFollowing 
+															? 'btn-outline border-red-500 text-red-500 hover:bg-red-500 hover:text-white' 
+															: 'btn-outline'
+													}`}
 													onClick={() => handleFollow(user?._id)}
+													disabled={isPending}
 												>
-													{isPending && "..."}
-													{!isPending && amIFollowing && "Unfollow"}
-													{!isPending && !amIFollowing && "Follow"}
+													{isPending ? "..." : amIFollowing ? "Unfollow" : "Follow"}
 												</button>
 												<button
-													className='btn btn-primary btn-xs rounded-full'
+													className='btn btn-outline btn-xs rounded-full'
 													onClick={() => handleStartConversation(user?._id)}
 												>
 													Message
