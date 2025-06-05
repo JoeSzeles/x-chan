@@ -115,7 +115,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
             {isMyProfile && (
                 <div
-                    className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
+                    className={`absolute top-2 left-1/2 transform -translate-x-1/2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
                     onClick={() => fileInputRef.current.click()}
                 >
                     <MdEdit className="w-5 h-5 text-white" />
