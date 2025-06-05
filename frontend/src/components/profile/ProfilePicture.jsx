@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { toast } from 'react-hot-toast';
@@ -50,12 +49,12 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     ...oldData,
                     ...data.user
                 }));
-                
+
                 queryClient.setQueryData(['user', user.username], (oldData) => ({
                     ...oldData,
                     ...data.user
                 }));
-                
+
                 // Invalidate all related queries to ensure consistency
                 queryClient.invalidateQueries({ queryKey: ['authUser'] });
                 queryClient.invalidateQueries({ queryKey: ['user'] });
@@ -86,9 +85,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         if (baseUrl === "/avatar-placeholder.png") {
             return baseUrl;
         }
-        return baseUrl.includes('?') 
-            ? `${baseUrl}&v=${imageVersion}` 
-            : `${baseUrl}?v=${imageVersion}`;
+        return `${baseUrl}?v=${imageVersion}`;
     };
 
     return (
@@ -106,7 +103,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                         e.target.src = "/avatar-placeholder.png";
                     }}
                 />
-                
+
                 {isMyProfile && (
                     <div
                         className={`absolute bottom-2 right-2 rounded-full p-2 bg-gray-800 bg-opacity-75 cursor-pointer transition-opacity duration-200 ${isHovered ? 'opacity-100' : 'opacity-0'}`}
