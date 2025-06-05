@@ -217,6 +217,35 @@ const ProfilePage = () => {
 		}
 	};
 
+	const handleStartConversation = async (userId) => {
+		try {
+			const response = await fetch('/api/messages/start-conversation', {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				},
+				body: JSON.stringify({ userId: userId })
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({ error: 'Failed to start conversation' }));
+				throw new Error(errorData.error || `HTTP ${response.status}: Failed to start conversation`);
+			}
+
+			const conversation = await response.json();
+			
+			// Navigate to messages page with the conversation
+			window.location.href = '/messages';
+			
+			toast.success('Conversation started');
+		} catch (err) {
+			console.error('Error starting conversation:', err);
+			toast.error(`Error starting conversation: ${err.message}`);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className='flex justify-center items-center h-screen'>
@@ -277,14 +306,22 @@ const ProfilePage = () => {
 									</button>
 								)}
 								{!isMyProfile && (
-									<button
-										className='btn btn-outline rounded-full btn-sm'
-										onClick={() => handleFollow(user?._id)}
-									>
-										{isPending && "Loading..."}
-										{!isPending && amIFollowing && "Unfollow"}
-										{!isPending && !amIFollowing && "Follow"}
-									</button>
+									<>
+										<button
+											className='btn btn-outline rounded-full btn-sm mr-2'
+											onClick={() => handleFollow(user?._id)}
+										>
+											{isPending && "Loading..."}
+											{!isPending && amIFollowing && "Unfollow"}
+											{!isPending && !amIFollowing && "Follow"}
+										</button>
+										<button
+											className='btn btn-primary rounded-full btn-sm'
+											onClick={() => handleStartConversation(user?._id)}
+										>
+											Message
+										</button>
+									</>
 								)}
 								{(coverImg || profileImg) && (
 									<button
@@ -309,8 +346,38 @@ const ProfilePage = () => {
 
 							<div className='flex flex-col gap-4 mt-14 px-4'>
 								<div className='flex flex-col'>
-									<span className='font-bold text-lg'>{user?.fullName}</span>
-									<span className='text-sm text-slate-500'>@{user?.username}</span>
+									<div className='flex items-center gap-3'>
+										<div className='flex flex-col'>
+											<span className='font-bold text-lg'>{user?.fullName}</span>
+											<span className='text-sm text-slate-500'>@{user?.username}</span>
+										</div>
+										{!isMyProfile && (
+											<div className='flex gap-2'>
+												<button
+													className='btn btn-outline btn-xs rounded-full'
+													onClick={() => handleFollow(user?._id)}
+												>
+													{isPending && "..."}
+													{!isPending && amIFollowing && "Unfollow"}
+													{!isPending && !amIFollowing && "Follow"}
+												</button>
+												<button
+													className='btn btn-primary btn-xs rounded-full'
+													onClick={() => handleStartConversation(user?._id)}
+												>
+													Message
+												</button>
+											</div>
+										)}
+										{isMyProfile && (
+											<button
+												className='btn btn-outline btn-xs rounded-full'
+												onClick={() => setShowEditProfileModal(true)}
+											>
+												Edit profile
+											</button>
+										)}
+									</div>
 									<span className='text-sm my-1'>{user?.bio}</span>
 								</div>
 
