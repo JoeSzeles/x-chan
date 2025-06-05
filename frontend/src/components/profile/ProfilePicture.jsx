@@ -21,7 +21,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 
             console.log('Uploading file:', file.name, file.type, file.size);
 
-            const response = await fetch('/api/users/upload/profile', {
+            const response = await fetch('/api/upload/profile', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -57,8 +57,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             setImageVersion(Date.now());
 
             // Update the parent component if callback provided
-            if (onUpdate && data.user?.profileImg) {
-                onUpdate({ type: 'image', content: data.user.profileImg });
+            if (onUpdate && data.url) {
+                onUpdate({ type: 'image', content: data.url });
             }
 
             toast.success('Profile picture updated successfully');
