@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from 'react-router-dom';
 import ConversationsList from '../components/messages/ConversationsList';
 import GroupConversationsList from '../components/messages/GroupConversationsList';
+import MessageContacts from '../components/messages/MessageContacts';
 import ChatWindow from '../components/messages/ChatWindow';
 import GroupChatWindow from '../components/messages/GroupChatWindow';
-import MessageContacts from '../components/messages/MessageContacts';
-import CreateGroupModal from '../components/messages/CreateGroupModal';
+import PageHeader from '../components/common/PageHeader';
+import Breadcrumb from '../components/common/Breadcrumb';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import socketService from '../services/socket';
 
@@ -94,18 +94,6 @@ const Messages = () => {
     setSelectedConversation(null); // Clear regular conversation selection
     setActiveTab('groups');
   };
-
-    const location = useLocation();
-
-  // Handle selected conversation from navigation state
-  useEffect(() => {
-    if (location.state?.selectedConversation) {
-      setSelectedConversation(location.state.selectedConversation);
-      setActiveTab('conversations'); // Switch to direct messages tab
-      // Clear the navigation state after using it
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
 
   return (
     <div className="flex-1 flex h-screen" style={{ backgroundColor: 'var(--color-bg-main)' }}>
