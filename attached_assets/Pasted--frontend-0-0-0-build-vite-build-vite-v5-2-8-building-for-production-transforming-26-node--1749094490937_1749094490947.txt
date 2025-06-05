@@ -1,0 +1,43 @@
+
+> frontend@0.0.0 build
+> vite build
+
+vite v5.2.8 building for production...
+transforming (26) node_modules/react/cjs/react.production.min.jsBrowserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+🌼   daisyUI 4.12.24
+├─ ✔︎ 2 themes added     https://daisyui.com/docs/themes
+╰─ ❤︎ Support daisyUI project:   https://opencollective.com/daisyui
+
+transforming (66) node_modules/@tanstack/query-core/build/modern/notifyManager.js[vite:css] @import must precede all other statements (besides @charset or empty @layer)
+1  |  @tailwind base;
+2  |  @tailwind components;
+3  |  @import './styles/animations.css';
+   |  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+4  |  @tailwind utilities;
+5  |  
+✓ 139 modules transformed.
+x Build failed in 2.06s
+error during build:
+Error: [vite:esbuild] Transform failed with 1 error:
+/home/runner/workspace/frontend/src/components/profile/ProfilePicture.jsx:1:4: ERROR: Expected ";" but found "code"
+file: /home/runner/workspace/frontend/src/components/profile/ProfilePicture.jsx:1:4
+
+Expected ";" but found "code"
+1  |  The code has been modified to remove the syntax error (backticks) at the end of the file and to add the missing Avatar import.
+   |      ^
+2  |  ```
+3  |  ```replit_final_file
+
+    at failureErrorWithLog (/home/runner/workspace/frontend/node_modules/esbuild/lib/main.js:1651:15)
+    at /home/runner/workspace/frontend/node_modules/esbuild/lib/main.js:849:29
+    at responseCallbacks.<computed> (/home/runner/workspace/frontend/node_modules/esbuild/lib/main.js:704:9)
+    at handleIncomingPacket (/home/runner/workspace/frontend/node_modules/esbuild/lib/main.js:764:9)
+    at Socket.readFromStdout (/home/runner/workspace/frontend/node_modules/esbuild/lib/main.js:680:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
