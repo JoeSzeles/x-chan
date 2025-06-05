@@ -19,6 +19,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             const formData = new FormData();
             formData.append('profileImg', file);
 
+            console.log('Uploading file:', file.name, file.type, file.size);
+
             const response = await fetch('/api/users/upload/profile', {
                 method: 'POST',
                 headers: {
@@ -27,16 +29,28 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 body: formData
             });
 
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
+
+            const responseText = await response.text();
+            console.log('Raw response:', responseText);
+
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Upload failed:', errorText);
-                throw new Error('Failed to upload profile picture');
+                console.error('Upload failed with status:', response.status);
+                throw new Error(`Upload failed: ${response.status}`);
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('Failed to parse JSON:', parseError);
+                console.error('Response was:', responseText);
+                throw new Error('Server returned invalid response');
+            }
 
             if (!data.success) {
-                throw new Error(data.error || 'Failed to upload profile picture');
+                throw new Error(data.error || 'Upload failed');
             }
 
             // Force refresh of the image by updating timestamp
