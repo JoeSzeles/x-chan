@@ -182,7 +182,6 @@ const ProfilePage = () => {
                 profileImg: updatedData.user.profileImg
             }));
 
-            await refetch();
             toast.success('Profile picture updated successfully');
 
         } catch (error) {
@@ -195,11 +194,34 @@ const ProfilePage = () => {
 		console.log("Current user data:", user);
 	}, [user]);
 
-	useEffect(() => {
-		refetch();
-	}, [username, refetch]);
+	// Remove unnecessary refetch - useQuery will automatically refetch when username changes
 
 	const handleFollow = async (userId) => {
+		// Optimistically update the UI
+		const wasFollowing = amIFollowing;
+		
+		// Update user data optimistically
+		queryClient.setQueryData(["user", username], (oldData) => {
+			if (!oldData) return oldData;
+			return {
+				...oldData,
+				followers: wasFollowing 
+					? oldData.followers.filter(id => id !== authUser._id)
+					: [...oldData.followers, authUser._id]
+			};
+		});
+
+		// Update authUser data optimistically
+		queryClient.setQueryData(["authUser"], (oldData) => {
+			if (!oldData) return oldData;
+			return {
+				...oldData,
+				following: wasFollowing
+					? oldData.following.filter(id => id !== userId)
+					: [...oldData.following, userId]
+			};
+		});
+
 		try {
 			const res = await fetch(`/api/users/follow/${userId}`, {
 				method: "POST",
@@ -210,14 +232,30 @@ const ProfilePage = () => {
 				throw new Error(data.error || "Something went wrong");
 			}
 			toast.success(data.message || 
-				(amIFollowing ? "Unfollowed successfully" : "Followed successfully")
+				(wasFollowing ? "Unfollowed successfully" : "Followed successfully")
 			);
-			// Invalidate multiple queries to ensure UI updates
-			queryClient.invalidateQueries({ queryKey: ["user", username] });
-			queryClient.invalidateQueries({ queryKey: ["authUser"] });
-			queryClient.invalidateQueries({ queryKey: ["following"] });
-			queryClient.invalidateQueries({ queryKey: ["followers"] });
 		} catch (error) {
+			// Revert optimistic updates on error
+			queryClient.setQueryData(["user", username], (oldData) => {
+				if (!oldData) return oldData;
+				return {
+					...oldData,
+					followers: wasFollowing 
+						? [...oldData.followers, authUser._id]
+						: oldData.followers.filter(id => id !== authUser._id)
+				};
+			});
+
+			queryClient.setQueryData(["authUser"], (oldData) => {
+				if (!oldData) return oldData;
+				return {
+					...oldData,
+					following: wasFollowing
+						? [...oldData.following, userId]
+						: oldData.following.filter(id => id !== userId)
+				};
+			});
+
 			toast.error(error.message);
 		}
 	};
