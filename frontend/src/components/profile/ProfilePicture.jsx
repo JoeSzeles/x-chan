@@ -1,7 +1,7 @@
 
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
-import { FaEnvelope } from "react-icons/fa";
+import { FaEnvelope, FaCircle } from "react-icons/fa";
 import { toast } from 'react-hot-toast';
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from 'react-router-dom';
@@ -158,9 +158,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 />
                 
                 {/* Online/Offline Status Indicator */}
-                <div className={`absolute bottom-2 right-2 w-6 h-6 border-2 border-[#1e1e1e] rounded-full ${
-                    isOnline ? 'bg-green-500' : 'bg-gray-400'
-                }`}></div>
+                <FaCircle 
+                    className={`absolute bottom-0 right-0 text-xs ${
+                        isOnline ? 'text-green-500' : 'text-gray-400'
+                    }`}
+                    style={{ 
+                        filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))',
+                        fontSize: '16px',
+                        transform: 'translate(25%, 25%)'
+                    }}
+                />
             </div>
 
             {/* Edit Profile Picture Icon - Top of image */}
