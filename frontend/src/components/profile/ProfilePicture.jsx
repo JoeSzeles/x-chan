@@ -158,16 +158,11 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                 />
                 
                 {/* Online/Offline Status Indicator */}
-                <FaCircle 
-                    className={`absolute bottom-0 right-0 text-xs ${
-                        isOnline ? 'text-green-500' : 'text-gray-400'
-                    }`}
-                    style={{ 
-                        filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))',
-                        fontSize: '16px',
-                        transform: 'translate(25%, 25%)'
-                    }}
-                />
+                <div className={`absolute bottom-2 right-2 w-4 h-4 border-2 border-[#1e1e1e] rounded-full ${
+                    isOnline ? 'bg-green-500' : 'bg-gray-400'
+                }`} style={{ 
+                    filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))'
+                }}></div>
             </div>
 
             {/* Edit Profile Picture Icon - Top of image */}
