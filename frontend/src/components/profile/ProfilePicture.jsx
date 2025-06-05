@@ -37,26 +37,43 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             console.log('Response status:', response.status);
             console.log('Response content-type:', response.headers.get('content-type'));
 
+            const contentType = response.headers.get('content-type');
+            console.log('Full response headers:', [...response.headers.entries()]);
+            
             if (!response.ok) {
                 let errorMessage = `Upload failed: ${response.status}`;
                 try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error || errorMessage;
-                } catch {
-                    errorMessage = await response.text() || errorMessage;
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } else {
+                        const errorText = await response.text();
+                        console.error('Non-JSON error response:', errorText);
+                        errorMessage = errorText || errorMessage;
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing response:', parseError);
+                    errorMessage = `Server error: ${response.status}`;
                 }
                 throw new Error(errorMessage);
             }
 
             let data;
-            const contentType = response.headers.get('content-type');
             
             if (contentType && contentType.includes('application/json')) {
-                data = await response.json();
+                try {
+                    data = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse JSON response:', parseError);
+                    const responseText = await response.text();
+                    console.error('Raw response text:', responseText);
+                    throw new Error('Server returned invalid JSON format');
+                }
             } else {
                 const responseText = await response.text();
                 console.error('Non-JSON response received:', responseText);
-                throw new Error('Server returned invalid response format');
+                console.error('Content-Type:', contentType);
+                throw new Error('Server returned non-JSON response');
             }
 
             console.log('Upload response data:', data);
