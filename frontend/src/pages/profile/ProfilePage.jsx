@@ -314,16 +314,6 @@ const ProfilePage = () => {
 										Edit profile
 									</button>
 								)}
-								{!isMyProfile && (
-									<button
-										className='btn btn-outline rounded-full btn-sm'
-										onClick={() => handleFollow(user?._id)}
-									>
-										{isPending && "Loading..."}
-										{!isPending && amIFollowing && "Unfollow"}
-										{!isPending && !amIFollowing && "Follow"}
-									</button>
-								)}
 								{(coverImg || profileImg) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
@@ -353,16 +343,46 @@ const ProfilePage = () => {
 											<span className='text-sm text-slate-500'>@{user?.username}</span>
 										</div>
 										{!isMyProfile && (
-											<button
-												onClick={handleStartConversation}
-												className='px-3 py-1 bg-blue-600 text-white rounded-full text-sm hover:bg-blue-700 transition-colors duration-200 flex items-center gap-1'
-												title={`Send message to ${user?.username}`}
-											>
-												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-												</svg>
-												Message
-											</button>
+											<div className='flex items-center gap-2'>
+												<button
+													onClick={handleStartConversation}
+													className='px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2'
+													title={`Send message to ${user?.username}`}
+												>
+													<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+													</svg>
+													Message
+												</button>
+												<button
+													onClick={() => handleFollow(user?._id)}
+													disabled={isPending}
+													className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
+														amIFollowing
+															? 'bg-transparent border border-gray-600 text-white hover:bg-red-600 hover:border-red-600 hover:text-white'
+															: 'bg-gray-800 border border-gray-600 text-white hover:bg-gray-700'
+													} ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+													title={amIFollowing ? `Unfollow ${user?.username}` : `Follow ${user?.username}`}
+												>
+													{isPending ? (
+														<div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+													) : amIFollowing ? (
+														<>
+															<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+																<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+															</svg>
+															Unfollow
+														</>
+													) : (
+														<>
+															<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+																<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+															</svg>
+															Follow
+														</>
+													)}
+												</button>
+											</div>
 										)}
 									</div>
 									<span className='text-sm my-1'>{user?.bio}</span>
