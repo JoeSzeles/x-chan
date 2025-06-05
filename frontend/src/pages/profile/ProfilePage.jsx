@@ -219,6 +219,19 @@ const ProfilePage = () => {
 	};
 
 	const handleStartConversation = async () => {
+		// Check if user data is loaded and valid
+		if (!user || !user._id) {
+			console.error('ProfilePage: User data not available for conversation');
+			toast.error('User data not loaded. Please wait and try again.');
+			return;
+		}
+
+		// Check if trying to message yourself
+		if (user._id === authUser?._id) {
+			toast.error('You cannot send a message to yourself.');
+			return;
+		}
+
 		try {
 			console.log('ProfilePage: Starting conversation with user:', user._id);
 			
@@ -350,13 +363,22 @@ const ProfilePage = () => {
 											<div className='flex items-center gap-2'>
 												<button
 													onClick={handleStartConversation}
-													className='px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2'
-													title={`Send message to ${user?.username}`}
+													disabled={isLoading || !user || !user._id}
+													className={`px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center gap-2 ${
+														isLoading || !user || !user._id
+															? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+															: 'bg-blue-600 text-white hover:bg-blue-700'
+													}`}
+													title={
+														isLoading || !user || !user._id 
+															? 'Loading user data...' 
+															: `Send message to ${user?.username}`
+													}
 												>
 													<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
 													</svg>
-													Message
+													{isLoading ? 'Loading...' : 'Message'}
 												</button>
 												<button
 													onClick={() => handleFollow(user?._id)}
