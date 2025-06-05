@@ -1,6 +1,5 @@
-The code has been modified to remove the syntax error (backticks) at the end of the file and to add the missing Avatar import.
-```
-```replit_final_file
+
+
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { FaEnvelope } from "react-icons/fa";
@@ -16,22 +15,8 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     // Use a state to force image refresh when updated
     const [imageVersion, setImageVersion] = useState(Date.now());
     const navigate = useNavigate();
-
+    
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
-
-    const { data: onlineUsers } = useQuery({
-        queryKey: ["onlineUsers"],
-        queryFn: async () => {
-            const res = await fetch('/api/users/online');
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to fetch online users");
-            return data;
-        },
-        enabled: !!authUser,
-        refetchInterval: 30000, // Refetch every 30 seconds
-    });
-
-    const isOnline = onlineUsers?.some(onlineUser => onlineUser._id === user._id);
 
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
@@ -62,7 +47,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             // Only try to parse JSON if the content type is JSON
             const contentType = response.headers.get('content-type');
             let data;
-
+            
             if (contentType && contentType.includes('application/json')) {
                 data = await response.json();
             } else {
@@ -81,16 +66,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     },
                     body: JSON.stringify({ profileImg: data.url })
                 });
-
+                
                 if (!updateResponse.ok) {
                     throw new Error('Failed to update user profile with new image');
                 }
-
+                
                 const updateData = await updateResponse.json();
-
+                
                 // Force refresh of the image by updating timestamp
                 setImageVersion(Date.now());
-
+                
                 if (onUpdate && updateData.user?.profileImg) {
                     onUpdate({ type: 'image', content: updateData.user.profileImg });
                 }
@@ -139,6 +124,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             : `${baseUrl}?v=${imageVersion}`;
     };
 
+    // Create a user object with updated profile image for the Avatar component
     const userWithUpdatedImage = {
         ...user,
         profileImg: getProfileImageUrl()
@@ -151,12 +137,12 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             onMouseLeave={() => setIsHovered(false)}
         >
             {/* Use Avatar component with online status - same as WhosOnline */}
-            <div className="relative">
+            <div className="w-32 h-32 border-4 border-[#1e1e1e] rounded-full overflow-hidden bg-[#1e1e1e] relative">
                 <Avatar 
                     user={userWithUpdatedImage}
                     size="xxl"
                     showOnlineStatus={true}
-                    className="border-4 border-[#1e1e1e]"
+                    className="w-full h-full"
                     clickable={false}
                     showBorder={false}
                     showMessageIcon={false}
@@ -202,3 +188,4 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 };
 
 export default ProfilePicture;
+
