@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { MdEdit } from "react-icons/md";
 import { FaEnvelope, FaCircle } from "react-icons/fa";
@@ -13,9 +12,9 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
     // Use a state to force image refresh when updated
     const [imageVersion, setImageVersion] = useState(Date.now());
     const navigate = useNavigate();
-    
+
     const { data: authUser } = useQuery({ queryKey: ["authUser"] });
-    
+
     const { data: onlineUsers } = useQuery({
         queryKey: ["onlineUsers"],
         queryFn: async () => {
@@ -27,7 +26,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
         enabled: !!authUser,
         refetchInterval: 30000, // Refetch every 30 seconds
     });
-    
+
     const isOnline = onlineUsers?.some(onlineUser => onlineUser._id === user._id);
 
     const handleFileChange = async (e) => {
@@ -59,7 +58,7 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             // Only try to parse JSON if the content type is JSON
             const contentType = response.headers.get('content-type');
             let data;
-            
+
             if (contentType && contentType.includes('application/json')) {
                 data = await response.json();
             } else {
@@ -78,16 +77,16 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
                     },
                     body: JSON.stringify({ profileImg: data.url })
                 });
-                
+
                 if (!updateResponse.ok) {
                     throw new Error('Failed to update user profile with new image');
                 }
-                
+
                 const updateData = await updateResponse.json();
-                
+
                 // Force refresh of the image by updating timestamp
                 setImageVersion(Date.now());
-                
+
                 if (onUpdate && updateData.user?.profileImg) {
                     onUpdate({ type: 'image', content: updateData.user.profileImg });
                 }
@@ -136,33 +135,28 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
             : `${baseUrl}?v=${imageVersion}`;
     };
 
+    const userWithUpdatedImage = {
+        ...user,
+        profileImg: getProfileImageUrl()
+    };
+
     return (
         <div 
             className="relative -mt-16 ml-4 group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="w-32 h-32 rounded-full border-4 border-[#1e1e1e] overflow-hidden bg-[#1e1e1e] relative">
-                <img
-                    src={getProfileImageUrl()}
-                    alt="Profile"
-                    className="w-full h-full object-cover object-center"
-                    style={{
-                        objectFit: 'cover',
-                        width: '100%',
-                        height: '100%'
-                    }}
-                    onError={(e) => {
-                        e.target.src = "/avatar-placeholder.png";
-                    }}
+            {/* Use Avatar component with online status - same as WhosOnline */}
+            <div className="relative">
+                <Avatar 
+                    user={userWithUpdatedImage}
+                    size="xxl"
+                    showOnlineStatus={true}
+                    className="border-4 border-[#1e1e1e]"
+                    clickable={false}
+                    showBorder={false}
+                    showMessageIcon={false}
                 />
-                
-                {/* Online/Offline Status Indicator */}
-                <div className={`absolute bottom-2 right-2 w-4 h-4 border-2 border-[#1e1e1e] rounded-full ${
-                    isOnline ? 'bg-green-500' : 'bg-gray-400'
-                }`} style={{ 
-                    filter: 'drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))'
-                }}></div>
             </div>
 
             {/* Edit Profile Picture Icon - Top of image */}
@@ -204,3 +198,4 @@ const ProfilePicture = ({ user, isMyProfile, onUpdate }) => {
 };
 
 export default ProfilePicture;
+```
