@@ -1,27 +1,63 @@
-import axios from 'axios';
-
 const searchService = {
     searchUsers: async (query) => {
+        if (!query || query.trim().length === 0) {
+            return [];
+        }
+
         try {
-            console.log('Searching users with query:', query);
-            const response = await axios.get(`/api/search/users?q=${encodeURIComponent(query)}`);
-            console.log('Search results:', response.data);
-            return response.data;
+            console.log('searchService: Searching users with query:', query);
+            
+            const response = await fetch(`/api/search/users?q=${encodeURIComponent(query.trim())}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log('searchService: Response status:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('searchService: Error response:', errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('searchService: Search results:', data);
+            return data;
         } catch (error) {
-            console.error('Error searching users:', error);
-            throw new Error(error.response?.data?.error || 'Failed to search users');
+            console.error('searchService: Error searching users:', error);
+            throw new Error(error.message || 'Failed to search users');
         }
     },
 
     searchPosts: async (query) => {
+        if (!query || query.trim().length === 0) {
+            return [];
+        }
+
         try {
-            console.log('Searching posts with query:', query);
-            const response = await axios.get(`/api/search/posts?q=${encodeURIComponent(query)}`);
-            console.log('Search results:', response.data);
-            return response.data;
+            console.log('searchService: Searching posts with query:', query);
+            
+            const response = await fetch(`/api/search/posts?q=${encodeURIComponent(query.trim())}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('searchService: Error response:', errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('searchService: Post search results:', data);
+            return data;
         } catch (error) {
-            console.error('Error searching posts:', error);
-            throw new Error(error.response?.data?.error || 'Failed to search posts');
+            console.error('searchService: Error searching posts:', error);
+            throw new Error(error.message || 'Failed to search posts');
         }
     }
 };
