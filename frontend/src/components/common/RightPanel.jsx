@@ -46,7 +46,9 @@ const RightPanel = ({ isWideMode }) => {
 	}, []);
 
 	const handleSearchChange = (e) => {
-		setSearchQuery(e.target.value);
+		const value = e.target.value;
+		console.log('RightPanel: Search input changed:', value);
+		setSearchQuery(value);
 		setShowResults(true);
 	};
 
@@ -94,7 +96,13 @@ const RightPanel = ({ isWideMode }) => {
 									>
 										<div className="avatar">
 											<div className="w-10 rounded-full">
-												<img src={user.profileImg || "/avatar-placeholder.png"} alt={user.fullName} />
+												<img 
+													src={user.profileImg || "/avatar-placeholder.png"} 
+													alt={user.fullName}
+													onError={(e) => {
+														e.target.src = "/avatar-placeholder.png";
+													}}
+												/>
 											</div>
 										</div>
 										<div className="flex flex-col">
@@ -103,9 +111,13 @@ const RightPanel = ({ isWideMode }) => {
 										</div>
 									</Link>
 								))
+							) : searchQuery.length >= 2 ? (
+								<div className="p-4 text-center text-gray-500">
+									No results found for "{searchQuery}"
+								</div>
 							) : (
 								<div className="p-4 text-center text-gray-500">
-									No results found
+									Type at least 2 characters to search
 								</div>
 							)}
 						</div>

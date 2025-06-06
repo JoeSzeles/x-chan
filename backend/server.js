@@ -24,7 +24,6 @@ import authRoutes from './routes/auth.route.js';
 import userRoutes from './routes/user.route.js';
 import postRoutes from './routes/post.route.js';
 import proxyRoutes from './routes/proxy.js';
-import searchRoutes from './routes/searchRoutes.js';
 import twitterRoutes from './routes/twitter.js';
 import notificationRoutes from "./routes/notification.route.js";
 import bookmarkRoutes from './routes/bookmark.route.js';
@@ -41,6 +40,7 @@ import connectMongoDB from "./db/connectMongoDB.js";
 import coverPhotoRoutes from './routes/cover-photo.route.js';
 import messagesRoutes from './routes/messages.js';
 import groupMessagesRoutes from './routes/groupMessages.js';
+import searchRoutes from './routes/searchRoutes.js';
 
 dotenv.config();
 
@@ -124,7 +124,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/posts/rate", ratingRoutes);
-app.use('/api/search', searchRoutes);
+app.use("/api/search", searchRoutes);
 app.use("/api/comments", commentRoutes);
 app.use('/api/twitter', twitterRoutes);
 app.use('/api/grok', grokRoutes);
@@ -305,12 +305,12 @@ io.on('connection', socket => {
     // Handle new message - improved broadcasting
     socket.on('new_message', (message, callback) => {
         console.log('📨 Server received new message:', message);
-        
+
         try {
             // Broadcast to all users in the conversation room (including sender for confirmation)
             io.to(message.conversationId).emit('new_message', message);
             console.log(`📤 Broadcasting message to conversation ${message.conversationId}`);
-            
+
             // Send acknowledgment back to sender
             if (callback) {
                 callback({ success: true, timestamp: new Date() });
