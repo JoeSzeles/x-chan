@@ -9,7 +9,7 @@
 		"dev": "concurrently \"npm run server\" \"npm run client\"",
 		"ngrok": "ngrok start --all --config=ngrok.yml",
 		"install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd frontend && npm run build"
+		"build": "cd frontend && npm run build"
 	},
 	"keywords": [],
 	"author": "",
@@ -36,6 +36,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^7.0.3",
 		"multer": "^1.4.5-lts.1",
+		"nodemailer": "^7.0.3",
 		"nodemon": "^3.1.10",
 		"pg": "^8.16.0",
 		"postcss": "^8.5.3",
