@@ -63,7 +63,7 @@ const RightPanel = ({ isWideMode }) => {
 					<FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
 					<input
 						type="text"
-						placeholder="Search Twitter"
+						placeholder="Search X-chan"
 						className="w-full bg-[#1e1e1e] text-white pl-10 pr-10 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#1da1f2]"
 						value={searchQuery}
 						onChange={handleSearchChange}
