@@ -2,6 +2,17 @@
 # X-CHAN
 
 A full-stack Twitter-4chan mashup application built with modern web technologies. This project combines the microblogging experience of Twitter with the unique thread-based discussion format of 4chan.
+![GsuC1xRb0AAt2Nq](https://github.com/user-attachments/assets/3dfebf00-12f6-43b8-9ab5-ab5c34a4e6bc)
+<img width="950" height="910" alt="Screenshot 2025-07-22 at 14-40-34 X-Chan" src="https://github.com/user-attachments/assets/1a48e437-a190-46c4-87fe-6ea6e7dca487" />
+<img width="1902" height="921" alt="Screenshot 2025-07-22 at 14-39-45 X-Chan" src="https://github.com/user-attachments/assets/74191e21-13a5-4fca-b7d7-a7ea9d9c77ae" />
+<img width="1894" height="918" alt="Screenshot 2025-07-22 at 14-38-59 X-Chan" src="https://github.com/user-attachments/assets/9c5ca724-d784-477b-aa67-d98d87a7a9bd" />
+<img width="1902" height="912" alt="Screenshot 2025-07-22 at 14-38-45 X-Chan" src="https://github.com/user-attachments/assets/70abaf11-56ad-417b-a976-dac0f8040257" />
+<img width="1897" height="909" alt="Screenshot 2025-07-22 at 14-38-32 X-Chan" src="https://github.com/user-attachments/assets/9621e593-3cd1-43d9-bbef-10f3d1cdcd62" />
+<img width="1903" height="908" alt="Screenshot 2025-07-22 at 14-38-04 X-Chan" src="https://github.com/user-attachments/assets/a7e650bd-3581-44e5-9d32-4e3d21d92b2a" />
+<img width="1896" height="912" alt="Screenshot 2025-07-22 at 14-37-40 X-Chan" src="https://github.com/user-attachments/assets/a2865e69-ab66-43cc-9c4d-4d4ae646d840" />
+<img width="1881" height="891" alt="Screenshot 2025-07-22 at 14-37-10 X-Chan" src="https://github.com/user-attachments/assets/45e3f6a6-2667-489d-bce9-f81d69e51b3b" />
+
+
 
 ## Features
 
